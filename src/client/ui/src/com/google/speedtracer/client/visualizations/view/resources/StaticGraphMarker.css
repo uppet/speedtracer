@@ -1,0 +1,10 @@
+/**
+ * Annotated CSS for StaticGraphMarker.java.
+ */
+.icon {
+  position: absolute;
+  top: 0px;
+  width: 11px;
+  height: 50px;
+  z-index: 30;
+}

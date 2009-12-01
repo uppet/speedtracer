@@ -1,0 +1,25 @@
+hintlet_cache_control.js
+
+# This file tests the rule in hintlet_cache_control.js: 
+#   'Resources with a "?" in the URL are not cached by most...'
+# Be careful to only trigger the specific rule you're interested in, since 
+# there are several rules defined in this file.
+
+# Input Record 1 
+# Expected: HINTLET_RECORD
+# Contains a ? in the URL of a cacheable record
+{"data":{"headers":{"Cache-Control":"public","Content-Length":"1461","Content-Type":"image/png","Date":"Mon, 07 Sep 1998 17:43:37 GMT","Expires":"Fri, 01 Jan 2020 00:00:00 GMT"},"resourceId":"0NetworkResourceEvent35","responseCode":200,"url":"http://www.example.com/image.png?param=1"},"time":1,"type":23}
+
+# Input Record 2
+# Expected: HINTLET_RECORD
+# Same as record 1 but with caching set to private.
+#
+# *** Manually test this - it fires an unrelated hintlet
+# {"data":{"headers":{"Cache-Control":"private","Content-Length":"1461","Content-Type":"image/png","Date":"Mon, 07 Sep 1998 17:43:37 GMT","Expires":"Fri, 01 Jan 2020 00:00:00 GMT"},"resourceId":"0NetworkResourceEvent35","responseCode":200,"url":"http://www.example.com/image.png?param=1"},"time":2,"type":23}
+
+# Input Record 3
+# Expected: HINTLET_RECORD
+# Same as record 1 but with a cookie
+#
+# *** Manually test this - it fires an unrelated hintlet
+# {"data":{"headers":{"Set-Cookie":"TESTCOOKIE","Cache-Control":"public","Content-Length":"1461","Content-Type":"image/png","Date":"Mon, 07 Sep 1998 17:43:37 GMT","Expires":"Fri, 01 Jan 2020 00:00:00 GMT"},"resourceId":"0NetworkResourceEvent35","responseCode":200,"url":"http://www.example.com/image.png?param=1"},"time":3,"type":23}

@@ -1,0 +1,50 @@
+<!--
+  TODO(knorton): Add native builds.
+  -->
+<project name="speedtracer" default="build" basedir=".">
+  <!-- Command line options -->
+  <property name="config" value="Release" />
+  <!-- Specify client.pem as the Chrome crx private key file -->
+  <!-- Specify remote.browser to configure remote unit testing target -->
+  <!-- Specify moniker to change the name of the output crx file and intermediate dirs -->
+
+  <!-- Derived properties -->
+  <property name="speedtracer.destdir" location="${config}" />
+  <!-- Convert client.pem to a location so it will be relative to this
+       directory. -->
+  <property name="speedtracer.client.pem.path" location="${client.pem}" />
+
+  <property name="speedtracer.stools.destdir" location="${speedtracer.destdir}/obj/stools" />
+
+  <target name="stools.build">
+    <!-- inherits: speedtracer.stools.destdir -->
+    <ant dir="stools" target="build" />
+  </target>
+
+  <target name="get-revision-info" depends="stools.build">
+    <taskdef name="svnrev" classname="com.google.speedtracer.ant.SvnRevision"
+        classpath="third_party/svnkit/svnkit.jar; ${speedtracer.stools.destdir}" />
+    <svnrev property="speedtracer.revision" />
+  </target>
+
+  <target name="build" depends="get-revision-info">
+    <!-- version-info.txt is needed by the master to determine the
+         revision being built. -->
+    <condition property="speedtracer.suffix" value="unknown">
+      <equals arg1="${speedtracer.revision}" arg2="0" />
+    </condition>
+    <property name="speedtracer.suffix" value="r${speedtracer.revision}" />
+    <echo message="${speedtracer.suffix}" file="${speedtracer.destdir}/version-info.txt" />
+
+    <!-- inherits: config, speedtracer.destdir, speedtracer.revision -->
+    <ant dir="client" target="build" />
+  </target>
+
+  <target name="test" depends="build">
+    <ant dir="client" target="test" />
+  </target>
+
+  <target name="clean">
+    <delete dir="${speedtracer.destdir}" failonerror="false" />
+  </target>
+</project>

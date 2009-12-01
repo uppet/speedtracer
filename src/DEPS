@@ -1,0 +1,20 @@
+deps = {
+  "src/third_party/ant" : "/deps/ant",
+
+  "src/third_party/antlib" : "/deps/antlib",
+
+  "src/third_party/junit" : "/deps/junit",
+
+  "src/third_party/svnkit" : "/deps/svnkit",
+}
+
+deps_os = {
+  "win" : {
+    "src/third_party/gwt" : "/deps/gwt-windows",
+    "src/third_party/third_party/python_24": "http://src.chromium.org/svn/trunk/deps/third_party/python_24@22967",
+  },
+  "mac" : {
+    "src/third_party/gwt" : "/deps/gwt-mac",
+  },
+}
+

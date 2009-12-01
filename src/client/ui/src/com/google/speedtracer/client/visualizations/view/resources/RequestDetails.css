@@ -1,0 +1,46 @@
+/**
+ * Annotated CSS for RequestDetails.java.
+ */
+@def hintletTreeMargin 10px;
+@def detailsTableWidth 490px;
+ 
+.details {
+  border-top: 1px solid #222;
+  border-bottom: 1px solid #222;
+  border-right: 1px solid #222;
+  left: 0;
+  right: 0;
+  height: 0;
+  display: none;
+  padding-left: 15px;
+  padding-right: 15px;
+  padding-bottom: 15px;
+  background: #fff;
+  font-size: 8pt;
+}
+
+.details h2 {
+  margin-left: 0;
+  margin-bottom: 0;
+  margin-top: 5px;
+}
+		
+.details table {
+  border-top: 1px solid #333;
+  border-left: 1px solid #333;
+  table-layout: fixed;
+  width: detailsTableWidth;
+}
+
+.details td {
+  border-right: 1px solid #333;
+  border-bottom: 1px solid #333;
+}
+
+.hintletTreeWrapper {
+  margin-top: hintletTreeMargin;
+  margin-bottom: hintletTreeMargin;
+  width: detailsTableWidth;
+  word-wrap: break-word;
+  display: inline-block;
+}

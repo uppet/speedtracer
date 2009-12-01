@@ -1,0 +1,20 @@
+<project name="stools" default="build" basedir=".">
+  <!-- Default values are overridden by ../build.xml -->
+  <property name="config" value="Release" />
+  <property name="speedtracer.destdir" location="src/${config}" />
+  <property name="stools.destdir" location="${speedtracer.destdir}/obj/stools" />
+
+  <target name="stools.init">
+    <mkdir dir="${stools.destdir}" />
+  </target>
+
+  <target name="build" depends="stools.init">
+    <javac srcdir="src/java"
+      destdir="${stools.destdir}"
+      classpath="../third_party/svnkit/svnkit.jar" />
+  </target>
+
+  <target name="clean">
+    <delete dir="${stools.destdir}" />
+  </target>
+</project>
