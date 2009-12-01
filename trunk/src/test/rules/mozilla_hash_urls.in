@@ -1,0 +1,52 @@
+hintlet_mozilla_hash.js
+
+# 3 strings that collide in the hash: AwNTc3NQ AwNTc3OA AwODc3NQ
+#
+# Input Record 1
+# Expected: none
+# Just a plain jane URL
+{"data":{"url":"http://example.com/index.css","responseCode":200,"headers":{"Content-Type":"text/css"}},"time":1,"type":23}
+
+# Input Record 2
+# Expected: none
+# This one sets up record 3 for a collision
+{"data":{"url":"AwNTc3NQ","responseCode":200,"headers":{"Content-Type":"text/css"}},"time":2,"type":23}
+
+# Input Record 3
+# Expected: HINTLET RECORD
+# Collides with record 2
+{"data":{"url":"AwNTc3OA","responseCode":200,"headers":{"Content-Type":"text/css"}},"time":3,"type":23}
+
+# Input Record 4
+# Expected: none
+# This repeat of the same URL should not cause a hintlet
+{"data":{"url":"AwNTc3OA","responseCode":200,"headers":{"Content-Type":"text/css"}},"time":4,"type":23}
+
+# Input Record 5
+# A page load of a new URL should clear the hash table
+{"data":{"url":"http://example.com/index2.css","responseCode":200,"headers":{"Content-Type":"text/css"}},"time":5,"type":16}
+
+# Input Record 6
+# Expected: None.
+# Collides with 2 & 3, but this is a new page, so the state is cleared.
+{"data":{"url":"AwODc3NQ","responseCode":200,"headers":{"Content-Type":"text/css"}},"time":6,"type":23}
+
+# Input Record 7
+# Expected: HINTLET RECORD
+# This one sets up record 6 for a collision
+{"data":{"url":"AwNTc3NQ","responseCode":200,"headers":{"Content-Type":"text/css"}},"time":7,"type":23}
+
+# Input Record 8
+# Expected: none
+# Collides with record 6 & 7, but is not a cacheable resource type
+{"data":{"url":"AwNTc3OA","responseCode":200,"headers":{"Content-Type":"text/html"}},"time":8,"type":23}
+
+# Input Record 9
+# Expected: none
+# Collides with record 6 & 7, but is not a cacheable response code
+{"data":{"url":"AwNTc3OA","responseCode":404,"headers":{"Content-Type":"text/css"}},"time":8,"type":23}
+
+# Input Record 10
+# Expected: HINTLET RECORD
+# Collides with record 6 & 7
+{"data":{"url":"AwNTc3OA","responseCode":200,"headers":{"Content-Type":"text/css"}},"time":8,"type":23}

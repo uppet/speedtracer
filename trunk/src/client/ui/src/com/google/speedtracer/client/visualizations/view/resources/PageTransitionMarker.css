@@ -1,0 +1,11 @@
+/**
+ * Annotated CSS for PageTransitionMarker.java.
+ */
+.icon {
+  position: absolute;
+  top: 0px;
+  width: 11px;
+  height: 50px;
+  z-index: 30;
+  cursor: pointer;
+}
