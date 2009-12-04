@@ -186,6 +186,9 @@ public class DevToolsDataInstance extends DataInstance {
       Unload: function() {
         proxy.@com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy::baseTime = -1;
         proxy.@com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy::disconnect()();
+        // Remove the connection back to the monitor's model in order to prevent
+        // a memory leak.
+        this._callback = null;
       }
     };
     // Initialize the sequence number count to 0
