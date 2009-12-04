@@ -32,7 +32,7 @@ public class PluginModel implements Model {
    * TODO(jaimeyap): Temporarily disable adding the plugin info to the
    * manifest until we have working cross platform plugin.
    */
-  // @ManifestInfo(path = "plugins/npapu.dll", isPublic = false)
+  // @ManifestInfo(path = "plugins/npspeedtracer.dll", isPublic = false)
   private static class SpeedTracerPlugin { //extends Plugin {
   }
 
