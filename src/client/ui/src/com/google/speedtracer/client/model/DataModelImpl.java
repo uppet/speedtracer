@@ -16,11 +16,8 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.chrome.crx.client.Tabs;
-import com.google.gwt.events.client.Event;
-import com.google.gwt.events.client.EventListener;
 import com.google.gwt.user.client.Window;
 import com.google.speedtracer.client.util.JSOArray;
-import com.google.speedtracer.client.util.dom.WindowExt;
 
 /**
  * Getters for getting all Models which provide events to drive UI.
@@ -32,12 +29,6 @@ public class DataModelImpl extends DataModel {
   @Override
   protected void bind(TabDescription tabDescription,
       final DataInstance dataInstance) {
-    // hook unload handler
-    WindowExt.get().addUnloadListener(new EventListener() {
-      public void handleEvent(Event event) {
-        dataInstance.<DataInstance> cast().unload();
-      }
-    });
     dataInstance.<DataInstance> cast().load(this);
   }
 

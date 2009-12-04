@@ -236,7 +236,6 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
   public void onChannelClosed(Client channel) {
     pageStates.clear();
     model.clear();
-    Document.get().getBody().setInnerHTML("");
   }
 
   public void onChannelConnected(Client channel) {

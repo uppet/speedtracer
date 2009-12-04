@@ -55,7 +55,7 @@ import java.util.HashMap;
     description = "Get insight into the performance of your web applications.",
     version = "0.5",
     permissions = {"tabs"},
-    updateUrl = "http://clients2.google.com/service/update2/crx",
+    updateUrl = "http://dl.google.com/gwt/speedtracer/updates.xml",
     icons = {"resources/icon16.png",
              "resources/icon32.png",
              "resources/icon48.png",
@@ -84,8 +84,8 @@ public abstract class BackgroundPage extends Extension {
       BrowserConnectionState browserConnection = browserConnectionMap.get(browserId);
       assert (browserConnection != null);
 
-      TabModel tabModel = getOrCreateTabModel(browserConnection, tab.getId(),
-          dataInstance);
+      TabModel tabModel = getOrCreateTabModel(browserConnection, tab.getId());
+      tabModel.dataInstance = dataInstance;
       tabModel.tabDescription = tab;
       openMonitor(browserId, tab.getId(), tabModel);
     }
@@ -124,8 +124,7 @@ public abstract class BackgroundPage extends Extension {
         return;
       }
 
-      TabModel tabModel = getOrCreateTabModel(browserConnection, tabId,
-          DevToolsDataInstance.create(tabId));
+      TabModel tabModel = getOrCreateTabModel(browserConnection, tabId);
 
       // Update the URL if we have a tabDescription already.
       if (tabModel.tabDescription != null) {
@@ -137,21 +136,22 @@ public abstract class BackgroundPage extends Extension {
 
       // We want to either open the monitor or resume monitoring.
       if (tabModel.currentIcon == browserAction.mtIcon()) {
-        // We want to start monitoring. Have we already provisioned a
-        // DataInstance?
-        if (tabModel.dataInstance != null) {
-          if (tabModel.monitorClosed) {
-            // Open the Monitor UI.
-            openMonitor(CHROME_BROWSER_ID, tabId, tabModel);
-          } else {
-            // If this is the case then restart monitoring instead of starting
-            // over.
-            tabModel.dataInstance.<DataInstance> cast().resumeMonitoring(tabId);
-            setBrowserActionIcon(tabId, browserAction.mtIconActive(), tabModel);
-            tabModel.channel.sendMessage(RecordingDataMessage.TYPE,
-                RecordingDataMessage.create(true));
-          }
+        if (tabModel.dataInstance == null) {
+          tabModel.dataInstance = DevToolsDataInstance.create(tabId);
         }
+
+        if (tabModel.monitorClosed) {
+          // Open the Monitor UI.
+          openMonitor(CHROME_BROWSER_ID, tabId, tabModel);
+        } else {
+          // If this is the case then restart monitoring instead of starting
+          // over.
+          tabModel.dataInstance.<DataInstance> cast().resumeMonitoring(tabId);
+          setBrowserActionIcon(tabId, browserAction.mtIconActive(), tabModel);
+          tabModel.channel.sendMessage(RecordingDataMessage.TYPE,
+              RecordingDataMessage.create(true));
+        }
+
         return;
       }
 
@@ -172,14 +172,13 @@ public abstract class BackgroundPage extends Extension {
    */
   private static class TabModel {
     WindowChannel.Client channel = null;
-    final DataInstance dataInstance;
+    DataInstance dataInstance;
     boolean monitorClosed = true;
     TabDescription tabDescription = null;
     Icon currentIcon;
 
-    TabModel(DataInstance dataInstance, Icon icon) {
+    TabModel(Icon icon) {
       this.currentIcon = icon;
-      this.dataInstance = dataInstance;
     }
   }
 
@@ -225,8 +224,8 @@ public abstract class BackgroundPage extends Extension {
 
               // In situation where we open a file in a tab that was previously
               // used to open a file... we dont care. Overwrite it.
-              final TabModel tabModel = new TabModel(
-                  LoadFileDataInstance.create(), browserAction.mtIcon());
+              final TabModel tabModel = new TabModel(browserAction.mtIcon());
+              tabModel.dataInstance = LoadFileDataInstance.create();
               int tabId = port.getTab().getId();
               browserConn.tabMap.put(tabId, tabModel);
 
@@ -258,11 +257,10 @@ public abstract class BackgroundPage extends Extension {
    * the specified DataInstance.
    */
   private TabModel getOrCreateTabModel(
-      BrowserConnectionState browserConnection, int tabId,
-      DataInstance dataInstance) {
+      BrowserConnectionState browserConnection, int tabId) {
     TabModel tabModel = browserConnection.tabMap.get(tabId);
     if (tabModel == null) {
-      tabModel = new TabModel(dataInstance, browserAction.mtIcon());
+      tabModel = new TabModel(browserAction.mtIcon());
       browserConnection.tabMap.put(tabId, tabModel);
     }
     return tabModel;
@@ -366,34 +364,28 @@ public abstract class BackgroundPage extends Extension {
                   tabModel);
             }
 
-            if (browserId != FILE_BROWSER_ID) {
-              // Hook unload so we can close down and keep track of monitor
-              // state. But only if it is not associated with an opened file.
-              makeUnloadWork(request.getMonitorWindow());
-              request.getMonitorWindow().addUnloadListener(new EventListener() {
-                public void handleEvent(Event event) {
-                  assert (browserConnection != null);
-                  TabModel tabModel = browserConnection.tabMap.get(tabId);
-                  channel.close();
-                  tabModel.channel = null;
-                  tabModel.monitorClosed = true;
-                  tabModel.dataInstance.<DataInstance> cast().unload();
-                  setBrowserActionIcon(tabId, browserAction.mtIcon(), tabModel);
-                }
-              });
-            }
+            // Hook unload so we can close down and keep track of monitor
+            // state.
+            request.getMonitorWindow().addUnloadListener(new EventListener() {
+              public void handleEvent(Event event) {
+                assert (browserConnection != null);
+                TabModel tabModel = browserConnection.tabMap.get(tabId);
+                channel.close();
+                tabModel.channel = null;
+                tabModel.monitorClosed = true;
+                tabModel.dataInstance.<DataInstance> cast().unload();
+                tabModel.dataInstance = null;
+                setBrowserActionIcon(tabId, browserAction.mtIcon(), tabModel);
+                browserConnection.tabMap.remove(tabModel);
+              }
+            });
           }
         });
       }
 
     });
   }
-
-  // I dont know why I need this. But I do or else unload no longer fires.
-  private native void makeUnloadWork(WindowExt wind) /*-{
-    wind.onunload = function(evt) {};
-  }-*/;
-
+  
   /**
    * Opens the monitor UI for a given tab, iff it is not already open.
    */
