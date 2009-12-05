@@ -51,7 +51,7 @@ import java.util.HashMap;
 /**
  * The Chrome extension background page script.
  */
-@Extension.ManifestInfo(name = "Speed Tracer",
+@Extension.ManifestInfo(name = "Speed Tracer (by Google)",
     description = "Get insight into the performance of your web applications.",
     version = "0.5",
     permissions = {"tabs"},
