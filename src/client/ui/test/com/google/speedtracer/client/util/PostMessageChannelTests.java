@@ -28,6 +28,8 @@ import com.google.gwt.junit.client.GWTTestCase;
  * Tests {@link PostMessageChannel}.
  */
 public class PostMessageChannelTests extends GWTTestCase {
+  private static final int TEST_FINISH_DELAY = 30000;
+
   private static class EchoUntilDoneResponseListener implements
       ResponseListener {
     public void onMessageReceived(PostMessageChannel channel, Message message) {
@@ -89,7 +91,7 @@ public class PostMessageChannelTests extends GWTTestCase {
       }
     });
 
-    this.delayTestFinish(1000);
+    this.delayTestFinish(TEST_FINISH_DELAY);
   }
 
   public void testResponderEcho() {
@@ -117,6 +119,6 @@ public class PostMessageChannelTests extends GWTTestCase {
       }
     });
 
-    delayTestFinish(1000);
+    delayTestFinish(TEST_FINISH_DELAY);
   }
 }
