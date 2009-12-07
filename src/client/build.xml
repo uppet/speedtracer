@@ -90,7 +90,7 @@
     <!-- Now create a zip of the extension directory, with the root being
       inside the extensions directory -->
     <zip basedir="${speedtracer.ui.destdir}"
-        destfile="${speedtracer.destdir}/${moniker}_r${speedtracer.revision}.zip" /> 
+        destfile="${speedtracer.destdir}/${moniker}.zip" /> 
   </target>
 
   <target name="build" depends="speedtracer.client.build" />
