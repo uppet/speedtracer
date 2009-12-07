@@ -72,6 +72,25 @@
     </condition>
     <fail message="${moniker}.crx was not produced."
         unless="speedtracer.client.success" />
+
+    <antcall target="speedtracer.client.zip" />
+  </target>
+
+  <target name="speedtracer.client.zip">
+    <!-- Copy either the passed in client.pem, or the generated one, into 
+      the UI output dir (the extension root dir) and rename it to 'key.pem' -->
+    <condition property="key.pem"
+        value="${speedtracer.client.pem.path}"
+        else="${speedtracer.destdir}/${moniker}.pem">
+      <isset property="client.pem" />
+    </condition>
+    <copy file="${key.pem}" tofile="${speedtracer.ui.destdir}/key.pem"
+        overwrite="true" />
+
+    <!-- Now create a zip of the extension directory, with the root being
+      inside the extensions directory -->
+    <zip basedir="${speedtracer.ui.destdir}"
+        destfile="${speedtracer.destdir}/${moniker}_r${speedtracer.revision}.zip" /> 
   </target>
 
   <target name="build" depends="speedtracer.client.build" />
