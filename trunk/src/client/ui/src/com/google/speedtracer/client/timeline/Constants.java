@@ -27,7 +27,7 @@ public class Constants {
   // the width of the graph title + border
   public static final int GRAPH_PIXEL_OFFSET = GRAPH_HEADER_WIDTH + 1;
   public static final Color GRAPH_STROKE_COLOR = new Color("#175094");
-  public static final String HELP_URL = "http://code.google.com/webtoolkit/tracer/get-started.html";
+  public static final String HELP_URL = "http://code.google.com/webtoolkit/speedtracer/get-started.html";
   public static final Color NETWORK_GRAPH_COLOR = new Color("#6e99b9");
   public static final int PLOT_PRECISION = 200;
   public static final int REFRESH_RATE = 1000;

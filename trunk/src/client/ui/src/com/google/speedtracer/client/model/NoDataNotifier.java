@@ -76,7 +76,7 @@ public class NoDataNotifier implements DomainObserver {
     slideout.setContentHtml("No data received in "
         + (NO_DATA_TIMEOUT / 1000)
         + " seconds. Chrome must be run with the flag: <br/> '<span style=\"color:green\">--enable-extension-timeline-api</span>'."
-        + "<br/> See <a href='" + Constants.HELP_URL
+        + "<br/> See <a target='_blank' href='" + Constants.HELP_URL
         + "'>getting started</a> for more details.");
     slideout.show();
   }
