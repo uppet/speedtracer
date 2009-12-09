@@ -10,5 +10,10 @@ Close all instances of chrome before running the shortcut you
 created. (If you are using Microsoft Windows, check your task manager to be sure you dont have a zombie chrome 
 process hanging around). If even one of them is still up, it will fork a 
 chrome window from the existing instance of the chrome browser. 
- 
 
+
+== When will Speed Tracer for the Mac be ready? ==
+
+Preliminary testing shows that Speed Tracer works fine on the Mac, but extensions were temporarily disabled in the Mac dev channel release near the time of the Speed Tracer launch.  
+
+We will be sure to include Mac specific instructions for passing in the --enable-extensions-timeline-api flag when extensions are re-enabled.
