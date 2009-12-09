@@ -1,0 +1,14 @@
+#summary Answers to some frequently asked questions
+
+= Installation =
+
+== Why am I still getting the warning "no data recieved"?  I already added the --enable-extensions-timeline-api flag.==
+
+First, you must be sure your version of chrome is recent enough (version 4.0.249.30 or later should word)
+
+Close all instances of chrome before running the shortcut you 
+created. (If you are using Microsoft Windows, check your task manager to be sure you dont have a zombie chrome 
+process hanging around). If even one of them is still up, it will fork a 
+chrome window from the existing instance of the chrome browser. 
+ 
+
