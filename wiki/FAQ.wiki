@@ -2,7 +2,7 @@
 
 = Installation =
 
-== Why am I still getting the warning "no data recieved"?  I already added the --enable-extensions-timeline-api flag.==
+== Why am I still getting the warning "no data recieved"?  I already added the --enable-extension-timeline-api flag.==
 
 First, you must be sure your version of chrome is recent enough (version 4.0.249.30 or later should word)
 
@@ -11,9 +11,18 @@ created. (If you are using Microsoft Windows, check your task manager to be sure
 process hanging around). If even one of them is still up, it will fork a 
 chrome window from the existing instance of the chrome browser. 
 
+== I added the --enable-extension-timeline-api flag and now Chrome won't start. ==
+
+On Microsoft Windows, if there is a problem in the target field of the shortcut properties, you will get an error dialog with the title, "Problem with
+Shortcut."  If the path to Chrome is encased in double quotes, make sure that the --enalbe-extension-timeline-api flag is outside the quotes similar to the following example:
+
+{{{
+   "C:\Documents and Settings\Default\Local Settings\Application Data\Google\Chrome\Application\chrome.exe" --enable-extension-timeline-api
+}}}
+
 
 == When will Speed Tracer for the Mac be ready? ==
 
-Preliminary testing shows that Speed Tracer works fine on the Mac, but extensions were temporarily disabled in the Mac dev channel release near the time of the Speed Tracer launch.  
+Preliminary testing shows that Speed Tracer works fine on the Mac, but Google Chrome extensions were temporarily disabled in the Mac dev channel release near the time of the Speed Tracer launch.
 
-We will be sure to include Mac specific instructions for passing in the --enable-extensions-timeline-api flag when extensions are re-enabled.
+We will be sure to include Mac specific instructions for passing in the --enable-extensions-timeline-api flag when extensions are re-enabled for Mac.
