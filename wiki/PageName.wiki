@@ -1,0 +1,1 @@
+SpeedTracer is a Google Chrome extension and can be downloaded from the [http://chrome.google.com/extensions/ Chrome Extensions Gallery].  See our [http://code.google.com/webtoolkit/speedtracer/get-started.html Getting Started] page.
