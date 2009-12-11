@@ -19,7 +19,7 @@ Finally, if you are building on Microsoft Windows, make sure you have [http://cy
 {{{
 $ mkdir speedtracer-client
 }}}
-Create a root directory to hold the project source and all dependencies.  Note: Please do not create this directory on a path that contains a space.
+Create a root directory to hold the project source and all dependencies.  Note: Do not create this directory on a path that contains a space.
 
 {{{
 $ cd speedtracer-client
@@ -29,7 +29,7 @@ You can probably figure out what this one does.
 {{{
 $ gclient config http://speedtracer.googlecode.com/svn/trunk/src
 }}}
-Change the URL to read 'https://' if you are a project member and want to commit changes.
+If you are a project member and want to commit changes, edit the resulting '.gclient' file and modify the URL to read 'https://'.
 
 {{{
 $ gclient sync
