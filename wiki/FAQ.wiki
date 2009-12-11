@@ -1,6 +1,6 @@
 #summary Answers to some frequently asked questions
 
-== Why am I still getting the warning "no data recieved"?  I already added the --enable-extension-timeline-api flag.==
+== Why am I still getting the warning "No data received in 6 seconds. Chrome must be run with the flag..."?  I already added the --enable-extension-timeline-api flag.==
 
 First, you must be sure your version of chrome is recent enough (version 4.0.249.30 or later should word)
 
