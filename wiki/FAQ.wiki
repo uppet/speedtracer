@@ -1,7 +1,5 @@
 #summary Answers to some frequently asked questions
 
-= Installation =
-
 == Why am I still getting the warning "no data recieved"?  I already added the --enable-extension-timeline-api flag.==
 
 First, you must be sure your version of chrome is recent enough (version 4.0.249.30 or later should word)
@@ -26,3 +24,8 @@ Shortcut."  If the path to Chrome is encased in double quotes, make sure that th
 Preliminary testing shows that Speed Tracer works fine on the Mac, but Google Chrome extensions were temporarily disabled in the Mac dev channel release near the time of the Speed Tracer launch.
 
 We will be sure to include Mac specific instructions for passing in the --enable-extensions-timeline-api flag when extensions are re-enabled for Mac.
+
+
+== Why can't I use the Chrome Devtools Inspector when Speed Tracer is up? ==
+
+This is a side effect of how we reach in to collect our instrumentation. We are working to fix this, but for now, all you have to do is close the Speed Tracer window, and you can then Inspect the target page just like you did before.
