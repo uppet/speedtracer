@@ -91,9 +91,6 @@
       inside the extensions directory -->
     <zip basedir="${speedtracer.ui.destdir}"
         destfile="${speedtracer.destdir}/${moniker}.zip" /> 
-
-    <!-- Remove the copied in key.pem -->
-    <delete file="${speedtracer.ui.destdir}/key.pem" failonerror="false" />
   </target>
 
   <target name="build" depends="speedtracer.client.build" />
