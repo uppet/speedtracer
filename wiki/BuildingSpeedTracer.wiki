@@ -1,0 +1,55 @@
+#summary How to build Speed Tracer from source
+
+=Getting Started with the Speed Tracer code=
+
+This page describes how to build your own copy of Speed Tracer.
+
+==Prerequisites==
+
+First, grab and install the Depot tools from [http://dev.chromium.org/].  These contain 'gclient' and a copy of subversion needed to bootstrap your build environment.
+
+In addition, you'll need 
+ * An installation of [http://ant.apache.org/ ant].
+ * The [http://java.sun.com Java Runtime Environment (JRE)] (version >= 1.5)
+
+Finally, if you are building on Microsoft Windows, make sure you have [http://cygwin.com/ cygwin] installed with the subversion package to perform the steps below as written.
+
+==Building Speed Tracer for the first time==
+
+{{{
+$ mkdir speedtracer-client
+}}}
+Create a root directory to hold the project source and all dependencies.  Note: Please do not create this directory on a path that contains a space.
+
+{{{
+$ cd speedtracer-client
+}}}
+You can probably figure out what this one does.
+
+{{{
+$ gclient config http://speedtracer.googlecode.com/svn/trunk/src
+}}}
+Change the URL to read 'https://' if you are a project member and want to commit changes.
+
+{{{
+$ gclient sync
+}}}
+This step pulls in Speed Tracer and its dependencies.  If you run into problems on Windows, you might want to run this from a regular command window instead of  a Cygwin bash shell.
+
+{{{
+$ cd src/
+$ ant
+}}}
+This will build everything you need.  By default, ant is configured to create a release build and a .crx file will be created in the src/Release directory.
+
+To build a Debug build, all you need to do is set the 'config' property in Ant:
+
+{{{
+  ant -Dconfig=Debug
+}}}
+
+==Debugging the UI==
+
+To develop the Monitor, developers typically use GWT's development mode against the MonitorDebug.gwt.xml module.  This setup is configured to bypass the Chrome Extension and loads up some pre-defined data (See MockModelGenerators.java)  It also turns on a debugging log window and sets the CSS styling to output human readable styles.
+
+You can run the Monitor in GWT Development mode in either Safari or Chrome.  Because Speed Tracer is targeted at WebKit browsers and takes advantage of some HTML 5 and CSS 3 features that may not be present in Internet Explorer and Firefox, we do not recommend using those browsers for Speed Tracer development
