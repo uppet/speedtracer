@@ -1,0 +1,31 @@
+hintlet_cache_control.js
+
+# This file tests the rule in hintlet_cache_control.js:
+#   'The following resources specify a "Vary" header that...'
+# Be careful to only trigger the specific rule you're interested in, 
+# since there are several rules defined in this file.
+
+# Input Record 1
+# Expcted: HINTLET RECORD
+# Contains a Vary tag
+{"data":{"headers":{"Vary":"Random Gibberish","Cache-Control":"public","Content-Length":"35","Content-Type":"image/gif","Date":"Mon, 07 Sep 1998 19:50:30 GMT","Expires":"Wed, 17 Sep 2020 21:32:10 GMT","Last-Modified":"Fri, 04 Sep 1998 11:43:00 GMT"},"resourceId":"0NetworkResourceEvent36","responseCode":200,"url":"http://www.example.com/dummy.gif"},"time":1,"type":23}
+
+# Input Record 2
+# Expcted: none
+# Same as record 1, but contains a Vary tag but with IE acceptable values
+{"data":{"headers":{"Vary":"Accept-Encoding","Cache-Control":"public","Content-Length":"35","Content-Type":"image/gif","Date":"Mon, 07 Sep 1998 19:50:30 GMT","Expires":"Wed, 17 Sep 2020 21:32:10 GMT","Last-Modified":"Fri, 04 Sep 1998 11:43:00 GMT"},"resourceId":"0NetworkResourceEvent36","responseCode":200,"url":"http://www.example.com/dummy.gif"},"time":2,"type":23}
+
+# Input Record 3
+# Expcted: HINTLET_RECORD
+# Same as record 1, but contains a Vary tag but with IE some acceptable values and some not
+{"data":{"headers":{"Vary":"Accept-Encoding, BOGUS","Cache-Control":"public","Content-Length":"35","Content-Type":"image/gif","Date":"Mon, 07 Sep 1998 19:50:30 GMT","Expires":"Wed, 17 Sep 2020 21:32:10 GMT","Last-Modified":"Fri, 04 Sep 1998 11:43:00 GMT"},"resourceId":"0NetworkResourceEvent36","responseCode":200,"url":"http://www.example.com/dummy.gif"},"time":3,"type":23}
+
+# Input Record 4
+# Expcted: None
+# Expires header set in the past
+{"data":{"headers":{"Vary":"Accept-Encoding","Cache-Control":"public","Content-Length":"35","Content-Type":"image/gif","Date":"Mon, 07 Sep 1998 19:50:30 GMT","Expires":"Wed, 17 Sep 1975 21:32:10 GMT","Last-Modified":"Fri, 04 Sep 1998 11:43:00 GMT"},"resourceId":"0NetworkResourceEvent36","responseCode":200,"url":"http://www.example.com/dummy.gif"},"time":4,"type":23}
+
+# Input Record 5
+# Expcted: HINTLET RECORD
+# Cache-control set not to cache
+{"data":{"headers":{"Vary":"Random Gibberish","Cache-Control":"private, no-cache","Content-Length":"35","Content-Type":"image/gif","Date":"Mon, 07 Sep 1998 19:50:30 GMT","Expires":"Wed, 17 Sep 2020 21:32:10 GMT","Last-Modified":"Fri, 04 Sep 1998 11:43:00 GMT"},"resourceId":"0NetworkResourceEvent36","responseCode":200,"url":"http://www.example.com/dummy.gif"},"time":5,"type":23}

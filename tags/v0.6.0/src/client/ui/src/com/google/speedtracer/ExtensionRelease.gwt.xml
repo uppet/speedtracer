@@ -1,0 +1,7 @@
+<!DOCTYPE document SYSTEM
+    "http://google-web-toolkit.googlecode.com/svn/releases/1.7/distro-source/core/src/gwt-module.dtd">
+<module rename-to="extension">
+  <inherits name="com.google.speedtracer.Extension" />
+  <set-property name='speedtracer.use_mock_model' value='nope' />
+  <set-property name='speedtracer.show_logging_ui' value='nope' />
+</module>

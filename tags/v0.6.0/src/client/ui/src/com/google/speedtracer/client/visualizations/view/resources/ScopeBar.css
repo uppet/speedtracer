@@ -1,0 +1,21 @@
+/**
+ * Annotated CSS for ScopeBar.java
+ */
+
+.scopeBar {
+  display: inline-block;
+}
+
+.scopeBarButton {
+  padding-left: 2px;
+  padding-right: 2px;
+  margin-left: 1px;
+  margin-right: 1px;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.scopeBarButtonSelected {
+  border: 1px solid #333;
+  \-webkit-border-radius: 3px; 	
+}

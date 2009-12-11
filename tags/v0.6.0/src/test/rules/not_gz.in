@@ -1,0 +1,36 @@
+hintlet_not_gz.js
+
+# Input record 1
+# Expected: HINTLET RECORD
+# .html file
+{"data":{"headers":{"Accept-Ranges":"bytes","Content-Length":"6436","Content-Type":"text/html","Date":"Fri, 04 Sep 1998 21:09:13 GMT","Last-Modified":"Sat, 09 Aug 2008 15:36:22 GMT","Server":"Apache/1.3.41 (Unix)"},"resourceId":"0NetworkResourceEvent31","responseCode":200,"url":"http://example.org/foo.html"},"time":5630.783999998122,"type":23}
+
+# Input record 2
+# Expected: HINTLET RECORD
+# .css file
+{"data":{"headers":{"Accept-Ranges":"bytes","Content-Length":"9875","Content-Type":"text/css","Date":"Fri, 04 Sep 1998 21:09:13 GMT","Last-Modified":"Sat, 09 Aug 2008 15:36:22 GMT","Server":"Apache/1.3.41 (Unix)"},"resourceId":"0NetworkResourceEvent31","responseCode":200,"url":"http://example.org/foo.css"},"time":5630.783999998122,"type":23}
+
+# Input record 3
+# Expected: HINTLET RECORD
+# Javascript
+{"data":{"headers":{"Accept-Ranges":"bytes","Content-Length":"9875","Content-Type":"text/javascript","Date":"Fri, 04 Sep 1998 21:09:13 GMT","Last-Modified":"Sat, 09 Aug 2008 15:36:22 GMT","Server":"Apache/1.3.41 (Unix)"},"resourceId":"0NetworkResourceEvent31","responseCode":200,"url":"http://example.org/foo.js"},"time":5630.783999998122,"type":23}
+
+# Input record 4
+# Expected: none
+# image
+{"data":{"headers":{"Accept-Ranges":"bytes","Content-Length":"9875","Content-Type":"image.png","Date":"Fri, 04 Sep 1998 21:09:13 GMT","Last-Modified":"Sat, 09 Aug 2008 15:36:22 GMT","Server":"Apache/1.3.41 (Unix)"},"resourceId":"0NetworkResourceEvent31","responseCode":200,"url":"http://example.org/foo.png"},"time":5630.783999998122,"type":23}
+
+# Input record 5
+# Expected: none
+# too small
+{"data":{"headers":{"Accept-Ranges":"bytes","Content-Length":"6","Content-Type":"text/html","Date":"Fri, 04 Sep 1998 21:09:13 GMT","Last-Modified":"Sat, 09 Aug 2008 15:36:22 GMT","Server":"Apache/1.3.41 (Unix)"},"resourceId":"0NetworkResourceEvent31","responseCode":200,"url":"http://example.org/foo.html"},"time":5630.783999998122,"type":23}
+
+# Input record 6
+# Expected: none
+# compressed with gzip
+{"data":{"headers":{"Accept-Ranges":"bytes","Content-Length":"6436","Content-Type":"text/html","Content-Encoding":"gzip","Date":"Fri, 04 Sep 1998 21:09:13 GMT","Last-Modified":"Sat, 09 Aug 2008 15:36:22 GMT","Server":"Apache/1.3.41 (Unix)"},"resourceId":"0NetworkResourceEvent31","responseCode":200,"url":"http://example.org/foo.html"},"time":5630.783999998122,"type":23}
+
+# Input record 7
+# Expected: none
+# compressed with bzip2
+{"data":{"headers":{"Accept-Ranges":"bytes","Content-Length":"6436","Content-Type":"text/html","Content-Encoding":"bzip2","Date":"Fri, 04 Sep 1998 21:09:13 GMT","Last-Modified":"Sat, 09 Aug 2008 15:36:22 GMT","Server":"Apache/1.3.41 (Unix)"},"resourceId":"0NetworkResourceEvent31","responseCode":200,"url":"http://example.org/foo.html"},"time":5630.783999998122,"type":23}

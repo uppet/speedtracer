@@ -1,0 +1,18 @@
+/**
+ * Annotated CSS for DetailViews.java.
+ */
+ @def offsetTop 133px;
+ 
+.detailViews {
+  position: absolute;
+  top: offsetTop;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  border-bottom: 1px solid #222;
+  background: #fff;
+  z-index: 15;
+}
