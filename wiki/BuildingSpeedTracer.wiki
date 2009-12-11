@@ -6,7 +6,7 @@ This page describes how to build your own copy of Speed Tracer.
 
 ==Prerequisites==
 
-First, grab and install the Depot tools from [http://dev.chromium.org/].  These contain 'gclient' and a copy of subversion needed to bootstrap your build environment.
+First, grab and install the <a href="http://www.chromium.org/developers/how-tos/install-gclient">Chromium Depot Tools</a>.  These contain 'gclient' and a copy of subversion needed to bootstrap your build environment.
 
 In addition, you'll need 
  * An installation of [http://ant.apache.org/ ant].
