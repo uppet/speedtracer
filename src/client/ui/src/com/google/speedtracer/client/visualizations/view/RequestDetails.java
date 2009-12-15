@@ -29,6 +29,7 @@ import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.gwt.topspin.ui.client.Div;
 import com.google.gwt.topspin.ui.client.Table;
 import com.google.speedtracer.client.model.NetworkResource;
+import com.google.speedtracer.client.model.NetworkResourceFinished;
 import com.google.speedtracer.client.model.NetworkResource.HeaderMap;
 import com.google.speedtracer.client.model.NetworkResource.HeaderMap.IterationCallBack;
 import com.google.speedtracer.client.util.TimeStampFormatter;
@@ -292,11 +293,12 @@ public class RequestDetails extends Div {
               - info.getStartTime()) + " with an error.";
     }
 
+    addRowPair(summaryTable, "Total Bytes", getContentLengthString(info));
     addRowPair(summaryTable, "Request Timing", requestTiming);
     addRowPair(summaryTable, "Response Timing", responseTiming);
     addRowPair(summaryTable, "Total Timing", totalTiming);
   }
-  
+
   /**
    * When the tree expands, the bottom of the details view slides under the next
    * row. This will adjust the height of the details view to accommodate growth
@@ -305,6 +307,25 @@ public class RequestDetails extends Div {
   private void fixHeightOfParentRow() {
     targetHeight = contentElem.getOffsetHeight();
     getElement().getStyle().setPropertyPx("height", targetHeight);
+  }
+
+  /**
+   * Looks up the content length in bytes and returns the stringified version
+   * for display purposes.
+   * 
+   * @param info The {@link NetworkResource} that contains the info for the
+   *          request.
+   * @return returns the content length as a String.
+   */
+  private String getContentLengthString(NetworkResource info) {
+    NetworkResourceFinished finishedEvent = info.getFinishedEvent();
+
+    if (finishedEvent == null) {
+      return "";
+    }
+
+    int contentLength = finishedEvent.getContentLength();
+    return ((contentLength < 0) ? "" : contentLength + " bytes");
   }
 
   /**

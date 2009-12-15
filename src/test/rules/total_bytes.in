@@ -4,34 +4,34 @@ hintlet_total_bytes.js
 # Expected: none
 # This will load a single network event with 200000 bytes of data.  The minor
 # alarm triggers at 500,000 bytes
-{"data":{"domain":"www.example.com","headers":{"Content-Length":"200000","User-Agent":"Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/530.11 (KHTML, like Gecko) Chrome/2.0.182.0 Safari/530.11","Content-Type":"image/jpeg"},"resourceId":"0NetworkResourceEvent99","url":"http://www.example.com/5608_1_poguepalmpre_75x50.jpg"},"time":14999.004000008106,"type":23}
+{"data":{"contentLength":200000,"resourceId":"0NetworkResourceEvent99"},"time":14999.004000008106,"type":22}
 
 # Input Record 2
 # Expected: none
 # This will load a single network event with 200000 bytes of data.  The minor
 # alarm triggers at 500,000 bytes
-{"data":{"domain":"www.example.com","headers":{"Content-Length":"200000","User-Agent":"Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/530.11 (KHTML, like Gecko) Chrome/2.0.182.0 Safari/530.11","Content-Type":"image/jpeg"},"resourceId":"0NetworkResourceEvent99","url":"http://www.example.com/5608_1_poguepalmpre_75x50.jpg"},"time":14999.004000008106,"type":23}
+{"data":{"contentLength":200000, "resourceId":"0NetworkResourceEvent99"},"time":14999.004000008106,"type":22}
 
 # Input Record 3
 # Expected: HINTLET RECORD
 # This record should put us past the 500,000 byte threshold
-{"data":{"domain":"www.example.com","headers":{"Content-Length":"200000","User-Agent":"Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/530.11 (KHTML, like Gecko) Chrome/2.0.182.0 Safari/530.11","Content-Type":"image/jpeg"},"resourceId":"0NetworkResourceEvent99","url":"http://www.example.com/5608_1_poguepalmpre_75x50.jpg"},"time":14999.004000008106,"type":23}
+{"data":{"contentLength":200000, "resourceId":"0NetworkResourceEvent99"},"time":14999.004000008106,"type":22}
 
 # Input Record 4
 # Expected: none
 # This record should put us at the 1,600,000 bytes.  next Threshold is 
 #  2,000,000 bytes.
-{"data":{"domain":"www.example.com","headers":{"Content-Length":"1000000","User-Agent":"Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/530.11 (KHTML, like Gecko) Chrome/2.0.182.0 Safari/530.11","Content-Type":"image/jpeg"},"resourceId":"0NetworkResourceEvent99","url":"http://www.example.com/5608_1_poguepalmpre_75x50.jpg"},"time":14999.004000008106,"type":23}
+{"data":{"contentLength":1000000, "resourceId":"0NetworkResourceEvent99"},"time":14999.004000008106,"type":22}
 
 # Input Record 5
 # Expected: HINTLET_RECORD
 # This record should put us past the 2,000,000 byte threshold
-{"data":{"domain":"www.example.com","headers":{"Content-Length":"1000000","User-Agent":"Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/530.11 (KHTML, like Gecko) Chrome/2.0.182.0 Safari/530.11","Content-Type":"image/jpeg"},"resourceId":"0NetworkResourceEvent99","url":"http://www.example.com/5608_1_poguepalmpre_75x50.jpg"},"time":14999.004000008106,"type":23}
+{"data":{"contentLength":1000000, "resourceId":"0NetworkResourceEvent99"},"time":14999.004000008106,"type":22}
 
 # Input Record 6
 # Expected: HINTLET_RECORD
 # This record should put us past the 10,000,000 byte threshold
-{"data":{"domain":"www.example.com","headers":{"Content-Length":"60000000","User-Agent":"Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/530.11 (KHTML, like Gecko) Chrome/2.0.182.0 Safari/530.11","Content-Type":"image/jpeg"},"resourceId":"0NetworkResourceEvent99","url":"http://www.example.com/5608_1_poguepalmpre_75x50.jpg"},"time":14999.004000008106,"type":23}
+{"data":{"contentLength":60000000,"resourceId":"0NetworkResourceEvent99"},"time":14999.004000008106,"type":22}
 
 # Input Record 7
 # Expected: none
@@ -41,5 +41,5 @@ hintlet_total_bytes.js
 # Input Record 8
 # Expected: HINTLET_RECORD
 # This record should put us past the 500,000 byte threshold
-{"data":{"domain":"www.example.com","headers":{"Content-Length":"700000","User-Agent":"Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/530.11 (KHTML, like Gecko) Chrome/2.0.182.0 Safari/530.11","Content-Type":"image/jpeg"},"resourceId":"0NetworkResourceEvent99","url":"http://www.example.com/5608_1_poguepalmpre_75x50.jpg"},"time":14999.004000008106,"type":23}
+{"data":{"contentLength":700000,"resourceId":"0NetworkResourceEvent99"},"time":14999.004000008106,"type":22}
 

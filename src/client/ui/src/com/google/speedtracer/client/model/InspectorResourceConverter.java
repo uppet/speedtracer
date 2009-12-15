@@ -83,12 +83,20 @@ public class InspectorResourceConverter {
       return !!this.finished;
     }-*/;
 
+    final native boolean didLengthChange() /*-{
+      return !!this.didLengthChange;
+    }-*/;
+
     final native boolean didResponseChange() /*-{
       return !!this.didResponseChange;
     }-*/;
 
     final native boolean didTimingChange() /*-{
       return !!this.didTimingChange;
+    }-*/;
+
+    final native int getContentLength() /*-{
+      return this.contentLength;
     }-*/;
 
     final native double getEndTime() /*-{
@@ -135,8 +143,12 @@ public class InspectorResourceConverter {
     // The initial resource information.
     final AddResource addResource;
 
+    int contentLength = -1;
+
     int currentState = ADDED_UNSENT;
+
     final int inspectorId;
+
     final String resourceId;
 
     public ResourceStatus(int inspectorId, String resourceId,
@@ -144,6 +156,10 @@ public class InspectorResourceConverter {
       this.inspectorId = inspectorId;
       this.resourceId = resourceId;
       this.addResource = addResource;
+    }
+
+    public void setContentLength(int contentLength) {
+      this.contentLength = contentLength;
     }
   }
 
@@ -220,12 +236,12 @@ public class InspectorResourceConverter {
   private void maybeSendFinish(ResourceStatus resourceStatus,
       UpdateResource update) {
     assert (resourceStatus.currentState == ResourceStatus.SENT_RESPONSE_RECEIVED);
-
-    // TODO(jaimeyap): Verify that these two fields always get set as expected.
+    maybeUpdateContentLength(resourceStatus, update);
     if (update.didCompletionChange() && update.didTimingChange()) {
       if (update.didFail()) {
         NetworkResourceError error = NetworkResourceError.create(
-            resourceStatus.resourceId, normalizeTime(update.getEndTime()));
+            resourceStatus.resourceId, normalizeTime(update.getEndTime()),
+            resourceStatus.contentLength);
         proxy.onEventRecord(error);
         resourceStatus.currentState = ResourceStatus.SENT_ERROR;
         return;
@@ -233,7 +249,8 @@ public class InspectorResourceConverter {
 
       if (update.didFinish()) {
         NetworkResourceFinished finished = NetworkResourceFinished.create(
-            resourceStatus.resourceId, normalizeTime(update.getEndTime()));
+            resourceStatus.resourceId, normalizeTime(update.getEndTime()),
+            resourceStatus.contentLength);
         proxy.onEventRecord(finished);
         resourceStatus.currentState = ResourceStatus.SENT_FINISH;
         return;
@@ -244,7 +261,7 @@ public class InspectorResourceConverter {
   private void maybeSendResponseReceived(ResourceStatus resourceStatus,
       UpdateResource update) {
     assert (resourceStatus.currentState == ResourceStatus.SENT_START);
-
+    maybeUpdateContentLength(resourceStatus, update);
     // TODO(jaimeyap): Verify that these two fields always get set as expected.
     if (update.didResponseChange() && update.didTimingChange()) {
       AddResource add = resourceStatus.addResource;
@@ -263,7 +280,8 @@ public class InspectorResourceConverter {
 
         // Close the resource.
         NetworkResourceFinished finished = NetworkResourceFinished.create(
-            resourceStatus.resourceId, normalizeTime(time));
+            resourceStatus.resourceId, normalizeTime(time),
+            resourceStatus.contentLength);
         proxy.onEventRecord(finished);
 
         redirectCount++;
@@ -271,7 +289,7 @@ public class InspectorResourceConverter {
         // Pretend we are back in start state by shooting off a start and
         // starting over. This type of update smells like an Add because it
         // actually has fields of both.
-        resourceStatus = onAddResource(resourceStatus.inspectorId, update);        
+        resourceStatus = onAddResource(resourceStatus.inspectorId, update);
         maybeSendStart(resourceStatus, update);
 
         // State machine should now be back in a sane state.
@@ -309,7 +327,7 @@ public class InspectorResourceConverter {
   private void maybeSendStart(ResourceStatus resourceStatus,
       UpdateResource update) {
     assert (resourceStatus.currentState == ResourceStatus.ADDED_UNSENT);
-
+    maybeUpdateContentLength(resourceStatus, update);
     if (update.didTimingChange()) {
       AddResource add = resourceStatus.addResource;
       // Updates will always re-send all timings reported so far. Guaranteed to
@@ -323,6 +341,19 @@ public class InspectorResourceConverter {
       proxy.onEventRecord(start);
 
       resourceStatus.currentState = ResourceStatus.SENT_START;
+    }
+  }
+
+  /**
+   * Updates the tracked content length
+   * 
+   * @param status
+   * @param resource
+   */
+  private void maybeUpdateContentLength(ResourceStatus currStatus,
+      UpdateResource resource) {
+    if (resource.didLengthChange()) {
+      currStatus.setContentLength(resource.getContentLength());
     }
   }
 

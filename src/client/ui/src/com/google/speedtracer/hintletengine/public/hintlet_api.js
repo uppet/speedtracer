@@ -269,8 +269,7 @@ hintlet.headerContains = function(headers, targetHeader, targetString) {
  * Returns 'true' if the 'Content-Encoding' header indicates this request 
  * is compressed.
  */
-hintlet.isCompressed = function(dataRecord) {
-  var headers = dataRecord.data.headers;
+hintlet.isCompressed = function(headers) {
   if (!headers) {
     return false;
   }

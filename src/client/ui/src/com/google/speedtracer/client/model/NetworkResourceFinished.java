@@ -22,22 +22,29 @@ package com.google.speedtracer.client.model;
 public class NetworkResourceFinished extends NetworkResourceRecord {
   public static final int TYPE = EventRecordType.NETWORK_RESOURCE_FINISH;
 
-  static NetworkResourceFinished create(String resourceId, double endTime) {
-    NetworkResourceFinished resource = createImpl(resourceId, TYPE, endTime);
+  static NetworkResourceFinished create(String resourceId, double endTime,
+      int contentLength) {
+    NetworkResourceFinished resource = createImpl(resourceId, TYPE, endTime,
+        contentLength);
     return resource;
   }
 
   private static native NetworkResourceFinished createImpl(String id, int type,
-      double endTime) /*-{
+      double endTime, int contentLength) /*-{
     return {
       type: type,
       time: endTime,
       data: {
-        resourceId: id
+        resourceId: id,
+        contentLength: contentLength
       }   
     };
   }-*/;
 
   protected NetworkResourceFinished() {
+  }
+
+  public final int getContentLength() {
+    return getData().getIntProperty("contentLength");
   }
 }

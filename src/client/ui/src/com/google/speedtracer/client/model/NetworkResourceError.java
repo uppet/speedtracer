@@ -22,18 +22,21 @@ package com.google.speedtracer.client.model;
 public class NetworkResourceError extends NetworkResourceRecord {
   public static final int TYPE = EventRecordType.NETWORK_RESOURCE_ERROR;
 
-  static NetworkResourceError create(String resourceId, double endTime) {
-    NetworkResourceError resource = createImpl(resourceId, TYPE, endTime);
+  static NetworkResourceError create(String resourceId, double endTime,
+      int contentLength) {
+    NetworkResourceError resource = createImpl(resourceId, TYPE, endTime,
+        contentLength);
     return resource;
   }
 
   private static native NetworkResourceError createImpl(String id, int type,
-      double endTime) /*-{
+      double endTime, int contentLength) /*-{
     return {
       type: type,
       time: endTime,
       data: {
-        resourceId: id
+        resourceId: id,
+        contentLength: contentLength
       }
     };
   }-*/;

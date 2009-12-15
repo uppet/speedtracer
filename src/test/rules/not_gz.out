@@ -1,3 +1,3 @@
-{"hintletRule":"Uncompressed Resource","timestamp":5630.783999998122,"description":"URL http://example.org/foo.html was not compressed with gzip or bzip2","refRecord":1,"severity":3}
-{"hintletRule":"Uncompressed Resource","timestamp":5630.783999998122,"description":"URL http://example.org/foo.css was not compressed with gzip or bzip2","refRecord":2,"severity":3}
-{"hintletRule":"Uncompressed Resource","timestamp":5630.783999998122,"description":"URL http://example.org/foo.js was not compressed with gzip or bzip2","refRecord":3,"severity":3}
+{"hintletRule":"Uncompressed Resource","timestamp":5630.783999998122,"description":"URL http://example.org/foo.html was not compressed with gzip or bzip2","refRecord":2,"severity":3}
+{"hintletRule":"Uncompressed Resource","timestamp":5630.783999998122,"description":"URL http://example.org/foo.css was not compressed with gzip or bzip2","refRecord":4,"severity":3}
+{"hintletRule":"Uncompressed Resource","timestamp":5630.783999998122,"description":"URL http://example.org/foo.js was not compressed with gzip or bzip2","refRecord":6,"severity":3}

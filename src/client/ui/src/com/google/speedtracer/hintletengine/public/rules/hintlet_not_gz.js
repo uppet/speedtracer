@@ -36,45 +36,71 @@
 //   "sequence" : 123,
 //   "time": 10549.0,
 //   "type": "24"
-//},
+//}
+//
+//  AND NetworkResourceFinish events that indicate contentLength > 150 bytes. 
+//{
+//   "data": {
+//      "resourceId": "1NetworkResourceEvent1",
+//      "contentLength": 200
+//   },
+//   "sequence": 1234,
+//   "time": 10549.0,
+//   "type": "22"
+//}
 
 // Make a namespace for this rule using a closure
 (function() {  // Begin closure
 
 var HINTLET_NAME = "Uncompressed Resource";
 
+// We consider 150 bytes to be the break-even point for using gzip.
+var SIZE_THRESHOLD = 150;
+
+var resourceResponses = {};
+
 hintlet.register(HINTLET_NAME, function(dataRecord){
 
-    if (dataRecord.type != hintlet.types.NETWORK_RESOURCE_RESPONSE) {
+  if (dataRecord.type == hintlet.types.NETWORK_RESOURCE_RESPONSE) {
+    resourceResponses[dataRecord.data.resourceId] = dataRecord;
+  }
+
+  if (dataRecord.type != hintlet.types.NETWORK_RESOURCE_FINISH) {
+    return;
+  }
+  
+  var response = resourceResponses[dataRecord.data.resourceId];
+
+  if (!response) {
+    return;
+  }
+
+  // Don't suggest compressing very small components.
+  var size = dataRecord.data.contentLength;
+  if (size < SIZE_THRESHOLD) {
+    return;
+  }
+
+  var resourceType = hintlet.getResourceType(response);
+  switch (resourceType) {
+    case hintlet.RESOURCE_TYPE_DOCUMENT:
+    case hintlet.RESOURCE_TYPE_STYLESHEET:
+    case hintlet.RESOURCE_TYPE_SCRIPT:
+    case hintlet.RESOURCE_TYPE_SUBDOCUMENT:
+      break;
+    default:
       return;
-    }
+  }
 
-    var headers = dataRecord.data.headers;
-
-    // Don't suggest compressing very small components.
-    // We consider 150 bytes to be the break-even point for using gzip.
-    var size = headers['Content-Length'];
-    if (size < 150) {
-      return;
-    }
-
-    var resourceType = hintlet.getResourceType(dataRecord);
-    switch (resourceType) {
-      case hintlet.RESOURCE_TYPE_DOCUMENT:
-      case hintlet.RESOURCE_TYPE_STYLESHEET:
-      case hintlet.RESOURCE_TYPE_SCRIPT:
-      case hintlet.RESOURCE_TYPE_SUBDOCUMENT:
-        break;
-      default:
-        return;
-    }
-
-    if (!hintlet.isCompressed(dataRecord)) {
-      hintlet.addHint(HINTLET_NAME, dataRecord.time,
-          "URL " + dataRecord.data.url + " was not compressed with gzip or bzip2",
+  if (!hintlet.isCompressed(response.data.headers)) {
+    hintlet.addHint(HINTLET_NAME, dataRecord.time,
+          "URL " + response.data.url + " was not compressed with gzip or bzip2",
           dataRecord.sequence, hintlet.SEVERITY_INFO);
-    }
+  }
+  
+  // We can null the map entry after receiving a finish.
+  delete resourceResponses[dataRecord.data.resourceId];
     
-  }); // End hintlet.register()
+}); // End hintlet.register()
 
 })();  // End closure
