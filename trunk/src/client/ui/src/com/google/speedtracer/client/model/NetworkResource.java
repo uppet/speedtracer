@@ -48,7 +48,7 @@ public class NetworkResource {
      */
     public final native void iterate(IterationCallBack cb) /*-{
       for (var key in this) {
-      cb.@com.google.speedtracer.client.model.NetworkResource.HeaderMap.IterationCallBack::onIteration(Ljava/lang/String;Ljava/lang/String;)(key,this[key]);
+        cb.@com.google.speedtracer.client.model.NetworkResource.HeaderMap.IterationCallBack::onIteration(Ljava/lang/String;Ljava/lang/String;)(key,this[key]);
       }
     }-*/;
 
@@ -75,6 +75,18 @@ public class NetworkResource {
 
   public boolean didError() {
     return errorEvent != null;
+  }
+
+  /**
+   * Returns the WebKit resource load computed content length (can be -1 if not
+   * set). This does not always agree with the response header Content-Length
+   * entry. Both can be set, or only one can be set. Callers should decide how
+   * to display this based on both numbers.
+   * 
+   * @return the content length in bytes that WebKit reported for this resource.
+   */
+  public int getContentLength() {
+    return finishedEvent.getContentLength();
   }
 
   public double getEndTime() {

@@ -550,7 +550,7 @@ public class SluggishnessDetailView extends DetailView {
               Element header = Document.get().createElement("th");
               header.setAttribute("colspan", "2");
               header.setAttribute("align", "left");
-              header.setInnerHTML("Details for "
+              header.setInnerText("Details for "
                   + EventRecordType.typeToDetailedTypeString(e));
               table.getTableHead().appendChild(header);
               hasRow = true;

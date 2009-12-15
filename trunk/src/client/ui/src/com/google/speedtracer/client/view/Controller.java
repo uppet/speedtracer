@@ -265,7 +265,7 @@ public class Controller extends Panel implements DomainObserver,
 
     final Button resetButton = new Button(container);
     resetButton.setStyleName(css.control() + " " + css.resetButton());
-    resetButton.getElement().setAttribute("title", "Discard Data and Reset.");
+    resetButton.getElement().setAttribute("title", "Discard Data and Reset");
     resetButton.addClickListener(new ClickListener() {
       public void onClick(ClickEvent event) {
         doReset();
@@ -440,6 +440,6 @@ public class Controller extends Panel implements DomainObserver,
 
   private void setIsRecordingTitle(boolean isRecording) {
     recordStopButton.getElement().setAttribute("title",
-        isRecording ? "Stop recording data" : "Record data");
+        isRecording ? "Stop Recording Data" : "Record Data");
   }
 }

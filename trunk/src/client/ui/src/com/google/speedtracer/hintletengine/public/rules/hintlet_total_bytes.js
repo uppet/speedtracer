@@ -16,24 +16,15 @@
 
 // Example hintlet that flags lots of bytes downloaded
 
-// We are looking for NetworkResourceResponse events 
+// We are looking for NetworkResourceFinish events 
 //{
 //   "data": {
-//      "headers": {
-//         "Cache-Control": "private, max-age=0",
-//        "Content-Encoding": "gzip",
-//         "Content-Length": "2755",
-//         "Content-Type": "text/html; charset=UTF-8",
-//         "Date": "Fri, 30 Jan 2009 17:12:38 GMT",
-//         "Expires": "-1"
-//      },
 //      "resourceId": "1NetworkResourceEvent1",
-//      "responseCode": 200,
-//      "url": "http://www.example.com/foo.html",
+//      "contentLength": 200
 //   },
 //   "sequence": 1234,
 //   "time": 10549.0,
-//   "type": "24"
+//   "type": "22"
 //},
 
 // Make a namespace for this rule using a closure
@@ -69,16 +60,16 @@ hintlet.register(HINTLET_NAME, function(dataRecord){
 
     // TODO(zundel): Modify to trigger one on the document loaded event.
 
-    if (dataRecord.type != hintlet.types.NETWORK_RESOURCE_RESPONSE) {
+    if (dataRecord.type != hintlet.types.NETWORK_RESOURCE_FINISH) {
       return;
     }
 
-    var headers = dataRecord.data.headers;
-    if (headers['Content-Length'] == null) {
+    var contentLength = dataRecord.data.contentLength;
+    if (contentLength < 0) {
       return;
     }
 
-    TOTAL_SIZE = TOTAL_SIZE + Number(headers['Content-Length']);
+    TOTAL_SIZE = TOTAL_SIZE + contentLength;
 
     if (!INFO_ALARM_EMITTED) {
       if (TOTAL_SIZE > INFO_ALARM_THRESHOLD) {
