@@ -1,31 +1,3 @@
 #summary Answers to some frequently asked questions
 
-== Why am I still getting the warning "No data received in 6 seconds. Chrome must be run with the flag..."?  I already added the --enable-extension-timeline-api flag.==
-
-First, you must be sure your version of chrome is recent enough (version 4.0.249.30 or later should word)
-
-Close all instances of chrome before running the shortcut you 
-created. (If you are using Microsoft Windows, check your task manager to be sure you dont have a zombie chrome 
-process hanging around). If even one of them is still up, it will fork a 
-chrome window from the existing instance of the chrome browser. 
-
-== I added the --enable-extension-timeline-api flag and now Chrome won't start. ==
-
-On Microsoft Windows, if there is a problem in the target field of the shortcut properties, you will get an error dialog with the title, "Problem with
-Shortcut."  If the path to Chrome is encased in double quotes, make sure that the --enalbe-extension-timeline-api flag is outside the quotes similar to the following example:
-
-{{{
-   "C:\Documents and Settings\Default\Local Settings\Application Data\Google\Chrome\Application\chrome.exe" --enable-extension-timeline-api
-}}}
-
-
-== When will Speed Tracer for the Mac be ready? ==
-
-Preliminary testing shows that Speed Tracer works fine on the Mac, but Google Chrome extensions were temporarily disabled in the Mac dev channel release near the time of the Speed Tracer launch.
-
-We will be sure to include Mac specific instructions for passing in the --enable-extensions-timeline-api flag when extensions are re-enabled for Mac.
-
-
-== Why can't I use the Chrome Devtools Inspector when Speed Tracer is up? ==
-
-This is a side effect of how we reach in to collect our instrumentation. We are working to fix this, but for now, all you have to do is close the Speed Tracer window, and you can then Inspect the target page just like you did before.
+See the Speed Tracer Documentation [http://code.google.com/webtoolkit/speedtracer/faq.html FAQ].
