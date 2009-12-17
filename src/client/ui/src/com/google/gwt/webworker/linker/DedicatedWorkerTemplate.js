@@ -16,7 +16,8 @@
 
 $stats = function(){};
 $self = self;
-    
+$sessionId = null; 
+
 function __MODULE_FUNC__() {
   // TODO(zundel): Add slot for property providers.
   var strongName;
