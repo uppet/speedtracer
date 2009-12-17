@@ -208,6 +208,8 @@ public class NetworkTimeLineDetailView extends DetailView {
 
       if (startTime < right && comparableEndTime > left) {
         String lastPathComponent = resource.getLastPathComponent();
+        lastPathComponent = (lastPathComponent == null) ? ""
+            : lastPathComponent;
         int dotIndex = lastPathComponent.lastIndexOf(".");
         String fileExtension = (dotIndex < 0) ? ".html"
             : lastPathComponent.substring(dotIndex);
