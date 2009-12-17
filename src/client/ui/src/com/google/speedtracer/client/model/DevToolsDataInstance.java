@@ -23,6 +23,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.speedtracer.client.model.DataModel.DataInstance;
 import com.google.speedtracer.client.model.EventVisitor.PostOrderVisitor;
 import com.google.speedtracer.client.model.EventVisitor.PreOrderVisitor;
+import com.google.speedtracer.client.model.InspectorResourceConverter.InspectorResourceConverterImpl;
 
 /**
  * This class is used in Chrome when we are getting data from the devtools API.
@@ -45,8 +46,10 @@ public class DevToolsDataInstance extends DataInstance {
         addRecordToTimeline: function(record) {
           delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy::onTimeLineRecord(Lcom/google/speedtracer/client/model/EventRecord;)(record[1]);
         },
+        // This becomes a dead code path as of webkit r52154, but we need it for
+        // older versions.
         addResource: function(resource) {
-          delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy::onAddResource(ILcom/google/gwt/core/client/JavaScriptObject;)(resource[1], resource[2]);
+          delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy::onLegacyAddResource(ILcom/google/gwt/core/client/JavaScriptObject;)(resource[1], resource[2]);
         },
         updateResource: function(update) {
           delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy::onUpdateResource(ILcom/google/gwt/core/client/JavaScriptObject;)(update[1], update[2]);
@@ -68,6 +71,10 @@ public class DevToolsDataInstance extends DataInstance {
 
     private InspectorResourceConverter resourceConverter;
 
+    // TODO (jaimeyap): Get rid of this once WebKit r52154 is pushed to Dev
+    // Channel.
+    private boolean usingLegacyResourceConverter = false;
+
     DevToolsDataProxy() {
       dispatcher = createDispatcher(this);
     }
@@ -75,7 +82,7 @@ public class DevToolsDataInstance extends DataInstance {
     void connectToDevTools(int tabId, final DevToolsDataInstance dataInstance) {
       if (this.dataInstance == null) {
         this.dataInstance = dataInstance;
-        this.resourceConverter = new InspectorResourceConverter(this);
+        this.resourceConverter = new InspectorResourceConverterImpl(this);
       }
       this.listenerHandle = DevTools.getTabEvents(tabId).getPageEvent().addListener(
           new Listener() {
@@ -106,9 +113,18 @@ public class DevToolsDataInstance extends DataInstance {
       this.baseTime = baseTime;
     }
 
+    /**
+     * TODO (jaimeyap): Get rid of this once WebKit r52154 is pushed to Dev
+     * Channel.
+     */
     @SuppressWarnings("unused")
-    private void onAddResource(int resourceId, JavaScriptObject resource) {
-      resourceConverter.onAddResource(resourceId, resource);
+    private void onLegacyAddResource(int resourceId, JavaScriptObject resource) {
+      if (!usingLegacyResourceConverter) {
+        resourceConverter = new LegacyInspectorResourceConverter(this);
+        usingLegacyResourceConverter = true;
+      }
+      ((LegacyInspectorResourceConverter) resourceConverter).onAddResource(
+          resourceId, resource);
     }
 
     // Called from JavaScript.
@@ -120,18 +136,19 @@ public class DevToolsDataInstance extends DataInstance {
       // timeline records since we synthesize our own.
       // TODO(jaimeyap): figure out a good way to consume these guys.
       int type = record.getType();
-      if (type == EventRecordType.RESOURCE_SEND_REQUEST
-          || type == EventRecordType.RESOURCE_RECEIVE_RESPONSE
-          || type == EventRecordType.RESOURCE_FINISH) {
-        return;
+      switch (type) {
+        case EventRecordType.RESOURCE_SEND_REQUEST:
+        case EventRecordType.RESOURCE_RECEIVE_RESPONSE:
+        case EventRecordType.RESOURCE_FINISH:
+          break;
+        default:
+          // We run visitors to normalize the times for this tree and to do any
+          // other transformations we want.
+          EventVisitorTraverser.traverse(preOrderVisitors,
+              record.<UiEvent> cast(), postOrderVisitors);
+          // Forward to the dataInstance.
+          onEventRecord(record);
       }
-
-      // We run visitors to normalize the times for this tree and to do any
-      // other transformations we want.
-      EventVisitorTraverser.traverse(preOrderVisitors, record.<UiEvent> cast(),
-          postOrderVisitors);
-      // Forward to the dataInstance.
-      onEventRecord(record);
     }
 
     @SuppressWarnings("unused")

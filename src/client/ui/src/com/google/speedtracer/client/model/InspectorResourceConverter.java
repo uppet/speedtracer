@@ -24,42 +24,17 @@ import com.google.speedtracer.client.util.JsIntegerMap;
  * Utility class responsible for transforming inspector style network resources
  * into checkpoint style resources that our UI expects.
  */
-public class InspectorResourceConverter {
+public abstract class InspectorResourceConverter {
+
   /**
-   * These are the fields we care about on addResource messages. These should be
-   * consistent across addResource invocations.
+   * Takes in an Inspector style updateResource message and updates our network
+   * resource tracking state for the associated resource.
+   * 
+   * @param resourceId The Id of the resource
+   * @param updateResource The update payload
    */
-  static class AddResource extends JavaScriptObject {
-    protected AddResource() {
-    }
-
-    final native String getLastPathComponent() /*-{
-      return this.lastPathComponent;
-    }-*/;
-
-    final native HeaderMap getRequestHeaders() /*-{
-      return this.requestHeaders;
-    }-*/;
-
-    final native String getRequestMethod() /*-{
-      return this.requestMethod;
-    }-*/;
-
-    // For a proper addResource the requestURL field is set. For an update
-    // resource that is actually a redirect, they have a hybrid payload that is
-    // both an Update and an Add. The 'url' field is set for those payloads.
-    final native String getRequestUrl() /*-{
-      return this.requestURL || this.url;
-    }-*/;
-
-    final native boolean isMainResource() /*-{
-      return !!this.isMainResource;
-    }-*/;
-
-    final native boolean wasCached() /*-{
-      return !!this.cached;
-    }-*/;
-  }
+  public abstract void onUpdateResource(int resourceId,
+      JavaScriptObject updateResource);
 
   /**
    * Calls to updateResource also pass along boolean fields that indicate
@@ -67,7 +42,8 @@ public class InspectorResourceConverter {
    * all the fields we care about for a specific checkpoint event, we shoot it
    * off.
    */
-  static class UpdateResource extends JavaScriptObject {
+  private static class UpdateResource extends JavaScriptObject {
+    @SuppressWarnings("unused")
     protected UpdateResource() {
     }
 
@@ -107,11 +83,6 @@ public class InspectorResourceConverter {
       return this.mimeType;
     }-*/;
 
-    // This may be null for responses that are not redirects.
-    final native String getRedirectUrl() /*-{
-      return this.url;
-    }-*/;
-
     final native HeaderMap getResponseHeaders() /*-{
       return this.responseHeaders;
     }-*/;
@@ -127,12 +98,41 @@ public class InspectorResourceConverter {
     final native int getStatusCode() /*-{
       return this.statusCode;
     }-*/;
+
+    final native String getLastPathComponent() /*-{
+      return this.lastPathComponent;
+    }-*/;
+
+    final native HeaderMap getRequestHeaders() /*-{
+      return this.requestHeaders;
+    }-*/;
+
+    final native String getRequestMethod() /*-{
+      return this.requestMethod;
+    }-*/;
+
+    final native String getUrl() /*-{
+      return this.url;
+    }-*/;
+
+    final native boolean isMainResource() /*-{
+      return !!this.mainResource;
+    }-*/;
+
+    final native boolean wasCached() /*-{
+      return !!this.cached;
+    }-*/;
+
+    final native void setUrl(String url) /*-{
+      this.url = url;
+    }-*/;
   }
 
   /**
-   * Simple state transition tracker.
+   * Simple state transition tracker to accumulate the state for a specific
+   * network resource..
    */
-  private class ResourceStatus {
+  protected class ResourceStatus {
     // The possible states in the state machine.
     static final int ADDED_UNSENT = 0;
     static final int SENT_ERROR = 4;
@@ -140,22 +140,14 @@ public class InspectorResourceConverter {
     static final int SENT_RESPONSE_RECEIVED = 2;
     static final int SENT_START = 1;
 
-    // The initial resource information.
-    final AddResource addResource;
-
     int contentLength = -1;
 
     int currentState = ADDED_UNSENT;
 
-    final int inspectorId;
-
     final String resourceId;
 
-    public ResourceStatus(int inspectorId, String resourceId,
-        AddResource addResource) {
-      this.inspectorId = inspectorId;
+    public ResourceStatus(String resourceId) {
       this.resourceId = resourceId;
-      this.addResource = addResource;
     }
 
     public void setContentLength(int contentLength) {
@@ -163,205 +155,173 @@ public class InspectorResourceConverter {
     }
   }
 
-  private static final int NO_REDIRECT = 0;
-
   private final DevToolsDataProxy proxy;
 
-  private int redirectCount = 0;
-
-  private final JsIntegerMap<ResourceStatus> resourceCheckpointMap = JsIntegerMap.<ResourceStatus> create();
+  protected DevToolsDataProxy getProxy() {
+    return proxy;
+  }
 
   public InspectorResourceConverter(DevToolsDataProxy proxy) {
     this.proxy = proxy;
   }
 
   /**
-   * Simply provisions a resource. This has no timing information so we cant yet
-   * send a resource start checkpoint.
-   * 
-   * @param inspectorIdentifier the int id of the resource in inspector speak
-   * @param resource the payload of an addResource event
+   * TODO (jaimeyap): We have the InspectorResourceConverter be an abstract base
+   * class for now in order to provide a legacy implementation that we swap out
+   * at runtime to support WebKit revisions before r52154. We should remove that
+   * and just have a single impl once r52154 gets pushed to the Dev Channel.
+   * Default implementation of InspectorResourceConverter.
    */
-  public ResourceStatus onAddResource(int inspectorIdentifier,
-      JavaScriptObject resource) {
-    // Check to see if we already have an add for this resource ID. If we do,
-    // then we assume it is a redirect and make an appropriate internal ID.
-    ResourceStatus resourceStatus = resourceCheckpointMap.get(inspectorIdentifier);
-    String internalResourceId = NetworkResourceRecord.generateResourceId(
-        (resourceStatus == null) ? NO_REDIRECT : redirectCount,
-        inspectorIdentifier);
+  public static class InspectorResourceConverterImpl extends
+      InspectorResourceConverter {
+    private final JsIntegerMap<ResourceStatus> resourceCheckpointMap = JsIntegerMap.<ResourceStatus> create();
 
-    resourceStatus = new ResourceStatus(inspectorIdentifier,
-        internalResourceId, resource.<AddResource> cast());
-    resourceCheckpointMap.put(inspectorIdentifier, resourceStatus);
-
-    return resourceStatus;
-  }
-
-  /**
-   * Each update will either trigger a state transition (sending of a
-   * checkpoint) or is irrelevant. We get luck in that the updates that do not
-   * trigger a state transition generally are updates to the expected
-   * content-length, and we simply can just ignore them.
-   * 
-   * @param resourceId the id of the resource
-   * @param resource the payload of an updateResource event
-   */
-  public void onUpdateResource(int resourceId, JavaScriptObject resource) {
-    ResourceStatus resourceStatus = resourceCheckpointMap.get(resourceId);
-
-    if (resourceStatus == null) {
-      return;
+    public InspectorResourceConverterImpl(DevToolsDataProxy proxy) {
+      super(proxy);
     }
 
-    if (resourceStatus.currentState == ResourceStatus.ADDED_UNSENT) {
-      maybeSendStart(resourceStatus, resource.<UpdateResource> cast());
-    }
+    /**
+     * Each update will either trigger a state transition (sending of a
+     * checkpoint) or is irrelevant. We get luck in that the updates that do not
+     * trigger a state transition generally are updates to the expected
+     * content-length, and we simply can just ignore them.
+     * 
+     * @param resourceId the id of the resource
+     * @param resource the payload of an updateResource event
+     */
+    public void onUpdateResource(int resourceId, JavaScriptObject resource) {
+      ResourceStatus resourceStatus = resourceCheckpointMap.get(resourceId);
 
-    if (resourceStatus.currentState == ResourceStatus.SENT_START) {
-      maybeSendResponseReceived(resourceStatus,
-          resource.<UpdateResource> cast());
-    }
-
-    if (resourceStatus.currentState == ResourceStatus.SENT_RESPONSE_RECEIVED) {
-      maybeSendFinish(resourceStatus, resource.<UpdateResource> cast());
-    }
-
-    if (resourceStatus.currentState == ResourceStatus.SENT_FINISH
-        || resourceStatus.currentState == ResourceStatus.SENT_ERROR) {
-      resourceCheckpointMap.put(resourceId, null);
-    }
-  }
-
-  private void maybeSendFinish(ResourceStatus resourceStatus,
-      UpdateResource update) {
-    assert (resourceStatus.currentState == ResourceStatus.SENT_RESPONSE_RECEIVED);
-    maybeUpdateContentLength(resourceStatus, update);
-    if (update.didCompletionChange() && update.didTimingChange()) {
-      if (update.didFail()) {
-        NetworkResourceError error = NetworkResourceError.create(
-            resourceStatus.resourceId, normalizeTime(update.getEndTime()),
-            resourceStatus.contentLength);
-        proxy.onEventRecord(error);
-        resourceStatus.currentState = ResourceStatus.SENT_ERROR;
-        return;
+      if (resourceStatus == null) {
+        resourceStatus = new ResourceStatus(resourceId + "");
+        resourceCheckpointMap.put(resourceId, resourceStatus);
       }
 
-      if (update.didFinish()) {
-        NetworkResourceFinished finished = NetworkResourceFinished.create(
-            resourceStatus.resourceId, normalizeTime(update.getEndTime()),
-            resourceStatus.contentLength);
-        proxy.onEventRecord(finished);
-        resourceStatus.currentState = ResourceStatus.SENT_FINISH;
-        return;
+      if (resourceStatus.currentState == ResourceStatus.ADDED_UNSENT) {
+        maybeSendStart(resourceStatus, resource.<UpdateResource> cast());
+      }
+
+      if (resourceStatus.currentState == ResourceStatus.SENT_START) {
+        maybeSendResponseReceived(resourceStatus,
+            resource.<UpdateResource> cast());
+      }
+
+      if (resourceStatus.currentState == ResourceStatus.SENT_RESPONSE_RECEIVED) {
+        maybeSendFinish(resourceStatus, resource.<UpdateResource> cast());
+      }
+
+      if (resourceStatus.currentState == ResourceStatus.SENT_FINISH
+          || resourceStatus.currentState == ResourceStatus.SENT_ERROR) {
+        resourceCheckpointMap.put(resourceId, null);
       }
     }
-  }
 
-  private void maybeSendResponseReceived(ResourceStatus resourceStatus,
-      UpdateResource update) {
-    assert (resourceStatus.currentState == ResourceStatus.SENT_START);
-    maybeUpdateContentLength(resourceStatus, update);
-    // TODO(jaimeyap): Verify that these two fields always get set as expected.
-    if (update.didResponseChange() && update.didTimingChange()) {
-      AddResource add = resourceStatus.addResource;
+    private void maybeSendFinish(ResourceStatus resourceStatus,
+        UpdateResource update) {
+      assert (resourceStatus.currentState == ResourceStatus.SENT_RESPONSE_RECEIVED);
+      maybeUpdateContentLength(resourceStatus, update);
+      if (update.didCompletionChange() && update.didTimingChange()) {
+        if (update.didFail()) {
+          NetworkResourceError error = NetworkResourceError.create(
+              resourceStatus.resourceId, normalizeTime(update.getEndTime()),
+              resourceStatus.contentLength);
+          getProxy().onEventRecord(error);
+          resourceStatus.currentState = ResourceStatus.SENT_ERROR;
+          return;
+        }
 
-      // Special case if we get a 302 redirect. Need to close this record out
-      // and start over. We send a response, a finished, and a new start for the
-      // new resource.
-      if (update.getStatusCode() == 302 || update.getStatusCode() == 301) {
-        double time = update.getStartTime();
-        // Send a response received.
+        if (update.didFinish()) {
+          NetworkResourceFinished finished = NetworkResourceFinished.create(
+              resourceStatus.resourceId, normalizeTime(update.getEndTime()),
+              resourceStatus.contentLength);
+          getProxy().onEventRecord(finished);
+          resourceStatus.currentState = ResourceStatus.SENT_FINISH;
+          return;
+        }
+      }
+    }
+
+    private void maybeSendResponseReceived(ResourceStatus resourceStatus,
+        UpdateResource update) {
+      assert (resourceStatus.currentState == ResourceStatus.SENT_START);
+      maybeUpdateContentLength(resourceStatus, update);
+      // TODO(jaimeyap): Verify that these two fields always get set as
+      // expected.
+      if (update.didResponseChange() && update.didTimingChange()) {
         NetworkResourceResponse response = NetworkResourceResponse.create(
-            resourceStatus.resourceId, normalizeTime(time),
-            update.getMimeType(), update.getStatusCode(), add.wasCached(),
-            update.getResponseHeaders(), update.getRedirectUrl());
-        proxy.onEventRecord(response);
-
-        // Close the resource.
-        NetworkResourceFinished finished = NetworkResourceFinished.create(
-            resourceStatus.resourceId, normalizeTime(time),
-            resourceStatus.contentLength);
-        proxy.onEventRecord(finished);
-
-        redirectCount++;
-
-        // Pretend we are back in start state by shooting off a start and
-        // starting over. This type of update smells like an Add because it
-        // actually has fields of both.
-        resourceStatus = onAddResource(resourceStatus.inspectorId, update);
-        maybeSendStart(resourceStatus, update);
-
-        // State machine should now be back in a sane state.
-        // The next update resource should be unaware that it was birthed from a
-        // redirect.
-        return;
-      }
-
-      NetworkResourceResponse response = NetworkResourceResponse.create(
-          resourceStatus.resourceId,
-          normalizeTime(update.getResponseReceivedTime()),
-          update.getMimeType(), update.getStatusCode(), add.wasCached(),
-          update.getResponseHeaders(), add.getRequestUrl());
-
-      // Send to UI.
-      proxy.onEventRecord(response);
-      resourceStatus.currentState = ResourceStatus.SENT_RESPONSE_RECEIVED;
-
-      // At this point the UI should have a start and a response event. We can
-      // now send a page transition if this happens to be a main resource.
-      if (add.isMainResource()) {
-        // Send a page transition.
-        TabChange tabChange = TabChange.create(
+            resourceStatus.resourceId,
             normalizeTime(update.getResponseReceivedTime()),
-            add.getRequestUrl());
-        proxy.onEventRecord(tabChange);
+            update.getMimeType(), update.getStatusCode(), update.wasCached(),
+            update.getResponseHeaders(), update.getUrl());
+
+        // Send to UI.
+        getProxy().onEventRecord(response);
+        resourceStatus.currentState = ResourceStatus.SENT_RESPONSE_RECEIVED;
       }
     }
-  }
 
-  /**
-   * Sends the NetworkResourceStart. As soon as we get a startTime, we should be
-   * good to make the state transition.
-   */
-  private void maybeSendStart(ResourceStatus resourceStatus,
-      UpdateResource update) {
-    assert (resourceStatus.currentState == ResourceStatus.ADDED_UNSENT);
-    maybeUpdateContentLength(resourceStatus, update);
-    if (update.didTimingChange()) {
-      AddResource add = resourceStatus.addResource;
-      // Updates will always re-send all timings reported so far. Guaranteed to
-      // have the startTime set.
-      NetworkResourceStart start = NetworkResourceStart.create(
-          resourceStatus.resourceId, normalizeTime(update.getStartTime()),
-          add.getRequestUrl(), add.getLastPathComponent(),
-          add.getRequestMethod(), add.getRequestHeaders());
+    /**
+     * Sends the NetworkResourceStart. As soon as we get a startTime, we should
+     * be good to make the state transition.
+     */
+    private void maybeSendStart(ResourceStatus resourceStatus,
+        UpdateResource update) {
+      assert (resourceStatus.currentState == ResourceStatus.ADDED_UNSENT);
+      maybeUpdateContentLength(resourceStatus, update);
+      if (update.didTimingChange()) {
+        // With redirects, the url is in the response header.
+        if (update.getStatusCode() == 302 || update.getStatusCode() == 301) {
+          update.setUrl(update.getResponseHeaders().get("Location"));
+        }
 
-      // Forward to the UI.
-      proxy.onEventRecord(start);
+        String url = update.getUrl();
 
-      resourceStatus.currentState = ResourceStatus.SENT_START;
+        if (url == null) {
+          return;
+        }
+
+        // Updates will always re-send all timings reported so far. Guaranteed
+        // to have the startTime set.
+        NetworkResourceStart start = NetworkResourceStart.create(
+            resourceStatus.resourceId, normalizeTime(update.getStartTime()),
+            url, update.getLastPathComponent(), update.getRequestMethod(),
+            update.getRequestHeaders());
+
+        // Forward to the UI.
+        getProxy().onEventRecord(start);
+
+        resourceStatus.currentState = ResourceStatus.SENT_START;
+
+        // At this point the UI should have a start and a response event. We can
+        // now send a page transition if this happens to be a main resource.
+        if (update.isMainResource()) {
+          // Send a page transition.
+          TabChange tabChange = TabChange.create(
+              normalizeTime(update.getResponseReceivedTime()), url);
+          getProxy().onEventRecord(tabChange);
+        }
+      }
     }
-  }
 
-  /**
-   * Updates the tracked content length
-   * 
-   * @param status
-   * @param resource
-   */
-  private void maybeUpdateContentLength(ResourceStatus currStatus,
-      UpdateResource resource) {
-    if (resource.didLengthChange()) {
-      currStatus.setContentLength(resource.getContentLength());
+    /**
+     * Updates the tracked content length
+     * 
+     * @param status
+     * @param resource
+     */
+    private void maybeUpdateContentLength(ResourceStatus currStatus,
+        UpdateResource resource) {
+      if (resource.didLengthChange()) {
+        currStatus.setContentLength(resource.getContentLength());
+      }
     }
-  }
 
-  private double normalizeTime(double seconds) {
-    double millis = seconds * 1000;
-    if (proxy.getBaseTime() < 0) {
-      proxy.setBaseTime(millis);
+    private double normalizeTime(double seconds) {
+      double millis = seconds * 1000;
+      if (getProxy().getBaseTime() < 0) {
+        getProxy().setBaseTime(millis);
+      }
+      return millis - getProxy().getBaseTime();
     }
-    return millis - proxy.getBaseTime();
   }
 }

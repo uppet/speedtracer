@@ -23,10 +23,11 @@ from optparse import OptionParser
 #          definitions in Java, JavaScript, and C++ code.
 #
 # Add the events to the list in value order.  The generated code will 
-# break if there are gaps in the value sequence or more than
-# one entry with the same value.
+# break if there are more than one entry with the same value.
 #
 events = [
+
+# 0-14 Correspond to record types landed as webkit inspector timeline records.
   {
     'value' : 0,
     'constant' : 'DOM_EVENT', 
@@ -120,16 +121,20 @@ events = [
     'desc' : 'Resource Finish',
     'help_text' : 'A new request for a network resource completed.'
   },
+# END INSPECTOR TIMELINE RECORDS
 
-# THE FOLLOWING HAS NOT YET LANDED. THEY ARE INCLUDED ONLY AS REMINDERS.
 
+# THE FOLLOWING HAS NOT YET LANDED.
   {
     'value' : 15,
     'constant' : 'JAVASCRIPT_EXECUTION_EVENT', 
     'desc' : 'JavaScript Execution',
     'help_text' : 'A block of JavaScript executed.',
   },
+# END NOT LANDED
 
+
+# USED INTERNALLY TO TRACK PAGE TRANSITIONS. SPEED TRACER GENERATED.
   {
     'value' : 16,
     'constant' : 'TAB_CHANGED',
@@ -138,6 +143,10 @@ events = [
                   + 'Usually this is the title string or the location of '
                   + 'the page.',
   },
+# END PAGE TRANSITIONS
+
+
+# THE FOLLOWING HAS NOT YET LANDED
   {
     'value' : 17,
     'constant' : 'AGGREGATED_EVENTS',
@@ -168,6 +177,11 @@ events = [
     'help_text' : 'A top level Window event fired, such as load or '
                   + 'unload.',
   },
+# END NOT LANDED
+
+
+# THE FOLLOWING ARE SPEED TRACER TIMELINE RECORDS FOR TRACKING NETWORK
+# RESOURCES.
   {
     'value' : 21,
     'constant' : 'NETWORK_RESOURCE_ERROR',
@@ -192,6 +206,10 @@ events = [
     'desc' : 'Network Resource Start',
     'help_text' : 'A new request for a network resource started.'
   },
+# END SPEEDTRACER RECORDS
+
+ 
+# THE FOLLOWING HAS NOT YET LANDED
   {
     'value' : 25,
     'constant' : 'GARBAGE_COLLECT_EVENT',
@@ -211,8 +229,8 @@ events = [
     'desc' : 'Dom Dispatch',
     'help_text' : 'A DOM event dispatch ran.  The event may be in the capture or bubble phase.',
   },
+# END NOT LANDED.
 
-# END THINGS THAT HAVE NOT YET LANDED.
 ]
 
 # End of *EDIT*

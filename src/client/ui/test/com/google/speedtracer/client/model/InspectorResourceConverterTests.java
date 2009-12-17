@@ -16,8 +16,8 @@
 package com.google.speedtracer.client.model;
 
 import com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy;
-import com.google.speedtracer.client.model.InspectorResourceConverter.AddResource;
-import com.google.speedtracer.client.model.InspectorResourceConverter.UpdateResource;
+import com.google.speedtracer.client.model.LegacyInspectorResourceConverter.AddResource;
+import com.google.speedtracer.client.model.LegacyInspectorResourceConverter.UpdateResource;
 import com.google.speedtracer.client.util.JSON;
 import com.google.gwt.chrome.crx.client.events.DevToolsPageEvent.PageEvent;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -34,7 +34,7 @@ import java.util.List;
 public class InspectorResourceConverterTests extends GWTTestCase {
   /**
    * Testable {@link DevToolsDataProxy}. This simply collects output from the
-   * InspectorResourceConverter.
+   * LegacyInspectorResourceConverter.
    */
   private static class MockDevToolsDataProxy extends DevToolsDataProxy {
     int currentResource = 0;
@@ -74,7 +74,7 @@ public class InspectorResourceConverterTests extends GWTTestCase {
    * that to match against the output of the converter.
    */
   private static AddResource addRecord(String inspectorRecord,
-      InspectorResourceConverter converter) {
+      LegacyInspectorResourceConverter converter) {
     PageEvent add = JSON.parse(inspectorRecord).cast();
     JavaScriptObject payload = getResourcePayload(add);
     converter.onAddResource(getResourceId(add), payload);
@@ -95,7 +95,7 @@ public class InspectorResourceConverterTests extends GWTTestCase {
    * that to match against the output of the converter.
    */
   private static UpdateResource updateRecord(String inspectorRecord,
-      InspectorResourceConverter converter) {
+      LegacyInspectorResourceConverter converter) {
     PageEvent add = JSON.parse(inspectorRecord).cast();
     JavaScriptObject payload = getResourcePayload(add);
     converter.onUpdateResource(getResourceId(add), payload);
@@ -120,7 +120,7 @@ public class InspectorResourceConverterTests extends GWTTestCase {
         "[\"updateResource\",1,{\"failed\":false,\"finished\":true,\"didCompletionChange\":true,\"startTime\":1258059646.920131,\"responseReceivedTime\":1258059646.942131,\"endTime\":1258059646.975131,\"didTimingChange\":true}]"};
 
     MockDevToolsDataProxy proxy = new MockDevToolsDataProxy();
-    InspectorResourceConverter converter = new InspectorResourceConverter(proxy);
+    LegacyInspectorResourceConverter converter = new LegacyInspectorResourceConverter(proxy);
 
     // Send an addResource inspector style resource.
     AddResource add = addRecord(resource[0], converter);
@@ -179,7 +179,7 @@ public class InspectorResourceConverterTests extends GWTTestCase {
         "[\"updateResource\",1,{\"failed\":false,\"finished\":true,\"didCompletionChange\":true,\"startTime\":1258059646.920131,\"responseReceivedTime\":1258059646.942131,\"endTime\":1258059646.975131,\"didTimingChange\":true}]"};
 
     MockDevToolsDataProxy proxy = new MockDevToolsDataProxy();
-    InspectorResourceConverter converter = new InspectorResourceConverter(proxy);
+    LegacyInspectorResourceConverter converter = new LegacyInspectorResourceConverter(proxy);
 
     // Send an addResource inspector style resource.
     addRecord(redirectResource[0], converter);
@@ -269,7 +269,7 @@ public class InspectorResourceConverterTests extends GWTTestCase {
         "[\"updateResource\",1,{\"failed\":false,\"finished\":true,\"didCompletionChange\":true,\"startTime\":1258059646.920131,\"responseReceivedTime\":1258059646.942131,\"endTime\":1258059646.975131,\"didTimingChange\":true}]"};
 
     MockDevToolsDataProxy proxy = new MockDevToolsDataProxy();
-    InspectorResourceConverter converter = new InspectorResourceConverter(proxy);
+    LegacyInspectorResourceConverter converter = new LegacyInspectorResourceConverter(proxy);
 
     // The id is <redirectCount>-<resourceId>
     String expectedResourceId = "0-1";
