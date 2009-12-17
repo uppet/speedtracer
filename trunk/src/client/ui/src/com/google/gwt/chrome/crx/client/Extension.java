@@ -27,8 +27,6 @@ import java.lang.annotation.Target;
  * The main EntryPoint for your extension.
  */
 public abstract class Extension implements EntryPoint {
-  public static final String NO_UPDATE_URL = "";
-
   /**
    * Annotation for the Specification meta data for the entry point. This data
    * is used for generating the extension manifest.
@@ -39,23 +37,25 @@ public abstract class Extension implements EntryPoint {
   public @interface ManifestInfo {
     String description();
 
-    String name();
+    String[] icons() default {};
 
-    String version();
+    String name();
 
     String[] permissions();
 
     String updateUrl() default NO_UPDATE_URL;
 
-    String[] icons() default {};
+    String version();
   }
+
+  public static final String NO_UPDATE_URL = "";
+
+  public abstract String getVersion();
 
   /**
    * Implement this entry point in your extension subclass.
    */
   public abstract void onBackgroundPageLoad();
-
-  public abstract String getVersion();
 
   public void onModuleLoad() {
     // TODO(jaimeyap): Figure out how to have this kick off potentially useful

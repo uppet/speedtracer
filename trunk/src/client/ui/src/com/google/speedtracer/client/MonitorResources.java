@@ -45,6 +45,9 @@ public class MonitorResources {
     CommonCss commonCss();
   }
 
+  /**
+   * CSS data defined in the monitor resource bundle
+   */
   public interface Css extends CssResource {
     String buildInfoView();
   }
@@ -60,6 +63,15 @@ public class MonitorResources {
   }
 
   /**
+   * ImmutableResourceBundles for Monitor Module.
+   */
+  private static Resources resources;
+
+  public static Resources getResources() {
+    return resources;
+  }
+
+  /**
    * Initializes resources. This must be called before
    * {@link MonitorResources#getResources()}.
    * 
@@ -71,13 +83,4 @@ public class MonitorResources {
   public static void init() {
     resources = GWT.create(Resources.class);
   }
-
-  public static Resources getResources() {
-    return resources;
-  }
-
-  /**
-   * ImmutableResourceBundles for Monitor Module.
-   */
-  private static Resources resources;
 }

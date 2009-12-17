@@ -89,6 +89,29 @@ public class ExtensionGenerator extends Generator {
     return result;
   }
 
+  private static String generateExtensionType(TreeLogger logger,
+      GeneratorContext context, JClassType userType, ExtensionArtifact spec) {
+    final String subclassName = userType.getSimpleSourceName().replace('.', '_')
+        + "_generated";
+    final String packageName = userType.getPackage().getName();
+    final ClassSourceFileComposerFactory f = new ClassSourceFileComposerFactory(
+        packageName, subclassName);
+    f.setSuperclass(userType.getQualifiedSourceName());
+    final PrintWriter pw = context.tryCreate(logger, packageName, subclassName);
+    if (pw != null) {
+      final SourceWriter sw = f.createSourceWriter(context, pw);
+
+      final String version = (spec.getVersion() != null) ? spec.getVersion()
+          : "";
+      sw.println("@Override public String getVersion() {");
+      sw.println("  return \"" + GeneratorUtils.toJavaLiteral(version) + "\";");
+      sw.println("}");
+
+      sw.commit(logger);
+    }
+    return f.getCreatedClassName();
+  }
+
   private static byte[] getBytesFromStream(InputStream stream)
       throws IOException {
     final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
@@ -114,29 +137,6 @@ public class ExtensionGenerator extends Generator {
   private static String getResourcePath(JClassType userType, String name) {
     final String base = userType.getPackage().getName().replace('.', '/');
     return base + "/" + name;
-  }
-
-  private static String generateExtensionType(TreeLogger logger,
-      GeneratorContext context, JClassType userType, ExtensionArtifact spec) {
-    final String subclassName = userType.getSimpleSourceName().replace('.', '_')
-        + "_generated";
-    final String packageName = userType.getPackage().getName();
-    final ClassSourceFileComposerFactory f = new ClassSourceFileComposerFactory(
-        packageName, subclassName);
-    f.setSuperclass(userType.getQualifiedSourceName());
-    final PrintWriter pw = context.tryCreate(logger, packageName, subclassName);
-    if (pw != null) {
-      final SourceWriter sw = f.createSourceWriter(context, pw);
-
-      final String version = (spec.getVersion() != null) ? spec.getVersion()
-          : "";
-      sw.println("@Override public String getVersion() {");
-      sw.println("  return \"" + GeneratorUtils.toJavaLiteral(version) + "\";");
-      sw.println("}");
-
-      sw.commit(logger);
-    }
-    return f.getCreatedClassName();
   }
 
   private static ExtensionArtifact getSpecification(TreeLogger logger,

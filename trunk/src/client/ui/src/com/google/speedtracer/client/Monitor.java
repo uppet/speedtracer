@@ -116,20 +116,6 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
       this.version = version;
     }
 
-    private void show(Document document) {
-      final BuildInfo info = GWT.create(BuildInfo.class);
-      final DivElement div = document.createDivElement();
-      div.setInnerText("Version: " + version + ", Revision: r"
-          + info.getBuildRevision() + ", Date: " + info.getBuildTime());
-      div.setClassName(MonitorResources.getResources().monitorCss().buildInfoView());
-      element = document.getBody().appendChild(div);
-    }
-
-    private void hide() {
-      element.removeFromParent();
-      element = null;
-    }
-
     public void onKeyDown(KeyDownEvent event) {
       if (element == null) {
         show(event.getNativeEvent().getTarget().getOwnerDocument());
@@ -139,6 +125,20 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     }
 
     public void onKeyUp(KeyUpEvent event) {
+    }
+
+    private void hide() {
+      element.removeFromParent();
+      element = null;
+    }
+
+    private void show(Document document) {
+      final BuildInfo info = GWT.create(BuildInfo.class);
+      final DivElement div = document.createDivElement();
+      div.setInnerText("Version: " + version + ", Revision: r"
+          + info.getBuildRevision() + ", Date: " + info.getBuildTime());
+      div.setClassName(MonitorResources.getResources().monitorCss().buildInfoView());
+      element = document.getBody().appendChild(div);
     }
   }
 

@@ -15,19 +15,16 @@
  */
 package com.google.gwt.chrome.crx.linker;
 
-import com.google.gwt.core.ext.Generator;
-
-import java.io.PrintWriter;
 
 /**
  * A set of static utility methods that come in handy when writing a
- * {@link Generator}.
+ * {@link com.google.gwt.core.ext.Generator}.
  */
 public class GeneratorUtils {
 
   /**
    * Escapes a string into a java source string literal that can safely be
-   * emitted as source code using {@link PrintWriter}.
+   * emitted as source code using {@link java.io.PrintWriter}.
    * 
    * @param text unescaped text
    * @return an escaped string literal

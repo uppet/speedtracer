@@ -16,5 +16,8 @@ deps_os = {
   "mac" : {
     "src/third_party/gwt" : "/deps/gwt-mac",
   },
+  "unix" : {
+    "src/third_party/gwt" : "/deps/gwt",
+  }
 }
 
