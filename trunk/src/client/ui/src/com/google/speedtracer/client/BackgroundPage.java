@@ -53,7 +53,7 @@ import java.util.HashMap;
  */
 @Extension.ManifestInfo(name = "Speed Tracer (by Google)",
     description = "Get insight into the performance of your web applications.",
-    version = "0.6",
+    version = "0.7",
     permissions = {"tabs"},
     icons = {"resources/icon16.png",
              "resources/icon32.png",
