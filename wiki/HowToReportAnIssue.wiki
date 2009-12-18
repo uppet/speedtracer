@@ -1,0 +1,27 @@
+#summary How to Report a bug to the Speed Tracer Developers
+
+Thank you for taking the time to use Speed Tracer and report a problem.  The issue tracer is for reporting bugs and feature requests only, so if you are having trouble and are not sure it is a bug, please use the [http://groups.google.com/group/speedtracer speedtracer Google Group].
+
+== If you think you have found a bug, follow these steps ==
+
+  # Check the [http://code.google.com/webtoolkit/speedtracer/faq.html FAQ] for some well known problems and their solutions.
+  # Search for an existing issue in the [http://code.google.com/p/speedtracer/issues/list issue tracker] and on the [http://groups.google.com/group/speedtracer speedtracer] Google Group.  If you find the issue has already been reported to the issue tracker, please click the star icon so we can get an idea of how many people are being affected by this problem.
+  # If you've found an unreported issue, see if you can reproduce it.  If so, post a message to the [http://groups.google.com/group/speedtracer speedtracer] group and the developers will determine if it is a bug that should be tracked.  
+  # If you get no response or the developers request a new issue, go ahead and  [http://code.google.com/p/speedtracer/issues/entry add an issue to the issue tracker].
+
+== Information to include in a bug report ==
+
+ * A description of the buggy behavior observed.
+ * A description of the behavior you expected to see.
+ * The version of Speed Tracer (check the [chrome://extensions chrome://extensions url]).
+ * The build of Chrome you are using (check the About Chrome dialog).
+ * A copy of any exceptions in the monitor window.
+
+ Right click on the Monitor window and choose 'Inspect element'.  Then, open up the console window (second button from the left at the bottom of the screen)
+ It is normal to see a number of "Worker script imported" messages.  What we are looking for are any JavaScript exceptions.  We'd like a copy of any of those.
+
+ * A copy of any exceptions in the Speed Tracer extension.
+  
+ In a new tab, navigate to [chrome://extensions chrome://extensions].  Then, click on background.html link to open up the Web Inspector.  Again, open up the console window (second button from the left at the bottom of the screen) and look for JavaScript exceptions there.
+
+ * If relevant, attach a screenshot of the Speed Tracer Monitor window.
