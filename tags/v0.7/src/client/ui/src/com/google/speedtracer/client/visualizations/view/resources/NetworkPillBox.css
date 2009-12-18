@@ -1,0 +1,79 @@
+/**
+ * Annotated CSS for NetworkPillBox.java.
+ */
+ @def calloutTopPad 4px;
+ @def calloutOffset -11px;
+ @def pillBoxHeight 12px;
+ @def timeOverlayPadding 2px;
+ 
+.pillBoxTimeLine {
+  position: relative;
+  margin-top: -33px;
+  border-left: 1px solid #222;
+  overflow: hidden;
+}
+
+.pillBoxWrapper {
+  position: relative;
+  left: 0;
+  height: 25px;
+  padding-top: 8px;
+}
+
+.pillBoxWrapperSelected {
+  position: relative;
+  padding-top: 8px;
+  border-left: 1px solid #222;
+  border-right: 1px solid #222;
+  border-top: 1px solid #222;
+  background: #fff;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-left: -10px;
+  margin-bottom: -1px;
+  \-webkit-border-top-left-radius: 7px;
+  \-webkit-border-top-right-radius: 7px;
+  z-index: 20;
+}
+
+.pillBoxLeft {
+  float: left;
+  height: pillBoxHeight;
+  background: rgba(94,185,248, 0.4);
+  border: 1px solid rgba(17,80,148, 0.4);
+}
+
+.pillBoxRight {
+  position: relative;
+  height: pillBoxHeight;
+  background: #5eb9f8;
+  border-top: 1px solid #175094;
+  border-right: 1px solid #175094;
+  border-bottom: 1px solid #175094;
+}
+
+.timeOverlay {
+  position: absolute;
+  font-size: 0.8em;
+}
+
+.timeOverlay > b {
+  display: inline-block;
+  padding-bottom: timeOverlayPadding;
+  padding-left: timeOverlayPadding;
+  padding-right: timeOverlayPadding;
+}
+
+@sprite .calloutLeft {
+  gwt-image: "leftCallout";
+  position: absolute;
+  top: calloutTopPad;
+  right: calloutOffset;
+}
+
+@sprite .calloutRight {
+  gwt-image: "rightCallout";
+  position: absolute;
+  top: calloutTopPad;
+  left: calloutOffset;
+}

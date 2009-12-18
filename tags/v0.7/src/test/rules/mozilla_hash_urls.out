@@ -1,0 +1,3 @@
+{"hintletRule":"Mozilla URL Cache Hash Collision","timestamp":3,"description":"The following URLs cause a conflict in the Firefox browser cache: AwNTc3NQ AwNTc3OA","refRecord":3,"severity":1}
+{"hintletRule":"Mozilla URL Cache Hash Collision","timestamp":7,"description":"The following URLs cause a conflict in the Firefox browser cache: AwODc3NQ AwNTc3NQ","refRecord":7,"severity":1}
+{"hintletRule":"Mozilla URL Cache Hash Collision","timestamp":8,"description":"The following URLs cause a conflict in the Firefox browser cache: AwODc3NQ AwNTc3NQ AwNTc3OA","refRecord":10,"severity":1}

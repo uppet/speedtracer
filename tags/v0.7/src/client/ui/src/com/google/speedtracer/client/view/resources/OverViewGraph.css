@@ -1,0 +1,14 @@
+/**
+ * Annotated CSS for OverViewGraph.java.
+ */
+ .graphBase {
+  width: 100%;
+  height: 19px;
+  background: #fff;
+  border-top: 1px solid #aaa;
+}
+
+.graphCanvas {
+  height: 100%;
+  width: 100%;
+}

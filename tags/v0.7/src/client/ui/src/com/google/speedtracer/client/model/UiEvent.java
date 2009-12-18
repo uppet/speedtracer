@@ -1,0 +1,153 @@
+/*
+ * Copyright 2008 Google Inc.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.google.speedtracer.client.model;
+
+import com.google.gwt.dom.client.Element;
+import com.google.speedtracer.client.util.JSOArray;
+import com.google.speedtracer.client.util.JsIntegerDoubleMap;
+
+import java.util.Comparator;
+
+/**
+ * Base class for our Overlay types wrapping Event JSO payloads passed up from
+ * the plugin.
+ */
+public class UiEvent extends EventRecord {
+  /**
+   * Comparator object for comparing UiEvent objects.
+   */
+  public static final class UiEventComparator implements Comparator<UiEvent> {
+    public int compare(UiEvent first, UiEvent second) {
+      return Double.compare(first.getTime(), second.getTime());
+    }
+  }
+
+  private static UiEventComparator comparatorInstance;
+
+  public static final native UiEvent createKey(double keyValue) /*-{
+    return {time: keyValue};
+  }-*/;
+
+  /**
+   * Singleton getter for our comparator.
+   * 
+   * @return
+   */
+  public static final UiEventComparator getComparator() {
+    if (comparatorInstance == null) {
+      comparatorInstance = new UiEventComparator();
+    }
+    return comparatorInstance;
+  }
+
+  /**
+   * Returns true iff this record is a UI event by sniffing the 'duration'
+   * field.
+   * 
+   * @return true iff this record is a UI event
+   */
+  public static final native boolean isUiEvent(EventRecord data) /*-{
+    return data.hasOwnProperty('duration');
+  }-*/;
+
+  protected UiEvent() {
+  }
+
+  public final void acceptVisitor(EventVisitor visitor) {
+    visitor.visitUiEvent(this);
+  }
+
+  public final native JSOArray<UiEvent> getChildren() /*-{
+    return this.children || [];
+  }-*/;
+
+  /**
+   * The duration of event dispatch.
+   * 
+   * @return the endTime - startTime
+   */
+  public final native double getDuration() /*-{
+    return this.duration;
+  }-*/;
+
+  /**
+   * The time marking the end of event dispatch.
+   * 
+   * @return the end time
+   */
+  public final double getEndTime() {
+    return getTime() + getDuration();
+  }
+
+  /**
+   * Pulls the cached canvas element corresponding to the rendered
+   * {@link MasterEventTraceGraph} from a {@link UiEvent} or null if it hasn't
+   * been rendered yet.
+   * 
+   * @return the {@link Element} corresponding to the canvas for the rendered
+   *         master bar graph
+   */
+  public final native Element getRenderedMasterEventTraceGraph() /*-{
+    return this.masterGraph;
+  }-*/;
+
+  public final native double getSelfTime() /*-{
+    return this.selfTime;
+  }-*/;
+
+  /**
+   * Returns a map of all the durations for types present in the event context
+   * tree. double durations keyed by type key.
+   * 
+   * @return the durations map.
+   */
+  public final native JsIntegerDoubleMap getTypeDurations() /*-{
+    return this.durationMap;
+  }-*/;
+
+  /**
+   * Whether or not the user used the markTimeline API to log something.
+   * 
+   * @return Whether or not the user used the markTimeline API to log something
+   */
+  public final native boolean hasUserLogs() /*-{
+    return !!this.hasUserLogs;
+  }-*/;
+
+  /**
+   * Caches a canvas element corresponding to the rendered
+   * {@link MasterEventTraceGraph} for a {@link UiEvent}.
+   * 
+   * @param frameBuffer the {@link Element} corresponding to the rendered canvas
+   *          tag
+   */
+  public final native void setRenderedMasterEventTraceGraph(Element frameBuffer) /*-{
+    this.masterGraph = frameBuffer;
+  }-*/;
+
+  public final native void setSelfTime(double t) /*-{
+    this.selfTime = t;
+  }-*/;
+
+  /**
+   * Caches the durations map on this UiEvent.
+   * 
+   * @param map the map we want to cache on the event
+   */
+  public final native void setTypeDurations(JsIntegerDoubleMap map) /*-{
+    this.durationMap = map;
+  }-*/;
+}

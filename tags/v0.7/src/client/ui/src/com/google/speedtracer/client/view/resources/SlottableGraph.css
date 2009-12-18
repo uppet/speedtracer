@@ -1,0 +1,22 @@
+/**
+ * Annotated CSS for SlottableGraph.java.
+ */
+@sprite .removeButton {
+  gwt-image: "removeButton";
+  position: absolute;
+  display: none;
+  width: 25px;
+  height: 25px;
+  bottom: 4px;
+  cursor: pointer;
+}
+
+.proxyDiv {
+  position: relative;
+  width: 100%;
+  height: 76px;
+  opacity: 0.5;
+  display: none;
+  z-index: 50;
+  margin-top: -76px;
+}

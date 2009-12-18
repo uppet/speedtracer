@@ -1,0 +1,37 @@
+hintlet_cache_control.js
+
+# This file tests the rule in hintlet_cache_control.js:
+#   'The following resources are missing a cache expiration...' 
+# Be careful to only trigger the specific rule you're interested in, 
+# since there are several rules defined in this file.
+
+# Input Record 1
+# Expected: HINTLET RECORD
+# 
+{"data":{"headers":{"Cache-Control":"private","Content-Encoding":"gzip","Content-Length":"6104","Content-Type":"text/css; charset=UTF-8","Date":"Mon, 07 Sep 1998 17:43:35 GMT"},"resourceId":"0NetworkResourceEvent19","responseCode":200,"url":"http://www.example.com/styles.css"},"time":1,"type":23}
+
+# Input Record 2
+# Expected: none
+# same as record 1, but Marked explicitly not to cache
+{"data":{"headers":{"Cache-control":"no-cache, no-store","Content-Encoding":"gzip","Content-Length":"6104","Content-Type":"text/css; charset=UTF-8","Date":"Mon, 07 Sep 1998 17:43:35 GMT"},"resourceId":"0NetworkResourceEvent19","responseCode":200,"url":"https://www.google.com/accounts/foo.css"},"time":2,"type":23}
+
+# Input Record 3
+# Expected: none
+# Same as record 1, but has a cookie
+{"data":{"headers":{"Set-Cookie":"TESTCOOKIE","Cache-Control":"private", "Content-Encoding":"gzip","Content-Length":"6104","Content-Type":"text/css; charset=UTF-8","Date":"Mon, 07 Sep 1998 17:43:35 GMT"},"resourceId":"0NetworkResourceEvent19","responseCode":200,"url":"http://www.example.com/styles.css"},"time":3,"type":23}
+
+# Input Record 4
+# Expected none
+# same as record 1, but has a non-cacheable response
+{"data":{"headers":{"Cache-Control":"private","Content-Encoding":"gzip","Content-Length":"6104","Content-Type":"text/css; charset=UTF-8","Date":"Mon, 07 Sep 1998 17:43:35 GMT"},"resourceId":"0NetworkResourceEvent19","responseCode":404,"url":"http://www.example.com/styles.css"},"time":4,"type":23}
+
+# Input Record 5
+# Expected none
+# same as record 1, but has a non cacheable type
+{"data":{"headers":{"Cache-Control":"private","Content-Encoding":"gzip","Content-Length":"6104","Content-Type":"text/html; charset=UTF-8","Date":"Mon, 07 Sep 1998 17:43:35 GMT"},"resourceId":"0NetworkResourceEvent19","responseCode":200,"url":"http://www.example.com/sample.html"},"time":5,"type":23}
+
+# Input Record 6
+# Expected none
+# same as record 1, but has an explicit expiration
+{"data":{"headers":{"Cache-Control":"private","Content-Encoding":"gzip","Content-Length":"6104","Content-Type":"text/css; charset=UTF-8","Date":"Mon, 07 Sep 1998 17:43:35 GMT","Expires":"Mon, 01-Jan-2030 00:00:00 GMT"},"resourceId":"0NetworkResourceEvent19","responseCode":200,"url":"http://www.example.com/styles.css"},"time":6,"type":23}
+hintlet_cache_control.js

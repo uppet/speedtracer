@@ -1,0 +1,30 @@
+hintlet_gwt_detect.js
+
+# This test focuses on the recommendations for code splitting
+
+# Host page 
+# NETWORK RESOURCE RESPONSE
+{"type":23,"time":1.0,"data":{"resourceId":"0-13","mimeType":"text/html","headers":{"Date":"Tue, 24 Nov 2009 15:43:52 GMT","Content-Length":"-1","Last-Modified":"Tue, 10 Nov 2009 16:29:03 GMT","Server":"Apache/2.0.55 (Ubuntu)","ETag":"\"5d5347-189-47806cee391c0\"","Content-Type":"text/html","Accept-Ranges":"bytes"},"responseCode":200,"isCached":false,"url":"http://www.example.com/timely/SpeedTracerDemoApp.html"},"sequence":10}
+# NETWORK RESOURCE FINISH
+{"type":22,"time":1.1,"data":{"resourceId":"0-13","contentLength":"393"},"sequence":11}
+
+# GWT selection script
+# NETWORK RESOURCE RESPONSE
+{"type":23,"time":2.0,"data":{"resourceId":"0-14","mimeType":"application/x-javascript","headers":{"Cache-Control": "no-cache","Date":"Tue, 24 Nov 2009 15:43:53 GMT","Content-Length":"-2","Last-Modified":"Tue, 10 Nov 2009 16:29:06 GMT","Server":"Apache/2.0.55 (Ubuntu)","ETag":"\"f892ed-18cb-47806cf115880\"","Content-Type":"application/x-javascript","Accept-Ranges":"bytes"},"responseCode":200,"isCached":false,"url":"http://www.example.com/timely/SpeedTracerDemoApp/SpeedTracerDemoApp.nocache.js"},"sequence":20}
+# NETWORK RESOURCE FINISH
+{"type":22,"time":2.0,"data":{"resourceId":"0-14","contentLength":"6347"},"sequence":21}
+
+# GWT Initial download (strongname file) 
+#   Network Resource Start
+{"type":24,"time":4.5,"data":{"resourceId":"0-17","url":"http://www.example.com/timely/SpeedTracerDemoApp/DA85A01950553A52FB8150E588B71041.cache.html"},"sequence":30}
+
+# Network Resource Response
+{"type":23,"time":5.0,"data":{"resourceId":"0-17","mimeType":"text/html","headers":{"Date":"Tue, 24 Nov 2009 15:30:36 GMT","Content-Length":"-3","Last-Modified":"Tue, 10 Nov 2009 16:29:06 GMT","Server":"Apache/2.0.55 (Ubuntu)","ETag":"\"1b5892b-20c81-47806cf115880\"","Content-Type":"text/html","Accept-Ranges":"bytes"},"responseCode":200,"isCached":false,"url":"http://www.example.com/timely/SpeedTracerDemoApp/DA85A01950553A52FB8150E588B71041.cache.html"},"sequence":40}
+
+#   Network Resource Finish
+# HINT: should be marked for size
+{"type":22,"time":500.5,"data":{"resourceId":"0-17","contentLength":"1342730"}, "sequence":50}
+
+# Parse HTML, should be tag
+# HINT: Should be tagged for parse + fetch time
+{"type":4, "time":3000.0, "children":[], "duration": 500.0, "sequence":60}
