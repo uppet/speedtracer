@@ -20,6 +20,7 @@ import com.google.gwt.chrome.crx.client.events.DevToolsPageEvent.Listener;
 import com.google.gwt.chrome.crx.client.events.DevToolsPageEvent.PageEvent;
 import com.google.gwt.chrome.crx.client.events.Event.ListenerHandle;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.user.client.Window;
 import com.google.speedtracer.client.model.DataModel.DataInstance;
 import com.google.speedtracer.client.model.EventVisitor.PostOrderVisitor;
 import com.google.speedtracer.client.model.EventVisitor.PreOrderVisitor;
@@ -37,7 +38,7 @@ public class DevToolsDataInstance extends DataInstance {
    * Proxy class that normalizes data coming in from the devtools API into a
    * digestable form, and then forwards it on to the DevToolsDataInstance.
    */
-  static class DevToolsDataProxy {
+  public static class DevToolsDataProxy {
     /**
      * Simple routing dispatcher used by the DevToolsDataProxy to quickly route.
      */
@@ -60,6 +61,7 @@ public class DevToolsDataInstance extends DataInstance {
     private double baseTime = -1;
 
     private DevToolsDataInstance dataInstance;
+
     private final Dispatcher dispatcher;
 
     private ListenerHandle listenerHandle;
@@ -75,21 +77,31 @@ public class DevToolsDataInstance extends DataInstance {
     // Channel.
     private boolean usingLegacyResourceConverter = false;
 
-    DevToolsDataProxy() {
+    public DevToolsDataProxy() {
       dispatcher = createDispatcher(this);
     }
 
+    public final void dispatchPageEvent(PageEvent event) {
+      dispatcher.invoke(event.getMethod(), event);
+    }
+
+    protected void connectToDataSource(int tabId) {
+      this.listenerHandle = DevTools.getTabEvents(tabId).getPageEvent().addListener(
+          new Listener() {
+            public void onPageEvent(PageEvent event) {
+              dispatchPageEvent(event);
+            }
+          });
+    }
+
     void connectToDevTools(int tabId, final DevToolsDataInstance dataInstance) {
+      log(dataInstance);
+      // Connect to the devtools API as the data source.
       if (this.dataInstance == null) {
         this.dataInstance = dataInstance;
         this.resourceConverter = new InspectorResourceConverterImpl(this);
       }
-      this.listenerHandle = DevTools.getTabEvents(tabId).getPageEvent().addListener(
-          new Listener() {
-            public void onPageEvent(PageEvent event) {
-              dispatcher.invoke(event.getMethod(), event);
-            }
-          });
+      connectToDataSource(tabId);
     }
 
     void disconnect() {
@@ -104,7 +116,10 @@ public class DevToolsDataInstance extends DataInstance {
       return baseTime;
     }
 
-    // Should only be called by InspectorResourceConverter.
+    private native void log(Object msg) /*-{
+      console.log(msg);
+    }-*/;
+    
     void onEventRecord(EventRecord record) {
       dataInstance.onEventRecord(record);
     }
@@ -179,6 +194,20 @@ public class DevToolsDataInstance extends DataInstance {
    */
   public static DevToolsDataInstance create(int tabId) {
     DevToolsDataProxy proxy = new DevToolsDataProxy();
+    DevToolsDataInstance dataInstance = createImpl(tabId, proxy);
+    return dataInstance;
+  }
+
+  /**
+   * Constructs and returns a {@link DevToolsDataIstance} after wiring it up to
+   * receive events over the extensions-devtools API.
+   * 
+   * @param tabId the tab that we want to connec to.
+   * @param proxy an externally supplied proxy to act as the record
+   *          transformation layer
+   * @return a newly wired up {@link DevToolsDataInstance}.
+   */
+  public static DevToolsDataInstance create(int tabId, DevToolsDataProxy proxy) {
     DevToolsDataInstance dataInstance = createImpl(tabId, proxy);
     return dataInstance;
   }

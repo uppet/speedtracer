@@ -28,7 +28,9 @@ import com.google.gwt.chrome.crx.client.Windows.Window;
 import com.google.gwt.chrome.crx.client.events.BrowserActionEvent;
 import com.google.gwt.chrome.crx.client.events.ConnectEvent;
 import com.google.gwt.chrome.crx.client.events.MessageEvent;
+import com.google.gwt.chrome.crx.client.events.DevToolsPageEvent.PageEvent;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.events.client.Event;
 import com.google.gwt.events.client.EventListener;
 import com.google.speedtracer.client.DataLoader.EventRecordMessageEvent;
@@ -44,6 +46,8 @@ import com.google.speedtracer.client.model.LoadFileDataInstance;
 import com.google.speedtracer.client.model.Model;
 import com.google.speedtracer.client.model.TabDescription;
 import com.google.speedtracer.client.model.DataModel.DataInstance;
+import com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy;
+import com.google.speedtracer.client.util.JSON;
 import com.google.speedtracer.client.util.dom.WindowExt;
 
 import java.util.HashMap;
@@ -171,10 +175,10 @@ public abstract class BackgroundPage extends Extension {
    */
   private static class TabModel {
     WindowChannel.Client channel = null;
+    Icon currentIcon;
     DataInstance dataInstance;
     boolean monitorClosed = true;
     TabDescription tabDescription = null;
-    Icon currentIcon;
 
     TabModel(Icon icon) {
       this.currentIcon = icon;
@@ -187,9 +191,9 @@ public abstract class BackgroundPage extends Extension {
 
   private static final String MONITOR_RESOURCE_PATH = "monitor.html";
 
-  private final HashMap<Integer, BrowserConnectionState> browserConnectionMap = new HashMap<Integer, BrowserConnectionState>();
-
   private final MonitorTabBrowserAction browserAction = GWT.create(MonitorTabBrowserAction.class);
+
+  private final HashMap<Integer, BrowserConnectionState> browserConnectionMap = new HashMap<Integer, BrowserConnectionState>();
 
   /**
    * Our entry point function. All things start here.
@@ -199,47 +203,25 @@ public abstract class BackgroundPage extends Extension {
     // Chrome is "connected". Insert an entry for it.
     browserConnectionMap.put(CHROME_BROWSER_ID, new BrowserConnectionState());
 
-    GWT.create(PageActionInstaller.class);
+    GWT.create(BrowserActionStickyIcon.class);
     GWT.create(DataLoader.class);
 
     // The content script connect to us.
     Chrome.getExtension().getOnConnectEvent().addListener(
         new ConnectEvent.Listener() {
           public void onConnect(final Port port) {
-            if (port.getName().equals(PageActionInstaller.NAME)) {
+            String portName = port.getName();
+            if (portName.equals(BrowserActionStickyIcon.STICKY_PORT_NAME)) {
               int tabId = port.getTab().getId();
               // We want the icon to remain what it was before the page
               // transition.
               TabModel tabModel = browserConnectionMap.get(CHROME_BROWSER_ID).tabMap.get(tabId);
               setBrowserActionIcon(tabId, tabModel == null
                   ? browserAction.mtIcon() : tabModel.currentIcon, tabModel);
-            } else if (port.getName().equals(DataLoader.NAME)) {
-              // We are loading a file.
-              BrowserConnectionState browserConn = browserConnectionMap.get(FILE_BROWSER_ID);
-              if (browserConn == null) {
-                browserConn = new BrowserConnectionState();
-                browserConnectionMap.put(FILE_BROWSER_ID, browserConn);
-              }
-
-              // In situation where we open a file in a tab that was previously
-              // used to open a file... we dont care. Overwrite it.
-              final TabModel tabModel = new TabModel(browserAction.mtIcon());
-              tabModel.dataInstance = LoadFileDataInstance.create();
-              int tabId = port.getTab().getId();
-              browserConn.tabMap.put(tabId, tabModel);
-
-              // Connect the datainstance to receive data from the data_loader
-              port.getOnMessageEvent().addListener(new MessageEvent.Listener() {
-                public void onMessage(MessageEvent.Message message) {
-                  EventRecordMessageEvent evtRecordMessage = message.cast();
-                  tabModel.dataInstance.<LoadFileDataInstance> cast().onEventRecord(
-                      evtRecordMessage.getRecordString());
-                }
-              });
-
-              tabModel.tabDescription = TabDescription.create(tabId,
-                  port.getTab().getTitle(), port.getTab().getUrl());
-              openMonitor(FILE_BROWSER_ID, tabId, tabModel);
+            } else if (portName.equals(DataLoader.DATA_LOAD)
+                || portName.equals(DataLoader.RAW_DATA_LOAD)) {
+              // We are loading data.
+              doDataLoad(port);
             }
           }
         });
@@ -248,6 +230,68 @@ public abstract class BackgroundPage extends Extension {
     browserAction.addListener(new MonitorTabClickListener());
 
     initialize();
+  }
+
+  /**
+   * Helper function that loads data from a file. This should only get called
+   * when the port name is either {@link DataLoader.DATA_LOAD} or
+   * {@link DataLoader.RAW_DATA_LOAD}.
+   */
+  private void doDataLoad(final Port port) {
+    BrowserConnectionState browserConn = browserConnectionMap.get(FILE_BROWSER_ID);
+    if (browserConn == null) {
+      browserConn = new BrowserConnectionState();
+      browserConnectionMap.put(FILE_BROWSER_ID, browserConn);
+    }
+
+    // In situation where we open a file in a tab that was previously
+    // used to open a file... we dont care. Overwrite it.
+    final TabModel tabModel = new TabModel(browserAction.mtIcon());
+    int tabId = port.getTab().getId();
+
+    if (port.getName().equals(DataLoader.DATA_LOAD)) {
+      tabModel.dataInstance = LoadFileDataInstance.create(port);
+      browserConn.tabMap.put(tabId, tabModel);
+
+      // Connect the datainstance to receive data from the data_loader
+      port.getOnMessageEvent().addListener(new MessageEvent.Listener() {
+        public void onMessage(MessageEvent.Message message) {
+          EventRecordMessageEvent evtRecordMessage = message.cast();
+          tabModel.dataInstance.<LoadFileDataInstance> cast().onEventRecord(
+              evtRecordMessage.getRecordString());
+        }
+      });
+    } else {
+      // We are dealing with RAW data (untransformed inspector data) that still
+      // needs conversion.
+      final DevToolsDataProxy proxy = new DevToolsDataProxy() {
+        @Override
+        protected void connectToDataSource(int tabId) {
+          // Tell the data_loader content script to start sending.
+          port.postMessage(createAck());
+        }
+        
+        private native JavaScriptObject createAck() /*-{
+          return {ready: true};
+        }-*/;
+      };
+  
+      // Connect the datainstance to receive data from the data_loader
+      port.getOnMessageEvent().addListener(new MessageEvent.Listener() {
+        public void onMessage(MessageEvent.Message message) {
+          EventRecordMessageEvent evtRecordMessage = message.cast();
+          PageEvent pageEvent = JSON.parse(evtRecordMessage.getRecordString()).cast();
+          proxy.dispatchPageEvent(pageEvent);
+        }
+      });
+      
+      tabModel.dataInstance = DevToolsDataInstance.create(tabId, proxy);
+      browserConn.tabMap.put(tabId, tabModel);
+    }
+
+    tabModel.tabDescription = TabDescription.create(tabId,
+        port.getTab().getTitle(), port.getTab().getUrl());
+    openMonitor(FILE_BROWSER_ID, tabId, tabModel);
   }
 
   /**
@@ -384,7 +428,7 @@ public abstract class BackgroundPage extends Extension {
 
     });
   }
-  
+
   /**
    * Opens the monitor UI for a given tab, iff it is not already open.
    */

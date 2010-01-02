@@ -43,4 +43,8 @@ public class Port extends JavaScriptObject {
   public final native Tab getTab() /*-{
     return this.tab;
   }-*/;
+  
+  public final native void postMessage(JavaScriptObject msg) /*-{
+    this.postMessage(msg);
+  }-*/;
 }
