@@ -17,29 +17,13 @@ package com.google.speedtracer.client;
 
 import com.google.gwt.chrome.crx.client.ContentScript;
 import com.google.gwt.chrome.crx.client.ContentScript.ManifestInfo;
-import com.google.gwt.chrome.crx.client.events.MessageEvent;
 
 /**
  * Stub class with annotation so we can get the content script referenced in our
  * manifest.
  */
-@ManifestInfo(path = "data_loader.js", whiteList = {
-    "http://*/*", "https://*/*", "file:///*"}, runAt = ContentScript.DOCUMENT_END)
-public class DataLoader extends ContentScript {
-  /**
-   * Overlay type associated with the messages passed over postMessage from this
-   * content script.
-   */
-  public static class EventRecordMessageEvent extends MessageEvent {
-    protected EventRecordMessageEvent() {
-    }
-
-    public final native String getRecordString() /*-{
-      return this.record;
-    }-*/;
-  }
-
-  public static final String DATA_LOAD = "DATA_LOAD";
-  
-  public static final String RAW_DATA_LOAD = "RAW_DATA_LOAD";
+@ManifestInfo(path = "browser_action_sticky_icon.js", whiteList = {
+    "http://*/*", "https://*/*", "file:///*"}, runAt = ContentScript.DOCUMENT_START)
+public class BrowserActionStickyIcon extends ContentScript {
+  public static final String STICKY_PORT_NAME = "STICKY_ICON";
 }
