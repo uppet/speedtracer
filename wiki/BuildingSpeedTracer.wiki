@@ -52,7 +52,13 @@ To build a Debug build, all you need to do is set the 'config' property in Ant:
 
 To develop the Monitor, developers typically use GWT's development mode against the MonitorDebug.gwt.xml module.  This setup is configured to bypass the Chrome Extension and loads up some pre-defined data (See MockModelGenerators.java)  It also turns on a debugging log window and sets the CSS styling to output human readable styles.
 
-You can run the Monitor in GWT Development mode in either Safari or Chrome.  Because Speed Tracer is targeted at WebKit browsers and takes advantage of some HTML 5 and CSS 3 features that may not be present in Internet Explorer and Firefox, we do not recommend using those browsers for Speed Tracer development
+You can run the Monitor in GWT Development mode in either Safari or Chrome.  Because Speed Tracer is targeted at WebKit browsers and takes advantage of some HTML 5 and CSS 3 features that may not be present in Internet Explorer and Firefox, we do not recommend using those browsers for Speed Tracer development.
+
+To bring up the Monitor, run use the `MonitorDebug.gwt.xml` module and remove the others.  Additionally, you will need to add the parameter 'mock=true' to the URL as follows:
+
+{{{
+  http://localhost:8888/monitor.html?mock=true&gwt.hosted=1.2.3.4:9997
+}}}
 
 ==Troubleshooting==
  
