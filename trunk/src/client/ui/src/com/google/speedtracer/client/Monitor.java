@@ -294,7 +294,8 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
         + resources.eventTraceBreakdownCss().getText()
         + resources.mainGraphCss().getText()
         + resources.overViewGraphCss().getText()
-        + resources.monitorCss().getText());
+        + resources.monitorCss().getText()
+        + resources.sourceViewerCss().getText());
 
     final WindowExt window = getBackgroundView();
     channel = Client.connect(window, CHANNEL_NAME, this);

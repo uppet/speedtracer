@@ -139,7 +139,7 @@ public class EventRecord extends JavaScriptObject {
    * @return the data bag for this record.
    */
   protected final native DataBag getData() /*-{
-    return this.data;
+    return this.data || {};
   }-*/;
 
   /**

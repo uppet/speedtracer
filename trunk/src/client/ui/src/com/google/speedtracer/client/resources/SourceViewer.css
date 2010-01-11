@@ -1,0 +1,49 @@
+/**
+ * Annotated Css for SourceViewer.java.
+ */
+ @def headerHeight 16px;
+ 
+.base {
+  position: absolute;
+  background-color: #fff;
+  z-index: 201;
+  top:0;
+  left:0;
+  bottom:0;
+}
+
+.header {
+  position: relative;
+  background-color: #eef;
+  height: headerHeight;
+  overflow: hidden;
+}
+
+.titleText {
+  color: #777;
+  text-shadow: 2px 2px 2px #fff;
+  white-space: nowrap;
+}
+
+.closeLink {
+  position: absolute;
+  top:0;
+  right:0;
+  height: headerHeight;
+  background-color: #eef;
+  padding-left: 30px;
+}
+
+.frameWrapper {
+  position: absolute;
+  top: headerHeight;
+  left:0;
+  right:0;
+  bottom:0;
+}
+
+iframe {
+  border: 0;
+  width: 100%;
+  height: 100%;
+}

@@ -15,11 +15,15 @@
  */
 package com.google.speedtracer.client.visualizations.view;
 
+import com.google.gwt.dom.client.AnchorElement;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
+import com.google.gwt.dom.client.Style.Position;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.events.client.EventListenerRemover;
 import com.google.gwt.graphics.client.charts.ColorCodedDataList;
 import com.google.gwt.graphics.client.charts.ColorCodedValue;
@@ -42,22 +46,26 @@ import com.google.gwt.topspin.ui.client.MouseOutEvent;
 import com.google.gwt.topspin.ui.client.MouseOutListener;
 import com.google.gwt.topspin.ui.client.MouseOverEvent;
 import com.google.gwt.topspin.ui.client.MouseOverListener;
+import com.google.gwt.topspin.ui.client.ResizeEvent;
+import com.google.gwt.topspin.ui.client.ResizeListener;
 import com.google.gwt.topspin.ui.client.Select;
 import com.google.gwt.topspin.ui.client.Table;
 import com.google.gwt.topspin.ui.client.Widget;
+import com.google.speedtracer.client.SourceViewer;
 import com.google.speedtracer.client.MonitorResources.CommonResources;
+import com.google.speedtracer.client.SourceViewer.SourceViewerLoadedCallback;
 import com.google.speedtracer.client.model.AggregateTimeVisitor;
-import com.google.speedtracer.client.model.DomBindingEvent;
 import com.google.speedtracer.client.model.DomEvent;
 import com.google.speedtracer.client.model.EvalScript;
 import com.google.speedtracer.client.model.EventRecordType;
 import com.google.speedtracer.client.model.EventVisitorTraverser;
 import com.google.speedtracer.client.model.HintRecord;
-import com.google.speedtracer.client.model.JavaScriptCompileEvent;
+import com.google.speedtracer.client.model.LayoutEvent;
 import com.google.speedtracer.client.model.LogEvent;
 import com.google.speedtracer.client.model.LotsOfLittleEvents;
 import com.google.speedtracer.client.model.PaintEvent;
 import com.google.speedtracer.client.model.ParseHtmlEvent;
+import com.google.speedtracer.client.model.RecalcStyleEvent;
 import com.google.speedtracer.client.model.TimerCleared;
 import com.google.speedtracer.client.model.TimerFiredEvent;
 import com.google.speedtracer.client.model.TimerInstalled;
@@ -68,13 +76,16 @@ import com.google.speedtracer.client.model.XhrLoadEvent;
 import com.google.speedtracer.client.model.XhrReadyStateChangeEvent;
 import com.google.speedtracer.client.model.EventVisitor.PostOrderVisitor;
 import com.google.speedtracer.client.model.EventVisitor.PreOrderVisitor;
+import com.google.speedtracer.client.util.Command;
 import com.google.speedtracer.client.util.IterableFastStringMap;
 import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.JsIntegerDoubleMap;
 import com.google.speedtracer.client.util.JsIntegerMap;
 import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.util.dom.DocumentExt;
+import com.google.speedtracer.client.util.dom.WindowExt;
 import com.google.speedtracer.client.view.DetailView;
+import com.google.speedtracer.client.view.HoveringPopup;
 import com.google.speedtracer.client.view.MainTimeLine;
 import com.google.speedtracer.client.visualizations.model.LogMessageVisitor;
 import com.google.speedtracer.client.visualizations.model.SluggishnessModel;
@@ -143,7 +154,8 @@ public class SluggishnessDetailView extends DetailView {
    */
   public interface Resources extends CurrentSelectionMarker.Resources,
       FilteringScrollTable.Resources, PieChart.Resources, CommonResources,
-      HintletRecordsTree.Resources, LazyEventTree.Resources {
+      HintletRecordsTree.Resources, LazyEventTree.Resources,
+      HoveringPopup.Resources, SourceViewer.Resources {
     @Source("resources/magnify-16px.png")
     ImageResource filterPanelIcon();
 
@@ -434,8 +446,14 @@ public class SluggishnessDetailView extends DetailView {
       private Table detailsTable;
       private Container detailsTableContainer;
       private final UiEvent event;
+      private TableCellElement eventTraceContainerCell;
       private HintletRecordsTree hintletTree;
+
+      private SourceViewer sourceViewer;
+
       private DivElement treeDiv;
+
+      private Command heightFixer;
 
       protected UiEventDetails(UiEvent event, TableRow parent) {
         super(parent);
@@ -495,7 +513,7 @@ public class SluggishnessDetailView extends DetailView {
         TableRowElement row = detailsLayout.insertRow(-1);
 
         // Create the first column.
-        TableCellElement leftCell = row.insertCell(-1);
+        eventTraceContainerCell = row.insertCell(-1);
 
         // Add the piechart and detailsTable to the second column
         TableCellElement detailsTableCell = row.insertCell(-1);
@@ -512,12 +530,34 @@ public class SluggishnessDetailView extends DetailView {
             pieChartHeight, event);
 
         // Now we populate the first column.
-        Container leftContainer = new DefaultContainerImpl(leftCell);
-        treeDiv = leftContainer.getDocument().createDivElement();
-        leftCell.appendChild(treeDiv);
+        Container eventTraceContainer = new DefaultContainerImpl(
+            eventTraceContainerCell);
+        treeDiv = eventTraceContainer.getDocument().createDivElement();
+        eventTraceContainerCell.appendChild(treeDiv);
 
         hintletTree = createHintletTree(treeDiv);
-        createEventTrace(leftContainer, pieChartHeight);
+        createEventTrace(eventTraceContainer, pieChartHeight);
+
+        // Ensure that window resizes don't mess up our row size due to text
+        // reflow. Things may need to grow or shrink.
+        ResizeEvent.addResizeListener(WindowExt.get(), WindowExt.get(),
+            new ResizeListener() {
+              public void onResize(ResizeEvent event) {
+                if (heightFixer == null && getParentRow().isExpanded()) {
+                  heightFixer = new Command() {
+                    @Override
+                    public void execute() {
+                      // We dont want to do this for each resize, but once at
+                      // the end.
+                      fixHeightOfParentRow();
+                      heightFixer = null;
+                    }
+                  };
+
+                  Command.defer(heightFixer, 200);
+                }
+              }
+            });
 
         return elem;
       }
@@ -538,7 +578,6 @@ public class SluggishnessDetailView extends DetailView {
           final UiEvent e) {
         IterableFastStringMap<String> detailsMap = getDetailsMapForEvent(e);
         final Table table = new Table(parent);
-        table.setFixedLayout(true);
 
         detailsMap.iterate(new IterableFastStringMap.IterationCallBack<String>() {
           private boolean hasRow = false;
@@ -559,11 +598,87 @@ public class SluggishnessDetailView extends DetailView {
             TableRowElement row = table.appendRow();
             TableCellElement cell = row.insertCell(-1);
             cell.setClassName(css.detailsTableHeader());
-            cell.setInnerText(key.substring(1));
+            String rowKey = key.substring(1);
+            cell.setInnerText(rowKey);
             cell = row.insertCell(-1);
-            cell.setInnerText(val);
+            fillDetailRowValue(cell, rowKey, val);
           }
 
+          /**
+           * Populates the value cell for a Row in the Details Table for a
+           * single node.
+           */
+          private void fillDetailRowValue(TableCellElement cell, String key,
+              String val) {
+            if (key.equals(STACK_TRACE_KEY)) {
+              formatStackTrace(cell, val);
+            } else {
+              cell.setInnerText(val);
+            }
+          }
+
+          private void formatStackTrace(TableCellElement cell, String val) {
+            // We perform special formatting for the stack trace value. It
+            // should be an array of stack frame descriptions.
+            String[] frames = val.split(";");
+            for (int i = 0, n = frames.length; i < n; i++) {
+              String[] stackFrame = frames[i].split(",");
+              final String resourceUrl = stackFrame[1];
+
+              // Presenting the entire URL is kinda gross. Lets just shot the
+              // last path component.
+              String resource = resourceUrl.substring(
+                  resourceUrl.lastIndexOf("/") + 1, resourceUrl.length());
+
+              if (resource.equals("")) {
+                resource = resourceUrl;
+              }
+
+              // We convert lineNumber to a 1 based index.
+              final int lineNumber = Integer.parseInt(stackFrame[2]) + 1;
+              final int colNumber = Integer.parseInt(stackFrame[3]);
+              
+              // Prefer the last argument
+              String functionName = stackFrame[5] + "()";
+              // but if it isnt there, try the 3rd.
+              functionName = (functionName.equals("undefined()"))
+                  ? stackFrame[4] + "()" : functionName;
+              // If we still dont have anything, replace with [anonymous]
+              functionName = (functionName.equals("undefined()"))
+                  ? "[unknown]" : functionName;
+
+              // Render the stack trace. And initialize the SourceViewer on
+              // the eventTraceContainerCell
+              Document document = cell.getOwnerDocument();
+              cell.appendChild(document.createTextNode(resource + "::"));
+              cell.appendChild(document.createTextNode(functionName + " "));
+
+              // We make a link out of the line number which should pop open
+              // the Source Viewer when clicked.
+              AnchorElement lineLink = document.createAnchorElement();
+              lineLink.setInnerText("Line " + lineNumber);
+              lineLink.setHref("javascript:;");
+              cell.appendChild(lineLink);
+              cell.appendChild(document.createBRElement());
+              removerHandles.add(ClickEvent.addClickListener(lineLink,
+                  lineLink, new ClickListener() {
+                    public void onClick(ClickEvent event) {
+                      // TODO(jaimeyap): Put up a spinner or something. It may
+                      // take a while to load the resource.
+                      ensureSourceViewer(resourceUrl,
+                          new SourceViewerLoadedCallback() {
+                            public void onSourceViewerLoaded(SourceViewer viewer) {
+                              // The viewer should not be loaded at the URL we
+                              // care about.
+                              sourceViewer.show();
+                              sourceViewer.highlightLine(lineNumber);
+                              sourceViewer.markColumn(lineNumber, colNumber);
+                            }
+                          });
+                    }
+                  }));
+            }
+          }
         });
 
         table.addStyleName(css.detailsTable());
@@ -761,6 +876,28 @@ public class SluggishnessDetailView extends DetailView {
         }
       }
 
+      /**
+       * Make sure the source viewer exists and is loaded at the specified
+       * resource URL.
+       */
+      private void ensureSourceViewer(String resourceUrl,
+          final SourceViewerLoadedCallback callback) {
+        if (sourceViewer == null) {
+          SourceViewer.create(eventTraceContainerCell, resourceUrl, resources,
+              new SourceViewerLoadedCallback() {
+                public void onSourceViewerLoaded(SourceViewer viewer) {
+                  UiEventDetails.this.sourceViewer = viewer;
+                  viewer.getElement().getStyle().setWidth(50, Unit.PCT);
+
+                  // Now forward to the callback.
+                  callback.onSourceViewerLoaded(viewer);
+                }
+              });
+        } else {
+          sourceViewer.loadResource(resourceUrl, callback);
+        }
+      }
+
       private void fixHeightOfParentRow() {
         // Our height should be the size of the details panel + the row height
         int height = getElement().getOffsetHeight()
@@ -785,6 +922,8 @@ public class SluggishnessDetailView extends DetailView {
         this.uiEventDetails = uiEventDetails;
       }
     }
+
+    private static final String STACK_TRACE_KEY = "Stack Trace";
 
     public EventFilterPanel eventFilterPanel;
 
@@ -996,11 +1135,14 @@ public class SluggishnessDetailView extends DetailView {
         details.put("Duration", TimeStampFormatter.formatMilliseconds(
             e.getDuration(), 3));
       }
+      String backTrace;
       switch (e.getType()) {
-        case DomBindingEvent.TYPE:
-          DomBindingEvent domBindingEvent = e.cast();
-          details.put("Attribute", domBindingEvent.getName());
-          details.put("Get/Set", domBindingEvent.isGetter() ? "get" : "set");
+        case LayoutEvent.TYPE:
+          LayoutEvent layoutEvent = e.cast();
+          backTrace = layoutEvent.getBackTrace();
+          if (backTrace != null) {
+            details.put(STACK_TRACE_KEY, backTrace);
+          }
           break;
         case DomEvent.TYPE:
           // TODO(jaimeyap): Re-instrument the following.
@@ -1013,11 +1155,12 @@ public class SluggishnessDetailView extends DetailView {
            * ()));
            */
           break;
-        case JavaScriptCompileEvent.TYPE:
-          JavaScriptCompileEvent javaScriptCompileEvent = e.cast();
-          details.put("filename", javaScriptCompileEvent.getFilename());
-          details.put("baseline", javaScriptCompileEvent.getBaseline() + "");
-          details.put("length", javaScriptCompileEvent.getLength() + "");
+        case RecalcStyleEvent.TYPE:
+          RecalcStyleEvent styleEvent = e.cast();
+          backTrace = styleEvent.getBackTrace();
+          if (backTrace != null) {
+            details.put(STACK_TRACE_KEY, backTrace);
+          }
           break;
         case LotsOfLittleEvents.TYPE:
           JSOArray<TypeCountDurationTuple> tuples = e.<LotsOfLittleEvents> cast().getTypeCountDurationTuples();
@@ -1155,11 +1298,9 @@ public class SluggishnessDetailView extends DetailView {
     // the cursor leaves the detail view.
     MouseOutEvent.addMouseOutListener(this, this.getElement(),
         new MouseOutListener() {
-
           public void onMouseOut(MouseOutEvent event) {
             getVisualization().getCurrentEventMarkerModel().setNoSelection();
           }
-
         });
 
     // Start with the selection hidden.

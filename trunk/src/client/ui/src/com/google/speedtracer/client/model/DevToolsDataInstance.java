@@ -20,7 +20,6 @@ import com.google.gwt.chrome.crx.client.events.DevToolsPageEvent.Listener;
 import com.google.gwt.chrome.crx.client.events.DevToolsPageEvent.PageEvent;
 import com.google.gwt.chrome.crx.client.events.Event.ListenerHandle;
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.user.client.Window;
 import com.google.speedtracer.client.model.DataModel.DataInstance;
 import com.google.speedtracer.client.model.EventVisitor.PostOrderVisitor;
 import com.google.speedtracer.client.model.EventVisitor.PreOrderVisitor;
@@ -95,7 +94,6 @@ public class DevToolsDataInstance extends DataInstance {
     }
 
     void connectToDevTools(int tabId, final DevToolsDataInstance dataInstance) {
-      log(dataInstance);
       // Connect to the devtools API as the data source.
       if (this.dataInstance == null) {
         this.dataInstance = dataInstance;
@@ -115,11 +113,7 @@ public class DevToolsDataInstance extends DataInstance {
     double getBaseTime() {
       return baseTime;
     }
-
-    private native void log(Object msg) /*-{
-      console.log(msg);
-    }-*/;
-    
+ 
     void onEventRecord(EventRecord record) {
       dataInstance.onEventRecord(record);
     }

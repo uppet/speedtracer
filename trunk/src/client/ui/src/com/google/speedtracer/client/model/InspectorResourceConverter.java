@@ -27,145 +27,6 @@ import com.google.speedtracer.client.util.JsIntegerMap;
 public abstract class InspectorResourceConverter {
 
   /**
-   * Takes in an Inspector style updateResource message and updates our network
-   * resource tracking state for the associated resource.
-   * 
-   * @param resourceId The Id of the resource
-   * @param updateResource The update payload
-   */
-  public abstract void onUpdateResource(int resourceId,
-      JavaScriptObject updateResource);
-
-  /**
-   * Calls to updateResource also pass along boolean fields that indicate
-   * whether or not the relevant fields are present. Once we have accumulated
-   * all the fields we care about for a specific checkpoint event, we shoot it
-   * off.
-   */
-  private static class UpdateResource extends JavaScriptObject {
-    @SuppressWarnings("unused")
-    protected UpdateResource() {
-    }
-
-    final native boolean didCompletionChange() /*-{
-      return !!this.didCompletionChange;
-    }-*/;
-
-    final native boolean didFail() /*-{
-      return !!this.failed;
-    }-*/;
-
-    final native boolean didFinish() /*-{
-      return !!this.finished;
-    }-*/;
-
-    final native boolean didLengthChange() /*-{
-      return !!this.didLengthChange;
-    }-*/;
-
-    final native boolean didResponseChange() /*-{
-      return !!this.didResponseChange;
-    }-*/;
-
-    final native boolean didTimingChange() /*-{
-      return !!this.didTimingChange;
-    }-*/;
-
-    final native int getContentLength() /*-{
-      return this.contentLength;
-    }-*/;
-
-    final native double getEndTime() /*-{
-      return this.endTime;
-    }-*/;
-
-    final native String getMimeType() /*-{
-      return this.mimeType;
-    }-*/;
-
-    final native HeaderMap getResponseHeaders() /*-{
-      return this.responseHeaders;
-    }-*/;
-
-    final native double getResponseReceivedTime() /*-{
-      return this.responseReceivedTime;
-    }-*/;
-
-    final native double getStartTime() /*-{
-      return this.startTime;
-    }-*/;
-
-    final native int getStatusCode() /*-{
-      return this.statusCode;
-    }-*/;
-
-    final native String getLastPathComponent() /*-{
-      return this.lastPathComponent;
-    }-*/;
-
-    final native HeaderMap getRequestHeaders() /*-{
-      return this.requestHeaders;
-    }-*/;
-
-    final native String getRequestMethod() /*-{
-      return this.requestMethod;
-    }-*/;
-
-    final native String getUrl() /*-{
-      return this.url;
-    }-*/;
-
-    final native boolean isMainResource() /*-{
-      return !!this.mainResource;
-    }-*/;
-
-    final native boolean wasCached() /*-{
-      return !!this.cached;
-    }-*/;
-
-    final native void setUrl(String url) /*-{
-      this.url = url;
-    }-*/;
-  }
-
-  /**
-   * Simple state transition tracker to accumulate the state for a specific
-   * network resource..
-   */
-  protected class ResourceStatus {
-    // The possible states in the state machine.
-    static final int ADDED_UNSENT = 0;
-    static final int SENT_ERROR = 4;
-    static final int SENT_FINISH = 3;
-    static final int SENT_RESPONSE_RECEIVED = 2;
-    static final int SENT_START = 1;
-
-    int contentLength = -1;
-
-    int currentState = ADDED_UNSENT;
-
-    final String resourceId;
-
-    public ResourceStatus(String resourceId) {
-      this.resourceId = resourceId;
-    }
-
-    public void setContentLength(int contentLength) {
-      this.contentLength = contentLength;
-    }
-  }
-
-  private final DevToolsDataProxy proxy;
-
-  protected DevToolsDataProxy getProxy() {
-    return proxy;
-  }
-
-  public InspectorResourceConverter(DevToolsDataProxy proxy) {
-    this.proxy = proxy;
-  }
-
-  /**
    * TODO (jaimeyap): We have the InspectorResourceConverter be an abstract base
    * class for now in order to provide a legacy implementation that we swap out
    * at runtime to support WebKit revisions before r52154. We should remove that
@@ -304,7 +165,7 @@ public abstract class InspectorResourceConverter {
     }
 
     /**
-     * Updates the tracked content length
+     * Updates the tracked content length.
      * 
      * @param status
      * @param resource
@@ -323,5 +184,144 @@ public abstract class InspectorResourceConverter {
       }
       return millis - getProxy().getBaseTime();
     }
+  }
+
+  /**
+   * Simple state transition tracker to accumulate the state for a specific
+   * network resource..
+   */
+  protected class ResourceStatus {
+    // The possible states in the state machine.
+    static final int ADDED_UNSENT = 0;
+    static final int SENT_ERROR = 4;
+    static final int SENT_FINISH = 3;
+    static final int SENT_RESPONSE_RECEIVED = 2;
+    static final int SENT_START = 1;
+
+    int contentLength = -1;
+
+    int currentState = ADDED_UNSENT;
+
+    final String resourceId;
+
+    public ResourceStatus(String resourceId) {
+      this.resourceId = resourceId;
+    }
+
+    public void setContentLength(int contentLength) {
+      this.contentLength = contentLength;
+    }
+  }
+
+  /**
+   * Calls to updateResource also pass along boolean fields that indicate
+   * whether or not the relevant fields are present. Once we have accumulated
+   * all the fields we care about for a specific checkpoint event, we shoot it
+   * off.
+   */
+  private static class UpdateResource extends JavaScriptObject {
+    @SuppressWarnings("unused")
+    protected UpdateResource() {
+    }
+
+    final native boolean didCompletionChange() /*-{
+      return !!this.didCompletionChange;
+    }-*/;
+
+    final native boolean didFail() /*-{
+      return !!this.failed;
+    }-*/;
+
+    final native boolean didFinish() /*-{
+      return !!this.finished;
+    }-*/;
+
+    final native boolean didLengthChange() /*-{
+      return !!this.didLengthChange;
+    }-*/;
+
+    final native boolean didResponseChange() /*-{
+      return !!this.didResponseChange;
+    }-*/;
+
+    final native boolean didTimingChange() /*-{
+      return !!this.didTimingChange;
+    }-*/;
+
+    final native int getContentLength() /*-{
+      return this.contentLength;
+    }-*/;
+
+    final native double getEndTime() /*-{
+      return this.endTime;
+    }-*/;
+
+    final native String getLastPathComponent() /*-{
+      return this.lastPathComponent;
+    }-*/;
+
+    final native String getMimeType() /*-{
+      return this.mimeType;
+    }-*/;
+
+    final native HeaderMap getRequestHeaders() /*-{
+      return this.requestHeaders;
+    }-*/;
+
+    final native String getRequestMethod() /*-{
+      return this.requestMethod;
+    }-*/;
+
+    final native HeaderMap getResponseHeaders() /*-{
+      return this.responseHeaders;
+    }-*/;
+
+    final native double getResponseReceivedTime() /*-{
+      return this.responseReceivedTime;
+    }-*/;
+
+    final native double getStartTime() /*-{
+      return this.startTime;
+    }-*/;
+
+    final native int getStatusCode() /*-{
+      return this.statusCode;
+    }-*/;
+
+    final native String getUrl() /*-{
+      return this.url;
+    }-*/;
+
+    final native boolean isMainResource() /*-{
+      return !!this.mainResource;
+    }-*/;
+
+    final native void setUrl(String url) /*-{
+      this.url = url;
+    }-*/;
+
+    final native boolean wasCached() /*-{
+      return !!this.cached;
+    }-*/;
+  }
+
+  private final DevToolsDataProxy proxy;
+
+  public InspectorResourceConverter(DevToolsDataProxy proxy) {
+    this.proxy = proxy;
+  }
+
+  /**
+   * Takes in an Inspector style updateResource message and updates our network
+   * resource tracking state for the associated resource.
+   * 
+   * @param resourceId The Id of the resource
+   * @param updateResource The update payload
+   */
+  public abstract void onUpdateResource(int resourceId,
+      JavaScriptObject updateResource);
+
+  protected DevToolsDataProxy getProxy() {
+    return proxy;
   }
 }
