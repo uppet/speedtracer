@@ -24,6 +24,8 @@
   min-height: 120px;
   border-top: 1px solid #888;
   background-color: #fff;
+  overflow: visible;
+  position:relative;
 }
 
 .row {

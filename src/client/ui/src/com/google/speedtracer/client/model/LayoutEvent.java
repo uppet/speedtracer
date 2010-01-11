@@ -23,4 +23,8 @@ public class LayoutEvent extends UiEvent {
 
   protected LayoutEvent() {
   }
+  
+  public final String getBackTrace() {
+    return getData().getStringProperty("backTrace");
+  }
 }

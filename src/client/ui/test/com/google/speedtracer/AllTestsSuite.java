@@ -16,6 +16,7 @@
 package com.google.speedtracer;
 
 import com.google.gwt.junit.tools.GWTTestSuite;
+import com.google.speedtracer.client.SourceViewer;
 import com.google.speedtracer.client.WindowChannelTests;
 import com.google.speedtracer.client.model.InspectorResourceConverterTests;
 import com.google.speedtracer.client.timeline.GraphModelTests;
@@ -43,7 +44,8 @@ public class AllTestsSuite extends GWTTestSuite {
     suite.addTestSuite(ModelDataTests.class);
     suite.addTestSuite(PostMessageChannelTests.class);
     suite.addTestSuite(EventFilterTests.class);  
-    suite.addTestSuite(InspectorResourceConverterTests.class);  
+    suite.addTestSuite(InspectorResourceConverterTests.class);
+    suite.addTestSuite(SourceViewer.class);
     return suite;
   }
 

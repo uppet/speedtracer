@@ -16,6 +16,7 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.chrome.crx.client.Tabs;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.speedtracer.client.util.JSOArray;
 
@@ -45,7 +46,7 @@ public class DataModelImpl extends DataModel {
 
     // Create a new tab at the save data template page. Give it the same query
     // string as our own.
-    Tabs.create("monitor/SpeedTracerData.html"
+    Tabs.create(GWT.getModuleBaseURL() + "SpeedTracerData.html"
         + Window.Location.getQueryString());
   }
 
