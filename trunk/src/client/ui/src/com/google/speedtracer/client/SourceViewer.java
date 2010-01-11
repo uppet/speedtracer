@@ -279,7 +279,7 @@ public class SourceViewer {
   public void loadResource(final String resource,
       final SourceViewerLoadedCallback callback) {
     // Early out if this frame already points at the requested resource.
-    if (currentResourceUrl.equals(resource)) {
+    if (resource.equals(currentResourceUrl)) {
       // This method is expected to be asynchronous.
       Command.defer(new Command() {
         @Override
