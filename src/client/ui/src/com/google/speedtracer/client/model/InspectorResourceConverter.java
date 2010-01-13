@@ -109,11 +109,13 @@ public abstract class InspectorResourceConverter {
       // TODO(jaimeyap): Verify that these two fields always get set as
       // expected.
       if (update.didResponseChange() && update.didTimingChange()) {
+        String url = (update.getUrl() == null) ? resourceStatus.getRequestUrl()
+            : update.getUrl();
         NetworkResourceResponse response = NetworkResourceResponse.create(
             resourceStatus.resourceId,
             normalizeTime(update.getResponseReceivedTime()),
             update.getMimeType(), update.getStatusCode(), update.wasCached(),
-            update.getResponseHeaders(), update.getUrl());
+            update.getResponseHeaders(), url);
 
         // Send to UI.
         getProxy().onEventRecord(response);
@@ -136,10 +138,10 @@ public abstract class InspectorResourceConverter {
         }
 
         String url = update.getUrl();
-
         if (url == null) {
           return;
         }
+        resourceStatus.setRequestUrl(url);
 
         // Updates will always re-send all timings reported so far. Guaranteed
         // to have the startTime set.
@@ -199,17 +201,25 @@ public abstract class InspectorResourceConverter {
     static final int SENT_START = 1;
 
     int contentLength = -1;
-
     int currentState = ADDED_UNSENT;
 
     final String resourceId;
+    private String requestUrl;
 
     public ResourceStatus(String resourceId) {
       this.resourceId = resourceId;
     }
 
+    public String getRequestUrl() {
+      return this.requestUrl;
+    }
+
     public void setContentLength(int contentLength) {
       this.contentLength = contentLength;
+    }
+
+    public void setRequestUrl(String url) {
+      this.requestUrl = url;
     }
   }
 
