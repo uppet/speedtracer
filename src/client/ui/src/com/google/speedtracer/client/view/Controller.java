@@ -78,6 +78,8 @@ public class Controller extends Panel implements DomainObserver,
 
     String saveButton();
 
+    String settingsButton();
+
     String zoomAllButton();
 
     String zoomInButton();
@@ -159,6 +161,15 @@ public class Controller extends Panel implements DomainObserver,
 
     @Source("resources/save-button-p.png")
     ImageResource controllerSaveButtonPress();
+
+    @Source("resources/settings-button.png")
+    ImageResource controllerSettingsButton();
+
+    @Source("resources/settings-button-h.png")
+    ImageResource controllerSettingsButtonHover();
+
+    @Source("resources/settings-button-p.png")
+    ImageResource controllerSettingsButtonPress();
 
     @Source("resources/zoom-all-button.png")
     ImageResource controllerZoomAllButton();
@@ -322,6 +333,21 @@ public class Controller extends Panel implements DomainObserver,
       }
     });
 
+    // TODO(jaimeyap): Is this the best way to do the capability detection?
+    if (hasSetProfilingOptionsApi()) {
+      final Button settingsButton = new Button(container);
+      settingsButton.setStyleName(css.control() + " " + css.settingsButton());
+      settingsButton.getElement().setAttribute("title", "Set Profiling Options");
+      final ProfilingOptionsPanel options = ProfilingOptionsPanel.create(
+          getElement(), settingsButton.getAbsoluteLeft() + 10,
+          settingsButton.getOffsetHeight(), model);
+      settingsButton.addClickListener(new ClickListener() {
+        public void onClick(ClickEvent event) {
+          options.show();
+        }
+      });
+    }
+
     pages = new Select(container);
     pages.setStyleName(css.control() + " " + css.pageSelect());
     pages.addChangeListener(new ChangeListener() {
@@ -436,6 +462,10 @@ public class Controller extends Panel implements DomainObserver,
   private native OptionElement getOptionAtIndex(SelectElement select,
       int indexToSelect) /*-{
     return select[indexToSelect];
+  }-*/;
+
+  private static native boolean hasSetProfilingOptionsApi() /*-{
+    return !!chrome.devtools.setProfilingOptions;
   }-*/;
 
   private void setIsRecordingTitle(boolean isRecording) {

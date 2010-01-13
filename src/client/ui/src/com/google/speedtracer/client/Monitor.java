@@ -17,7 +17,6 @@ package com.google.speedtracer.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -69,9 +68,24 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
    * hosted mode.
    */
   public static class MockMonitor extends Monitor {
-    private static DataInstance createMockDataInstance() {
-      return JavaScriptObject.createObject().cast();
-    }
+    private static native DataInstance createMockDataInstance() /*-{
+      return  { 
+        Load: function(callback) {       
+        },
+
+        Resume: function(port) {        
+        },
+
+        Stop: function() {
+        },
+
+        Unload: function() {
+        },
+
+        SetOptions: function(enableStackTraces, enableCpuProfiling) {
+        }
+      };
+    }-*/;
 
     private static native TabDescription createTabDescription(int id,
         String url, String title) /*-{

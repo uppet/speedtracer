@@ -34,20 +34,6 @@ import java.util.List;
 public abstract class DataModel implements HintletEngineHost.HintListener {
 
   /**
-   * Wrapper objects to proxy callbacks to correct handler.
-   */
-  public interface EventCallbackProxy {
-    void onEventRecord(EventRecord data);
-  }
-
-  /**
-   * Wrapper interface for a class that provides callbacks for an event.
-   */
-  public interface EventCallbackProxyProvider {
-    EventCallbackProxy getEventCallback(EventRecord data);
-  }
-
-  /**
    * API for interacting with a JSO that drives our DataModel. This JSO can be
    * one of the following:
    * 
@@ -65,11 +51,11 @@ public abstract class DataModel implements HintletEngineHost.HintListener {
     protected DataInstance() {
     }
 
-    public final native void load(DataModelImpl model) /*-{
+    public final native void load(DataModel model) /*-{
       var callback = {
         // This gets called by everyone else (file loader and devtools data instances).
         onEventRecord: function(record) {
-          model.@com.google.speedtracer.client.model.DataModelImpl::onEventRecord(Lcom/google/speedtracer/client/model/EventRecord;)(record);
+          model.@com.google.speedtracer.client.model.DataModel::onEventRecord(Lcom/google/speedtracer/client/model/EventRecord;)(record);
         },
 
         // This gets called from the plugin.
@@ -78,14 +64,19 @@ public abstract class DataModel implements HintletEngineHost.HintListener {
           // Populate the sequence field in the record so that we don't have
           // to keep passing it out of band along with the record.
           data.sequence = sequence;
-          model.@com.google.speedtracer.client.model.DataModelImpl::onEventRecord(Lcom/google/speedtracer/client/model/EventRecord;)(data);
+          model.@com.google.speedtracer.client.model.DataModel::onEventRecord(Lcom/google/speedtracer/client/model/EventRecord;)(data);
         }
       };
       this.Load(callback);
     }-*/;
 
-    public final native void resumeMonitoring(int tabId) /*-{
-      this.Resume(tabId);
+    public final native void resumeMonitoring() /*-{
+      this.Resume();
+    }-*/;
+
+    public final native void setProfilingOptions(boolean enableStackTraces,
+        boolean enableCpuProfiling) /*-{
+      this.SetOptions(enableStackTraces, enableCpuProfiling);
     }-*/;
 
     public final native void stopMonitoring() /*-{
@@ -95,6 +86,20 @@ public abstract class DataModel implements HintletEngineHost.HintListener {
     public final native void unload()/*-{
       this.Unload();
     }-*/;
+  }
+
+  /**
+   * Wrapper objects to proxy callbacks to correct handler.
+   */
+  public interface EventCallbackProxy {
+    void onEventRecord(EventRecord data);
+  }
+
+  /**
+   * Wrapper interface for a class that provides callbacks for an event.
+   */
+  public interface EventCallbackProxyProvider {
+    EventCallbackProxy getEventCallback(EventRecord data);
   }
 
   /**
@@ -152,13 +157,13 @@ public abstract class DataModel implements HintletEngineHost.HintListener {
   }
 
   /**
-   * Clears the store of saved EventRecords.
-   * Relies on v8 garbage collecting appropriately.
+   * Clears the store of saved EventRecords. Relies on v8 garbage collecting
+   * appropriately.
    */
   public void clear() {
     // Replace the existing map.
     eventRecordMap = JsIntegerMap.create();
-    
+
     // Replace the backing String store.
     traceDataCopy = JSOArray.create();
   }

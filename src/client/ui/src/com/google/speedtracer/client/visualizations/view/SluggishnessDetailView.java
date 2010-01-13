@@ -106,11 +106,13 @@ public class SluggishnessDetailView extends DetailView {
    * CSS.
    */
   public interface Css extends CssResource {
+    String detailsKeyColumn();
+
     String detailsLayout();
 
     String detailsTable();
 
-    String detailsTableHeader();
+    String detailsTableKey();
 
     String eventBreakdownHeader();
 
@@ -445,13 +447,13 @@ public class SluggishnessDetailView extends DetailView {
       private Container detailsTableContainer;
       private final UiEvent event;
       private TableCellElement eventTraceContainerCell;
+      private Command heightFixer;
+
       private HintletRecordsTree hintletTree;
 
       private SourceViewer sourceViewer;
 
       private DivElement treeDiv;
-
-      private Command heightFixer;
 
       protected UiEventDetails(UiEvent event, TableRow parent) {
         super(parent);
@@ -584,18 +586,29 @@ public class SluggishnessDetailView extends DetailView {
             // If we have at least one piece of data for this table, we add a
             // header
             if (!hasRow) {
-              Element header = Document.get().createElement("th");
-              header.setAttribute("colspan", "2");
-              header.setAttribute("align", "left");
-              header.setInnerText("Details for "
+              // Establish column widths.
+              Element keyCol = Document.get().createElement("th");
+              keyCol.setClassName(css.detailsKeyColumn());
+              Element valCol = Document.get().createElement("th");
+              table.getTableHead().appendChild(keyCol);
+              table.getTableHead().appendChild(valCol);
+              
+              // Now add the title
+              Element titleRow = Document.get().createElement("tr");
+              Element title = Document.get().createElement("th");
+              title.setAttribute("colspan", "2");
+              title.setAttribute("align", "left");
+              title.setInnerText("Details for "
                   + EventRecordType.typeToDetailedTypeString(e));
-              table.getTableHead().appendChild(header);
+              title.getStyle().setWidth(100, Unit.PX);
+              titleRow.appendChild(title);
+              table.getTableHead().appendChild(titleRow);
               hasRow = true;
             }
 
             TableRowElement row = table.appendRow();
             TableCellElement cell = row.insertCell(-1);
-            cell.setClassName(css.detailsTableHeader());
+            cell.setClassName(css.detailsTableKey());
             String rowKey = key.substring(1);
             cell.setInnerText(rowKey);
             cell = row.insertCell(-1);
@@ -634,7 +647,7 @@ public class SluggishnessDetailView extends DetailView {
 
               // We convert lineNumber to a 1 based index.
               final int lineNumber = Integer.parseInt(stackFrame[2]) + 1;
-              final int colNumber = Integer.parseInt(stackFrame[3]);
+              final int colNumber = Integer.parseInt(stackFrame[3]) + 1;
               
               // Prefer the last argument
               String functionName = stackFrame[5] + "()";
@@ -654,7 +667,7 @@ public class SluggishnessDetailView extends DetailView {
               // We make a link out of the line number which should pop open
               // the Source Viewer when clicked.
               AnchorElement lineLink = document.createAnchorElement();
-              lineLink.setInnerText("Line " + lineNumber);
+              lineLink.setInnerText("Line " + lineNumber + " Col " + colNumber);
               lineLink.setHref("javascript:;");
               cell.appendChild(lineLink);
               cell.appendChild(document.createBRElement());
@@ -810,7 +823,7 @@ public class SluggishnessDetailView extends DetailView {
 
         TableRowElement row = table.appendRow();
         TableCellElement cell = row.insertCell(-1);
-        cell.setClassName(css.detailsTableHeader());
+        cell.setClassName(css.detailsTableKey());
         cell.setInnerText("Time Delta");
         cell = row.insertCell(-1);
         cell.setInnerText(TimeStampFormatter.formatMilliseconds(delta));

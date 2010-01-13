@@ -15,6 +15,7 @@
  */
 package com.google.speedtracer.client.view;
 
+import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.topspin.client.Command;
 import com.google.gwt.topspin.ui.client.Container;
@@ -38,28 +39,22 @@ public abstract class AutoHideDiv extends Div {
 
   protected boolean aboutToHide = false;
 
-  protected boolean isVisible = false;
-
   protected OnHideCallBack callBack = null;
+
+  protected boolean isVisible = false;
 
   private final int delay;
 
   public AutoHideDiv(Container container, final int delay) {
     super(container);
-    Element elem = getElement();
     this.delay = delay;
-    MouseOverEvent.addMouseOverListener(this, elem, new MouseOverListener() {
-      public void onMouseOver(MouseOverEvent event) {
-        setAboutToHide(false);
-      }
-    });
+    sinkEvents();
+  }
 
-    MouseOutEvent.addMouseOutListener(this, elem, new MouseOutListener() {
-      public void onMouseOut(MouseOutEvent event) {
-        // To prevent queuing of Deferred commands
-        deferredHide();
-      }
-    });
+  public AutoHideDiv(DivElement myElement, final int delay) {
+    super(myElement);
+    this.delay = delay;
+    sinkEvents();
   }
 
   public void forceHide() {
@@ -115,5 +110,20 @@ public abstract class AutoHideDiv extends Div {
       }, delay);
     }
     setAboutToHide(true);
+  }
+
+  private void sinkEvents() {
+    addMouseOverListener(new MouseOverListener() {
+      public void onMouseOver(MouseOverEvent event) {
+        setAboutToHide(false);
+      }
+    });
+
+    addMouseOutListener(new MouseOutListener() {
+      public void onMouseOut(MouseOutEvent event) {
+        // To prevent queuing of Deferred commands
+        deferredHide();
+      }
+    });
   }
 }

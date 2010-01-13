@@ -22,6 +22,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.HeadElement;
 import com.google.gwt.dom.client.IFrameElement;
 import com.google.gwt.dom.client.NodeList;
+import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.StyleElement;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableElement;
@@ -31,6 +32,7 @@ import com.google.gwt.events.client.Event;
 import com.google.gwt.events.client.EventListener;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
@@ -57,6 +59,8 @@ public class SourceViewer {
    * line numbers and other code styling.
    */
   public interface CodeCss extends CssResource {
+    String columnMarker();
+
     String highlightedLine();
   }
 
@@ -79,6 +83,9 @@ public class SourceViewer {
    * Externalized ClientBundle Resource interface.
    */
   public interface Resources extends ClientBundle {
+    @Source("resources/column-marker.png")
+    ImageResource columnMarker();
+
     @Source("resources/SourceViewerCode.css")
     @Strict()
     CodeCss sourceViewerCodeCss();
@@ -176,6 +183,8 @@ public class SourceViewer {
     head.appendChild(styleTag);
   }
 
+  private final SpanElement columnMarker;
+
   private String currentResourceUrl;
 
   // The base Element container for the SourceViewer.
@@ -208,6 +217,8 @@ public class SourceViewer {
     headerElem.appendChild(titleElement);
     headerElem.appendChild(closeLink);
 
+    this.columnMarker = document.createSpanElement();
+
     // TODO(jaimeyap): I guess this listener is going to leak.
     ClickEvent.addClickListener(closeLink, closeLink, new ClickListener() {
       public void onClick(ClickEvent event) {
@@ -234,13 +245,9 @@ public class SourceViewer {
    */
   public String getLineContents(int lineNumber) {
     TableRowElement row = getTableRowElement(lineNumber);
-    NodeList<TableCellElement> cells = row.getElementsByTagName("td").cast();
-
-    for (int i = 0, n = cells.getLength(); i < n; i++) {
-      TableCellElement cell = cells.getItem(i);
-      if (cell.getClassName().indexOf(LINE_CONTENT) >= 0) {
-        return cell.getInnerText();
-      }
+    TableCellElement contents = getRowContentCell(row);
+    if (contents != null) {
+      return contents.getInnerText();
     }
 
     return null;
@@ -263,8 +270,6 @@ public class SourceViewer {
     }
     highlightedRow = getTableRowElement(lineNumber);
     highlightedRow.addClassName(styles.highlightedLine());
-    // We scroll to the highlighted node to the top of the source viewer frame.
-    sourceFrame.getContentDocument().setScrollTop(highlightedRow.getOffsetTop());
   }
 
   /**
@@ -313,7 +318,28 @@ public class SourceViewer {
    * @param columnNumber the offset from the start of the line to mark.
    */
   public void markColumn(int lineNumber, int columnNumber) {
-    // TODO(jaimeyap): Place a marker at the column indicated.
+    if (columnNumber <= 0) {
+      return;
+    }
+
+    TableCellElement contentCell = getRowContentCell(getTableRowElement(lineNumber));
+    columnMarker.removeFromParent();
+
+    int zeroIndexCol = columnNumber - 1;
+    String textBeforeMark = contentCell.getInnerText().substring(0,
+        zeroIndexCol);
+    String textAfterMark = contentCell.getInnerText().substring(zeroIndexCol);
+
+    Document document = contentCell.getOwnerDocument();
+    contentCell.setInnerText("");
+    contentCell.appendChild(document.createTextNode(textBeforeMark));
+    contentCell.appendChild(columnMarker);
+    contentCell.appendChild(document.createTextNode(textAfterMark));
+    columnMarker.setClassName(styles.columnMarker());
+
+    // We scroll to the highlighted node to the top of the source viewer frame.
+    sourceFrame.getContentDocument().setScrollTop(
+        columnMarker.getOffsetTop() - 20);
   }
 
   public void show() {
@@ -335,5 +361,21 @@ public class SourceViewer {
     assert (sourceTable != null) : "No table loaded in source frame.";
 
     return sourceTable.getRows().getItem(lineNumber - 1);
+  }
+
+  /**
+   * Returns the cell that contains the line contents for a row.
+   */
+  private TableCellElement getRowContentCell(TableRowElement row) {
+    NodeList<TableCellElement> cells = row.getElementsByTagName("td").cast();
+
+    for (int i = 0, n = cells.getLength(); i < n; i++) {
+      TableCellElement cell = cells.getItem(i);
+      if (cell.getClassName().indexOf(LINE_CONTENT) >= 0) {
+        return cell;
+      }
+    }
+
+    return null;
   }
 }

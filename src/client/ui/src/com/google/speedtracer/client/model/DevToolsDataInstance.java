@@ -113,13 +113,18 @@ public class DevToolsDataInstance extends DataInstance {
     double getBaseTime() {
       return baseTime;
     }
- 
+
     void onEventRecord(EventRecord record) {
       dataInstance.onEventRecord(record);
     }
 
     void setBaseTime(double baseTime) {
       this.baseTime = baseTime;
+    }
+
+    void setProfilingOptions(int tabId, boolean enableStackTraces,
+        boolean enableCpuProfiling) {
+      DevTools.setProfilingOptions(tabId, enableStackTraces, enableCpuProfiling);
     }
 
     /**
@@ -212,10 +217,10 @@ public class DevToolsDataInstance extends DataInstance {
       Load: function(callback) {
         this._callback = callback;
         // Connect to devtools
-        this.Resume(tabId);
+        this.Resume();
       },
 
-      Resume: function(tabId) {
+      Resume: function() {
         proxy.@com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy::connectToDevTools(ILcom/google/speedtracer/client/model/DevToolsDataInstance;)(tabId, dataInstance);
       },
 
@@ -229,6 +234,10 @@ public class DevToolsDataInstance extends DataInstance {
         // Remove the connection back to the monitor's model in order to prevent
         // a memory leak.
         this._callback = null;
+      },
+
+      SetOptions: function(enableStackTraces, enableCpuProfiling) {
+        proxy.@com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy::setProfilingOptions(IZZ)(tabId, enableStackTraces, enableCpuProfiling);
       }
     };
     // Initialize the sequence number count to 0
