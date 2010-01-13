@@ -19,6 +19,7 @@
   background-color: #f5f5fa;
   z-index: 30;
   min-width: controllerBaseWidth;
+  overflow: visible;
 }
 
 .control {
@@ -156,6 +157,21 @@
 
 @sprite .helpButton.toggleButtonDown {
   gwt-image: "controllerHelpButtonDown";
+}
+
+/* Settings button */
+@sprite .settingsButton {
+  gwt-image: "controllerSettingsButton";
+  margin-left: 10px;
+  border: none;
+}
+
+@sprite .settingsButton:hover {
+  gwt-image: "controllerSettingsButtonHover";
+}
+
+@sprite .settingsButton:active {
+  gwt-image: "controllerSettingsButtonPress";
 }
 
 /* Info screen panel that contains current timestamp */

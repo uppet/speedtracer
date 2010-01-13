@@ -29,10 +29,10 @@ public class LoadFileDataInstance extends DataInstance {
     var dataInstance = {
       Load: function(callback) {
         this._callback = callback;
-        this.Resume(port);
+        this.Resume();
       },
 
-      Resume: function(port) {
+      Resume: function() {
         // Tell the content script to start sending data.
         port.postMessage({
           ready: true
@@ -40,6 +40,12 @@ public class LoadFileDataInstance extends DataInstance {
       },
 
       Stop: function() {
+      },
+      
+      Unload: function() {
+      },
+            
+      SetOptions: function(enableStackTraces, enableCpuProfiling) {
       }
     };
     // Initialize the sequence number count to 0

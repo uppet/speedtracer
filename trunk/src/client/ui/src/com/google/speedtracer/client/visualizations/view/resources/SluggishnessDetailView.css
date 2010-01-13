@@ -60,7 +60,8 @@
 
 .detailsTable {
   width: 100%;
-  border-collapse: collapse;  
+  border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .detailsTable th {
@@ -73,10 +74,13 @@
   word-wrap: break-word;
 }
 
-.detailsTableHeader {
+.detailsKeyColumn {
+  width: 100px;
+}
+
+.detailsTableKey {
   background-color: rgb(228,228,255);
-  font-weight: bold;
-  width: 10em;  
+  font-weight: bold; 
 }
 
 .detailsLayout {

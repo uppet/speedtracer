@@ -35,7 +35,7 @@ public class DataModelImpl extends DataModel {
 
   @Override
   public void resumeMonitoring(int tabId) {
-    getDataInstance().<DataInstance> cast().resumeMonitoring(tabId);
+    getDataInstance().<DataInstance> cast().resumeMonitoring();
   }
 
   @Override

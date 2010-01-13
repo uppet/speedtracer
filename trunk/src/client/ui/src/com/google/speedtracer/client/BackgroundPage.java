@@ -149,7 +149,7 @@ public abstract class BackgroundPage extends Extension {
         } else {
           // If this is the case then restart monitoring instead of starting
           // over.
-          tabModel.dataInstance.<DataInstance> cast().resumeMonitoring(tabId);
+          tabModel.dataInstance.<DataInstance> cast().resumeMonitoring();
           setBrowserActionIcon(tabId, browserAction.mtIconActive(), tabModel);
           tabModel.channel.sendMessage(RecordingDataMessage.TYPE,
               RecordingDataMessage.create(true));
@@ -360,8 +360,7 @@ public abstract class BackgroundPage extends Extension {
             TabModel tabModel = browserConnectionMap.get(browserId).tabMap.get(tabId);
             Icon pageActionIcon;
             if (recordingDataMessage.isRecording()) {
-              tabModel.dataInstance.<DataInstance> cast().resumeMonitoring(
-                  tabId);
+              tabModel.dataInstance.<DataInstance> cast().resumeMonitoring();
               pageActionIcon = browserAction.mtIconActive();
             } else {
               tabModel.dataInstance.<DataInstance> cast().stopMonitoring();
@@ -437,7 +436,7 @@ public abstract class BackgroundPage extends Extension {
     assert (tabModel != null);
 
     Windows.create(MONITOR_RESOURCE_PATH + "?tabId=" + tabId + "&browserId="
-        + browserId, 0, 0, 820, 700, new OnWindowCallback() {
+        + browserId, 0, 0, 850, 700, new OnWindowCallback() {
       public void onWindow(Window window) {
         tabModel.monitorClosed = false;
         // The Tab containing the Monitor UI should not have a valid browser

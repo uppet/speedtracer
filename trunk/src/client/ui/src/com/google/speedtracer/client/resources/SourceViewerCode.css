@@ -4,3 +4,10 @@
 .highlightedLine {
   background-color: yellow;
 }
+
+@sprite .columnMarker {
+  display: inline-block;
+  gwt-image: "columnMarker";
+  position: relative;
+  top: -5px;
+}
