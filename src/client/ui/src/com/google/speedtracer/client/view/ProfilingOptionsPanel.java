@@ -73,6 +73,11 @@ public class ProfilingOptionsPanel {
     sinkEvents();
   }
 
+  public void sendProfilingOptions() {
+    model.getDataInstance().setProfilingOptions(stackTraceCheckbox.isChecked(),
+        cpuProfilingCheckbox.isChecked());
+  }
+
   public void show() {
     base.show();
   }
@@ -80,8 +85,7 @@ public class ProfilingOptionsPanel {
   private void sinkEvents() {
     base.addClickListener(new ClickListener() {
       public void onClick(ClickEvent event) {
-        model.getDataInstance().setProfilingOptions(
-            stackTraceCheckbox.isChecked(), cpuProfilingCheckbox.isChecked());
+        sendProfilingOptions();
       }
     });
   }
