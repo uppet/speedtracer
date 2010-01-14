@@ -28,7 +28,9 @@ import com.google.gwt.chrome.crx.client.Windows.Window;
 import com.google.gwt.chrome.crx.client.events.BrowserActionEvent;
 import com.google.gwt.chrome.crx.client.events.ConnectEvent;
 import com.google.gwt.chrome.crx.client.events.MessageEvent;
+import com.google.gwt.chrome.crx.client.events.TabUpdatedEvent;
 import com.google.gwt.chrome.crx.client.events.DevToolsPageEvent.PageEvent;
+import com.google.gwt.chrome.crx.client.events.TabUpdatedEvent.ChangeInfo;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.events.client.Event;
@@ -41,6 +43,7 @@ import com.google.speedtracer.client.WindowChannel.ServerListener;
 import com.google.speedtracer.client.messages.InitializeMonitorMessage;
 import com.google.speedtracer.client.messages.RecordingDataMessage;
 import com.google.speedtracer.client.messages.RequestInitializationMessage;
+import com.google.speedtracer.client.messages.ResendProfilingOptions;
 import com.google.speedtracer.client.model.DevToolsDataInstance;
 import com.google.speedtracer.client.model.LoadFileDataInstance;
 import com.google.speedtracer.client.model.Model;
@@ -55,14 +58,10 @@ import java.util.HashMap;
 /**
  * The Chrome extension background page script.
  */
-@Extension.ManifestInfo(name = "Speed Tracer (by Google)",
-    description = "Get insight into the performance of your web applications.",
-    version = "0.7",
-    permissions = {"tabs", "http://*/*", "https://*/*"},
-    icons = {"resources/icon16.png",
-             "resources/icon32.png",
-             "resources/icon48.png",
-             "resources/icon128.png"})
+@Extension.ManifestInfo(name = "Speed Tracer (by Google)", description = "Get insight into the performance of your web applications.", version = "0.7", permissions = {
+    "tabs", "http://*/*", "https://*/*"}, icons = {
+    "resources/icon16.png", "resources/icon32.png", "resources/icon48.png",
+    "resources/icon128.png"})
 public abstract class BackgroundPage extends Extension {
   /**
    * Listener that receives callbacks from the ControlInstance. This class is
@@ -203,22 +202,36 @@ public abstract class BackgroundPage extends Extension {
     // Chrome is "connected". Insert an entry for it.
     browserConnectionMap.put(CHROME_BROWSER_ID, new BrowserConnectionState());
 
-    GWT.create(BrowserActionStickyIcon.class);
     GWT.create(DataLoader.class);
 
-    // The content script connect to us.
+    // We need to keep the browser action icon consistent, as well as retransmit
+    // profiling options.
+    Tabs.getOnUpdatedEvent().addListener(new TabUpdatedEvent.Listener() {
+      public void onTabUpdated(int tabId, ChangeInfo changeInfo, Tab tab) {
+        if (changeInfo.getStatus().equals(ChangeInfo.STATUS_LOADING)) {
+          TabModel tabModel = browserConnectionMap.get(CHROME_BROWSER_ID).tabMap.get(tabId);
+          if (tabModel != null) {
+            // We want the icon to remain what it was before the page
+            // transition.
+            setBrowserActionIcon(tabId, tabModel.currentIcon, tabModel);
+
+            // We want to re-synch the profiling options. But only if there is a
+            // monitor at the other end of the WindowChannel.
+            if (tabModel.channel != null) {
+              tabModel.channel.sendMessage(ResendProfilingOptions.TYPE,
+                  ResendProfilingOptions.create());
+            }
+          }
+        }
+      }
+    });
+
+    // A content script connects to us when we want to load data.
     Chrome.getExtension().getOnConnectEvent().addListener(
         new ConnectEvent.Listener() {
           public void onConnect(final Port port) {
             String portName = port.getName();
-            if (portName.equals(BrowserActionStickyIcon.STICKY_PORT_NAME)) {
-              int tabId = port.getTab().getId();
-              // We want the icon to remain what it was before the page
-              // transition.
-              TabModel tabModel = browserConnectionMap.get(CHROME_BROWSER_ID).tabMap.get(tabId);
-              setBrowserActionIcon(tabId, tabModel == null
-                  ? browserAction.mtIcon() : tabModel.currentIcon, tabModel);
-            } else if (portName.equals(DataLoader.DATA_LOAD)
+            if (portName.equals(DataLoader.DATA_LOAD)
                 || portName.equals(DataLoader.RAW_DATA_LOAD)) {
               // We are loading data.
               doDataLoad(port);
@@ -270,12 +283,12 @@ public abstract class BackgroundPage extends Extension {
           // Tell the data_loader content script to start sending.
           port.postMessage(createAck());
         }
-        
+
         private native JavaScriptObject createAck() /*-{
-          return {ready: true};
-        }-*/;
+    return {ready: true};
+  }-*/;
       };
-  
+
       // Connect the datainstance to receive data from the data_loader
       port.getOnMessageEvent().addListener(new MessageEvent.Listener() {
         public void onMessage(MessageEvent.Message message) {
@@ -284,7 +297,7 @@ public abstract class BackgroundPage extends Extension {
           proxy.dispatchPageEvent(pageEvent);
         }
       });
-      
+
       tabModel.dataInstance = DevToolsDataInstance.create(tabId, proxy);
       browserConn.tabMap.put(tabId, tabModel);
     }

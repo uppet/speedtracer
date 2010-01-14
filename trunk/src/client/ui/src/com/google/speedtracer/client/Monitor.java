@@ -34,6 +34,7 @@ import com.google.speedtracer.client.WindowChannel.ServerListener;
 import com.google.speedtracer.client.messages.InitializeMonitorMessage;
 import com.google.speedtracer.client.messages.RecordingDataMessage;
 import com.google.speedtracer.client.messages.RequestInitializationMessage;
+import com.google.speedtracer.client.messages.ResendProfilingOptions;
 import com.google.speedtracer.client.model.ApplicationState;
 import com.google.speedtracer.client.model.DataModel;
 import com.google.speedtracer.client.model.MockDataModel;
@@ -265,6 +266,9 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
       case RecordingDataMessage.TYPE:
         final RecordingDataMessage recordingDataMessage = data.cast();
         recordingDataReceived(recordingDataMessage.isRecording());
+        break;
+      case ResendProfilingOptions.TYPE:
+        controller.sendProfilingOptions();
         break;
       default:
         assert false : "Unhandled Message";

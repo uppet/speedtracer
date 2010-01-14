@@ -66,14 +66,11 @@ public class DevTools {
 
   public static native void setProfilingOptions(int tabId,
       boolean enableStackTraces, boolean enableCpuProfiling) /*-{
-    // TODO(jaimeyap): better way of doing capability detection.
-    if (chrome.devtools.setProfilingOptions) {
-      chrome.devtools.setProfilingOptions(tabId, 
-          {
-            enableStackTraces: enableStackTraces,
-            enableCPUProfiling: enableCpuProfiling
-          });
-    }
+    chrome.devtools.setProfilingOptions(tabId, 
+        {
+          enableStackTraces: enableStackTraces,
+          enableCPUProfiling: enableCpuProfiling
+        });
   }-*/;
 
   private static native TabEvents getTabEventsImpl(int tabId) /*-{

@@ -50,7 +50,8 @@ public class Tabs extends JavaScriptObject {
   }
 
   /**
-   * Callback that returns no arguments.
+   * Callback that returns no arguments. Used to notify when Tabs.update()
+   * completes.
    */
   public interface OnUpdateCallback {
     void onUpdate();
@@ -120,8 +121,12 @@ public class Tabs extends JavaScriptObject {
    */
   public static native void create(String url, int windowId, int index,
       boolean selected) /*-{
-    chrome.tabs.create({'url':url, 'windowId':windowId, 
-    'index':index, 'selected':selected});
+    chrome.tabs.create({
+      'url':url,
+      'windowId':windowId,
+      'index':index,
+      'selected':selected
+    });
   }-*/;
 
   /**
@@ -137,11 +142,15 @@ public class Tabs extends JavaScriptObject {
    */
   public static native void create(String url, int windowId, int index,
       boolean selected, OnTabCallback callback) /*-{
-    chrome.tabs.create({'url':url, 'windowId':windowId, 
-    'index':index, 'selected':selected}, function(tab) {
-    callback.
-    @com.google.gwt.chrome.crx.client.Tabs.OnTabCallback::onTab(Lcom/google/gwt/chrome/crx/client/Tabs$Tab;)
-    (tab);
+    chrome.tabs.create({
+      'url':url,
+      'windowId':windowId,
+      'index':index,
+      'selected':selected
+    }, function(tab) {
+      callback.
+      @com.google.gwt.chrome.crx.client.Tabs.OnTabCallback::onTab(Lcom/google/gwt/chrome/crx/client/Tabs$Tab;)
+      (tab);
     });
   }-*/;
 
@@ -155,17 +164,17 @@ public class Tabs extends JavaScriptObject {
    */
   public static native void create(String url, OnTabCallback callback) /*-{
     chrome.tabs.create({'url':url}, function(tab) {
-    callback.
-    @com.google.gwt.chrome.crx.client.Tabs.OnTabCallback::onTab(Lcom/google/gwt/chrome/crx/client/Tabs$Tab;)
-    (tab);
+      callback.
+      @com.google.gwt.chrome.crx.client.Tabs.OnTabCallback::onTab(Lcom/google/gwt/chrome/crx/client/Tabs$Tab;)
+      (tab);
     });
   }-*/;
 
   public static native void get(int tabId, OnTabCallback callback) /*-{
     chrome.tabs.get(tabId, function(tab) {
-    callback.
-    @com.google.gwt.chrome.crx.client.Tabs.OnTabCallback::onTab(Lcom/google/gwt/chrome/crx/client/Tabs$Tab;)
-    (tab);
+      callback.
+      @com.google.gwt.chrome.crx.client.Tabs.OnTabCallback::onTab(Lcom/google/gwt/chrome/crx/client/Tabs$Tab;)
+      (tab);
     });
   }-*/;
 
@@ -177,9 +186,9 @@ public class Tabs extends JavaScriptObject {
    */
   public static native void getAllInWindow(int windowId, OnTabsCallback callback) /*-{
     chrome.tabs.getAllInWindow(id, function(tabs) {
-    callback.
-    @com.google.gwt.chrome.crx.client.Tabs.OnTabsCallback::onTabs(Lcom/google/gwt/core/client/JsArray;)
-    (tabs);
+      callback.
+      @com.google.gwt.chrome.crx.client.Tabs.OnTabsCallback::onTabs(Lcom/google/gwt/core/client/JsArray;)
+      (tabs);
     });
   }-*/;
 
@@ -190,9 +199,9 @@ public class Tabs extends JavaScriptObject {
    */
   public static native void getAllInWindow(OnTabsCallback callback) /*-{
     chrome.tabs.getAllInWindow(undefine, function(tabs) {
-    callback.
-    @com.google.gwt.chrome.crx.client.Tabs.OnTabsCallback::onTabs(Lcom/google/gwt/core/client/JsArray;)
-    (tabs);
+      callback.
+      @com.google.gwt.chrome.crx.client.Tabs.OnTabsCallback::onTabs(Lcom/google/gwt/core/client/JsArray;)
+      (tabs);
     });
   }-*/;
 
@@ -229,9 +238,9 @@ public class Tabs extends JavaScriptObject {
    */
   public static native void getSelected(int windowId, OnTabCallback callback) /*-{
     chrome.tabs.getSelected(windowId, function(tab) {
-    callback.
-    @com.google.gwt.chrome.crx.client.Tabs.OnTabCallback::onTab(Lcom/google/gwt/chrome/crx/client/Tabs$Tab;)
-    (tab);
+      callback.
+      @com.google.gwt.chrome.crx.client.Tabs.OnTabCallback::onTab(Lcom/google/gwt/chrome/crx/client/Tabs$Tab;)
+      (tab);
     });
   }-*/;
 
@@ -243,9 +252,9 @@ public class Tabs extends JavaScriptObject {
    */
   public static native void getSelected(OnTabCallback callback) /*-{
     chrome.tabs.getSelected(undefined, function(tab) {
-    callback.
-    @com.google.gwt.chrome.crx.client.Tabs.OnTabCallback::onTab(Lcom/google/gwt/chrome/crx/client/Tabs$Tab;)
-    (tab);
+      callback.
+      @com.google.gwt.chrome.crx.client.Tabs.OnTabCallback::onTab(Lcom/google/gwt/chrome/crx/client/Tabs$Tab;)
+      (tab);
     });
   }-*/;
 
@@ -260,7 +269,7 @@ public class Tabs extends JavaScriptObject {
   public static native void update(int tabId, String url, boolean selected,
       OnUpdateCallback callback) /*-{
     chrome.tabs.update(tabId, {'url':url, 'selected':selected}, function(tab) {
-    callback.@com.google.gwt.chrome.crx.client.Tabs.OnUpdateCallback::onUpdate()();
+      callback.@com.google.gwt.chrome.crx.client.Tabs.OnUpdateCallback::onUpdate()();
     });
   }-*/;
 

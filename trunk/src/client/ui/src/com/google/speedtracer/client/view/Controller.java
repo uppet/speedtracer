@@ -237,6 +237,24 @@ public class Controller extends Panel implements DomainObserver,
     }
   }
 
+  /**
+   * TODO (jaimeyap): Remove this once we land the setProfilingOptions API and
+   * it gets upstreamed to the dev channel.
+   */
+  private static native boolean hasSetProfilingOptionsApi() /*-{
+    // This part is a guard in case we are not in the extensions process,
+    // like when we are run in mock dev mode.
+    if (chrome && chrome.devtools) {
+      return !!chrome.devtools.setProfilingOptions;
+    }
+
+    return false;
+  }-*/;
+
+  // This field will be null if the setProfilingOptions extensions API does not
+  // exist.
+  ProfilingOptionsPanel profilingOptions;
+
   private final InfoScreen infoScreen;
 
   private MainTimeLine mainTimeline;
@@ -338,12 +356,12 @@ public class Controller extends Panel implements DomainObserver,
       final Button settingsButton = new Button(container);
       settingsButton.setStyleName(css.control() + " " + css.settingsButton());
       settingsButton.getElement().setAttribute("title", "Set Profiling Options");
-      final ProfilingOptionsPanel options = ProfilingOptionsPanel.create(
-          getElement(), settingsButton.getAbsoluteLeft() + 10,
+      profilingOptions = ProfilingOptionsPanel.create(getElement(),
+          settingsButton.getAbsoluteLeft() + 10,
           settingsButton.getOffsetHeight(), model);
       settingsButton.addClickListener(new ClickListener() {
         public void onClick(ClickEvent event) {
-          options.show();
+          profilingOptions.show();
         }
       });
     }
@@ -439,6 +457,18 @@ public class Controller extends Panel implements DomainObserver,
   }
 
   /**
+   * Sends the currently configured profiling options to the target page.
+   */
+  public void sendProfilingOptions() {
+    // If the profiling API is absent, the profiling option UI will be null.
+    if (profilingOptions == null) {
+      return;
+    }
+
+    profilingOptions.sendProfilingOptions();
+  }
+
+  /**
    * Changes the UI state to display whether data is being recorded. This is
    * external API to be called by the Monitor when a click comes in from the
    * browser action, and the state needs to be reflected here.
@@ -462,10 +492,6 @@ public class Controller extends Panel implements DomainObserver,
   private native OptionElement getOptionAtIndex(SelectElement select,
       int indexToSelect) /*-{
     return select[indexToSelect];
-  }-*/;
-
-  private static native boolean hasSetProfilingOptionsApi() /*-{
-    return !!chrome.devtools.setProfilingOptions;
   }-*/;
 
   private void setIsRecordingTitle(boolean isRecording) {

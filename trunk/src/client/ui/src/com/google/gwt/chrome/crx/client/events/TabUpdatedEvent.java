@@ -15,6 +15,7 @@
  */
 package com.google.gwt.chrome.crx.client.events;
 
+import com.google.gwt.chrome.crx.client.Tabs.Tab;
 import com.google.gwt.core.client.JavaScriptObject;
 
 /**
@@ -28,16 +29,15 @@ public final class TabUpdatedEvent extends Event {
   /**
    * Data object passed onTabUpdated.
    */
-  public static class Data extends JavaScriptObject {
-    protected Data() {
+  public static class ChangeInfo extends JavaScriptObject {
+    public static final String STATUS_LOADING = "loading";
+    public static final String STATUS_COMPLETED = "completed";
+    
+    protected ChangeInfo() {
     }
 
     public final native String getStatus() /*-{
       return this.status;
-    }-*/;
-
-    public final native int getTabId() /*-{
-      return this.tabId;
     }-*/;
 
     public final native String getUrl() /*-{
@@ -49,7 +49,7 @@ public final class TabUpdatedEvent extends Event {
    * Listener interface for tab updates.
    */
   public interface Listener {
-    void onTabUpdated(int tabId, Data changedProps);
+    void onTabUpdated(int tabId, ChangeInfo changeInfo, Tab tab);
   }
 
   protected TabUpdatedEvent() {
@@ -60,10 +60,8 @@ public final class TabUpdatedEvent extends Event {
   }
 
   private native JavaScriptObject addListenerImpl(Listener listener) /*-{
-    var handle = function(tabId, data) {
-      listener.
-          @com.google.gwt.chrome.crx.client.events.TabUpdatedEvent.Listener::onTabUpdated(ILcom/google/gwt/chrome/crx/client/events/TabUpdatedEvent$Data;)
-          (tabId, data);
+    var handle = function(tabId, changeInfo, tab) {
+      listener.@com.google.gwt.chrome.crx.client.events.TabUpdatedEvent.Listener::onTabUpdated(ILcom/google/gwt/chrome/crx/client/events/TabUpdatedEvent$ChangeInfo;Lcom/google/gwt/chrome/crx/client/Tabs$Tab;)(tabId, changeInfo, tab);
     }
 
     this.addListener(handle);
