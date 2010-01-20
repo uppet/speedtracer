@@ -244,7 +244,7 @@ public class Controller extends Panel implements DomainObserver,
   private static native boolean hasSetProfilingOptionsApi() /*-{
     // This part is a guard in case we are not in the extensions process,
     // like when we are run in mock dev mode.
-    if (chrome && chrome.devtools) {
+    if ($wnd.chrome && $wnd.chrome.devtools) {
       return !!chrome.devtools.setProfilingOptions;
     }
 
