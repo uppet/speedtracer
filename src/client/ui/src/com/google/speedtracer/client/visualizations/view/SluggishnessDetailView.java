@@ -592,7 +592,7 @@ public class SluggishnessDetailView extends DetailView {
               Element valCol = Document.get().createElement("th");
               table.getTableHead().appendChild(keyCol);
               table.getTableHead().appendChild(valCol);
-              
+
               // Now add the title
               Element titleRow = Document.get().createElement("tr");
               Element title = Document.get().createElement("th");
@@ -648,15 +648,15 @@ public class SluggishnessDetailView extends DetailView {
               // We convert lineNumber to a 1 based index.
               final int lineNumber = Integer.parseInt(stackFrame[2]) + 1;
               final int colNumber = Integer.parseInt(stackFrame[3]) + 1;
-              
+
               // Prefer the last argument
               String functionName = stackFrame[5] + "()";
               // but if it isnt there, try the 3rd.
               functionName = (functionName.equals("undefined()"))
                   ? stackFrame[4] + "()" : functionName;
               // If we still dont have anything, replace with [anonymous]
-              functionName = (functionName.equals("undefined()"))
-                  ? "[unknown]" : functionName;
+              functionName = (functionName.equals("undefined()")) ? "[unknown]"
+                  : functionName;
 
               // Render the stack trace. And initialize the SourceViewer on
               // the eventTraceContainerCell
@@ -684,6 +684,7 @@ public class SluggishnessDetailView extends DetailView {
                               sourceViewer.show();
                               sourceViewer.highlightLine(lineNumber);
                               sourceViewer.markColumn(lineNumber, colNumber);
+                              sourceViewer.scrollIntoView(table.getElement().getOffsetTop());
                             }
                           });
                     }
