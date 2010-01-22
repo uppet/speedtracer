@@ -336,10 +336,17 @@ public class SourceViewer {
     contentCell.appendChild(columnMarker);
     contentCell.appendChild(document.createTextNode(textAfterMark));
     columnMarker.setClassName(styles.columnMarker());
+  }
 
-    // We scroll to the highlighted node to the top of the source viewer frame.
+  /**
+   * We scroll to the highlighted node to the top of the source viewer frame.
+   * 
+   * @param parentScroll optional additional scroll in case the caller is within
+   *          an element that is also scrolled.
+   */
+  public void scrollIntoView(int parentScroll) {
     sourceFrame.getContentDocument().setScrollTop(
-        columnMarker.getOffsetTop() - 20);
+        columnMarker.getOffsetTop() - parentScroll);
   }
 
   public void show() {

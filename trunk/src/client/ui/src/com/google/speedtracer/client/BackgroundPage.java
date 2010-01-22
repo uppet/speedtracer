@@ -43,7 +43,6 @@ import com.google.speedtracer.client.WindowChannel.ServerListener;
 import com.google.speedtracer.client.messages.InitializeMonitorMessage;
 import com.google.speedtracer.client.messages.RecordingDataMessage;
 import com.google.speedtracer.client.messages.RequestInitializationMessage;
-import com.google.speedtracer.client.messages.ResendProfilingOptions;
 import com.google.speedtracer.client.model.DevToolsDataInstance;
 import com.google.speedtracer.client.model.LoadFileDataInstance;
 import com.google.speedtracer.client.model.Model;
@@ -214,13 +213,6 @@ public abstract class BackgroundPage extends Extension {
             // We want the icon to remain what it was before the page
             // transition.
             setBrowserActionIcon(tabId, tabModel.currentIcon, tabModel);
-
-            // We want to re-synch the profiling options. But only if there is a
-            // monitor at the other end of the WindowChannel.
-            if (tabModel.channel != null) {
-              tabModel.channel.sendMessage(ResendProfilingOptions.TYPE,
-                  ResendProfilingOptions.create());
-            }
           }
         }
       }
@@ -285,8 +277,8 @@ public abstract class BackgroundPage extends Extension {
         }
 
         private native JavaScriptObject createAck() /*-{
-    return {ready: true};
-  }-*/;
+          return {ready: true};
+        }-*/;
       };
 
       // Connect the datainstance to receive data from the data_loader
