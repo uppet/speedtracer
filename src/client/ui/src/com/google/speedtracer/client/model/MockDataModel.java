@@ -20,11 +20,11 @@ import com.google.speedtracer.client.util.JSOArray;
 
 /**
  * A data model that can be driven by pre-recorded data. See #
- * {@link MockModelGenerators} to get a MockModel based on a number of different
+ * {@link MockModelGenerator} to get a MockModel based on a number of different
  * event logs.
  */
 public class MockDataModel extends DataModel {
-  public static final int DIGG_TABID = 1;
+  public static final int MOCK_TABID = 0;
 
   MockDataModel() {
     super();
@@ -55,12 +55,6 @@ public class MockDataModel extends DataModel {
   }
 
   private void runSimulations() {
-    switch (getTabDescription().getId()) {
-      case DIGG_TABID:
-        MockModelGenerators.simulateDiggDotCom(this);
-        break;
-      default:
-        assert false;
-    }
+    MockModelGenerator.simulateRedditDotCom(this);
   }
 }

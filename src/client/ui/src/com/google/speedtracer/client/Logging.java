@@ -55,12 +55,14 @@ public class Logging {
 
     public void logHtml(String html) {
       logger.logHtml(html);
+      GWT.log(html, null);
     }
 
     public void logText(String text) {
       String dressedUpText = "<span style=\"color:"
           + MonitorConstants.LOGGER_NET_HEADER_COLOR + "\">" + text + "</span>";
       logger.logHtml(dressedUpText);
+      GWT.log(text, null);
     }
 
     public void onHintletException(HintletException hintletException) {
@@ -124,7 +126,9 @@ public class Logging {
 
   public static void createListenerLogger(DataModel model) {
     logger = GWT.create(ListenerLogger.class);
-    logger.listenTo(model);
+    if (model != null) {
+      logger.listenTo(model);
+    }
   }
 
   public static ListenerLogger getLogger() {

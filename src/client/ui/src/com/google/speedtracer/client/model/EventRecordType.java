@@ -43,7 +43,7 @@ public class EventRecordType {
   public static final int RESOURCE_SEND_REQUEST = 12;
   public static final int RESOURCE_RECEIVE_RESPONSE = 13;
   public static final int RESOURCE_FINISH = 14;
-  public static final int JAVASCRIPT_EXECUTION_EVENT = 15;
+  public static final int PROFILE_DATA = 15;
   public static final int TAB_CHANGED = 16;
   public static final int AGGREGATED_EVENTS = 17;
   public static final int DOM_BINDING_EVENT = 18;
@@ -76,7 +76,7 @@ public class EventRecordType {
     "Resource Request",                 // 12 RESOURCE_SEND_REQUEST
     "Resource Response",                // 13 RESOURCE_RECEIVE_RESPONSE
     "Resource Finish",                  // 14 RESOURCE_FINISH
-    "JavaScript Execution",             // 15 JAVASCRIPT_EXECUTION_EVENT
+    "JavaScript CPU profile data",      // 15 PROFILE_DATA
     "Tab Changed",                      // 16 TAB_CHANGED
     "AGGREGATED Events",                // 17 AGGREGATED_EVENTS
     "Dom Bindings",                     // 18 DOM_BINDING_EVENT
@@ -122,8 +122,8 @@ public class EventRecordType {
     "A network resource load began to recieve data from the server.",
     // 14 RESOURCE_FINISH
     "A new request for a network resource completed.",
-    // 15 JAVASCRIPT_EXECUTION_EVENT
-    "A block of JavaScript executed.",
+    // 15 PROFILE_DATA
+    "Contains raw data from the JavaScript engine profiler.",
     // 16 TAB_CHANGED
     "Something about the Tab where the page viewed changed.  Usually this is the title string or the location of the page.",
     // 17 AGGREGATED_EVENTS

@@ -53,19 +53,19 @@ public abstract class DataModel implements HintletEngineHost.HintListener {
 
     public final native void load(DataModel model) /*-{
       var callback = {
-        // This gets called by everyone else (file loader and devtools data instances).
-        onEventRecord: function(record) {
-          model.@com.google.speedtracer.client.model.DataModel::onEventRecord(Lcom/google/speedtracer/client/model/EventRecord;)(record);
-        },
+      // This gets called by everyone else (file loader and devtools data instances).
+      onEventRecord: function(record) {
+      model.@com.google.speedtracer.client.model.DataModel::onEventRecord(Lcom/google/speedtracer/client/model/EventRecord;)(record);
+      },
 
-        // This gets called from the plugin.
-        onEventRecordString: function(sequence, recordString) {
-          var data = JSON.parse(recordString);
-          // Populate the sequence field in the record so that we don't have
-          // to keep passing it out of band along with the record.
-          data.sequence = sequence;
-          model.@com.google.speedtracer.client.model.DataModel::onEventRecord(Lcom/google/speedtracer/client/model/EventRecord;)(data);
-        }
+      // This gets called from the plugin.
+      onEventRecordString: function(sequence, recordString) {
+      var data = JSON.parse(recordString);
+      // Populate the sequence field in the record so that we don't have
+      // to keep passing it out of band along with the record.
+      data.sequence = sequence;
+      model.@com.google.speedtracer.client.model.DataModel::onEventRecord(Lcom/google/speedtracer/client/model/EventRecord;)(data);
+      }
       };
       this.Load(callback);
     }-*/;
@@ -145,15 +145,19 @@ public abstract class DataModel implements HintletEngineHost.HintListener {
 
   private final UiEventModel uiEventModel;
 
+  private final JavaScriptProfileModel profileModel;
+
   protected DataModel() {
     this.hintletEngineHost = new HintletEngineHost();
     this.networkResourceModel = new NetworkResourceModel();
     this.uiEventModel = new UiEventModel();
     this.tabNavigationModel = new TabChangeModel();
+    this.profileModel = new JavaScriptProfileModel(this);
     this.hintletEngineHost.addHintListener(this);
     eventModels.add(uiEventModel);
     eventModels.add(networkResourceModel);
     eventModels.add(tabNavigationModel);
+    eventModels.add(profileModel);
   }
 
   /**
@@ -211,6 +215,15 @@ public abstract class DataModel implements HintletEngineHost.HintListener {
    */
   public HintletEngineHost getHintletEngineHost() {
     return hintletEngineHost;
+  }
+
+  /**
+   * Gets the sub-model for JavaScript profiling data.
+   * 
+   * @return the sub-model for JavaScript profiling data.
+   */
+  public JavaScriptProfileModel getJavaScriptProfileModel() {
+    return profileModel;
   }
 
   /**
@@ -284,8 +297,14 @@ public abstract class DataModel implements HintletEngineHost.HintListener {
   }
 
   private void fireOnEventRecordImpl(EventRecord data) {
-    // Forward to the hintlet engine.
-    hintletEngineHost.addRecord(data);
+
+    // TODO(zundel): When profiling data is sent to the hintlet engine,
+    // we've seen problems with web workers crashing. Until that is resolved,
+    // we'll filter profiling data from being sent there.
+    if (data.getType() != EventRecordType.PROFILE_DATA) {
+      // Forward to the hintlet engine.
+      hintletEngineHost.addRecord(data);
+    }
 
     EventCallbackProxy callback = null;
     for (int i = 0, n = eventModels.size(); i < n; i++) {

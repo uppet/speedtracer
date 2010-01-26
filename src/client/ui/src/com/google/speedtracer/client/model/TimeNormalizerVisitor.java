@@ -37,11 +37,10 @@ public class TimeNormalizerVisitor implements PreOrderVisitor {
     }-*/;
 
     private native EventRecord convertToEventRecord(double baseTime) /*-{
-      if (!this.hasOwnProperty("endTime")) {
-        this.endTime = this.startTime;
+      if (this.hasOwnProperty("endTime")) {
+        this.duration = this.endTime - this.startTime;  
       }
-
-      this.duration = this.endTime - this.startTime;
+      
       this.time = this.startTime - baseTime;
 
       delete this.startTime;

@@ -102,7 +102,7 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
             // TabDescription.
             final DataInstance dataInstance = createMockDataInstance();
             final TabDescription tabDescription = createTabDescription(
-                MockDataModel.DIGG_TABID, "http://digg.com/", "Digg");
+                MockDataModel.MOCK_TABID, "http://mock.com/", "Mock web site");
 
             public void onChannelClosed(Client channel) {
             }

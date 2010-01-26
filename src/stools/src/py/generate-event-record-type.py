@@ -127,9 +127,9 @@ events = [
 # THE FOLLOWING HAS NOT YET LANDED.
   {
     'value' : 15,
-    'constant' : 'JAVASCRIPT_EXECUTION_EVENT', 
-    'desc' : 'JavaScript Execution',
-    'help_text' : 'A block of JavaScript executed.',
+    'constant' : 'PROFILE_DATA', 
+    'desc' : 'JavaScript CPU profile data',
+    'help_text' : 'Contains raw data from the JavaScript engine profiler.',
   },
 # END NOT LANDED
 

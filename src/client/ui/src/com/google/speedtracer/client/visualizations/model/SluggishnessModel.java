@@ -15,22 +15,23 @@
  */
 package com.google.speedtracer.client.visualizations.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import com.google.speedtracer.client.model.ApplicationState;
 import com.google.speedtracer.client.model.DataModel;
 import com.google.speedtracer.client.model.EventRecord;
 import com.google.speedtracer.client.model.EventRecordType;
 import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.HintletEngineHost;
+import com.google.speedtracer.client.model.JavaScriptProfileModel;
 import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.client.model.UiEventModel;
 import com.google.speedtracer.client.timeline.GraphModel;
 import com.google.speedtracer.client.timeline.HighlightModel;
 import com.google.speedtracer.client.timeline.ModelData;
 import com.google.speedtracer.client.util.JsIntegerMap;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Underlying model implementation that maintains SluggishnessDetailsView's
@@ -168,7 +169,8 @@ public class SluggishnessModel implements VisualizationModel,
    * @param right the timestamp of the right bound.
    * @param forceCalculation to increase performance, the calculation is not
    *          performed if the bounds have not changed and this parameter is
-   *          <code>false</false>.  If <code>true</code>, the calculation is performed regardless.
+   *          <code>false</false>.  If <code>true</code>, the calculation is
+   *          performed regardless.
    * @return the indexes of events in the range, or null if the bounds have not
    *         changed.
    */
@@ -217,6 +219,19 @@ public class SluggishnessModel implements VisualizationModel,
 
     int[] result = {(eventIndex + 1), endIndex};
     return result;
+  }
+
+  /**
+   * Returns a text representation of the JavaScript Profile data for this
+   * event.
+   * 
+   * @param event an event to find associated profile data for
+   * @return a text representation of the profile intended for debugging
+   */
+  public String getProfileHtmlForEvent(UiEvent event) {
+    JavaScriptProfileModel profileModel = dataModel.getJavaScriptProfileModel();
+    return profileModel.getProfileHtmlForEvent(
+        event.getSequence());
   }
 
   public UiEventModel getSourceModel() {
