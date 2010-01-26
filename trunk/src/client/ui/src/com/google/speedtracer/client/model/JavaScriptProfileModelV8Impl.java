@@ -104,9 +104,13 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
 
   /**
    * String constant in the data that identifies the profile data record as
-   * coming from v8
+   * coming from v8.
    */
   public static final String FORMAT = "v8";
+
+  static final String ADDRESS_TAG_CODE = "code";
+  static final String ADDRESS_TAG_CODE_MOVE = "code-move";
+  static final String ADDRESS_TAG_STACK = "stack";
 
   private static final int ACTION_TYPE_ALIAS = 1;
   private static final int ACTION_TYPE_PROFILER = 2;
@@ -135,10 +139,6 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
   private static final int SYMBOL_TYPE_SCRIPT = 24;
   private static final int SYMBOL_TYPE_STORE_IC = 25;
   private static final int SYMBOL_TYPE_STUB = 26;
-
-  private static final String ADDRESS_TAG_CODE = "code";
-  private static final String ADDRESS_TAG_CODE_MOVE = "code-move";
-  private static final String ADDRESS_TAG_STACK = "stack";
 
   // TODO(zundel): this method is just for debugging. Not for production use.
   static void getProfileBreakdownText(StringBuilder result,

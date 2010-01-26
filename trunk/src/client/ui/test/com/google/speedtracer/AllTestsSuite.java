@@ -15,8 +15,6 @@
  */
 package com.google.speedtracer;
 
-import junit.framework.Test;
-
 import com.google.gwt.junit.tools.GWTTestSuite;
 import com.google.speedtracer.client.SourceViewerTest;
 import com.google.speedtracer.client.WindowChannelTests;
@@ -32,6 +30,8 @@ import com.google.speedtracer.client.util.PostMessageChannelTests;
 import com.google.speedtracer.client.util.TimeStampFormatterTests;
 import com.google.speedtracer.client.visualizations.model.UiThreadUtilizationTests;
 import com.google.speedtracer.client.visualizations.view.EventFilterTests;
+
+import junit.framework.Test;
 
 /**
  * A suite to execute all of Speed Tracer's UI test cases.

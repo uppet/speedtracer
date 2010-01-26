@@ -15,10 +15,8 @@
  */
 package com.google.speedtracer.client.model;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.speedtracer.client.Logging;
-import com.google.speedtracer.client.model.V8SymbolTable.AddressSpan;
 import com.google.speedtracer.client.model.V8SymbolTable.Symbol;
 
 /**

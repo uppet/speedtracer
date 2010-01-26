@@ -15,10 +15,14 @@
  */
 package com.google.speedtracer.client.model;
 
-import java.util.List;
-
 import com.google.gwt.junit.client.GWTTestCase;
 
+import java.util.List;
+
+/**
+ * Tests for the JavaScriptProfileNode class which represents a node in a parsed
+ * profile.
+ */
 public class JavaScriptProfileNodeTests extends GWTTestCase {
   @Override
   public String getModuleName() {
