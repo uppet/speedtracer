@@ -121,15 +121,6 @@ public class V8SymbolTable {
   private TreeMap<AddressSpan,Symbol> table = new TreeMap<AddressSpan, Symbol>();
 
   public V8SymbolTable() {
-    
-  }
-  
-  public Symbol lookup(long address) {
-    return table.get(new AddressSpan(address, 0));
-  }
-  
-  public void remove(Symbol toRemove) {
-    table.remove(toRemove.getAddressSpan());
   }
   
   /**
@@ -151,5 +142,13 @@ public class V8SymbolTable {
       output.append("<li>" + child.toString() + "</li>");
     }
     output.append("</ul>");
+  }
+  
+  public Symbol lookup(long address) {
+    return table.get(new AddressSpan(address, 0));
+  }
+  
+  public void remove(Symbol toRemove) {
+    table.remove(toRemove.getAddressSpan());
   }
 }

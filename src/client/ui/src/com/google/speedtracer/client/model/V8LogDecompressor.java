@@ -23,6 +23,59 @@ import java.util.List;
  * log when compression is enabled.
  */
 public class V8LogDecompressor {
+  // States used by splitLogLine()
+  static final int SPLIT_LOOKING_FOR_COMMA = 0;
+  static final int SPLIT_IN_STRING = 1;
+  static final int SPLIT_IN_ESCAPE = 2;
+  
+  /**
+   * Split a comma separated value log line while ignoring escaped strings.
+   */
+  public static String[] splitLogLine(String logLine) {
+    // Implemented as a little state machine
+    int state;  
+    List<String> results = new ArrayList<String>();
+    int index = 0;
+    int entryStart = 0;
+    
+    state = SPLIT_LOOKING_FOR_COMMA; 
+    while (index < logLine.length()) {
+      char nextCharacter = logLine.charAt(index);
+      switch(state) {
+        case SPLIT_LOOKING_FOR_COMMA:
+          switch (nextCharacter) {
+            case ',':
+              results.add(logLine.substring(entryStart, index));
+              entryStart = index + 1;
+              break;
+              case '"':
+                state = SPLIT_IN_STRING;
+              break;
+          }
+      break;
+        case SPLIT_IN_STRING:
+          switch (nextCharacter) {
+            case '\\':
+              state = SPLIT_IN_ESCAPE;
+              break;
+            case '"':
+              state = SPLIT_LOOKING_FOR_COMMA;
+              break;
+          }
+          break;
+        case SPLIT_IN_ESCAPE:
+          state = SPLIT_IN_STRING;
+          break;
+      }
+      index++;
+    }
+    
+    if (entryStart != index) {
+      results.add(logLine.substring(entryStart, index));
+    }
+    return results.toArray(new String[0]);
+  }
+  
   private String window[];
   private int windowSize;
   private int lastWindow;
@@ -79,57 +132,6 @@ public class V8LogDecompressor {
       appendLogEntry(decompressedLogEntry);
     }
     return decompressedLogEntry;
-  }
-
-  /**
-   * Split a comma separated value log line while ignoring escaped strings.
-   */
-  public static String[] splitLogLine(String logLine) {
-    // Implemented as a little state machine
-    final int LOOKING_FOR_COMMA = 0;
-    final int IN_STRING = 1;
-    final int IN_ESCAPE = 2;
-    int state;  
-    List<String> results = new ArrayList<String>();
-    int index = 0;
-    int entryStart = 0;
-    
-    state = LOOKING_FOR_COMMA; 
-    while (index < logLine.length()) {
-      char nextCharacter = logLine.charAt(index);
-      switch(state) {
-        case LOOKING_FOR_COMMA:
-          switch (nextCharacter) {
-            case ',':
-              results.add(logLine.substring(entryStart, index));
-              entryStart = index + 1;
-              break;
-              case '"':
-                state = IN_STRING;
-              break;
-          }
-      break;
-        case IN_STRING:
-          switch (nextCharacter) {
-            case '\\':
-              state = IN_ESCAPE;
-              break;
-            case '"':
-              state = LOOKING_FOR_COMMA;
-              break;
-          }
-          break;
-        case IN_ESCAPE:
-          state = IN_STRING;
-          break;
-      }
-      index++;
-    }
-    
-    if (entryStart != index) {
-      results.add(logLine.substring(entryStart, index));
-    }
-    return results.toArray(new String[0]);
   }
   
   private void appendLogEntry(String logEntry) {

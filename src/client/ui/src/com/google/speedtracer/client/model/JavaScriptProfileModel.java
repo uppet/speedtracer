@@ -15,14 +15,14 @@
  */
 package com.google.speedtracer.client.model;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.model.DataModel.EventCallbackProxy;
 import com.google.speedtracer.client.model.DataModel.EventCallbackProxyProvider;
 import com.google.speedtracer.client.util.JsIntegerMap;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Handles profile data records and stores parsed profiles for later retrieval.
@@ -32,6 +32,28 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
   private final EventCallbackProxy profileProxy;
   private final JsIntegerMap<JavaScriptProfile> profileMap = JsIntegerMap.createObject().cast();
   private JavaScriptProfileModelImpl impl;
+
+  /**
+   * Sorts in descending order, first by self time, then by time fields.
+   */
+  private Comparator<JavaScriptProfileNode> nodeTimeComparator = new Comparator<JavaScriptProfileNode>() {
+
+    public int compare(JavaScriptProfileNode o1, JavaScriptProfileNode o2) {
+      if (o1.getSelfTime() > o2.getSelfTime()) {
+        return -1;
+      } else if (o1.getSelfTime() < o2.getSelfTime()) {
+        return 1;
+      }
+
+      if (o1.getTime() > o2.getTime()) {
+        return -1;
+      } else if (o1.getTime() < o2.getTime()) {
+        return 1;
+      }
+      return 0;
+    }
+
+  };
 
   JavaScriptProfileModel(final DataModel dataModel) {
     profileProxy = new EventCallbackProxy() {
@@ -57,13 +79,13 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
             // Create a null implementation that just throws the data away
             impl = new JavaScriptProfileModelImpl("null") {
               @Override
-              public void parseRawEvent(JavaScriptProfileEvent event,
-                  JavaScriptProfile profile) {
+              public String getDebugDumpHtml() {
+                return null;
               }
 
               @Override
-              public String getDebugDumpHtml() {
-                return null;
+              public void parseRawEvent(JavaScriptProfileEvent event,
+                  JavaScriptProfile profile) {
               }
             };
           }
@@ -76,6 +98,10 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
         }
       }
     };
+  }
+
+  public String getDebugDumpHtml() {
+    return impl.getDebugDumpHtml();
   }
 
   public EventCallbackProxy getEventCallback(EventRecord data) {
@@ -115,36 +141,14 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
     JavaScriptProfileNode bottomUpProfile = profile.getBottomUpProfile();
     result.append("<h3>Profile:</h3>\n");
     dumpNodeChildrenRecursive(bottomUpProfile, result);
-    
+
     // Some additional debugging info
     // result.append(impl.getDebugDumpHtml());
     return result.toString();
   }
 
   /**
-   * Sorts in descending order, first by self time, then by time fields.
-   */
-  private Comparator<JavaScriptProfileNode> nodeTimeComparator = new Comparator<JavaScriptProfileNode>() {
-
-    public int compare(JavaScriptProfileNode o1, JavaScriptProfileNode o2) {
-      if (o1.getSelfTime() > o2.getSelfTime()) {
-        return -1;
-      } else if (o1.getSelfTime() < o2.getSelfTime()) {
-        return 1;
-      }
-      
-      if (o1.getTime() > o2.getTime()) {
-        return -1;
-      } else if (o1.getTime() < o2.getTime()) {
-        return 1;
-      }
-      return 0;
-    }
-    
-  };
-  
-  /**
-   * Helper for getProfileHtmlForEvent()
+   * Helper for getProfileHtmlForEvent().
    */
   private void dumpNodeChildrenRecursive(JavaScriptProfileNode profile,
       StringBuilder result) {
@@ -162,9 +166,5 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
       dumpNodeChildrenRecursive(child, result);
     }
     result.append("</ul>\n");
-  }
-
-  public String getDebugDumpHtml() {
-    return impl.getDebugDumpHtml();
   }
 }
