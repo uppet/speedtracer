@@ -15,14 +15,14 @@
  */
 package com.google.speedtracer.client.model;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.model.V8SymbolTable.Symbol;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Parses the v8 profiler data from Chromium on behalf of
@@ -30,20 +30,34 @@ import com.google.speedtracer.client.model.V8SymbolTable.Symbol;
  */
 public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
 
+  /**
+   * Used to store actions for parsing lines in the log.
+   */
+  interface LogAction {
+    void doAction(String[] logLine);
+  }
+
+  /**
+   * Dummy entry in the action table that has no implementation.
+   */
+  class UnimplementedCommandMethod implements LogAction {
+    private final String commandName;
+
+    UnimplementedCommandMethod(String commandName) {
+      this.commandName = commandName;
+    }
+
+    public void doAction(String[] logLine) {
+      Logging.getLogger().logText(
+          "Unimplemented command: " + commandName + " alias: " + logLine[0]);
+    }
+  }
+
   private static class ActionType extends AliasableEntry {
     public ActionType(String name, int value) {
       super(name, value);
     }
   }
-
-  private static class DebugStats {
-    public int lookupMisses;
-    public int removeMisses;
-    public int addCollisions;
-    public int moveMisses;
-  }
-
-  static final DebugStats debugStats = new DebugStats();
 
   /**
    * Associates a symbol or action with a numeric constant. This is useful in
@@ -62,13 +76,16 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
       return value;
     }
 
+    public String toString() {
+      return (this.name + ":" + this.value);
+    }
   }
 
-  /**
-   * Used to store actions for parsing lines in the log.
-   */
-  interface LogAction {
-    void doAction(String[] logLine);
+  private static class DebugStats {
+    public int lookupMisses;
+    public int removeMisses;
+    public int addCollisions;
+    public int moveMisses;
   }
 
   private static class SymbolType extends AliasableEntry {
@@ -77,21 +94,7 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     }
   }
 
-  /**
-   * Dummy entry in the action table that has no implementation.
-   */
-  class UnimplementedCommandMethod implements LogAction {
-    private final String commandName;
-
-    UnimplementedCommandMethod(String commandName) {
-      this.commandName = commandName;
-    }
-
-    public void doAction(String[] logLine) {
-      Logging.getLogger().logText(
-          "Unimplemented command: " + commandName + " alias: " + logLine[0]);
-    }
-  }
+  static final DebugStats debugStats = new DebugStats();
 
   public static final int VM_STATE_JS = 0;
   public static final int VM_STATE_GC = 1;
@@ -133,6 +136,10 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
   private static final int SYMBOL_TYPE_STORE_IC = 25;
   private static final int SYMBOL_TYPE_STUB = 26;
 
+  private static final String ADDRESS_TAG_CODE = "code";
+  private static final String ADDRESS_TAG_CODE_MOVE = "code-move";
+  private static final String ADDRESS_TAG_STACK = "stack";
+
   // TODO(zundel): this method is just for debugging. Not for production use.
   static void getProfileBreakdownText(StringBuilder result,
       JavaScriptProfileEvent rawEvent) {
@@ -169,10 +176,9 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
   private JavaScriptProfile currentProfile;
   private V8LogDecompressor logDecompressor;
 
-  static final String ADDRESS_TAG_CODE = "code";
-  static final String ADDRESS_TAG_CODE_MOVE = "code-move";
-  static final String ADDRESS_TAG_STACK = "stack";
   private final Map<String, Long> addressTags = new HashMap<String, Long>();
+
+  private Element scrubbingDiv = Document.get().createDivElement();
 
   public JavaScriptProfileModelV8Impl() {
     super("v8");
@@ -180,40 +186,6 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     populateActionTypes();
     populateSymbolTypes();
     // TODO (zundel): populate windows C++ symbols from .map files
-  }
-
-  private void populateAddressTags() {
-    addressTags.put(ADDRESS_TAG_CODE, 0L);
-    addressTags.put(ADDRESS_TAG_CODE_MOVE, 0L);
-    addressTags.put(ADDRESS_TAG_STACK, 0L);
-  }
-
-  private String concatLogEntries(String[] entries) {
-    StringBuilder builder = new StringBuilder();
-    for (int i = 0; i < entries.length; ++i) {
-      if (i > 0) {
-        builder.append(",");
-      }
-      builder.append(entries[i]);
-    }
-    return builder.toString();
-  }
-
-  /**
-   * Convenience method to create a new ActionType and add it to the map.
-   */
-  private ActionType createActionType(String actionName, int actionValue) {
-    ActionType type = new ActionType(actionName, actionValue);
-    actionTypeMap.put(actionName, type);
-    return type;
-  }
-
-  /**
-   * Convenience method to create a new SymbolType and add it to the map.
-   */
-  private void createSymbolType(String symbolName, int symbolValue) {
-    SymbolType type = new SymbolType(symbolName, symbolValue);
-    symbolTypeMap.put(symbolName, type);
   }
 
   @Override
@@ -235,12 +207,39 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
   }
 
   /**
-   * Returns the constant associated with the symbol type string or -1 if not
-   * found.
+   * Take a raw timeline record and convert it into a bottom up profile.
+   * 
+   * @param rawEvent a raw JSON timeline event of type EventType.PROFILE_DATA
    */
-  private int getSymbolType(String typeString) {
-    SymbolType result = symbolTypeMap.get(typeString);
-    return result == null ? -1 : result.getValue();
+  @Override
+  public void parseRawEvent(JavaScriptProfileEvent rawEvent,
+      JavaScriptProfile profile) {
+    assert rawEvent.getFormat().equals(FORMAT);
+    String profileData = rawEvent.getProfileData();
+    if (profileData == null || profileData.length() == 0) {
+      return;
+    }
+
+    currentProfile = profile;
+
+    String[] logLines = profileData.split("\n");
+    for (int i = 0, logLinesLength = logLines.length; i < logLinesLength; ++i) {
+      String logLine = logLines[i];
+      if (logDecompressor != null) {
+        logLine = logDecompressor.decompressLogEntry(logLine);
+      }
+
+      // TODO(zundel): this is naive and assumes no commas will be embedded on
+      // quoted strings. Is there a library to parse a line of CSV text?
+      parseLogEntry(V8LogDecompressor.splitLogLine(logLine));
+    }
+  }
+
+  /**
+   * This method is intended for use by the unit tests only.
+   */
+  Symbol findSymbol(int address) {
+    return symbolTable.lookup(address);
   }
 
   /**
@@ -280,6 +279,51 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
   }
 
   /**
+   * Scrubs a string of any embedded HTML or JavaScript.
+   */
+  String scrubStringForXSS(String input) {
+    scrubbingDiv.setInnerText(input);
+    return scrubbingDiv.getInnerText();
+  }
+
+  private String concatLogEntries(String[] entries) {
+    StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < entries.length; ++i) {
+      if (i > 0) {
+        builder.append(",");
+      }
+      builder.append(entries[i]);
+    }
+    return builder.toString();
+  }
+
+  /**
+   * Convenience method to create a new ActionType and add it to the map.
+   */
+  private ActionType createActionType(String actionName, int actionValue) {
+    ActionType type = new ActionType(actionName, actionValue);
+    actionTypeMap.put(actionName, type);
+    return type;
+  }
+
+  /**
+   * Convenience method to create a new SymbolType and add it to the map.
+   */
+  private void createSymbolType(String symbolName, int symbolValue) {
+    SymbolType type = new SymbolType(symbolName, symbolValue);
+    symbolTypeMap.put(symbolName, type);
+  }
+
+  /**
+   * Returns the constant associated with the symbol type string or -1 if not
+   * found.
+   */
+  private int getSymbolType(String typeString) {
+    SymbolType result = symbolTypeMap.get(typeString);
+    return result == null ? -1 : result.getValue();
+  }
+
+  /**
    * Given an array of the fields in a single log line, execute the appropriate
    * action on that entry based on the first field.
    */
@@ -291,35 +335,6 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
       cmdMethod.doAction(logEntries);
     } else {
       Logging.getLogger().logText("Unknown v8 profiler command: " + command);
-    }
-  }
-
-  /**
-   * Take a raw timeline record and convert it into a bottom up profile.
-   * 
-   * @param rawEvent a raw JSON timeline event of type EventType.PROFILE_DATA
-   */
-  @Override
-  public void parseRawEvent(JavaScriptProfileEvent rawEvent,
-      JavaScriptProfile profile) {
-    assert rawEvent.getFormat().equals(FORMAT);
-    String profileData = rawEvent.getProfileData();
-    if (profileData == null || profileData.length() == 0) {
-      return;
-    }
-
-    currentProfile = profile;
-
-    String[] logLines = profileData.split("\n");
-    for (int i = 0, logLinesLength = logLines.length; i < logLinesLength; ++i) {
-      String logLine = logLines[i];
-      if (logDecompressor != null) {
-        logLine = logDecompressor.decompressLogEntry(logLine);
-      }
-
-      // TODO(zundel): this is naive and assumes no commas will be embedded on
-      // quoted strings. Is there a library to parse a line of CSV text?
-      parseLogEntry(V8LogDecompressor.splitLogLine(logLine));
     }
   }
 
@@ -463,6 +478,8 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
   private void parseV8TickEntry(String[] logEntries) {
     assert logEntries.length >= 4;
     long address = parseAddress(logEntries[1], ADDRESS_TAG_CODE);
+    // stack address is currently ignored, but it must be parsed to keep the
+    // stack address tag up to date.
     long stackAddress = parseAddress(logEntries[2], ADDRESS_TAG_STACK);
     int vmState = Integer.parseInt(logEntries[3]);
     currentProfile.addStateTime(vmState, 1.0);
@@ -484,29 +501,6 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
           + JavaScriptProfile.stateToString(vmState));
       child.addSelfTime(1.0);
     }
-  }
-
-  private JavaScriptProfileNode recordAddressInProfile(
-      JavaScriptProfileNode bottomUpProfile, long address,
-      boolean recordedSelfTime) {
-    JavaScriptProfileNode child = null;
-    Symbol found = symbolTable.lookup(address);
-    if (found != null && bottomUpProfile != null) {
-      child = bottomUpProfile.getOrInsertChild(found.getName());
-      assert child != null;
-    } else {
-      debugStats.lookupMisses++;
-    }
-
-    if (child != null) {
-      if (!recordedSelfTime) {
-        child.addSelfTime(1.0);
-      } else {
-        child.addTime(1.0);
-      }
-      return child;
-    }
-    return bottomUpProfile;
   }
 
   private void populateActionTypes() {
@@ -558,6 +552,12 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     });
   }
 
+  private void populateAddressTags() {
+    addressTags.put(ADDRESS_TAG_CODE, 0L);
+    addressTags.put(ADDRESS_TAG_CODE_MOVE, 0L);
+    addressTags.put(ADDRESS_TAG_STACK, 0L);
+  }
+
   private void populateSymbolTypes() {
     createSymbolType("Builtin", SYMBOL_TYPE_BUILTIN);
     createSymbolType("CallDebugBreak", SYMBOL_TYPE_CALL_DEBUG_BREAK);
@@ -582,27 +582,33 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     createSymbolType("Stub", SYMBOL_TYPE_STUB);
   }
 
+  private JavaScriptProfileNode recordAddressInProfile(
+      JavaScriptProfileNode bottomUpProfile, long address,
+      boolean recordedSelfTime) {
+    JavaScriptProfileNode child = null;
+    Symbol found = symbolTable.lookup(address);
+    if (found != null && bottomUpProfile != null) {
+      child = bottomUpProfile.getOrInsertChild(found.getName());
+      assert child != null;
+    } else {
+      debugStats.lookupMisses++;
+    }
+
+    if (child != null) {
+      if (!recordedSelfTime) {
+        child.addSelfTime(1.0);
+      } else {
+        child.addTime(1.0);
+      }
+      return child;
+    }
+    return bottomUpProfile;
+  }
+
   private String stripQuotes(String value) {
     int startOffset = value.startsWith("\"") ? 1 : 0;
     int endOffset = value.endsWith("\"") ? value.length() - 1
         : value.length() - 2;
     return value.substring(startOffset, endOffset);
-  }
-
-  /**
-   * This method is intended for use by the unit tests only.
-   */
-  Symbol findSymbol(int address) {
-    return symbolTable.lookup(address);
-  }
-
-  private Element scrubbingDiv = Document.get().createDivElement();
-
-  /**
-   * Scrubs a string of any embedded HTML or JavaScript.
-   */
-  String scrubStringForXSS(String input) {
-    scrubbingDiv.setInnerText(input);
-    return scrubbingDiv.getInnerText();
   }
 }

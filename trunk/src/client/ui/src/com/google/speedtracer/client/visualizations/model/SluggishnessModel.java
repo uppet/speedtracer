@@ -15,10 +15,6 @@
  */
 package com.google.speedtracer.client.visualizations.model;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import com.google.speedtracer.client.model.ApplicationState;
 import com.google.speedtracer.client.model.DataModel;
 import com.google.speedtracer.client.model.EventRecord;
@@ -32,6 +28,10 @@ import com.google.speedtracer.client.timeline.GraphModel;
 import com.google.speedtracer.client.timeline.HighlightModel;
 import com.google.speedtracer.client.timeline.ModelData;
 import com.google.speedtracer.client.util.JsIntegerMap;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Underlying model implementation that maintains SluggishnessDetailsView's

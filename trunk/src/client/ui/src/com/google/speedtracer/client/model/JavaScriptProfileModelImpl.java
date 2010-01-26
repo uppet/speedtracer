@@ -27,6 +27,12 @@ public abstract class JavaScriptProfileModelImpl {
   }
 
   /**
+   * Dumps the internal state of the parser for debugging. The output might
+   * include the symbol/address map, for example.
+   */
+  public abstract String getDebugDumpHtml();
+
+  /**
    * Returns a string identifying the format handled by this parser.
    */
   public String getFormat() {
@@ -42,11 +48,5 @@ public abstract class JavaScriptProfileModelImpl {
    */
   public abstract void parseRawEvent(JavaScriptProfileEvent event,
       JavaScriptProfile profile);
-
-  /**
-   * Dumps the internal state of the parser for debugging. The output might
-   * include the symbol/address map, for example.
-   */
-  public abstract String getDebugDumpHtml();
 
 }
