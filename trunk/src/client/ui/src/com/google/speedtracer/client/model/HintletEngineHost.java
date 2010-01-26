@@ -39,7 +39,7 @@ public class HintletEngineHost {
    * Listener interface for receiving exceptions thrown in hintlets.
    */
   public interface ExceptionListener {
-    void onHintletException(HintletException hintlet);
+    void onHintletException(HintletException hintletException);
   }
 
   /**

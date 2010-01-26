@@ -80,7 +80,7 @@ public class UiEvent extends EventRecord {
    * @return the endTime - startTime
    */
   public final native double getDuration() /*-{
-    return this.duration;
+    return this.duration || 0;
   }-*/;
 
   /**
@@ -94,8 +94,8 @@ public class UiEvent extends EventRecord {
 
   /**
    * Pulls the cached canvas element corresponding to the rendered
-   * {@link MasterEventTraceGraph} from a {@link UiEvent} or null if it hasn't
-   * been rendered yet.
+   * {@link com.google.speedtracer.client.visualizations.view.EventTraceBreakdown.MasterEventTraceGraph}
+   * from a {@link UiEvent} or null if it hasn't been rendered yet.
    * 
    * @return the {@link Element} corresponding to the canvas for the rendered
    *         master bar graph
@@ -119,6 +119,16 @@ public class UiEvent extends EventRecord {
   }-*/;
 
   /**
+   * Returns whether or not a profile record is associated with this event. Look
+   * up the actual profiling data in the {@link JavaScriptProfileModel}
+   * 
+   * @return whether or not a profile record is associated with this event.
+   */
+  public final native boolean hasJavaScriptProfile() /*-{
+    return !!this.hasJavaScriptProfile;
+  }-*/;
+
+  /**
    * Whether or not the user used the markTimeline API to log something.
    * 
    * @return Whether or not the user used the markTimeline API to log something
@@ -128,8 +138,16 @@ public class UiEvent extends EventRecord {
   }-*/;
 
   /**
+   * Sets whether or not a profile record is associated with this event.
+   */
+  public final native void setHasJavaScriptProfile() /*-{
+    this.hasJavaScriptProfile = true;
+  }-*/;
+
+  /**
    * Caches a canvas element corresponding to the rendered
-   * {@link MasterEventTraceGraph} for a {@link UiEvent}.
+   * {@link com.google.speedtracer.client.visualizations.view.EventTraceBreakdown.MasterEventTraceGraph}
+   * for a {@link UiEvent}.
    * 
    * @param frameBuffer the {@link Element} corresponding to the rendered canvas
    *          tag

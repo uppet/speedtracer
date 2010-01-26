@@ -538,6 +538,11 @@ public class SluggishnessDetailView extends DetailView {
         hintletTree = createHintletTree(treeDiv);
         createEventTrace(eventTraceContainer, pieChartHeight);
 
+        if (event.hasJavaScriptProfile()) {
+          Div profileDiv = new Div(eventTraceContainer);
+          profileDiv.setHtml(getModel().getProfileHtmlForEvent(event));
+        }
+        
         // Ensure that window resizes don't mess up our row size due to text
         // reflow. Things may need to grow or shrink.
         ResizeEvent.addResizeListener(WindowExt.get(), WindowExt.get(),
@@ -547,7 +552,7 @@ public class SluggishnessDetailView extends DetailView {
                   heightFixer = new Command() {
                     @Override
                     public void execute() {
-                      // We dont want to do this for each resize, but once at
+                      // We don't want to do this for each resize, but once at
                       // the end.
                       fixHeightOfParentRow();
                       heightFixer = null;

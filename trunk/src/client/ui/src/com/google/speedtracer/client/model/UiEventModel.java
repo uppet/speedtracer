@@ -41,7 +41,6 @@ public class UiEventModel implements EventCallbackProxyProvider {
       }
     }
   }
-
   
   /**
    * Listener interface for handling UiEventModel events.
