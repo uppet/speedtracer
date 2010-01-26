@@ -6,18 +6,13 @@ deps = {
   "src/third_party/junit" : "/deps/junit",
 
   "src/third_party/svnkit" : "/deps/svnkit",
+
+  "src/third_party/gwt" : "/deps/gwt",
 }
 
 deps_os = {
   "win" : {
-    "src/third_party/gwt" : "/deps/gwt-windows",
     "src/third_party/third_party/python_24": "http://src.chromium.org/svn/trunk/deps/third_party/python_24@22967",
   },
-  "mac" : {
-    "src/third_party/gwt" : "/deps/gwt-mac",
-  },
-  "unix" : {
-    "src/third_party/gwt" : "/deps/gwt",
-  }
 }
 

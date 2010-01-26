@@ -55,9 +55,6 @@
 
   <path id="classpath">
     <pathelement path="src" />
-    <!-- GWT 1.7 and prior -->
-    <pathelement path="${gwt.home}/gwt-dev-${platform}.jar" /> 
-    <!-- GWT 2.0 and later -->
     <pathelement path="${gwt.home}/gwt-dev.jar" />
     <pathelement path="${gwt.home}/gwt-user.jar" />
     <pathelement path="${classdir}" />
@@ -194,7 +191,8 @@
         haltonfailure="true" tempdir="${speedtracer.junit.out}">
       <jvmarg line="${junit.platform.args}" />
       <jvmarg line="-Xmx768m" />
-      <sysproperty key="gwt.args" value="-remoteweb ${remote.browser}" />
+
+      <sysproperty key="gwt.args" value="-out www -prod -runStyle RemoteWeb:${remote.browser} -batch module" />
 
       <classpath>
         <path refid="classpath" />
