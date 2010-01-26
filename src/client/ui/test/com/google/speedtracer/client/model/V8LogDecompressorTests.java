@@ -58,38 +58,6 @@ public class V8LogDecompressorTests extends GWTTestCase {
     assertEquals("abbaz", result);
   }
 
-  public void testSubLineCompression() {
-    V8LogDecompressor decompressor = new V8LogDecompressor(4);
-    String result;
-    result = decompressor.decompressLogEntry("foo");
-    assertEquals("foo", result);
-    result = decompressor.decompressLogEntry("bar");
-    assertEquals("bar", result);
-    result = decompressor.decompressLogEntry("baz");
-    assertEquals("baz", result);
-    result = decompressor.decompressLogEntry("#3:1");
-    assertEquals("oo", result);
-    result = decompressor.decompressLogEntry("a#3:2");
-    assertEquals("ar", result);
-    result = decompressor.decompressLogEntry("abcdefghijklmnopqrstuvwxyz");
-    assertEquals("abcdefghijklmnopqrstuvwxyz", result);
-    result = decompressor.decompressLogEntry("#1:10");
-    assertEquals("klmnopqrstuvwxyz", result);
-  }
-  
-  public void testRepeatInteraction() {
-    V8LogDecompressor decompressor = new V8LogDecompressor(4);
-    String result;
-    result = decompressor.decompressLogEntry("repeat,10,foo");
-    assertEquals("repeat,10,foo", result);
-    result = decompressor.decompressLogEntry("#1");
-    assertEquals("foo", result);
-    result = decompressor.decompressLogEntry("repeat,10,foo");
-    result = decompressor.decompressLogEntry("#1:1");
-    assertEquals("oo", result);
-    
-  }
-
   public void testLogLineSplit() {
     String results[];
     results = V8LogDecompressor.splitLogLine("1,2,3");
@@ -115,6 +83,37 @@ public class V8LogDecompressorTests extends GWTTestCase {
     assertEquals("1", results[0]);
     assertEquals("\"2,2\"", results[1]);
     assertEquals("3", results[2]);
+  }
+  
+  public void testRepeatInteraction() {
+    V8LogDecompressor decompressor = new V8LogDecompressor(4);
+    String result;
+    result = decompressor.decompressLogEntry("repeat,10,foo");
+    assertEquals("repeat,10,foo", result);
+    result = decompressor.decompressLogEntry("#1");
+    assertEquals("foo", result);
+    result = decompressor.decompressLogEntry("repeat,10,foo");
+    result = decompressor.decompressLogEntry("#1:1");
+    assertEquals("oo", result);
+  }
+
+  public void testSubLineCompression() {
+    V8LogDecompressor decompressor = new V8LogDecompressor(4);
+    String result;
+    result = decompressor.decompressLogEntry("foo");
+    assertEquals("foo", result);
+    result = decompressor.decompressLogEntry("bar");
+    assertEquals("bar", result);
+    result = decompressor.decompressLogEntry("baz");
+    assertEquals("baz", result);
+    result = decompressor.decompressLogEntry("#3:1");
+    assertEquals("oo", result);
+    result = decompressor.decompressLogEntry("a#3:2");
+    assertEquals("ar", result);
+    result = decompressor.decompressLogEntry("abcdefghijklmnopqrstuvwxyz");
+    assertEquals("abcdefghijklmnopqrstuvwxyz", result);
+    result = decompressor.decompressLogEntry("#1:10");
+    assertEquals("klmnopqrstuvwxyz", result);
   }
   
   @Override

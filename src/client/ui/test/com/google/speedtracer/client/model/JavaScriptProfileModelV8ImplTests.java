@@ -15,11 +15,11 @@
  */
 package com.google.speedtracer.client.model;
 
-import java.util.List;
-
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.model.V8SymbolTable.Symbol;
+
+import java.util.List;
 
 /**
  * Tests for parsing profile data from the v8 JavaScript engine.
@@ -34,11 +34,6 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
   @Override
   public String getModuleName() {
     return "com.google.speedtracer.Common";
-  }
-
-  @Override
-  protected void gwtSetUp() throws Exception {
-    Logging.createListenerLogger(null);
   }
 
   public void testAddressParse() {
@@ -142,5 +137,10 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
     assertEquals(child.getSymbolName(), "parentNode");
     assertEquals(1.0, child.getTime(), .001);
     assertEquals(1.0, child.getSelfTime(), .001);
+  }
+
+  @Override
+  protected void gwtSetUp() throws Exception {
+    Logging.createListenerLogger(null);
   }
 }
