@@ -43,6 +43,7 @@ import com.google.speedtracer.client.WindowChannel.ServerListener;
 import com.google.speedtracer.client.messages.InitializeMonitorMessage;
 import com.google.speedtracer.client.messages.RecordingDataMessage;
 import com.google.speedtracer.client.messages.RequestInitializationMessage;
+import com.google.speedtracer.client.messages.ResetBaseTimeMessage;
 import com.google.speedtracer.client.model.DevToolsDataInstance;
 import com.google.speedtracer.client.model.LoadFileDataInstance;
 import com.google.speedtracer.client.model.Model;
@@ -353,6 +354,9 @@ public abstract class BackgroundPage extends Extension {
               case RecordingDataMessage.TYPE:
                 doRecordingData(data);
                 break;
+              case ResetBaseTimeMessage.TYPE:
+                doResetBaseTime(channel, data);
+                break;
               default:
                 assert false : "Unhandled Message" + type;
             }
@@ -427,6 +431,18 @@ public abstract class BackgroundPage extends Extension {
               }
             });
           }
+          
+          private void doResetBaseTime(final Client channel,
+              WindowChannel.Message data) {
+            final ResetBaseTimeMessage request = data.cast();
+            final int tabId = request.getTabId();
+            final int browserId = request.getBrowserId();
+            final BrowserConnectionState browserConnection = browserConnectionMap.get(browserId);
+            final TabModel tabModel = browserConnection.tabMap.get(tabId);
+            DataInstance dataInstance = tabModel.dataInstance.<DataInstance> cast();
+            dataInstance.setBaseTime(-1);
+          }
+          
         });
       }
 

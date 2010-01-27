@@ -27,32 +27,32 @@ public class V8LogDecompressor {
   static final int SPLIT_LOOKING_FOR_COMMA = 0;
   static final int SPLIT_IN_STRING = 1;
   static final int SPLIT_IN_ESCAPE = 2;
-  
+
   /**
    * Split a comma separated value log line while ignoring escaped strings.
    */
   public static String[] splitLogLine(String logLine) {
     // Implemented as a little state machine
-    int state;  
+    int state;
     List<String> results = new ArrayList<String>();
     int index = 0;
     int entryStart = 0;
-    
-    state = SPLIT_LOOKING_FOR_COMMA; 
+
+    state = SPLIT_LOOKING_FOR_COMMA;
     while (index < logLine.length()) {
       char nextCharacter = logLine.charAt(index);
-      switch(state) {
+      switch (state) {
         case SPLIT_LOOKING_FOR_COMMA:
           switch (nextCharacter) {
             case ',':
               results.add(logLine.substring(entryStart, index));
               entryStart = index + 1;
               break;
-              case '"':
-                state = SPLIT_IN_STRING;
+            case '"':
+              state = SPLIT_IN_STRING;
               break;
           }
-      break;
+          break;
         case SPLIT_IN_STRING:
           switch (nextCharacter) {
             case '\\':
@@ -69,13 +69,13 @@ public class V8LogDecompressor {
       }
       index++;
     }
-    
+
     if (entryStart != index) {
       results.add(logLine.substring(entryStart, index));
     }
     return results.toArray(new String[0]);
   }
-  
+
   private String window[];
   private int windowSize;
   private int lastWindow;
@@ -87,7 +87,7 @@ public class V8LogDecompressor {
 
   public String decompressLogEntry(String logLine) {
     String decompressedLogEntry = logLine;
-    
+
     if (windowSize > 0) {
 
       /**
@@ -127,13 +127,14 @@ public class V8LogDecompressor {
     String logEntry[] = splitLogLine(decompressedLogEntry);
     if (logEntry[0].equals("repeat") || logEntry[0].equals("r")) {
       // skip the first 2 fields.
-      appendLogEntry(decompressedLogEntry.substring(logEntry[0].length() + logEntry[1].length() + 2)); 
+      appendLogEntry(decompressedLogEntry.substring(logEntry[0].length()
+          + logEntry[1].length() + 2));
     } else {
       appendLogEntry(decompressedLogEntry);
     }
     return decompressedLogEntry;
   }
-  
+
   private void appendLogEntry(String logEntry) {
     lastWindow = ++lastWindow % windowSize;
     window[lastWindow] = logEntry;

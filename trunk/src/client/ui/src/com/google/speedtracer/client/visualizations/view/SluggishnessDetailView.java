@@ -542,7 +542,7 @@ public class SluggishnessDetailView extends DetailView {
           Div profileDiv = new Div(eventTraceContainer);
           profileDiv.setHtml(getModel().getProfileHtmlForEvent(event));
         }
-        
+
         // Ensure that window resizes don't mess up our row size due to text
         // reflow. Things may need to grow or shrink.
         ResizeEvent.addResizeListener(WindowExt.get(), WindowExt.get(),
@@ -638,8 +638,9 @@ public class SluggishnessDetailView extends DetailView {
             // should be an array of stack frame descriptions.
             String[] frames = val.split(";");
             for (int i = 0, n = frames.length; i < n; i++) {
-              String[] stackFrame = frames[i].split(",");
-              final String resourceUrl = stackFrame[1];
+              JSOArray<String> stackFrame = JSOArray.splitString(frames[i], ",");
+              
+              final String resourceUrl = stackFrame.get(0);
 
               // Presenting the entire URL is kinda gross. Lets just shot the
               // last path component.
@@ -651,15 +652,15 @@ public class SluggishnessDetailView extends DetailView {
               }
 
               // We convert lineNumber to a 1 based index.
-              final int lineNumber = Integer.parseInt(stackFrame[2]) + 1;
-              final int colNumber = Integer.parseInt(stackFrame[3]) + 1;
+              final int lineNumber = Integer.parseInt(stackFrame.get(2)) + 1;
+              final int colNumber = Integer.parseInt(stackFrame.get(3)) + 1;
 
               // Prefer the last argument
-              String functionName = stackFrame[5] + "()";
-              // but if it isnt there, try the 3rd.
+              String functionName = stackFrame.get(5) + "()";
+              // but if it isnt there, try the 4th.
               functionName = (functionName.equals("undefined()"))
-                  ? stackFrame[4] + "()" : functionName;
-              // If we still dont have anything, replace with [anonymous]
+                  ? stackFrame.get(4) + "()" : functionName;
+              // If we still don't have anything, replace with [anonymous]
               functionName = (functionName.equals("undefined()")) ? "[unknown]"
                   : functionName;
 

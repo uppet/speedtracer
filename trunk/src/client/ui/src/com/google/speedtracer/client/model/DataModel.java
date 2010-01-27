@@ -74,6 +74,10 @@ public abstract class DataModel implements HintletEngineHost.HintListener {
       this.Resume();
     }-*/;
 
+    public final native void setBaseTime(double baseTime) /*-{
+      this.SetBaseTime(baseTime);
+    }-*/;
+
     public final native void setProfilingOptions(boolean enableStackTraces,
         boolean enableCpuProfiling) /*-{
       this.SetOptions(enableStackTraces, enableCpuProfiling);

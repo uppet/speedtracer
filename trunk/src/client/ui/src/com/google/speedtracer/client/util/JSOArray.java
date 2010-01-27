@@ -34,6 +34,14 @@ public class JSOArray<T> extends JavaScriptObject {
     return [];
   }-*/;
 
+  /**
+   * Invokes the native string split on a string and returns a JavaScript array.
+   * GWT's version of string.split() emulates Java behavior in JavaScript.
+   */
+  public static native JSOArray<String> splitString(String str, String regexp) /*-{
+    return str.split(regexp);
+  }-*/;
+
   protected JSOArray() {
   }
 
@@ -45,7 +53,7 @@ public class JSOArray<T> extends JavaScriptObject {
   public final native JSOArray<T> concat(JSOArray<T> val) /*-{
     return this.concat(val);
   }-*/;
-  
+
   /**
    * Standard index accessor.
    * 

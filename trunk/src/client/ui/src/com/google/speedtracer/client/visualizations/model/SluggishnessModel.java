@@ -93,7 +93,7 @@ public class SluggishnessModel implements VisualizationModel,
   }
 
   /**
-   * Corrects event re-entrancy issues with out of order start times. Adds the
+   * Corrects event reentrancy issues with out of order start times. Adds the
    * UiEvent to the eventList.
    * 
    * @param e
@@ -101,7 +101,7 @@ public class SluggishnessModel implements VisualizationModel,
   public void addUiEventToList(UiEvent e) {
     int lastIndex = eventList.size() - 1;
     // If an event comes in with a start time before the last added event, we
-    // have an event re-entrancy issue. The list should be sorted up until now,
+    // have an event reentrancy issue. The list should be sorted up until now,
     // so add the event in the right place.
     if (lastIndex >= 0 && eventList.get(lastIndex).getTime() > e.getTime()) {
       // note that we already have a function defined that will do what we

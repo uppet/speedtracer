@@ -151,18 +151,15 @@ public class OverViewTimeLine extends TimeLine {
   }
 
   /**
-   * Resets our overview graph's displayable bounds. It effectively truncates
-   * our OverViewTimeLine and has it begin at the last data point seen by our
-   * MainTimeLine, and end at the default window size for graphs.
+   * Resets our overview graph's displayable bounds.
    * 
    * It is up to the caller to ensure that the state and underlying data for our
    * visualizations are cleaned up since it will no longer be reachable after
    * this is called.
    */
   public void resetDisplayableBounds() {
-    double newLeft = mainTimeLine.getModel().getMostRecentDomainValue();
-    double newRight = mainTimeLine.getModel().getMostRecentDomainValue()
-        + Constants.DEFAULT_GRAPH_WINDOW_SIZE;
+    double newLeft = 0;
+    double newRight = Constants.DEFAULT_GRAPH_WINDOW_SIZE;
     getModel().updateBounds(newLeft, newRight);
     domainSelection.setLeftBound(newLeft);
     domainSelection.setRightBound(newRight);

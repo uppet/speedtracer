@@ -32,7 +32,7 @@ public interface VisualizationModel {
   void detachFromSourceModel();
 
   GraphModel getGraphModel();
-  
+
   HighlightModel getHighlightModel();
 
   /**
