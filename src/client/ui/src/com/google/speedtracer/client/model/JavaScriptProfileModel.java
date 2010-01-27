@@ -44,7 +44,6 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
       } else if (o1.getSelfTime() < o2.getSelfTime()) {
         return 1;
       }
-
       if (o1.getTime() > o2.getTime()) {
         return -1;
       } else if (o1.getTime() < o2.getTime()) {
@@ -52,7 +51,6 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
       }
       return 0;
     }
-
   };
 
   JavaScriptProfileModel(final DataModel dataModel) {

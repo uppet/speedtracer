@@ -46,7 +46,7 @@ public class MonitorResources {
   }
 
   /**
-   * CSS data defined in the monitor resource bundle
+   * CSS data defined in the monitor resource bundle.
    */
   public interface Css extends CssResource {
     String buildInfoView();

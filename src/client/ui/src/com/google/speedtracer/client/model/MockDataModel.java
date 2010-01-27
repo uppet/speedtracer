@@ -18,6 +18,8 @@ package com.google.speedtracer.client.model;
 import com.google.gwt.topspin.client.Command;
 import com.google.speedtracer.client.util.JSOArray;
 
+import java.util.List;
+
 /**
  * A data model that can be driven by pre-recorded data. See #
  * {@link MockModelGenerator} to get a MockModel based on a number of different
@@ -30,16 +32,8 @@ public class MockDataModel extends DataModel {
     super();
   }
 
-  @Override
-  protected void bind(TabDescription tabDescription, DataInstance dataInstance) {
-    setTabDescription(tabDescription);
-    Command.defer(new Command() {
-      @Override
-      public void execute() {
-        runSimulations();
-      }
-      // Allow the hintlet engine to come up.
-    }, 50);
+  public List<String> getDataSetNames() {
+    return MockModelGenerator.getDataSetNames(this);
   }
 
   @Override
@@ -50,11 +44,25 @@ public class MockDataModel extends DataModel {
   public void saveRecords(JSOArray<String> visitedUrls) {
   }
 
+  public void simulateDataSet(int dataSetIndex) {
+    MockModelGenerator.simulateDataSet(this, dataSetIndex);
+  }
+
   @Override
   public void stopMonitoring() {
   }
 
-  private void runSimulations() {
-    MockModelGenerator.simulateRedditDotCom(this);
+  @Override
+  protected void bind(TabDescription tabDescription, DataInstance dataInstance) {
+    setTabDescription(tabDescription);
+    Command.defer(new Command() {
+      @Override
+      public void execute() {
+        MockModelGenerator.simulateDataSet(MockDataModel.this, 0);
+      }
+      // Allow the hintlet engine to come up.
+      // TODO(zundel): come up with a more definitive way to know the hintlet
+      // engine is running.
+    }, 50);
   }
 }

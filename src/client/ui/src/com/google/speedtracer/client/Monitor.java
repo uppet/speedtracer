@@ -35,6 +35,7 @@ import com.google.speedtracer.client.messages.InitializeMonitorMessage;
 import com.google.speedtracer.client.messages.RecordingDataMessage;
 import com.google.speedtracer.client.messages.RequestInitializationMessage;
 import com.google.speedtracer.client.messages.ResendProfilingOptions;
+import com.google.speedtracer.client.messages.ResetBaseTimeMessage;
 import com.google.speedtracer.client.model.ApplicationState;
 import com.google.speedtracer.client.model.DataModel;
 import com.google.speedtracer.client.model.MockDataModel;
@@ -43,6 +44,7 @@ import com.google.speedtracer.client.model.TabChange;
 import com.google.speedtracer.client.model.TabChangeModel;
 import com.google.speedtracer.client.model.TabDescription;
 import com.google.speedtracer.client.model.DataModel.DataInstance;
+import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.util.dom.WindowExt;
 import com.google.speedtracer.client.view.Controller;
 import com.google.speedtracer.client.view.HoveringPopup;
@@ -83,6 +85,9 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
         Unload: function() {
         },
 
+        SetBaseTime: function(baseTime) {
+        },
+
         SetOptions: function(enableStackTraces, enableCpuProfiling) {
         }
       };
@@ -111,9 +116,11 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
             }
 
             public void onMessage(Client channel, int type, Message data) {
-              channel.sendMessage(InitializeMonitorMessage.TYPE,
-                  InitializeMonitorMessage.create(tabDescription, dataInstance,
-                      "0.0"));
+              if (type == RequestInitializationMessage.TYPE) {
+                channel.sendMessage(InitializeMonitorMessage.TYPE,
+                    InitializeMonitorMessage.create(tabDescription,
+                        dataInstance, "0.0"));
+              }
             }
           });
         }
@@ -360,14 +367,13 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
    * Removes all current application states and starts a new one at the last
    * page we were monitoring.
    */
-  public void resetApplicationStates(double newLeft, double newRight) {
+  public void resetApplicationStates() {
     ApplicationState newState = new ApplicationState(model);
-    newState.setFirstDomainValue(newLeft);
-    newState.setLastDomainValue(newRight);
+    newState.setFirstDomainValue(0);
+    newState.setLastDomainValue(Constants.DEFAULT_GRAPH_WINDOW_SIZE);
     String lastUrl = getUrlWithoutHash(controller.getPageUrlForIndex(pageStates.size() - 1));
 
-    // TODO (jaimeyap): Verify that the application states contained here get
-    // GC'ed. We should not have any references holding on to them.
+    detachApplicationStatesFromSourceModels();
     pageStates.clear();
     model.clear();
 
@@ -376,7 +382,14 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
 
     addPageState(lastUrl, newState);
 
+    // Now swap in the page state
     setStateForPageAtIndex(0);
+    controller.setSelectedPage(0);
+
+    if (channel != null) {
+      channel.sendMessage(ResetBaseTimeMessage.TYPE,
+          ResetBaseTimeMessage.create(getTabId(), getBrowserId()));
+    }
   }
 
   /**
@@ -409,6 +422,12 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
 
   public void showHintletReport() {
     hintletReportDialog.setVisible(true);
+  }
+
+  private void detachApplicationStatesFromSourceModels() {
+    for (int i = 0, length = pageStates.size(); i < length; ++i) {
+      pageStates.get(i).detachFromSourceModels();
+    }
   }
 
   /**

@@ -30,6 +30,7 @@ class MessageType {
   static final int REQUEST_FILE_LOAD_TYPE = 4;
   static final int RECORD_DATA_TYPE = 5;
   static final int RESEND_PROFILING_DATA_TYPE = 6;
+  static final int RESET_BASE_TIME_TYPE = 7;
   
   private MessageType() {
   }

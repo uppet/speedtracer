@@ -15,13 +15,13 @@
  */
 package com.google.speedtracer.client.view;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.OptionElement;
 import com.google.gwt.dom.client.SelectElement;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.resources.client.ImageResource.ImageOptions;
 import com.google.gwt.resources.client.ImageResource.RepeatStyle;
 import com.google.gwt.topspin.ui.client.Anchor;
@@ -96,7 +96,6 @@ public class Controller extends Panel implements DomainObserver,
     ImageResource controllerBackground();
 
     @Source("resources/Controller.css")
-    @Strict()
     Css controllerCss();
 
     @Source("resources/help-button.png")
@@ -245,7 +244,7 @@ public class Controller extends Panel implements DomainObserver,
     // This part is a guard in case we are not in the extensions process,
     // like when we are run in mock dev mode.
     if ($wnd.chrome && $wnd.chrome.devtools) {
-      return !!chrome.devtools.setProfilingOptions;
+    return !!chrome.devtools.setProfilingOptions;
     }
 
     return false;
@@ -253,7 +252,9 @@ public class Controller extends Panel implements DomainObserver,
 
   // This field will be null if the setProfilingOptions extensions API does not
   // exist.
-  ProfilingOptionsPanel profilingOptions;
+  private ProfilingOptionsPanel profilingOptions;
+
+  private TestDataPanel testDataPanel;
 
   private final InfoScreen infoScreen;
 
@@ -268,6 +269,8 @@ public class Controller extends Panel implements DomainObserver,
   private final Select pages;
 
   private final ToggleButton recordStopButton;
+  private final Css css;
+  private final Container controllerContainer;
 
   public Controller(Container parent, DataModel model, Monitor monitor,
       Resources resources) {
@@ -275,13 +278,12 @@ public class Controller extends Panel implements DomainObserver,
     this.model = model;
     this.monitor = monitor;
 
-    final Container container = getContainer();
-
-    final Css css = resources.controllerCss();
+    controllerContainer = getContainer();
+    css = resources.controllerCss();
 
     setStyleName(css.base());
 
-    recordStopButton = new ToggleButton(container, css);
+    recordStopButton = new ToggleButton(controllerContainer, css);
     recordStopButton.setStyleName(css.control() + " " + css.recordStopButton()
         + " " + css.control());
     this.setIsRecording(true);
@@ -292,7 +294,7 @@ public class Controller extends Panel implements DomainObserver,
       }
     });
 
-    final Button resetButton = new Button(container);
+    final Button resetButton = new Button(controllerContainer);
     resetButton.setStyleName(css.control() + " " + css.resetButton());
     resetButton.getElement().setAttribute("title", "Discard Data and Reset");
     resetButton.addClickListener(new ClickListener() {
@@ -301,7 +303,7 @@ public class Controller extends Panel implements DomainObserver,
       }
     });
 
-    final Button saveButton = new Button(container);
+    final Button saveButton = new Button(controllerContainer);
     saveButton.setStyleName(css.control() + " " + css.saveButton());
     saveButton.getElement().setAttribute("title", "Save Data to a File");
     saveButton.addClickListener(new ClickListener() {
@@ -324,7 +326,7 @@ public class Controller extends Panel implements DomainObserver,
 
     infoScreen = new InfoScreen(this, css);
 
-    final Button zoomOutButton = new Button(container);
+    final Button zoomOutButton = new Button(controllerContainer);
     zoomOutButton.setStyleName(css.control() + " " + css.zoomOutButton());
     zoomOutButton.getElement().setAttribute("title", "Zoom Out");
     zoomOutButton.addClickListener(new ClickListener() {
@@ -333,7 +335,7 @@ public class Controller extends Panel implements DomainObserver,
       }
     });
 
-    final Button zoomInButton = new Button(container);
+    final Button zoomInButton = new Button(controllerContainer);
     zoomInButton.setStyleName(css.control() + " " + css.zoomInButton());
     zoomInButton.getElement().setAttribute("title", "Zoom In");
     zoomInButton.addClickListener(new ClickListener() {
@@ -342,7 +344,7 @@ public class Controller extends Panel implements DomainObserver,
       }
     });
 
-    final Button zoomAllButton = new Button(container);
+    final Button zoomAllButton = new Button(controllerContainer);
     zoomAllButton.setStyleName(css.control() + " " + css.zoomAllButton());
     zoomAllButton.getElement().setAttribute("title", "Zoom All");
     zoomAllButton.addClickListener(new ClickListener() {
@@ -353,7 +355,7 @@ public class Controller extends Panel implements DomainObserver,
 
     // TODO(jaimeyap): Is this the best way to do the capability detection?
     if (hasSetProfilingOptionsApi()) {
-      final Button settingsButton = new Button(container);
+      final Button settingsButton = new Button(controllerContainer);
       settingsButton.setStyleName(css.control() + " " + css.settingsButton());
       settingsButton.getElement().setAttribute("title", "Set Profiling Options");
       profilingOptions = ProfilingOptionsPanel.create(getElement(),
@@ -366,7 +368,7 @@ public class Controller extends Panel implements DomainObserver,
       });
     }
 
-    pages = new Select(container);
+    pages = new Select(controllerContainer);
     pages.setStyleName(css.control() + " " + css.pageSelect());
     pages.addChangeListener(new ChangeListener() {
       public void onChange(ChangeEvent event) {
@@ -382,7 +384,7 @@ public class Controller extends Panel implements DomainObserver,
       }
     });
 
-    final Button reportButton = new Button(container);
+    final Button reportButton = new Button(controllerContainer);
     reportButton.setStyleName(css.control() + " " + css.reportButton());
     reportButton.getElement().setAttribute("title",
         "Display the Hintlet Report");
@@ -392,7 +394,13 @@ public class Controller extends Panel implements DomainObserver,
       }
     });
 
-    final Anchor helpButton = new Anchor(container);
+    // In a debug build, this button will interact with the mock model.
+    // In a release build, the deferred binding will compile in a class with an
+    // empty implementation and no button will be shown.
+    testDataPanel = GWT.create(TestDataPanel.class);
+    testDataPanel.addButtonToController(resources, this, controllerContainer);
+
+    final Anchor helpButton = new Anchor(controllerContainer);
     final Element helpButtonElem = helpButton.getElement();
     helpButton.setStyleName(css.helpButton());
     helpButton.setHref(Constants.HELP_URL);
@@ -409,10 +417,7 @@ public class Controller extends Panel implements DomainObserver,
     overviewTimeline.resetDisplayableBounds();
 
     // Nuke our Application states and reset everything.
-    Controller.this.monitor.resetApplicationStates(
-        mainTimeline.getModel().getMostRecentDomainValue(),
-        mainTimeline.getModel().getMostRecentDomainValue()
-            + Constants.DEFAULT_GRAPH_WINDOW_SIZE);
+    Controller.this.monitor.resetApplicationStates();
   }
 
   public DataModel getModel() {

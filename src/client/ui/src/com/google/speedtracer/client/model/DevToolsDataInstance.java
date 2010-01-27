@@ -236,6 +236,10 @@ public class DevToolsDataInstance extends DataInstance {
         this._callback = null;
       },
 
+      SetBaseTime: function(baseTime) {
+         proxy.@com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy::setBaseTime(D)(baseTime);
+      },
+      
       SetOptions: function(enableStackTraces, enableCpuProfiling) {
         proxy.@com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy::setProfilingOptions(IZZ)(tabId, enableStackTraces, enableCpuProfiling);
       }

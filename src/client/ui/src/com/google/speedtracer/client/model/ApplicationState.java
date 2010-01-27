@@ -47,6 +47,16 @@ public class ApplicationState {
     populateVisualizationModelMap(sourceModel);
   }
 
+  public void detachFromSourceModels() {
+    visualizationModelMap.iterate(new IterationCallBack<VisualizationModel>() {
+
+      public void onIteration(String key, VisualizationModel vModel) {
+        vModel.detachFromSourceModel();
+      }
+
+    });
+  }
+
   public DataModel getDataModel() {
     return dataModel;
   }
@@ -81,14 +91,7 @@ public class ApplicationState {
    */
   public void handOffToNewApplicationState(final String newUrl,
       final ApplicationState newState) {
-    visualizationModelMap.iterate(new IterationCallBack<VisualizationModel>() {
-
-      public void onIteration(String key, VisualizationModel vModel) {
-        vModel.detachFromSourceModel();
-      }
-
-    });
-
+    detachFromSourceModels();
     // We do a separate iteration because we want to have completely detached
     // all the previous visualization models first
     visualizationModelMap.iterate(new IterationCallBack<VisualizationModel>() {

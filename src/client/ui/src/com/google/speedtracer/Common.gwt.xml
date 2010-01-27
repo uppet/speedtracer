@@ -41,7 +41,11 @@
     <when-type-is class="com.google.speedtracer.client.Monitor" />
     <when-property-is name="speedtracer.use_mock_model" value="please" />
   </replace-with>
-
+  <replace-with class="com.google.speedtracer.client.view.MockTestDataPanel">
+    <when-type-is class="com.google.speedtracer.client.view.TestDataPanel" />
+    <when-property-is name="speedtracer.use_mock_model" value="please" />
+  </replace-with>
+  
   <!-- Logging Ui deferred bindings. -->
   <replace-with class="com.google.speedtracer.client.Logging.NullListenerLogger">
     <when-type-is class="com.google.speedtracer.client.Logging.ListenerLogger" />

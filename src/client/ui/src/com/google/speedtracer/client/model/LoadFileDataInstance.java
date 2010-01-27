@@ -44,7 +44,10 @@ public class LoadFileDataInstance extends DataInstance {
       
       Unload: function() {
       },
-            
+      
+      SetBaseTime: function(baseTime) {
+      },
+      
       SetOptions: function(enableStackTraces, enableCpuProfiling) {
       }
     };

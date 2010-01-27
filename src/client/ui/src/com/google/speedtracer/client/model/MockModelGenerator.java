@@ -20,6 +20,9 @@ import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.TextResource;
 import com.google.speedtracer.client.util.JSON;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Generated File that Generates MockEvents for MockModels.
  */
@@ -29,8 +32,24 @@ public class MockModelGenerator {
    * Pull in the simulated data from external text files.
    */
   public interface MockResources extends ClientBundle {
-    @Source("../../tools/data/reddit.com")
-    TextResource redditDotCom();
+    @Source("../../tools/data/digg.com")
+    TextResource diggDotCom();
+
+    @Source("../../tools/data/maps-stacktraces")
+    TextResource mapsDotGoogleDotComWithStackTraces();
+
+    @Source("../../tools/data/reddit.com-profiling")
+    TextResource redditDotComWithProfiling();
+  }
+
+  private static class DataSet {
+    String name;
+    TextResource dataSetResource;
+
+    public DataSet(String name, TextResource resource) {
+      this.name = name;
+      this.dataSetResource = resource;
+    }
   }
 
   /**
@@ -52,12 +71,34 @@ public class MockModelGenerator {
     }
   }
 
-  public static MockResources mockResources = GWT.create(MockResources.class);
+  private static List<DataSet> dataSets = new ArrayList<DataSet>();
+  private static MockResources mockResources;
 
-  public static void simulateRedditDotCom(MockDataModel mockModel) {
+  public static List<String> getDataSetNames(MockDataModel mockModel) {
+    initializeDataSets();
+    List<String> result = new ArrayList<String>();
+    for (int i = 0; i < dataSets.size(); ++i) {
+      result.add(dataSets.get(i).name);
+    }
+    return result;
+  }
+
+  public static void simulateDataSet(MockDataModel mockModel, int dataSetIndex) {
+    initializeDataSets();
+    TextResource resource = dataSets.get(dataSetIndex).dataSetResource;
     final Generator generator = new Generator(mockModel);
-    String[] events = mockResources.redditDotCom().getText().split("\n");
+    String[] events = resource.getText().split("\n");
     generator.run(events);
   }
 
+  private static void initializeDataSets() {
+    if (mockResources == null) {
+      mockResources = GWT.create(MockResources.class);
+      dataSets.add(new DataSet("digg.com", mockResources.diggDotCom()));
+      dataSets.add(new DataSet("maps.google.com (stacktraces)",
+          mockResources.mapsDotGoogleDotComWithStackTraces()));
+      dataSets.add(new DataSet("reddit.com (profiling)",
+          mockResources.redditDotComWithProfiling()));
+    }
+  }
 }
