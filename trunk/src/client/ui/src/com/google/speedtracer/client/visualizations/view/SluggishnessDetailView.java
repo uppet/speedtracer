@@ -15,7 +15,6 @@
  */
 package com.google.speedtracer.client.visualizations.view;
 
-import com.google.gwt.dom.client.AnchorElement;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -50,8 +49,11 @@ import com.google.gwt.topspin.ui.client.Select;
 import com.google.gwt.topspin.ui.client.Table;
 import com.google.gwt.topspin.ui.client.Widget;
 import com.google.speedtracer.client.SourceViewer;
+import com.google.speedtracer.client.SymbolServerController;
+import com.google.speedtracer.client.SymbolServerService;
 import com.google.speedtracer.client.MonitorResources.CommonResources;
 import com.google.speedtracer.client.SourceViewer.SourceViewerLoadedCallback;
+import com.google.speedtracer.client.SymbolServerController.Callback;
 import com.google.speedtracer.client.model.AggregateTimeVisitor;
 import com.google.speedtracer.client.model.DomEvent;
 import com.google.speedtracer.client.model.EvalScript;
@@ -80,14 +82,19 @@ import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.JsIntegerDoubleMap;
 import com.google.speedtracer.client.util.JsIntegerMap;
 import com.google.speedtracer.client.util.TimeStampFormatter;
+import com.google.speedtracer.client.util.Url;
 import com.google.speedtracer.client.util.dom.DocumentExt;
 import com.google.speedtracer.client.util.dom.WindowExt;
 import com.google.speedtracer.client.view.DetailView;
 import com.google.speedtracer.client.view.HoveringPopup;
 import com.google.speedtracer.client.view.MainTimeLine;
+import com.google.speedtracer.client.visualizations.model.JsStackTrace;
+import com.google.speedtracer.client.visualizations.model.JsSymbolMap;
 import com.google.speedtracer.client.visualizations.model.LogMessageVisitor;
 import com.google.speedtracer.client.visualizations.model.SluggishnessModel;
 import com.google.speedtracer.client.visualizations.model.SluggishnessVisualization;
+import com.google.speedtracer.client.visualizations.model.JsStackTrace.JsStackFrame;
+import com.google.speedtracer.client.visualizations.model.JsSymbolMap.JsSymbol;
 import com.google.speedtracer.client.visualizations.view.Tree.ExpansionChangeListener;
 import com.google.speedtracer.client.visualizations.view.Tree.Item;
 import com.google.speedtracer.client.visualizations.view.Tree.SelectionChangeListener;
@@ -545,8 +552,8 @@ public class SluggishnessDetailView extends DetailView {
 
         // Ensure that window resizes don't mess up our row size due to text
         // reflow. Things may need to grow or shrink.
-        ResizeEvent.addResizeListener(WindowExt.get(), WindowExt.get(),
-            new ResizeListener() {
+        trackRemover(ResizeEvent.addResizeListener(WindowExt.get(),
+            WindowExt.get(), new ResizeListener() {
               public void onResize(ResizeEvent event) {
                 if (heightFixer == null && getParentRow().isExpanded()) {
                   heightFixer = new Command() {
@@ -562,9 +569,60 @@ public class SluggishnessDetailView extends DetailView {
                   Command.defer(heightFixer, 200);
                 }
               }
-            });
-
+            }));
         return elem;
+      }
+
+      private void attemptResymbolization(final Table table,
+          final JsStackFrame frame, final StackFrameRenderer frameRenderer) {
+        final String resourceUrl = frame.getResourceUrl();
+        // Add resymbolized frame if it is available.
+        SymbolServerController ssController = getCurrentSymbolServerController();
+        if (ssController != null) {
+          ssController.requestSymbolsFor(resourceUrl, new Callback() {
+            public void onSymbolsFetchFailed(int errorReason) {
+              // TODO (jaimeyap): Do something here... or not.
+            }
+
+            public void onSymbolsReady(JsSymbolMap symbols) {
+              // The fetch succeeded, but the symbol map was not generated,
+              // possibly due to it being of the wrong format.
+              if (symbols == null) {
+                return;
+              }
+
+              // Extract the source symbol.
+              final JsSymbol sourceSymbol = symbols.lookup(frame.getSymbolName());
+              
+              if (sourceSymbol == null) {
+                return;
+              }
+              
+              // Enhance the rendered frame with the resymbolization.
+              frameRenderer.reSymbolize(symbols.getSourceServer(),
+                  sourceSymbol, new ClickListener() {
+                    public void onClick(ClickEvent event) {
+                      // This is a click on the re-symbolized source
+                      // symbol. Load the source in the source viewer.
+                      String sourceUrl = sourceSymbol.getResourceBase()
+                          + sourceSymbol.getResourceName();
+                      // TODO(jaimeyap): Put up a spinner or something. It
+                      // may take a while to load the resource.
+                      ensureSourceViewer(sourceUrl,
+                          new SourceViewerLoadedCallback() {
+                            public void onSourceViewerLoaded(SourceViewer viewer) {
+                              // The viewer should not be loaded at the
+                              // URL we care about.
+                              sourceViewer.show();
+                              sourceViewer.highlightLine(frame.getLineNumber());
+                              sourceViewer.scrollHighlightedLineIntoView(table.getElement().getOffsetTop());
+                            }
+                          });
+                    }
+                  });
+            }
+          });
+        }
       }
 
       /**
@@ -627,74 +685,9 @@ public class SluggishnessDetailView extends DetailView {
           private void fillDetailRowValue(TableCellElement cell, String key,
               String val) {
             if (key.equals(STACK_TRACE_KEY)) {
-              formatStackTrace(cell, val);
+              formatStackTrace(table, cell, val);
             } else {
               cell.setInnerText(val);
-            }
-          }
-
-          private void formatStackTrace(TableCellElement cell, String val) {
-            // We perform special formatting for the stack trace value. It
-            // should be an array of stack frame descriptions.
-            String[] frames = val.split(";");
-            for (int i = 0, n = frames.length; i < n; i++) {
-              JSOArray<String> stackFrame = JSOArray.splitString(frames[i], ",");
-              
-              final String resourceUrl = stackFrame.get(0);
-
-              // Presenting the entire URL is kinda gross. Lets just shot the
-              // last path component.
-              String resource = resourceUrl.substring(
-                  resourceUrl.lastIndexOf("/") + 1, resourceUrl.length());
-
-              if (resource.equals("")) {
-                resource = resourceUrl;
-              }
-
-              // We convert lineNumber to a 1 based index.
-              final int lineNumber = Integer.parseInt(stackFrame.get(2)) + 1;
-              final int colNumber = Integer.parseInt(stackFrame.get(3)) + 1;
-
-              // Prefer the last argument
-              String functionName = stackFrame.get(5) + "()";
-              // but if it isnt there, try the 4th.
-              functionName = (functionName.equals("undefined()"))
-                  ? stackFrame.get(4) + "()" : functionName;
-              // If we still don't have anything, replace with [anonymous]
-              functionName = (functionName.equals("undefined()")) ? "[unknown]"
-                  : functionName;
-
-              // Render the stack trace. And initialize the SourceViewer on
-              // the eventTraceContainerCell
-              Document document = cell.getOwnerDocument();
-              cell.appendChild(document.createTextNode(resource + "::"));
-              cell.appendChild(document.createTextNode(functionName + " "));
-
-              // We make a link out of the line number which should pop open
-              // the Source Viewer when clicked.
-              AnchorElement lineLink = document.createAnchorElement();
-              lineLink.setInnerText("Line " + lineNumber + " Col " + colNumber);
-              lineLink.setHref("javascript:;");
-              cell.appendChild(lineLink);
-              cell.appendChild(document.createBRElement());
-              removerHandles.add(ClickEvent.addClickListener(lineLink,
-                  lineLink, new ClickListener() {
-                    public void onClick(ClickEvent event) {
-                      // TODO(jaimeyap): Put up a spinner or something. It may
-                      // take a while to load the resource.
-                      ensureSourceViewer(resourceUrl,
-                          new SourceViewerLoadedCallback() {
-                            public void onSourceViewerLoaded(SourceViewer viewer) {
-                              // The viewer should not be loaded at the URL we
-                              // care about.
-                              sourceViewer.show();
-                              sourceViewer.highlightLine(lineNumber);
-                              sourceViewer.markColumn(lineNumber, colNumber);
-                              sourceViewer.scrollIntoView(table.getElement().getOffsetTop());
-                            }
-                          });
-                    }
-                  }));
             }
           }
         });
@@ -781,7 +774,7 @@ public class SluggishnessDetailView extends DetailView {
         });
 
         // We make sure to have the tree cleaned up when we clean up ourselves.
-        removerHandles.add(tree.getRemover());
+        trackRemover(tree.getRemover());
 
         return tree;
       }
@@ -812,7 +805,7 @@ public class SluggishnessDetailView extends DetailView {
         });
 
         // We make sure to have the tree cleaned up when we clean up ourselves.
-        removerHandles.add(tree.getRemover());
+        trackRemover(tree.getRemover());
 
         return tree;
       }
@@ -921,6 +914,42 @@ public class SluggishnessDetailView extends DetailView {
         int height = getElement().getOffsetHeight()
             + resources.filteringScrollTableCss().rowHeight();
         getParentRow().getElement().getStyle().setPropertyPx("height", height);
+      }
+
+      private void formatStackTrace(final Table table, TableCellElement cell,
+          String val) {
+        JsStackTrace stackTrace = JsStackTrace.create(val);
+        List<JsStackFrame> frames = stackTrace.getFrames();
+        for (int i = 0, n = frames.size(); i < n; i++) {
+          final JsStackFrame frame = frames.get(i);
+          final StackFrameRenderer frameRenderer = new StackFrameRenderer(cell,
+              frame);
+          renderStackFrame(table, frame, frameRenderer);
+        }
+      }
+      
+      private void renderStackFrame(final Table table,
+          final JsStackFrame frame, final StackFrameRenderer frameRenderer) {
+        final String resourceUrl = frame.getResourceUrl();
+        frameRenderer.renderFrame(new ClickListener() {
+          public void onClick(ClickEvent event) {
+            // TODO(jaimeyap): Put up a spinner or something. It may
+            // take a while to load the resource.
+            ensureSourceViewer(resourceUrl, new SourceViewerLoadedCallback() {
+              public void onSourceViewerLoaded(SourceViewer viewer) {
+                // The viewer should not be loaded at the URL we
+                // care about.
+                sourceViewer.show();
+                sourceViewer.highlightLine(frame.getLineNumber());
+                sourceViewer.markColumn(frame.getLineNumber(),
+                    frame.getColNumber());
+                sourceViewer.scrollColumnMarkerIntoView(table.getElement().getOffsetTop());
+              }
+            });
+          }
+        });
+
+        attemptResymbolization(table, frame, frameRenderer);
       }
     }
 
@@ -1043,8 +1072,16 @@ public class SluggishnessDetailView extends DetailView {
      */
     @Override
     public void renderTable() {
+      // Cancel any pending resymbolization requests.
+      // Add resymbolized frame if it is available.
+      SymbolServerController ssController = getCurrentSymbolServerController();
+      if (ssController != null) {
+        ssController.cancelPendingRequests();
+      }
+
       // Clear out the attached tr elements from the tbody.
       clearTable();
+
       // Clear the map of record number to table rows
       recordMap = JsIntegerMap.createObject().cast();
 
@@ -1136,6 +1173,12 @@ public class SluggishnessDetailView extends DetailView {
 
       recordMap.put(uiEvent.getSequence(), new UiEventRow(uiEvent,
           annotationCell, details));
+    }
+
+    private SymbolServerController getCurrentSymbolServerController() {
+      SluggishnessModel sModel = (SluggishnessModel) getVisualization().getModel();
+      String resourceUrl = sModel.getCurrentUrl();
+      return SymbolServerService.getSymbolServerController(new Url(resourceUrl));
     }
 
     /**

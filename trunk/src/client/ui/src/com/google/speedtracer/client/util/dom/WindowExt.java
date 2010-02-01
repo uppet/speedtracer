@@ -54,6 +54,15 @@ public class WindowExt extends Window {
   }-*/;
 
   /**
+   * Returns the {@link LocalStorage} instance tied to the current origin.
+   * 
+   * @return the {@link LocalStorage} object
+   */
+  public final native LocalStorage getLocalStorage() /*-{
+    return this.localStorage;
+  }-*/;
+
+  /**
    * Returns a JavaScriptObject property with the specified name.
    * 
    * @param name the name of the property

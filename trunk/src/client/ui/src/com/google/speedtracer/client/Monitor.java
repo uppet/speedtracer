@@ -17,12 +17,9 @@ package com.google.speedtracer.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.StyleInjector;
-import com.google.gwt.topspin.ui.client.KeyDownEvent;
-import com.google.gwt.topspin.ui.client.KeyUpEvent;
 import com.google.gwt.topspin.ui.client.Root;
 import com.google.gwt.user.client.Window.Location;
 import com.google.speedtracer.client.MonitorResources.Resources;
@@ -45,8 +42,11 @@ import com.google.speedtracer.client.model.TabChangeModel;
 import com.google.speedtracer.client.model.TabDescription;
 import com.google.speedtracer.client.model.DataModel.DataInstance;
 import com.google.speedtracer.client.timeline.Constants;
+import com.google.speedtracer.client.util.Url;
+import com.google.speedtracer.client.util.dom.LocalStorage;
 import com.google.speedtracer.client.util.dom.WindowExt;
 import com.google.speedtracer.client.view.Controller;
+import com.google.speedtracer.client.view.HotKeyPanel;
 import com.google.speedtracer.client.view.HoveringPopup;
 import com.google.speedtracer.client.view.InlineMenu;
 import com.google.speedtracer.client.visualizations.model.HintletReportModel;
@@ -130,37 +130,27 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     }
   }
 
-  private static class BuildInfoView implements HotKey.Handler {
-    private Element element;
+  /**
+   * Panel that displays the build info when pressing "V".
+   */
+  private static class BuildInfoView extends HotKeyPanel {
     private final String version;
 
     BuildInfoView(String version) {
       this.version = version;
     }
 
-    public void onKeyDown(KeyDownEvent event) {
-      if (element == null) {
-        show(event.getNativeEvent().getTarget().getOwnerDocument());
-      } else {
-        hide();
-      }
+    @Override
+    protected Element createContentElement(Document document) {
+      return document.createDivElement();
     }
 
-    public void onKeyUp(KeyUpEvent event) {
-    }
-
-    private void hide() {
-      element.removeFromParent();
-      element = null;
-    }
-
-    private void show(Document document) {
+    @Override
+    protected void populateContent(Element contentElement) {
       final BuildInfo info = GWT.create(BuildInfo.class);
-      final DivElement div = document.createDivElement();
-      div.setInnerText("Version: " + version + ", Revision: r"
+      contentElement.setInnerText("Version: " + version + ", Revision: r"
           + info.getBuildRevision() + ", Date: " + info.getBuildTime());
-      div.setClassName(MonitorResources.getResources().monitorCss().buildInfoView());
-      element = document.getBody().appendChild(div);
+      contentElement.setClassName(MonitorResources.getResources().monitorCss().buildInfoView());
     }
   }
 
@@ -360,6 +350,9 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
       // Now swap in the page state
       setStateForPageAtIndex(pageIndex);
       controller.setSelectedPage(pageIndex);
+
+      // Start fetching the symbol manifest if it is available.
+      maybeInitializeSymbolServerController(model.getTabDescription());
     }
   }
 
@@ -480,6 +473,12 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     HotKey.register('V', new BuildInfoView(version),
         "Show revision information.");
 
+    HotKey.register('S', new SymbolServerEntryPanel(model.getTabDescription()),
+        "UI for configuring the SymbolMap manifest location.");
+
+    // Start fetching the symbol manifest if it is available.
+    maybeInitializeSymbolServerController(model.getTabDescription());
+
     // Attach the notification widget.
     MonitorVisualizationsPanel.Css css = MonitorResources.getResources().monitorVisualizationsPanelCss();
     NotificationSlideout slideout = NotificationSlideout.create(monitorVisualizationsPanel.getElement());
@@ -492,6 +491,20 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
 
     // setup debug logger
     Logging.createListenerLogger(model);
+  }
+
+  private void maybeInitializeSymbolServerController(
+      TabDescription tabDescription) {
+    LocalStorage storage = WindowExt.get().getLocalStorage();
+    Url resourceUrl = new Url(tabDescription.getUrl());
+    String symbolManifestUrl = storage.getStringItem(resourceUrl.getApplicationUrl());
+
+    if (symbolManifestUrl == null || symbolManifestUrl.equals("")) {
+      return;
+    }
+
+    SymbolServerService.registerSymbolServerController(resourceUrl,
+        symbolManifestUrl);
   }
 
   /**

@@ -344,9 +344,20 @@ public class SourceViewer {
    * @param parentScroll optional additional scroll in case the caller is within
    *          an element that is also scrolled.
    */
-  public void scrollIntoView(int parentScroll) {
+  public void scrollColumnMarkerIntoView(int parentScroll) {
     sourceFrame.getContentDocument().setScrollTop(
         columnMarker.getOffsetTop() - parentScroll);
+  }
+
+  /**
+   * We scroll to the highlighted line to the top of the source viewer frame.
+   * 
+   * @param parentScroll optional additional scroll in case the caller is within
+   *          an element that is also scrolled.
+   */
+  public void scrollHighlightedLineIntoView(int parentScroll) {
+    sourceFrame.getContentDocument().setScrollTop(
+        highlightedRow.getOffsetTop() - parentScroll);
   }
 
   public void show() {

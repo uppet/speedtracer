@@ -39,7 +39,9 @@ import com.google.speedtracer.client.MonitorResources.CommonResources;
 import com.google.speedtracer.client.util.Command;
 import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.util.dom.DocumentExt;
+import com.google.speedtracer.client.util.dom.EventCleanup;
 import com.google.speedtracer.client.util.dom.LazilyCreateableElement;
+import com.google.speedtracer.client.util.dom.EventCleanup.HasRemovers;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -50,8 +52,7 @@ import java.util.List;
  * "uninteresing" rows. Also has an expandable placeholder for each row to
  * "expand" a row when you click on it.
  */
-public abstract class FilteringScrollTable extends Div {
-
+public abstract class FilteringScrollTable extends Div implements HasRemovers {
   /**
    * Cell in the table.
    */
@@ -190,7 +191,7 @@ public abstract class FilteringScrollTable extends Div {
       updateLabel();
 
       // hook a click listener to open 10 rows above
-      removeHandles.add(ClickEvent.addClickListener(this, showAbove,
+      trackRemover(ClickEvent.addClickListener(this, showAbove,
           new ClickListener() {
             public void onClick(ClickEvent event) {
               expandAbove();
@@ -198,7 +199,7 @@ public abstract class FilteringScrollTable extends Div {
           }));
 
       // hook a click listener to open 10 rows below
-      removeHandles.add(ClickEvent.addClickListener(this, showBelow,
+      trackRemover(ClickEvent.addClickListener(this, showBelow,
           new ClickListener() {
             public void onClick(ClickEvent event) {
               expandBelow();
@@ -304,7 +305,7 @@ public abstract class FilteringScrollTable extends Div {
 
     String tableContent();
   }
-
+  
   /**
    * To be implemented by a concrete subclass to specify a Filter to be applied
    * to all Rows.
@@ -353,7 +354,7 @@ public abstract class FilteringScrollTable extends Div {
       parent.getElement().appendChild(elem);
 
       // Make sure clicking around the detail view doesn't bubble up
-      super.removerHandles.add(ClickEvent.addClickListener(this, elem,
+      trackRemover(ClickEvent.addClickListener(this, elem,
           new ClickListener() {
 
             public void onClick(ClickEvent event) {
@@ -364,7 +365,7 @@ public abstract class FilteringScrollTable extends Div {
 
       // We need to ensure that our RowDetails gets cleaned up whenever we clear
       // the table
-      FilteringScrollTable.this.removeHandles.add(super.getRemover());
+      FilteringScrollTable.this.trackRemover(super.getRemover());
       return elem;
     }
 
@@ -511,11 +512,14 @@ public abstract class FilteringScrollTable extends Div {
     }
   }
 
-  private final int minimumContentTop;
-
   private final CommonCss commonCss;
 
   private final FilteringScrollTable.Css css;
+
+  /**
+   * Keeps track of listeners to remove for each row when a page changes.
+   */
+  private final EventCleanup eventCleanup = new EventCleanup();
 
   private final Filter filter;
 
@@ -523,12 +527,9 @@ public abstract class FilteringScrollTable extends Div {
 
   private final Header header;
 
-  private final Container myContainer;
+  private final int minimumContentTop;
 
-  /**
-   * Keeps track of listeners to remove for each row when a page changes.
-   */
-  private final List<EventListenerRemover> removeHandles = new ArrayList<EventListenerRemover>();
+  private final Container myContainer;
 
   private final ArrayList<Row> rowList = new ArrayList<Row>();
 
@@ -591,12 +592,13 @@ public abstract class FilteringScrollTable extends Div {
     return row;
   }
 
+  public void cleanupRemovers() {
+    this.eventCleanup.cleanupRemovers();
+  }
+
   public void clearTable() {
     // Remove the existing event handlers for the row.
-    while (removeHandles.size() > 0) {
-      EventListenerRemover r = removeHandles.remove(0);
-      r.remove();
-    }
+    cleanupRemovers();
     rowList.clear();
     getTableContents().setInnerHTML("");
   }
@@ -620,6 +622,10 @@ public abstract class FilteringScrollTable extends Div {
    */
   public Row getLastRow() {
     return rowList.get(rowList.size() - 1);
+  }
+
+  public EventListenerRemover getRemover() {
+    return this.eventCleanup.getRemover();
   }
 
   public Element getTableContents() {
@@ -735,5 +741,9 @@ public abstract class FilteringScrollTable extends Div {
     } else {
       tableContents.getStyle().setPropertyPx("top", minimumContentTop);
     }
+  }
+
+  public void trackRemover(EventListenerRemover remover) {
+    this.eventCleanup.trackRemover(remover);
   }
 }
