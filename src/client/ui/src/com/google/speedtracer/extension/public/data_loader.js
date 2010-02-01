@@ -4,8 +4,8 @@ function isRecordDump() {
 
 function sendData(port, dataContainer) {
   var allData = dataContainer.innerHTML;
-  for ( var start = 0, end = allData.indexOf('\n', 0); end != -1; end = allData
-      .indexOf('\n', start)) {
+  for (var start = 0, end = allData.indexOf('\n', 0);
+       end != -1; end = allData.indexOf('\n', start)) {
     var recordStr = allData.slice(start, end);
     // Make sure the recordStr is not simply all whitespace.
     if (!/^\s*$/.test(recordStr)) {

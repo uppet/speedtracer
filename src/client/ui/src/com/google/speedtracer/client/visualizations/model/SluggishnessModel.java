@@ -146,6 +146,10 @@ public class SluggishnessModel implements VisualizationModel,
     return currentRight;
   }
 
+  public String getCurrentUrl() {
+    return dataModel.getTabDescription().getUrl();
+  }
+
   public List<UiEvent> getEventList() {
     return eventList;
   }
@@ -230,8 +234,7 @@ public class SluggishnessModel implements VisualizationModel,
    */
   public String getProfileHtmlForEvent(UiEvent event) {
     JavaScriptProfileModel profileModel = dataModel.getJavaScriptProfileModel();
-    return profileModel.getProfileHtmlForEvent(
-        event.getSequence());
+    return profileModel.getProfileHtmlForEvent(event.getSequence());
   }
 
   public UiEventModel getSourceModel() {
