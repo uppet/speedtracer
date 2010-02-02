@@ -33,7 +33,7 @@ public class MockDataModel extends DataModel {
   }
 
   public List<String> getDataSetNames() {
-    return MockModelGenerator.getDataSetNames(this);
+    return MockModelGenerator.getDataSetNames();
   }
 
   @Override

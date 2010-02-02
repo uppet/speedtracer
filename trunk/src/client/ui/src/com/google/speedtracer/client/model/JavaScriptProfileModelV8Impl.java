@@ -15,10 +15,14 @@
  */
 package com.google.speedtracer.client.model;
 
+import com.google.gwt.core.client.Duration;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.model.V8SymbolTable.Symbol;
+import com.google.speedtracer.client.util.JSOArray;
+import com.google.speedtracer.client.util.JsIntegerMap;
+import com.google.speedtracer.client.util.WorkQueue;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -72,8 +76,12 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
       this.value = value;
     }
 
+    public String getName() {
+      return this.name;
+    }
+
     public int getValue() {
-      return value;
+      return this.value;
     }
 
     public String toString() {
@@ -88,6 +96,59 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     public int moveMisses;
   }
 
+  /**
+   * Wraps the {@link #procLogLines} method to run the processing of the log
+   * iteratively using the work queue.
+   */
+  private class LogLineWorker implements WorkQueue.Node {
+    public final JSOArray<String> logLines;
+    public final UiEvent refRecord;
+    public int currentOffset;
+
+    public LogLineWorker(JSOArray<String> logLines, UiEvent refRecord,
+        int currentOffset) {
+      this.logLines = logLines;
+      this.refRecord = refRecord;
+      this.currentOffset = currentOffset;
+    }
+
+    public String getDescription() {
+      return "LogLineWorkQueueNode seq " + refRecord.getSequence() + " offset "
+          + currentOffset;
+    }
+
+    public void execute() {
+      processLogLines(refRecord, logLines, currentOffset);
+    }
+  }
+
+  /**
+   * Introduces a new profile to be processed on the work queue.
+   */
+  private class NewProfileDataWorker implements WorkQueue.Node {
+    public final UiEvent refRecord;
+    public final JavaScriptProfile profile;
+    public final JavaScriptProfileEvent rawEvent;
+
+    public NewProfileDataWorker(UiEvent refRecord, JavaScriptProfile profile,
+        JavaScriptProfileEvent rawEvent) {
+      this.refRecord = refRecord;
+      this.profile = profile;
+      this.rawEvent = rawEvent;
+    }
+
+    public String getDescription() {
+      return "NewProfileDataWorkQueueNode seq " + refRecord.getSequence();
+    }
+
+    public void execute() {
+      currentProfile = profile;
+      JSOArray<String> logLines = JSOArray.splitString(
+          rawEvent.getProfileData(), "\n");
+      workQueue.prepend(new LogLineWorker(logLines, refRecord, 0));
+    }
+  }
+
   private static class SymbolType extends AliasableEntry {
     public SymbolType(String name, int value) {
       super(name, value);
@@ -100,7 +161,7 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
   public static final int VM_STATE_GC = 1;
   public static final int VM_STATE_COMPILER = 2;
   public static final int VM_STATE_OTHER = 3;
-  public static final int VM_STATE_EXTERNAL = 3;
+  public static final int VM_STATE_EXTERNAL = 4;
 
   /**
    * String constant in the data that identifies the profile data record as
@@ -111,6 +172,7 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
   static final String ADDRESS_TAG_CODE = "code";
   static final String ADDRESS_TAG_CODE_MOVE = "code-move";
   static final String ADDRESS_TAG_STACK = "stack";
+  static final String ADDRESS_TAG_SCRATCH = "scratch";
 
   private static final int ACTION_TYPE_ALIAS = 1;
   private static final int ACTION_TYPE_PROFILER = 2;
@@ -133,12 +195,16 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
   private static final int SYMBOL_TYPE_EVAL = 18;
   private static final int SYMBOL_TYPE_FUNCTION = 19;
   private static final int SYMBOL_TYPE_LOAD_IC = 20;
-  private static final int SYMBOL_TYPE_KEYED_STORE_IC = 21;
-  private static final int SYMBOL_TYPE_LAZY_COMPILE = 22;
-  private static final int SYMBOL_TYPE_REG_EXP = 23;
-  private static final int SYMBOL_TYPE_SCRIPT = 24;
-  private static final int SYMBOL_TYPE_STORE_IC = 25;
-  private static final int SYMBOL_TYPE_STUB = 26;
+  private static final int SYMBOL_TYPE_KEYED_CALL_IC = 21;
+  private static final int SYMBOL_TYPE_KEYED_LOAD_IC = 22;
+  private static final int SYMBOL_TYPE_KEYED_STORE_IC = 23;
+  private static final int SYMBOL_TYPE_LAZY_COMPILE = 24;
+  private static final int SYMBOL_TYPE_REG_EXP = 25;
+  private static final int SYMBOL_TYPE_SCRIPT = 26;
+  private static final int SYMBOL_TYPE_STORE_IC = 27;
+  private static final int SYMBOL_TYPE_STUB = 28;
+
+  private static final int LOG_PROCESS_CHUNK_TIME_MS = 60;
 
   // TODO(zundel): this method is just for debugging. Not for production use.
   static void getProfileBreakdownText(StringBuilder result,
@@ -170,18 +236,20 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
   }
 
   private Map<String, SymbolType> symbolTypeMap = new HashMap<String, SymbolType>();
+  private JsIntegerMap<SymbolType> symbolTypeMapByInt = JsIntegerMap.create().cast();
   private Map<String, ActionType> actionTypeMap = new HashMap<String, ActionType>();
   private Map<ActionType, LogAction> logActions = new HashMap<ActionType, LogAction>();
   private V8SymbolTable symbolTable = new V8SymbolTable();
-  private JavaScriptProfile currentProfile;
-  private V8LogDecompressor logDecompressor;
+  private Map<String, Double> addressTags = new HashMap<String, Double>();
+  private static Element scrubbingDiv = Document.get().createDivElement();
+  private V8LogDecompressor logDecompressor = null;
+  private JavaScriptProfile currentProfile = null;
 
-  private final Map<String, Long> addressTags = new HashMap<String, Long>();
+  private final WorkQueue workQueue;
 
-  private Element scrubbingDiv = Document.get().createDivElement();
-
-  public JavaScriptProfileModelV8Impl() {
+  public JavaScriptProfileModelV8Impl(boolean useWorkQueue) {
     super("v8");
+    workQueue = (useWorkQueue ? new WorkQueue() : null);
     populateAddressTags();
     populateActionTypes();
     populateSymbolTypes();
@@ -202,7 +270,7 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     output.append("<tr><td>Move Misses</td><td>" + debugStats.moveMisses
         + "</td></tr>");
     output.append("</table>\n");
-    symbolTable.debugDumpHtml(output);
+    // symbolTable.debugDumpHtml(output);
     return output.toString();
   }
 
@@ -212,33 +280,33 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    * @param rawEvent a raw JSON timeline event of type EventType.PROFILE_DATA
    */
   @Override
-  public void parseRawEvent(JavaScriptProfileEvent rawEvent,
-      JavaScriptProfile profile) {
+  public void parseRawEvent(final JavaScriptProfileEvent rawEvent,
+      final UiEvent refRecord, JavaScriptProfile profile) {
     assert rawEvent.getFormat().equals(FORMAT);
     String profileData = rawEvent.getProfileData();
     if (profileData == null || profileData.length() == 0) {
+      refRecord.setHasJavaScriptProfile(false);
       return;
     }
 
-    currentProfile = profile;
-
-    String[] logLines = profileData.split("\n");
-    for (int i = 0, logLinesLength = logLines.length; i < logLinesLength; ++i) {
-      String logLine = logLines[i];
-      if (logDecompressor != null) {
-        logLine = logDecompressor.decompressLogEntry(logLine);
-      }
-
-      // TODO(zundel): this is naive and assumes no commas will be embedded on
-      // quoted strings. Is there a library to parse a line of CSV text?
-      parseLogEntry(V8LogDecompressor.splitLogLine(logLine));
+    if (workQueue == null) {
+      // Process the event synchronously
+      currentProfile = profile;
+      JSOArray<String> logLines = JSOArray.splitString(
+          rawEvent.getProfileData(), "\n");
+      processLogLines(refRecord, logLines, 0);
+    } else {
+      // Process the log entries using a deferred command to keep from blocking
+      // the UI thread.
+      refRecord.setProcessingJavaScriptProfile();
+      workQueue.append(new NewProfileDataWorker(refRecord, profile, rawEvent));
     }
   }
 
   /**
    * This method is intended for use by the unit tests only.
    */
-  Symbol findSymbol(int address) {
+  Symbol findSymbol(double address) {
     return symbolTable.lookup(address);
   }
 
@@ -250,19 +318,24 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    * 
    * @return a number corresponding to the address string.
    */
-  long parseAddress(String addressString, String addressTag) {
+  double parseAddress(String addressString, String addressTag) {
 
-    if (addressString.startsWith("0x")) {
+    // TODO(zundel): Try using JavaScript's parseInt() rather than
+    // Long.parseLong() for better performance. Will performance
+    // in Development mode still be acceptable?
+    if (addressString.equals("overflow")) {
+      return 0;
+    } else if (addressString.startsWith("0x")) {
       return Long.parseLong(addressString.substring(2), 16);
     } else if (addressString.startsWith("0")) {
       return Long.parseLong(addressString, 8);
     }
 
-    long baseAddress = 0;
+    double baseAddress = 0;
     if (addressTag != null) {
       baseAddress = addressTags.get(addressTag);
     }
-    long address = 0;
+    double address = 0;
     if (addressString.startsWith("+")) {
       addressString = addressString.substring(1);
       address = baseAddress + Long.parseLong(addressString, 16);
@@ -312,6 +385,7 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
   private void createSymbolType(String symbolName, int symbolValue) {
     SymbolType type = new SymbolType(symbolName, symbolValue);
     symbolTypeMap.put(symbolName, type);
+    symbolTypeMapByInt.put(symbolValue, type);
   }
 
   /**
@@ -376,8 +450,9 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
   private void parseV8CodeCreationEntry(String[] logEntries) {
     assert logEntries.length == 5;
     int symbolType = getSymbolType(logEntries[1]);
+
     String name = stripQuotes(logEntries[4]);
-    long address = parseAddress(logEntries[2], ADDRESS_TAG_CODE);
+    double address = parseAddress(logEntries[2], ADDRESS_TAG_CODE);
     int executableSize = Integer.parseInt(logEntries[3]);
 
     // Keep some debugging stats around
@@ -400,7 +475,7 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    */
   private void parseV8CodeDeleteEntry(String[] logEntries) {
     assert logEntries.length == 2;
-    long address = parseAddress(logEntries[1], ADDRESS_TAG_CODE);
+    double address = parseAddress(logEntries[1], ADDRESS_TAG_CODE);
     Symbol symbol = symbolTable.lookup(address);
     if (symbol != null) {
       symbolTable.remove(symbol);
@@ -419,8 +494,8 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    */
   private void parseV8CodeMoveEntry(String[] logEntries) {
     assert logEntries.length == 3;
-    long fromAddress = parseAddress(logEntries[1], ADDRESS_TAG_CODE);
-    long toAddress = parseAddress(logEntries[2], ADDRESS_TAG_CODE_MOVE);
+    double fromAddress = parseAddress(logEntries[1], ADDRESS_TAG_CODE);
+    double toAddress = parseAddress(logEntries[2], ADDRESS_TAG_CODE_MOVE);
     Symbol symbol = symbolTable.lookup(fromAddress);
     if (symbol != null) {
       symbolTable.remove(symbol);
@@ -444,10 +519,12 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     if (logEntries[1].equals("\"compression\"")) {
       int windowSize = Integer.parseInt(logEntries[2]);
       this.logDecompressor = new V8LogDecompressor(windowSize);
+    } else if (logEntries[1].endsWith("\"begin\"")) {
+      // TODO(zundel): make sure all state is reset
+      populateAddressTags();
     } else if (logEntries[1].equals("\"pause\"")
-        || logEntries[1].endsWith("\"resume\"")
-        || logEntries[1].endsWith("\"begin\"")) {
-      // ignore begin, pause and resume entries.
+        || logEntries[1].endsWith("\"resume\"")) {
+      // ignore pause and resume entries.
     } else {
       Logging.getLogger().logText(
           "Ignoring profiler command: " + concatLogEntries(logEntries));
@@ -477,10 +554,10 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    */
   private void parseV8TickEntry(String[] logEntries) {
     assert logEntries.length >= 4;
-    long address = parseAddress(logEntries[1], ADDRESS_TAG_CODE);
+    double address = parseAddress(logEntries[1], ADDRESS_TAG_CODE);
     // stack address is currently ignored, but it must be parsed to keep the
     // stack address tag up to date.
-    long stackAddress = parseAddress(logEntries[2], ADDRESS_TAG_STACK);
+    double stackAddress = parseAddress(logEntries[2], ADDRESS_TAG_STACK);
     int vmState = Integer.parseInt(logEntries[3]);
     currentProfile.addStateTime(vmState, 1.0);
     JavaScriptProfileNode bottomUpProfile = currentProfile.getOrCreateBottomUpProfile();
@@ -488,8 +565,9 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     JavaScriptProfileNode child = recordAddressInProfile(bottomUpProfile,
         address, false);
 
+    addressTags.put(ADDRESS_TAG_SCRATCH, address);
     for (int i = 4; i < logEntries.length; ++i) {
-      address = parseAddress(logEntries[i], ADDRESS_TAG_CODE);
+      address = parseAddress(logEntries[i], ADDRESS_TAG_SCRATCH);
       child = recordAddressInProfile(child, address,
           !child.equals(bottomUpProfile));
     }
@@ -553,9 +631,9 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
   }
 
   private void populateAddressTags() {
-    addressTags.put(ADDRESS_TAG_CODE, 0L);
-    addressTags.put(ADDRESS_TAG_CODE_MOVE, 0L);
-    addressTags.put(ADDRESS_TAG_STACK, 0L);
+    addressTags.put(ADDRESS_TAG_CODE, 0.);
+    addressTags.put(ADDRESS_TAG_CODE_MOVE, 0.);
+    addressTags.put(ADDRESS_TAG_STACK, 0.);
   }
 
   private void populateSymbolTypes() {
@@ -572,7 +650,8 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     createSymbolType("Callback", SYMBOL_TYPE_CALLBACK);
     createSymbolType("Eval", SYMBOL_TYPE_EVAL);
     createSymbolType("Function", SYMBOL_TYPE_FUNCTION);
-    createSymbolType("KeyedLoadIC", SYMBOL_TYPE_LOAD_IC);
+    createSymbolType("KeyedCallIC", SYMBOL_TYPE_KEYED_CALL_IC);
+    createSymbolType("KeyedLoadIC", SYMBOL_TYPE_KEYED_LOAD_IC);
     createSymbolType("KeyedStoreIC", SYMBOL_TYPE_KEYED_STORE_IC);
     createSymbolType("LazyCompile", SYMBOL_TYPE_LAZY_COMPILE);
     createSymbolType("LoadIC", SYMBOL_TYPE_LOAD_IC);
@@ -582,8 +661,53 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     createSymbolType("Stub", SYMBOL_TYPE_STUB);
   }
 
+  /**
+   * Process a portion of the logLines array. If the workQueue is enabled, exit
+   * early if the timeslice expires.
+   */
+  private void processLogLines(final UiEvent refRecord,
+      final JSOArray<String> logLines, int currentLine) {
+    final double endTime = Duration.currentTimeMillis()
+        + LOG_PROCESS_CHUNK_TIME_MS;
+    final int logLinesLength = logLines.size();
+
+    for (; currentLine < logLinesLength; ++currentLine) {
+      if (workQueue != null) {
+        // Occasionally check to see if the time to run this chunk has expired.
+        if ((currentLine % 10 == 0)
+            && (Duration.currentTimeMillis() >= endTime)) {
+          break;
+        }
+      }
+
+      String logLine = logLines.get(currentLine);
+      if (logDecompressor != null) {
+        logLine = logDecompressor.decompressLogEntry(logLine);
+      }
+      String[] decompressedLogLine = V8LogDecompressor.splitLogLine(logLine);
+      if (decompressedLogLine.length > 0) {
+        parseLogEntry(decompressedLogLine);
+      }
+
+      // force gc on processed log lines.
+      logLines.set(currentLine, null);
+    }
+
+    if (currentLine < logLinesLength) {
+      // Schedule this record to be the next thing run off the queue
+      workQueue.prepend(new LogLineWorker(logLines, refRecord, currentLine));
+    } else {
+      // All done!
+      if (currentProfile.getBottomUpProfile() == null) {
+        refRecord.setHasJavaScriptProfile(false);
+      } else {
+        refRecord.setHasJavaScriptProfile(true);
+      }
+    }
+  }
+
   private JavaScriptProfileNode recordAddressInProfile(
-      JavaScriptProfileNode bottomUpProfile, long address,
+      JavaScriptProfileNode bottomUpProfile, double address,
       boolean recordedSelfTime) {
     JavaScriptProfileNode child = null;
     Symbol found = symbolTable.lookup(address);
@@ -597,6 +721,10 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     if (child != null) {
       if (!recordedSelfTime) {
         child.addSelfTime(1.0);
+        SymbolType symbolType = symbolTypeMapByInt.get(found.getSymbolType());
+        if (symbolType != null) {
+          child.setSymbolType(symbolType.getName());
+        }
       } else {
         child.addTime(1.0);
       }

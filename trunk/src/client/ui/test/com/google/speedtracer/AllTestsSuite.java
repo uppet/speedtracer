@@ -31,6 +31,7 @@ import com.google.speedtracer.client.timeline.ModelDataTests;
 import com.google.speedtracer.client.util.PostMessageChannelTests;
 import com.google.speedtracer.client.util.TimeStampFormatterTests;
 import com.google.speedtracer.client.util.UrlTests;
+import com.google.speedtracer.client.util.WorkQueueTests;
 import com.google.speedtracer.client.visualizations.model.UiThreadUtilizationTests;
 import com.google.speedtracer.client.visualizations.view.EventFilterTests;
 
@@ -60,7 +61,7 @@ public class AllTestsSuite extends GWTTestSuite {
     suite.addTestSuite(JsSymbolMapTests.class);
     suite.addTestSuite(UrlTests.class);
     suite.addTestSuite(SymbolServerControllerTests.class);
+    suite.addTestSuite(WorkQueueTests.class);
     return suite;
   }
-
 }

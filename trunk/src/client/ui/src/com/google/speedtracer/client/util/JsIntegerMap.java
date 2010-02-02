@@ -16,6 +16,7 @@
 package com.google.speedtracer.client.util;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArrayNumber;
 
 /**
  * Creates a lightweight map with integer keys based on a JavaScript object.
@@ -23,14 +24,14 @@ import com.google.gwt.core.client.JavaScriptObject;
  * @param <T> the type contained as value in the map
  */
 public class JsIntegerMap<T> extends JavaScriptObject {
-  
+
   /**
    * Callback interface for int,double key value pairs.
    */
   public interface IterationCallBack<T> {
     void onIteration(int key, T val);
   }
-  
+
   /**
    * Create a new empty map.
    * 
@@ -61,6 +62,22 @@ public class JsIntegerMap<T> extends JavaScriptObject {
    */
   public final native T get(int key) /*-{
     return this[key];
+  }-*/;
+  
+  /**
+   * Returns an array containing all the values in this map.
+   * 
+   * @return a snapshot of the values contained in the map
+   */
+  public final native JsArrayNumber getKeys() /*-{
+    var data = [];
+    for (var prop in this) {
+      var val = Number(prop);
+      if (!isNaN(val)) {
+        data.push(val);
+      }
+    }
+    return data;
   }-*/;
 
   /**
@@ -93,14 +110,14 @@ public class JsIntegerMap<T> extends JavaScriptObject {
    * 
    * @param cb callback object
    */
-  public final native void iterate(IterationCallBack<T> cb) /*-{    
+  public final native void iterate(IterationCallBack<T> cb) /*-{
     for (var key in this) {
       if (this.hasOwnProperty(key)) {
         cb.@com.google.speedtracer.client.util.JsIntegerMap.IterationCallBack::onIteration(ILjava/lang/Object;)(parseInt(key),this[key]);
       }
     }
   }-*/;
-  
+
   /**
    * Associates the specified value with the specified key in this map.
    * 

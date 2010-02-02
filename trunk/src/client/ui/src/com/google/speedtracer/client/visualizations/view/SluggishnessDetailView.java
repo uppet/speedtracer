@@ -21,31 +21,22 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.events.client.EventListenerRemover;
 import com.google.gwt.graphics.client.charts.ColorCodedDataList;
 import com.google.gwt.graphics.client.charts.ColorCodedValue;
 import com.google.gwt.graphics.client.charts.PieChart;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.CssResource.Strict;
-import com.google.gwt.topspin.ui.client.ChangeEvent;
-import com.google.gwt.topspin.ui.client.ChangeListener;
-import com.google.gwt.topspin.ui.client.CheckBox;
 import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.gwt.topspin.ui.client.Div;
-import com.google.gwt.topspin.ui.client.InputText;
-import com.google.gwt.topspin.ui.client.KeyUpEvent;
-import com.google.gwt.topspin.ui.client.KeyUpListener;
 import com.google.gwt.topspin.ui.client.MouseOutEvent;
 import com.google.gwt.topspin.ui.client.MouseOutListener;
 import com.google.gwt.topspin.ui.client.MouseOverEvent;
 import com.google.gwt.topspin.ui.client.MouseOverListener;
 import com.google.gwt.topspin.ui.client.ResizeEvent;
 import com.google.gwt.topspin.ui.client.ResizeListener;
-import com.google.gwt.topspin.ui.client.Select;
 import com.google.gwt.topspin.ui.client.Table;
 import com.google.gwt.topspin.ui.client.Widget;
 import com.google.speedtracer.client.SourceViewer;
@@ -168,14 +159,13 @@ public class SluggishnessDetailView extends DetailView {
     ImageResource filterPanelIcon();
 
     @Source("resources/SluggishnessDetailView.css")
-    @Strict()
     Css sluggishnessDetailViewCss();
   }
 
   /**
    * The Table of DOM/UI Events.
    */
-  private class EventTable extends FilteringScrollTable {
+  class EventTable extends FilteringScrollTable {
 
     public class UiTableRow extends TableRow {
       private UiEvent uiEvent;
@@ -255,191 +245,6 @@ public class SluggishnessDetailView extends DetailView {
       }
     }
 
-    private class EventFilterPanel extends Div {
-      private EventFilter eventFilter;
-      private EventListenerRemover eventFilterTypeRemover;
-      private Select filterPanelEventTypeSelect;
-      private InputText minInput;
-
-      public EventFilterPanel(Container parent, EventFilter eventFilter) {
-        super(parent);
-        this.eventFilter = eventFilter;
-        buildFilterPanel(parent);
-      }
-
-      // Refresh the filter panel editable values
-      public void refresh() {
-        minInput.setText(Integer.toString((int) eventFilter.getMinDuration()));
-        refreshEventTypeSelect();
-      }
-
-      public void toggleFilterPanelVisible() {
-        // There is a problem when the filter panel is displayed after data has
-        // been dynamically added to the table, but before the table range
-        // has been updated by the user dragging the selection around. This is
-        // always the case if you bring up the fiter panel after starting the
-        // monitor without adjusting the current range.
-        //
-        // Going back to the model for the left and right index and setting it
-        // in the table corrects the problem.
-        int[] indexes = getModel().getIndexesOfEventsInRange(
-            getModel().getCurrentLeft(), getModel().getCurrentRight(), true);
-        updateTotalTableRange(indexes[0], indexes[1]);
-        refresh();
-        contentTable.toggleFilterPanelVisible();
-      }
-
-      private void buildFilterPanel(Container parent) {
-        Div row1 = new Div(parent);
-        Container row1Container = new DefaultContainerImpl(row1.getElement());
-        Document doc = parent.getDocument();
-
-        // Min Duration: ________
-        Element minLabel = doc.createSpanElement();
-        row1.getElement().appendChild(minLabel);
-        minLabel.setInnerText("Minimum duration: ");
-        minInput = new InputText(row1Container);
-        minInput.setStyleName(css.filterPanelMinInput());
-        minInput.addKeyUpListener(new KeyUpListener() {
-          public void onKeyUp(KeyUpEvent event) {
-            int minValue = 0;
-            boolean exceptionEncountered = false;
-            try {
-              minValue = Integer.valueOf(minInput.getText());
-            } catch (NumberFormatException ex) {
-              // leave the filter alone
-              exceptionEncountered = true;
-              minInput.getElement().getStyle().setBackgroundColor("#ebb");
-            }
-            if (!exceptionEncountered && minValue >= 0) {
-              eventFilter.setMinDuration(minValue);
-              minInput.getElement().getStyle().setBackgroundColor("#fff");
-              renderTable();
-            }
-          }
-        });
-
-        // Event Type ======== %
-        Element eventTypeLabel = doc.createSpanElement();
-        row1.getElement().appendChild(eventTypeLabel);
-        eventTypeLabel.getStyle().setPropertyPx("marginLeft", 10);
-        eventTypeLabel.setInnerText("Event Type: ");
-
-        createEventTypePercentSelect(row1Container);
-        createEventTypeSelect(row1Container);
-
-        // Always show events with: o logs o hintlets
-        Element alwaysShowLabel = doc.createSpanElement();
-        alwaysShowLabel.setInnerText("Always show: ");
-        alwaysShowLabel.getStyle().setPropertyPx("marginLeft", 10);
-        row1.getElement().appendChild(alwaysShowLabel);
-
-        final CheckBox logsCheckBox = new CheckBox(row1Container);
-        logsCheckBox.setChecked(true);
-        Element logsLabel = doc.createSpanElement();
-        logsLabel.setInnerText("Logs");
-        row1.getElement().appendChild(logsLabel);
-        logsCheckBox.addClickListener(new ClickListener() {
-          public void onClick(ClickEvent event) {
-            eventFilter.setFilterUserLogs(!logsCheckBox.isChecked());
-            renderTable();
-          }
-        });
-
-        final CheckBox hintletsCheckBox = new CheckBox(row1Container);
-        hintletsCheckBox.setChecked(true);
-        Element hintletsLabel = doc.createSpanElement();
-        hintletsLabel.setInnerText("Hints");
-        row1.getElement().appendChild(hintletsLabel);
-        hintletsCheckBox.addClickListener(new ClickListener() {
-          public void onClick(ClickEvent event) {
-            eventFilter.setFilterHints(!hintletsCheckBox.isChecked());
-            renderTable();
-          }
-        });
-      }
-
-      private void createEventTypePercentSelect(Container row1Container) {
-        final Select eventTypePercentSelect = new Select(row1Container);
-        eventTypePercentSelect.insertOption("Any %", 0);
-        eventTypePercentSelect.insertOption("> 10%", 1);
-        eventTypePercentSelect.insertOption("> 50%", 2);
-        eventTypePercentSelect.insertOption("> 90%", 3);
-        eventTypePercentSelect.addChangeListener(new ChangeListener() {
-          public void onChange(ChangeEvent event) {
-            switch (eventTypePercentSelect.getSelectedIndex()) {
-              case 0:
-                eventFilter.setMinEventTypePercent(0.0);
-                break;
-              case 1:
-                eventFilter.setMinEventTypePercent(0.1);
-                break;
-              case 2:
-                eventFilter.setMinEventTypePercent(0.5);
-                break;
-              case 3:
-                eventFilter.setMinEventTypePercent(0.9);
-                break;
-              default:
-                eventFilter.setMinEventTypePercent(0.0);
-                break;
-            }
-            renderTable();
-          }
-        });
-      }
-
-      // Creates a select UI component for event types in this data set.
-      private void createEventTypeSelect(Container row1Container) {
-        filterPanelEventTypeSelect = new Select(row1Container);
-        filterPanelEventTypeSelect.insertOption("All", 0);
-        refreshEventTypeSelect();
-      }
-
-      // Creates/refreshes the sparse list of events - only those that have been
-      // pulled in by the {@link Slugishness Model}
-      private void refreshEventTypeSelect() {
-        // Remove existing options, save the first one (ALL)
-        int count = filterPanelEventTypeSelect.getOptionCount();
-        for (int i = 1; i < count; ++i) {
-          filterPanelEventTypeSelect.removeOption(1);
-        }
-        // Remove the old listener.
-        if (eventFilterTypeRemover != null) {
-          eventFilterTypeRemover.remove();
-          eventFilterTypeRemover = null;
-        }
-
-        // TODO (zundel): Make this not depend on contiguous event record
-        // indexes.
-        JsIntegerMap<String> typesEncountered = getModel().getTypesEncountered();
-        final int types[] = new int[typesEncountered.getValues().size()];
-        int typesIndex = 0;
-        for (int i = 0; i < EventRecordType.MAX_KEY; ++i) {
-          String type = typesEncountered.get(i);
-          if (type != null) {
-            filterPanelEventTypeSelect.insertOption(type, typesIndex + 1);
-            types[typesIndex] = i;
-            typesIndex++;
-          }
-        }
-
-        // The click listener has to map the index of the selected item to the
-        // sparse array of types we just created.
-        eventFilterTypeRemover = filterPanelEventTypeSelect.addChangeListener(new ChangeListener() {
-          public void onChange(ChangeEvent event) {
-            int index = filterPanelEventTypeSelect.getSelectedIndex();
-            if (index == 0) {
-              eventFilter.setEventType(-1);
-            } else {
-              eventFilter.setEventType(types[index - 1]);
-            }
-            renderTable();
-          }
-        });
-      }
-    }
-
     /**
      * Details component for a UiEvent.
      * 
@@ -456,12 +261,14 @@ public class SluggishnessDetailView extends DetailView {
       private final UiEvent event;
       private TableCellElement eventTraceContainerCell;
       private Command heightFixer;
-
+      private Div profileDiv;
       private HintletRecordsTree hintletTree;
-
       private SourceViewer sourceViewer;
-
       private DivElement treeDiv;
+
+      // Profiles are processed in the background. This variable tells the click
+      // handler if the profile needs to be refreshed.
+      private boolean javaScriptProfileInProgress = false;
 
       protected UiEventDetails(UiEvent event, TableRow parent) {
         super(parent);
@@ -546,10 +353,8 @@ public class SluggishnessDetailView extends DetailView {
         hintletTree = createHintletTree(treeDiv);
         createEventTrace(eventTraceContainer, pieChartHeight);
 
-        if (event.hasJavaScriptProfile()) {
-          Div profileDiv = new Div(eventTraceContainer);
-          profileDiv.setHtml(getModel().getProfileHtmlForEvent(event));
-        }
+        profileDiv = new Div(eventTraceContainer);
+        updateProfile();
 
         // Ensure that window resizes don't mess up our row size due to text
         // reflow. Things may need to grow or shrink.
@@ -723,7 +528,7 @@ public class SluggishnessDetailView extends DetailView {
             // Wipe the old table
             detailsTable.destroy();
 
-            // Sort the nodes by starttime.
+            // Sort the nodes by start time.
             Collections.sort(selected, new Comparator<Item>() {
 
               public int compare(Item node1, Item node2) {
@@ -732,7 +537,6 @@ public class SluggishnessDetailView extends DetailView {
 
                 return Double.compare(e1.getTime(), e2.getTime());
               }
-
             });
 
             Item newSelection = selected.get(selected.size() - 1);
@@ -971,6 +775,21 @@ public class SluggishnessDetailView extends DetailView {
 
         attemptResymbolization(table, frame, frameRenderer);
       }
+      
+      /**
+       * Conditionally puts the profile UI below the trace tree.
+       */
+      private void updateProfile() {
+        if (event.hasJavaScriptProfile()) {
+          javaScriptProfileInProgress = false;
+          profileDiv.setHtml(getModel().getProfileHtmlForEvent(event));
+        } else if (event.processingJavaScriptProfile()) {
+          this.javaScriptProfileInProgress = true;
+          profileDiv.setHtml("<h3>Profile</h3><div><i>Processing...</i></div>");
+        } else {
+          profileDiv.setHtml("");
+        }
+      }
     }
 
     /**
@@ -992,7 +811,7 @@ public class SluggishnessDetailView extends DetailView {
 
     private static final String STACK_TRACE_KEY = "Stack Trace";
 
-    public EventFilterPanel eventFilterPanel;
+    public SluggishnessEventFilterPanel eventFilterPanel;
 
     // The index of the first event in the table model.
     private int beginIndex = 0;
@@ -1016,6 +835,10 @@ public class SluggishnessDetailView extends DetailView {
           row.toggleDetails();
           UiEventDetails details = (UiEventDetails) row.getDetails();
           details.toggleAggregateStatsVisibility();
+          if (details.javaScriptProfileInProgress) {
+            details.updateProfile();
+          }
+
         }
 
         public void onMouseOver(MouseOverEvent event) {
@@ -1028,8 +851,8 @@ public class SluggishnessDetailView extends DetailView {
         }
       };
 
-      eventFilterPanel = new EventFilterPanel(getFilterPanelContainer(),
-          filter.eventFilter);
+      eventFilterPanel = new SluggishnessEventFilterPanel(
+          getFilterPanelContainer(), this, filter.eventFilter, css, getModel());
     }
 
     /**
@@ -1344,7 +1167,8 @@ public class SluggishnessDetailView extends DetailView {
   private UiEventModel sourceModel;
 
   public SluggishnessDetailView(Container parent,
-      SluggishnessVisualization viz, MainTimeLine timeLine,
+      SluggishnessVisualization viz,
+      MainTimeLine timeLine,
       UiEventModel sourceModel, final SluggishnessDetailView.Resources resources) {
     super(parent, viz);
     this.resources = resources;
@@ -1371,7 +1195,7 @@ public class SluggishnessDetailView extends DetailView {
     filterPanelIcon.getElement().setAttribute("title", "Hide/Show Filter Panel");
     filterPanelIcon.addClickListener(new ClickListener() {
       public void onClick(ClickEvent event) {
-        contentTable.eventFilterPanel.toggleFilterPanelVisible();
+        contentTable.eventFilterPanel.toggleFilterPanelVisible(getModel());
       }
     });
 

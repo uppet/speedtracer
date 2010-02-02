@@ -122,10 +122,10 @@ public class SluggishnessModel implements VisualizationModel,
     }
 
     // Keep track of all types seen in this model for the filtering feature
-    // in the Slugishness view.
-    if (typesEncountered.get(e.getType()) == null) {
-      typesEncountered.put(e.getType(),
-          EventRecordType.typeToString(e.getType()));
+    // in the Sluggishness view.
+    int eventType = e.getType();
+    if (typesEncountered.get(eventType) == null) {
+      typesEncountered.put(eventType, EventRecordType.typeToString(eventType));
     }
   }
 

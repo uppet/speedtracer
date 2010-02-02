@@ -38,6 +38,12 @@ public class MockModelGenerator {
     @Source("../../tools/data/maps-stacktraces")
     TextResource mapsDotGoogleDotComWithStackTraces();
 
+    @Source("../../tools/data/profiler-test1-compressed")
+    TextResource profilerTest1Compressed();
+
+    @Source("../../tools/data/profiler-test1-uncompressed")
+    TextResource profilerTest1Uncompressed();
+
     @Source("../../tools/data/reddit.com-profiling")
     TextResource redditDotComWithProfiling();
   }
@@ -74,7 +80,7 @@ public class MockModelGenerator {
   private static List<DataSet> dataSets = new ArrayList<DataSet>();
   private static MockResources mockResources;
 
-  public static List<String> getDataSetNames(MockDataModel mockModel) {
+  public static List<String> getDataSetNames() {
     initializeDataSets();
     List<String> result = new ArrayList<String>();
     for (int i = 0; i < dataSets.size(); ++i) {
@@ -97,6 +103,10 @@ public class MockModelGenerator {
       dataSets.add(new DataSet("digg.com", mockResources.diggDotCom()));
       dataSets.add(new DataSet("maps.google.com (stacktraces)",
           mockResources.mapsDotGoogleDotComWithStackTraces()));
+      dataSets.add(new DataSet("Profiler Test 1 (compressed)",
+          mockResources.profilerTest1Compressed()));
+      dataSets.add(new DataSet("Profiler Test 1 (uncompressed)",
+          mockResources.profilerTest1Uncompressed()));
       dataSets.add(new DataSet("reddit.com (profiling)",
           mockResources.redditDotComWithProfiling()));
     }

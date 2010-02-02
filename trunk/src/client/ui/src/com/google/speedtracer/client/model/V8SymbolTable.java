@@ -27,9 +27,9 @@ public class V8SymbolTable {
    */
   static class AddressSpan implements Comparable<AddressSpan> {
     int addressLength;
-    long address;
+    double address;
 
-    public AddressSpan(long address, int addressLength) {
+    public AddressSpan(double address, int addressLength) {
       this.address = address;
       this.addressLength = addressLength;
     }
@@ -40,10 +40,10 @@ public class V8SymbolTable {
      */
     public int compareTo(AddressSpan compareAddress) {
 
-      long aStart = compareAddress.address;
-      long aEnd = aStart + compareAddress.addressLength;
-      long bStart = address;
-      long bEnd = bStart + addressLength;
+      double aStart = compareAddress.address;
+      double aEnd = aStart + compareAddress.addressLength;
+      double bStart = address;
+      double bEnd = bStart + addressLength;
 
       if (bStart >= aStart && bStart <= aEnd) {
         return 0;
@@ -57,7 +57,7 @@ public class V8SymbolTable {
       return 1;
     }
 
-    public long getAddress() {
+    public double getAddress() {
       return address;
     }
 
@@ -66,7 +66,8 @@ public class V8SymbolTable {
     }
 
     public String toString() {
-      return address + "-" + (address + addressLength);
+      return "0x" + Long.toHexString((long) address) + "-0x"
+          + Long.toHexString((long) address + addressLength);
     }
   }
 
@@ -75,13 +76,13 @@ public class V8SymbolTable {
    */
   static class AddressTag {
     public final String name;
-    public long prevAddress = 0;
+    public double prevAddress = 0;
 
     AddressTag(String name) {
       this.name = name;
     }
 
-    public long get() {
+    public double get() {
       return prevAddress;
     }
   }
@@ -95,7 +96,7 @@ public class V8SymbolTable {
     private final String name;
     private final int symbolType;
 
-    Symbol(String name, int symbolType, long address, int addressLength) {
+    Symbol(String name, int symbolType, double address, int addressLength) {
       this.name = name;
       this.symbolType = symbolType;
       this.addressSpan = new AddressSpan(address, addressLength);
@@ -117,37 +118,41 @@ public class V8SymbolTable {
       return name + " : " + addressSpan.toString();
     }
   }
-  
-  private TreeMap<AddressSpan,Symbol> table = new TreeMap<AddressSpan, Symbol>();
+
+  private TreeMap<AddressSpan, Symbol> table = new TreeMap<AddressSpan, Symbol>();
 
   public V8SymbolTable() {
   }
-  
+
   /**
    * Add a symbol to the table.
-   *  
+   * 
    * Note collisions overwrite the previous value.
    */
   public void add(Symbol toAdd) {
     table.put(toAdd.getAddressSpan(), toAdd);
   }
-  
+
   /**
-   * A dump of the data stored in this symbol table intended only for
-   * debugging.
+   * A dump of the data stored in this symbol table intended only for debugging.
    */
   public void debugDumpHtml(StringBuilder output) {
-    output.append("<ul>");
+    output.append("<table>");
+    output.append("<tr><th>Name</th><th>Address</th><th>Length</th></tr>");
     for (Symbol child : table.values()) {
-      output.append("<li>" + child.toString() + "</li>");
+      output.append("<tr>");
+      output.append("<td>" + child.getName() + "</td>");
+      output.append("<td>" + Long.toHexString((long) child.getAddressSpan().getAddress()) + "</td>");
+      output.append("<td>" + Long.toString(child.getAddressSpan().addressLength) + "</td>");
+      output.append("</tr>");
     }
-    output.append("</ul>");
+    output.append("</table>");
   }
-  
-  public Symbol lookup(long address) {
+
+  public Symbol lookup(double address) {
     return table.get(new AddressSpan(address, 0));
   }
-  
+
   public void remove(Symbol toRemove) {
     table.remove(toRemove.getAddressSpan());
   }

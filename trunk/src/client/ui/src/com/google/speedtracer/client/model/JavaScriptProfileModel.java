@@ -18,6 +18,7 @@ package com.google.speedtracer.client.model;
 import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.model.DataModel.EventCallbackProxy;
 import com.google.speedtracer.client.model.DataModel.EventCallbackProxyProvider;
+import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.JsIntegerMap;
 
 import java.util.Collections;
@@ -56,46 +57,49 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
   JavaScriptProfileModel(final DataModel dataModel) {
     profileProxy = new EventCallbackProxy() {
       public void onEventRecord(EventRecord data) {
-        JavaScriptProfileEvent profileData = data.cast();
+
+        final JavaScriptProfileEvent profileData = data.cast();
         // Add a reference to this record from the preceding event.
-        int refSequence = data.getSequence() - 1;
-        UiEvent rec = (UiEvent) dataModel.findEventRecord(refSequence);
+        int refSequence = profileData.getSequence() - 1;
+        final UiEvent rec = (UiEvent) dataModel.findEventRecord(refSequence);
         if (rec != null) {
-          rec.setHasJavaScriptProfile();
-        }
-
-        // Lazily initialize the impl class. We don't know which one to
-        // instantiate until we get the first profile record.
-        if (impl == null) {
-          String format = profileData.getFormat();
-          if (format.equals(JavaScriptProfileModelV8Impl.FORMAT)) {
-            impl = new JavaScriptProfileModelV8Impl();
-          } else {
-            Logging.getLogger().logText(
-                "No profile model available for profile format: " + format);
-
-            // Create a null implementation that just throws the data away
-            impl = new JavaScriptProfileModelImpl("null") {
-              @Override
-              public String getDebugDumpHtml() {
-                return null;
-              }
-
-              @Override
-              public void parseRawEvent(JavaScriptProfileEvent event,
-                  JavaScriptProfile profile) {
-              }
-            };
-          }
-        }
-
-        JavaScriptProfile profile = new JavaScriptProfile();
-        impl.parseRawEvent(profileData, profile);
-        if (profile.getBottomUpProfile() != null) {
-          profileMap.put(refSequence, profile);
+          processProfileData(rec, profileData);
         }
       }
     };
+  }
+
+  private void processProfileData(UiEvent rec,
+      JavaScriptProfileEvent profileData) {
+
+    // Lazily initialize the impl class. We don't know which one to
+    // instantiate until we get the first profile record.
+    if (impl == null) {
+      String format = profileData.getFormat();
+      if (format.equals(JavaScriptProfileModelV8Impl.FORMAT)) {
+        impl = new JavaScriptProfileModelV8Impl(true);
+      } else {
+        Logging.getLogger().logText(
+            "No profile model available for profile format: " + format);
+
+        // Create a null implementation that just throws the data away
+        impl = new JavaScriptProfileModelImpl("null") {
+          @Override
+          public String getDebugDumpHtml() {
+            return null;
+          }
+
+          @Override
+          public void parseRawEvent(JavaScriptProfileEvent event,
+              UiEvent refRecord, JavaScriptProfile profile) {
+          }
+        };
+      }
+    }
+
+    JavaScriptProfile profile = new JavaScriptProfile();
+    impl.parseRawEvent(profileData, rec, profile);
+    profileMap.put(rec.getSequence(), profile);
   }
 
   public String getDebugDumpHtml() {
@@ -137,11 +141,37 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
 
     // Give the profile
     JavaScriptProfileNode bottomUpProfile = profile.getBottomUpProfile();
-    result.append("<h3>Profile:</h3>\n");
-    dumpNodeChildrenRecursive(bottomUpProfile, result);
+    if (bottomUpProfile != null) {
+      result.append("<h3>Profile:</h3>\n");
+      dumpNodeChildrenRecursive(bottomUpProfile, result);
+    }
 
     // Some additional debugging info
     // result.append(impl.getDebugDumpHtml());
+    return result.toString();
+  }
+
+  private String formatSymbolName(String symbolName) {
+    JSOArray<String> vals = JSOArray.splitString(symbolName, "\\s");
+    StringBuilder result = new StringBuilder();
+    for (int i = 0, length = vals.size(); i < length; ++i) {
+      String val = vals.get(i);
+      if (val.startsWith("http://") || val.startsWith("https://")
+          || val.startsWith("file://") || val.startsWith("chrome://")
+          || val.startsWith("chrome-extension://")) {
+        // Presenting the entire URL is kinda gross. Lets just shot the
+        // last path component.
+        String resource = val.substring(val.lastIndexOf("/") + 1, val.length());
+
+        if (resource.equals("")) {
+          resource = val;
+        }
+        result.append(resource);
+      } else {
+        result.append(val);
+      }
+      result.append(" ");
+    }
     return result.toString();
   }
 
@@ -151,11 +181,14 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
   private void dumpNodeChildrenRecursive(JavaScriptProfileNode profile,
       StringBuilder result) {
     List<JavaScriptProfileNode> children = profile.getChildren();
+    if (children == null) {
+      return;
+    }
     Collections.sort(children, nodeTimeComparator);
     result.append("<ul>\n");
     for (JavaScriptProfileNode child : children) {
       result.append("<li>\n");
-      result.append(child.getSymbolName());
+      result.append(formatSymbolName(child.getSymbolName()));
       result.append(" selfTime: ");
       result.append(child.getSelfTime());
       result.append("ms time: ");
