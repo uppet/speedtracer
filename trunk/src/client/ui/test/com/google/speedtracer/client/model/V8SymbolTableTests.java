@@ -31,34 +31,34 @@ public class V8SymbolTableTests extends GWTTestCase {
 
   public void testSymbolTable() {
     V8SymbolTable symbolTable = new V8SymbolTable();
-    Symbol symbolOne = new Symbol("test1", 1, 100, 10);
-    assertEquals("test1 : 100-110", symbolOne.toString());
+    Symbol symbolOne = new Symbol("test1", 1, 0x100, 0x10);
+    assertEquals("test1 : 0x100-0x110", symbolOne.toString());
     symbolTable.add(symbolOne);
-    Symbol symbolTwo = new Symbol("test2", 1, 120, 5);
-    assertEquals("test2 : 120-125", symbolTwo.toString());
+    Symbol symbolTwo = new Symbol("test2", 1, 0x120, 0x5);
+    assertEquals("test2 : 0x120-0x125", symbolTwo.toString());
     symbolTable.add(symbolTwo);
-    Symbol symbolThree = new Symbol("test3", 1, 90, 5);
-    assertEquals("test3 : 90-95", symbolThree.toString());
+    Symbol symbolThree = new Symbol("test3", 1, 0x90, 0x5);
+    assertEquals("test3 : 0x90-0x95", symbolThree.toString());
     symbolTable.add(symbolThree);
     
-    assertEquals(symbolOne.toString(), symbolTable.lookup(100).toString());
-    assertEquals(symbolOne.toString(), symbolTable.lookup(101).toString());
-    assertEquals(symbolOne.toString(), symbolTable.lookup(110).toString());
-    assertEquals(symbolTwo.toString(), symbolTable.lookup(120).toString());
-    assertEquals(symbolTwo.toString(), symbolTable.lookup(121).toString());
-    assertEquals(symbolTwo.toString(), symbolTable.lookup(125).toString());
-    assertEquals(symbolThree.toString(), symbolTable.lookup(90).toString());
-    assertEquals(symbolThree.toString(), symbolTable.lookup(94).toString());
-    assertEquals(symbolThree.toString(), symbolTable.lookup(95).toString());
+    assertEquals(symbolOne.toString(), symbolTable.lookup(0x100).toString());
+    assertEquals(symbolOne.toString(), symbolTable.lookup(0x101).toString());
+    assertEquals(symbolOne.toString(), symbolTable.lookup(0x110).toString());
+    assertEquals(symbolTwo.toString(), symbolTable.lookup(0x120).toString());
+    assertEquals(symbolTwo.toString(), symbolTable.lookup(0x121).toString());
+    assertEquals(symbolTwo.toString(), symbolTable.lookup(0x125).toString());
+    assertEquals(symbolThree.toString(), symbolTable.lookup(0x90).toString());
+    assertEquals(symbolThree.toString(), symbolTable.lookup(0x94).toString());
+    assertEquals(symbolThree.toString(), symbolTable.lookup(0x95).toString());
 
     // Make sure address lookups outside the range fail
-    assertNull(symbolTable.lookup(50));
-    assertNull(symbolTable.lookup(96));
-    assertNull(symbolTable.lookup(99));
-    assertNull(symbolTable.lookup(111));
-    assertNull(symbolTable.lookup(119));
-    assertNull(symbolTable.lookup(126));
-    assertNull(symbolTable.lookup(1000));
+    assertNull(symbolTable.lookup(0x50));
+    assertNull(symbolTable.lookup(0x96));
+    assertNull(symbolTable.lookup(0x99));
+    assertNull(symbolTable.lookup(0x111));
+    assertNull(symbolTable.lookup(0x119));
+    assertNull(symbolTable.lookup(0x126));
+    assertNull(symbolTable.lookup(0x1000));
   }
 
   @Override
