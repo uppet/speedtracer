@@ -35,7 +35,7 @@ hintlet.types = {
   'RESOURCE_SEND_REQUEST' : 12,
   'RESOURCE_RECEIVE_RESPONSE' : 13,
   'RESOURCE_FINISH' : 14,
-  'JAVASCRIPT_EXECUTION_EVENT' : 15,
+  'PROFILE_DATA' : 15,
   'TAB_CHANGED' : 16,
   'AGGREGATED_EVENTS' : 17,
   'DOM_BINDING_EVENT' : 18,
@@ -66,7 +66,7 @@ hintlet.typeList = [
   'RESOURCE_SEND_REQUEST',             // 12
   'RESOURCE_RECEIVE_RESPONSE',         // 13
   'RESOURCE_FINISH',                   // 14
-  'JAVASCRIPT_EXECUTION_EVENT',        // 15
+  'PROFILE_DATA',                      // 15
   'TAB_CHANGED',                       // 16
   'AGGREGATED_EVENTS',                 // 17
   'DOM_BINDING_EVENT',                 // 18

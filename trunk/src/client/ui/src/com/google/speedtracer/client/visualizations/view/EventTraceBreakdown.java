@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,7 +21,7 @@ import com.google.gwt.graphics.client.Color;
 import com.google.gwt.graphics.client.ImageHandle;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.resources.client.CssResource.Strict;
+import com.google.speedtracer.client.model.LogEvent;
 import com.google.speedtracer.client.model.LotsOfLittleEvents;
 import com.google.speedtracer.client.model.TypeCountDurationTuple;
 import com.google.speedtracer.client.model.UiEvent;
@@ -368,7 +368,8 @@ public class EventTraceBreakdown {
       // Find the dominant color for this node, and if it belongs to an
       // important color, then set the dominant color on the UiEvent.
       if (aggregateTimes.hasKey(dominantType)
-          && aggregateTimes.get(dominantType) >= aggregateThreshold) {
+          && (aggregateTimes.get(dominantType) >= aggregateThreshold)
+          || (node.getType() == LogEvent.TYPE)) {
         setDominantColor(node, EventRecordColors.getColorForType(dominantType));
       }
     }
@@ -392,7 +393,6 @@ public class EventTraceBreakdown {
    */
   public interface Resources extends ClientBundle {
     @Source("resources/EventTraceBreakdown.css")
-    @Strict()
     Css eventTraceBreakdownCss();
   }
 

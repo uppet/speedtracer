@@ -43,6 +43,7 @@ import com.google.speedtracer.client.WindowChannel.ServerListener;
 import com.google.speedtracer.client.messages.InitializeMonitorMessage;
 import com.google.speedtracer.client.messages.RecordingDataMessage;
 import com.google.speedtracer.client.messages.RequestInitializationMessage;
+import com.google.speedtracer.client.messages.ResendProfilingOptions;
 import com.google.speedtracer.client.messages.ResetBaseTimeMessage;
 import com.google.speedtracer.client.model.DevToolsDataInstance;
 import com.google.speedtracer.client.model.LoadFileDataInstance;
@@ -152,6 +153,10 @@ public abstract class BackgroundPage extends Extension {
           setBrowserActionIcon(tabId, browserAction.mtIconActive(), tabModel);
           tabModel.channel.sendMessage(RecordingDataMessage.TYPE,
               RecordingDataMessage.create(true));
+          // We need to ensure that the profiling options are in synch in
+          // the browser with the current state reflected in the UI.
+          tabModel.channel.sendMessage(ResendProfilingOptions.TYPE,
+              ResendProfilingOptions.create());
         }
 
         return;
@@ -352,7 +357,7 @@ public abstract class BackgroundPage extends Extension {
                 doRequestInitialization(channel, data);
                 break;
               case RecordingDataMessage.TYPE:
-                doRecordingData(data);
+                doRecordingData(channel, data);
                 break;
               case ResetBaseTimeMessage.TYPE:
                 doResetBaseTime(channel, data);
@@ -362,7 +367,8 @@ public abstract class BackgroundPage extends Extension {
             }
           }
 
-          private void doRecordingData(WindowChannel.Message data) {
+          private void doRecordingData(Client channel,
+              WindowChannel.Message data) {
             final RecordingDataMessage recordingDataMessage = data.cast();
             int tabId = recordingDataMessage.getTabId();
             int browserId = recordingDataMessage.getBrowserId();
@@ -371,6 +377,10 @@ public abstract class BackgroundPage extends Extension {
             if (recordingDataMessage.isRecording()) {
               tabModel.dataInstance.<DataInstance> cast().resumeMonitoring();
               pageActionIcon = browserAction.mtIconActive();
+              // We need to ensure that the profiling options are in synch in
+              // the browser with the current state reflected in the UI.
+              channel.sendMessage(ResendProfilingOptions.TYPE,
+                  ResendProfilingOptions.create());
             } else {
               tabModel.dataInstance.<DataInstance> cast().stopMonitoring();
               pageActionIcon = browserAction.mtIcon();
@@ -431,7 +441,7 @@ public abstract class BackgroundPage extends Extension {
               }
             });
           }
-          
+
           private void doResetBaseTime(final Client channel,
               WindowChannel.Message data) {
             final ResetBaseTimeMessage request = data.cast();
@@ -442,7 +452,7 @@ public abstract class BackgroundPage extends Extension {
             DataInstance dataInstance = tabModel.dataInstance.<DataInstance> cast();
             dataInstance.setBaseTime(-1);
           }
-          
+
         });
       }
 

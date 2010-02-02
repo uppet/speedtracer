@@ -317,8 +317,11 @@ public class EventRecordType {
     switch (e.getType()) {
       case DomEvent.TYPE:
         return "DOM (" + ((DomEvent) e).getDomEventType() + ")";
-      case WindowEvent.TYPE:
-        return "Window (" + ((WindowEvent) e).getWindowEventType() + ")";
+      case LogEvent.TYPE:
+        String logMessage = ((LogEvent) e).getMessage();
+        logMessage = (logMessage.length() > 20) ? logMessage.substring(0, 8)
+            + "..." + logMessage.substring(12, 20) : logMessage;
+        return "Log: " + logMessage;
       case DomEventDispatch.TYPE:
         return "Dom Dispatch (" + ((DomEventDispatch) e).getPhase() + ")";
       case DomBindingEvent.TYPE:
