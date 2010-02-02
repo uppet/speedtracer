@@ -125,7 +125,9 @@ public class V8LogDecompressor {
       }
     }
     String logEntry[] = splitLogLine(decompressedLogEntry);
-    if (logEntry[0].equals("repeat") || logEntry[0].equals("r")) {
+    if (logEntry.length == 0 || logEntry[0].equals("profiler")) {
+      // don't add this line to the window.
+    } else if (logEntry[0].equals("repeat") || logEntry[0].equals("r")) {
       // skip the first 2 fields.
       appendLogEntry(decompressedLogEntry.substring(logEntry[0].length()
           + logEntry[1].length() + 2));

@@ -45,8 +45,9 @@ public abstract class JavaScriptProfileModelImpl {
    * 
    * @param event A profile record from the instrumented browser.
    * @param profile Profiling data extracted from the profile record.
+   * 
    */
   public abstract void parseRawEvent(JavaScriptProfileEvent event,
-      JavaScriptProfile profile);
+      UiEvent refRecord, JavaScriptProfile profile);
 
 }

@@ -37,39 +37,39 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
   }
 
   public void testAddressParse() {
-    
-    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl();
-    long address;
+
+    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(false);
+    double address;
     address = impl.parseAddress("0x100",
         JavaScriptProfileModelV8Impl.ADDRESS_TAG_CODE);
-    assertEquals(address, 0x100);
+    assertEquals(address, (double) 0x100);
     address = impl.parseAddress("0x200",
         JavaScriptProfileModelV8Impl.ADDRESS_TAG_CODE);
-    assertEquals(address, 0x200);
+    assertEquals(address, (double) 0x200);
     // Note, the above parsing does not affect the current offset
-    
+
     address = impl.parseAddress("+200",
         JavaScriptProfileModelV8Impl.ADDRESS_TAG_CODE);
-    assertEquals(address, 0x200);
+    assertEquals(address, (double) 0x200);
     address = impl.parseAddress("-100",
         JavaScriptProfileModelV8Impl.ADDRESS_TAG_CODE);
-    assertEquals(address, 0x100);
+    assertEquals(address, (double) 0x100);
 
     address = impl.parseAddress("0x100",
         JavaScriptProfileModelV8Impl.ADDRESS_TAG_CODE);
-    assertEquals(address, 0x100);
+    assertEquals(address, (double) 0x100);
     address = impl.parseAddress("0x200",
         JavaScriptProfileModelV8Impl.ADDRESS_TAG_CODE);
-    assertEquals(address, 0x200);
+    assertEquals(address, (double) 0x200);
 
     // Another tag shouldn't interfere with the address
     address = impl.parseAddress("+1000",
         JavaScriptProfileModelV8Impl.ADDRESS_TAG_CODE_MOVE);
-    assertEquals(address, 0x1000);
+    assertEquals(address, (double) 0x1000);
   }
 
   public void testAlias() {
-    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl();
+    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(false);
     String ccrecs = "profiler,\"begin\",1\n" + "profiler,\"compression\",4\n"
         + "alias,cc,code-creation\n" + "alias,cm,code-move\n"
         + "alias,cd,code-delete\n" + "alias,t,tick\n" + "alias,r,repeat\n"
@@ -83,32 +83,38 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
         + "alias,lic,LoadIC\n" + "alias,re,RegExp\n" + "alias,sc,Script\n"
         + "alias,sic,StoreIC\n" + "alias,s,Stub\n";
     JavaScriptProfileEvent rawEvent = makeV8ProfileEvent(ccrecs);
+    UiEvent refRecord = UiEvent.createObject().cast();
+    refRecord.setSequence(1);
     JavaScriptProfile profile = new JavaScriptProfile();
-    impl.parseRawEvent(rawEvent, profile);
+    impl.parseRawEvent(rawEvent, refRecord, profile);
     assertEquals(0.0, profile.getTotalTime());
     assertNull(profile.getBottomUpProfile());
   }
 
   public void testCodeCreationSimple() {
-    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl();
+    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(false);
     String logRecs = "code-creation,LoadIC,5910913e,179,\"parentNode\"\n"
         + "code-creation,RegExp,3f830f,566,\"[^+&gt;] [^+&gt;]\"\n"
         + "code-creation,LazyCompile,59117070,2791,\"last_click http://www.reddit.com/static/reddit.js?v=437941e91e4684e9b4b00eca75a46dd9:62\"\"\n";
     JavaScriptProfileEvent rawEvent = makeV8ProfileEvent(logRecs);
+    UiEvent refRecord = UiEvent.createObject().cast();
+    refRecord.setSequence(1);
     JavaScriptProfile profile = new JavaScriptProfile();
-    impl.parseRawEvent(rawEvent, profile);
+    impl.parseRawEvent(rawEvent, refRecord, profile);
     assertEquals(0.0, profile.getTotalTime());
-    Symbol found = impl.findSymbol(0x5910913e);
+    Symbol found = impl.findSymbol((double) 0x5910913e);
     assertNotNull(found);
   }
 
   public void testRepeatSimple() {
-    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl();
+    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(false);
     String logRecs = "code-creation,LoadIC,5910913e,179,\"parentNode\"\n"
         + "repeat,5,tick,5910913e,+1,0\n";
     JavaScriptProfileEvent rawEvent = makeV8ProfileEvent(logRecs);
+    UiEvent refRecord = UiEvent.createObject().cast();
+    refRecord.setSequence(1);
     JavaScriptProfile profile = new JavaScriptProfile();
-    impl.parseRawEvent(rawEvent, profile);
+    impl.parseRawEvent(rawEvent, refRecord, profile);
     JavaScriptProfileNode bottomUpProfile = profile.getBottomUpProfile();
     assertNotNull(bottomUpProfile);
     assertEquals(5.0, profile.getTotalTime(), .001);
@@ -122,12 +128,14 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
   }
 
   public void testTickSimple() {
-    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl();
+    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(false);
     String logRecs = "code-creation,LoadIC,5910913e,179,\"parentNode\"\n"
         + "tick,5910913e,+1,0\n";
     JavaScriptProfileEvent rawEvent = makeV8ProfileEvent(logRecs);
+    UiEvent refRecord = UiEvent.createObject().cast();
+    refRecord.setSequence(1);
     JavaScriptProfile profile = new JavaScriptProfile();
-    impl.parseRawEvent(rawEvent, profile);
+    impl.parseRawEvent(rawEvent, refRecord, profile);
     JavaScriptProfileNode bottomUpProfile = profile.getBottomUpProfile();
     assertNotNull(bottomUpProfile);
     assertEquals(1.0, profile.getTotalTime(), .001);

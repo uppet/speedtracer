@@ -19,10 +19,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This stores a hierarchy of the profile data for bottom-up and top-down profiles.
+ * This stores a hierarchy of the profile data for bottom-up and top-down
+ * profiles.
  */
 public class JavaScriptProfileNode {
   private final String symbolName;
+  private String symbolType = "";
   private List<JavaScriptProfileNode> children = new ArrayList<JavaScriptProfileNode>();
   private double selfTimeMsecs = 0;
   private double timeMsecs = 0;
@@ -70,6 +72,10 @@ public class JavaScriptProfileNode {
     return symbolName;
   }
 
+  public String getSymbolType() {
+    return this.symbolType;
+  }
+
   /**
    * Returns time spent in this node in milliseconds.
    * 
@@ -77,5 +83,9 @@ public class JavaScriptProfileNode {
    */
   public double getTime() {
     return this.timeMsecs;
+  }
+
+  public void setSymbolType(String symbolType) {
+    this.symbolType = symbolType;
   }
 }

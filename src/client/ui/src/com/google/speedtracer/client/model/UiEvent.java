@@ -125,7 +125,7 @@ public class UiEvent extends EventRecord {
    * @return whether or not a profile record is associated with this event.
    */
   public final native boolean hasJavaScriptProfile() /*-{
-    return !!this.hasJavaScriptProfile;
+    return this.javaScriptProfileState == "Done";
   }-*/;
 
   /**
@@ -138,10 +138,31 @@ public class UiEvent extends EventRecord {
   }-*/;
 
   /**
+   * Returns whether or not a profile record is associated with this event and
+   * is still being processed.
+   * 
+   * @return whether or not a profile record is being processed for this event.
+   */
+  public final native boolean processingJavaScriptProfile() /*-{
+    return this.javaScriptProfileState == "Processing";
+  }-*/;
+
+  /**
    * Sets whether or not a profile record is associated with this event.
    */
-  public final native void setHasJavaScriptProfile() /*-{
-    this.hasJavaScriptProfile = true;
+  public final native void setHasJavaScriptProfile(boolean value) /*-{
+    if (value) {
+      this.javaScriptProfileState = "Done";
+    } else {
+      delete this.javaScriptProfileState;
+    }
+  }-*/;
+
+  /**
+   * Indicates that profile data exists for record but is still being processed.
+   */
+  public final native void setProcessingJavaScriptProfile() /*-{
+    this.javaScriptProfileState = "Processing";
   }-*/;
 
   /**
