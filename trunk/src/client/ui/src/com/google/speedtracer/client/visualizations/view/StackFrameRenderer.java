@@ -19,6 +19,8 @@ package com.google.speedtracer.client.visualizations.view;
 import com.google.gwt.dom.client.AnchorElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.resources.client.ClientBundle;
+import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
 import com.google.speedtracer.client.util.dom.EventCleanup.EventCleanupTrait;
@@ -33,12 +35,33 @@ import com.google.speedtracer.client.visualizations.model.JsSymbolMap.JsSymbol;
  * Supports showing both an obfuscated and a re-symbolized stack trace.
  */
 public class StackFrameRenderer extends EventCleanupTrait {
+  /**
+   * Externalized Resource interface.
+   */
+  public interface Resources extends ClientBundle {
+    @Source("resources/StackFrameRenderer.css")
+    Css stackFrameRendererCss();
+  }
+  
+  /**
+   * Styles.
+   */
+  public interface Css extends CssResource {
+    String stackFrame();
+    String resymbolizedSymbol();
+  }
+  
   private final Element myElem;
+
   private final JsStackFrame stackFrame;
 
-  public StackFrameRenderer(Element parent, JsStackFrame stackFrame) {
+  private final Css css;
+  
+  public StackFrameRenderer(Element parent, JsStackFrame stackFrame, Resources resources) {
     this.myElem = parent.getOwnerDocument().createDivElement();
     this.stackFrame = stackFrame;
+    this.css = resources.stackFrameRendererCss();
+    this.myElem.setClassName(css.stackFrame());
     parent.appendChild(myElem);
   }
 
@@ -89,12 +112,9 @@ public class StackFrameRenderer extends EventCleanupTrait {
     Document document = myElem.getOwnerDocument();
     AnchorElement symbolLink = document.createAnchorElement();
 
-    // We want to display a relative path.
-    String relativeSourcePath = sourceSymbol.getResourceBase().replace(
-        sourceServer, "");
-    symbolLink.setInnerText(relativeSourcePath + sourceSymbol.getResourceName()
-        + "::" + sourceSymbol.getSymbolName());
+    symbolLink.setInnerText(sourceSymbol.getSymbolName());
     symbolLink.setHref("javascript:;");
+    symbolLink.setClassName(css.resymbolizedSymbol());
     myElem.appendChild(symbolLink);
     myElem.appendChild(document.createBRElement());
     trackRemover(ClickEvent.addClickListener(symbolLink, symbolLink,

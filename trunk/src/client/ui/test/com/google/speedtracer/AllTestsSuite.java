@@ -16,7 +16,9 @@
 package com.google.speedtracer;
 
 import com.google.gwt.junit.tools.GWTTestSuite;
-import com.google.speedtracer.client.SourceViewerTest;
+import com.google.speedtracer.client.JsSymbolMapTests;
+import com.google.speedtracer.client.SourceViewerTests;
+import com.google.speedtracer.client.SymbolServerControllerTests;
 import com.google.speedtracer.client.WindowChannelTests;
 import com.google.speedtracer.client.model.InspectorResourceConverterTests;
 import com.google.speedtracer.client.model.JavaScriptProfileModelV8ImplTests;
@@ -28,6 +30,7 @@ import com.google.speedtracer.client.timeline.HighlightModelTests;
 import com.google.speedtracer.client.timeline.ModelDataTests;
 import com.google.speedtracer.client.util.PostMessageChannelTests;
 import com.google.speedtracer.client.util.TimeStampFormatterTests;
+import com.google.speedtracer.client.util.UrlTests;
 import com.google.speedtracer.client.visualizations.model.UiThreadUtilizationTests;
 import com.google.speedtracer.client.visualizations.view.EventFilterTests;
 
@@ -49,11 +52,14 @@ public class AllTestsSuite extends GWTTestSuite {
     suite.addTestSuite(PostMessageChannelTests.class);
     suite.addTestSuite(EventFilterTests.class);
     suite.addTestSuite(InspectorResourceConverterTests.class);
-    suite.addTestSuite(SourceViewerTest.class);
+    suite.addTestSuite(SourceViewerTests.class);
     suite.addTestSuite(JavaScriptProfileModelV8ImplTests.class);
     suite.addTestSuite(JavaScriptProfileNodeTests.class);
     suite.addTestSuite(V8LogDecompressorTests.class);
     suite.addTestSuite(V8SymbolTableTests.class);
+    suite.addTestSuite(JsSymbolMapTests.class);
+    suite.addTestSuite(UrlTests.class);
+    suite.addTestSuite(SymbolServerControllerTests.class);
     return suite;
   }
 

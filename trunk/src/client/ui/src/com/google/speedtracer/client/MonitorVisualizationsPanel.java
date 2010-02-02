@@ -504,9 +504,6 @@ public class MonitorVisualizationsPanel extends Div {
     EventListener listener = new EventListener();
     // WindowLevelEvents
     ResizeEvent.addResizeListener(Window.get(), Window.get(), listener);
-    HotKey.register(HotKey.LEFT_ARROW, listener,
-        "Move current bounds to the left.");
-    HotKey.register(HotKey.RIGHT_ARROW, listener,
-        "Move current bounds to the right.");
+    // TODO (jaimeyap): Re-implement jogging without using HotKey class.
   }
 }

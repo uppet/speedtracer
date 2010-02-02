@@ -310,7 +310,8 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
         + resources.mainGraphCss().getText()
         + resources.overViewGraphCss().getText()
         + resources.monitorCss().getText()
-        + resources.sourceViewerCss().getText());
+        + resources.sourceViewerCss().getText()
+        + resources.stackFrameRendererCss().getText());
 
     final WindowExt window = getBackgroundView();
     channel = Client.connect(window, CHANNEL_NAME, this);
@@ -470,10 +471,10 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
         (HintletReportModel) pageStates.get(0).getVisualizationModel(
             HintletReport.TITLE), resources);
 
-    HotKey.register('V', new BuildInfoView(version),
+    HotKey.register('P', new BuildInfoView(version),
         "Show revision information.");
 
-    HotKey.register('S', new SymbolServerEntryPanel(model.getTabDescription()),
+    HotKey.register('O', new SymbolServerEntryPanel(model.getTabDescription()),
         "UI for configuring the SymbolMap manifest location.");
 
     // Start fetching the symbol manifest if it is available.

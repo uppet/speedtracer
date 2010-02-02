@@ -28,7 +28,7 @@ import com.google.speedtracer.client.util.IterableFastStringMap;
  */
 public class JsSymbolMap {
   public static final String UNKNOWN_RESOURCE_PATH = "Unknown";
-  
+
   /**
    * A Source and line number for a JavaScript symbol as specified in the symbol
    * mapping.
@@ -106,7 +106,8 @@ public class JsSymbolMap {
   private IterableFastStringMap<JsSymbol> symbols;
 
   protected JsSymbolMap(String sourceServer) {
-    this.sourceServer = sourceServer;    
+    this.sourceServer = (sourceServer.charAt(sourceServer.length() - 1) == '/')
+        ? sourceServer : sourceServer + "/";
     this.symbols = new IterableFastStringMap<JsSymbol>();
   }
 
@@ -117,11 +118,11 @@ public class JsSymbolMap {
   public int getSymbolCount() {
     return symbols.size();
   }
-  
+
   public JsSymbol lookup(String symbolName) {
     return symbols.get(symbolName);
   }
-  
+
   public void put(String obfuscatedSymbolName, JsSymbol sourceSymbol) {
     symbols.put(obfuscatedSymbolName, sourceSymbol);
   }

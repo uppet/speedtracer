@@ -162,7 +162,8 @@ public class SluggishnessDetailView extends DetailView {
   public interface Resources extends CurrentSelectionMarker.Resources,
       FilteringScrollTable.Resources, PieChart.Resources, CommonResources,
       HintletRecordsTree.Resources, LazyEventTree.Resources,
-      HoveringPopup.Resources, SourceViewer.Resources {
+      HoveringPopup.Resources, SourceViewer.Resources,
+      StackFrameRenderer.Resources {
     @Source("resources/magnify-16px.png")
     ImageResource filterPanelIcon();
 
@@ -584,37 +585,43 @@ public class SluggishnessDetailView extends DetailView {
               // TODO (jaimeyap): Do something here... or not.
             }
 
-            public void onSymbolsReady(JsSymbolMap symbols) {
+            public void onSymbolsReady(final JsSymbolMap symbols) {
               // The fetch succeeded, but the symbol map was not generated,
               // possibly due to it being of the wrong format.
               if (symbols == null) {
                 return;
               }
-
               // Extract the source symbol.
               final JsSymbol sourceSymbol = symbols.lookup(frame.getSymbolName());
-              
+
               if (sourceSymbol == null) {
                 return;
               }
-              
               // Enhance the rendered frame with the resymbolization.
               frameRenderer.reSymbolize(symbols.getSourceServer(),
                   sourceSymbol, new ClickListener() {
                     public void onClick(ClickEvent event) {
                       // This is a click on the re-symbolized source
                       // symbol. Load the source in the source viewer.
-                      String sourceUrl = sourceSymbol.getResourceBase()
+                      String sourceUrl = symbols.getSourceServer()
+                          + sourceSymbol.getResourceBase()
                           + sourceSymbol.getResourceName();
+
                       // TODO(jaimeyap): Put up a spinner or something. It
                       // may take a while to load the resource.
                       ensureSourceViewer(sourceUrl,
                           new SourceViewerLoadedCallback() {
+
+                            public void onSourceFetchFail(int statusCode,
+                                SourceViewer viewer) {
+                              sourceViewer.hide();
+                            }
+
                             public void onSourceViewerLoaded(SourceViewer viewer) {
                               // The viewer should not be loaded at the
                               // URL we care about.
                               sourceViewer.show();
-                              sourceViewer.highlightLine(frame.getLineNumber());
+                              sourceViewer.highlightLine(sourceSymbol.getLineNumber());
                               sourceViewer.scrollHighlightedLineIntoView(table.getElement().getOffsetTop());
                             }
                           });
@@ -896,6 +903,14 @@ public class SluggishnessDetailView extends DetailView {
         if (sourceViewer == null) {
           SourceViewer.create(eventTraceContainerCell, resourceUrl, resources,
               new SourceViewerLoadedCallback() {
+
+                public void onSourceFetchFail(int statusCode,
+                    SourceViewer viewer) {
+                  // TODO(jaimeyap): Indicate that the source was
+                  // unable to be fetched. For now, simply do not
+                  // attempt to show the sourceViewer.
+                }
+
                 public void onSourceViewerLoaded(SourceViewer viewer) {
                   UiEventDetails.this.sourceViewer = viewer;
                   viewer.getElement().getStyle().setWidth(50, Unit.PCT);
@@ -923,11 +938,11 @@ public class SluggishnessDetailView extends DetailView {
         for (int i = 0, n = frames.size(); i < n; i++) {
           final JsStackFrame frame = frames.get(i);
           final StackFrameRenderer frameRenderer = new StackFrameRenderer(cell,
-              frame);
+              frame, resources);
           renderStackFrame(table, frame, frameRenderer);
         }
       }
-      
+
       private void renderStackFrame(final Table table,
           final JsStackFrame frame, final StackFrameRenderer frameRenderer) {
         final String resourceUrl = frame.getResourceUrl();
@@ -936,6 +951,11 @@ public class SluggishnessDetailView extends DetailView {
             // TODO(jaimeyap): Put up a spinner or something. It may
             // take a while to load the resource.
             ensureSourceViewer(resourceUrl, new SourceViewerLoadedCallback() {
+
+              public void onSourceFetchFail(int statusCode, SourceViewer viewer) {
+                sourceViewer.hide();
+              }
+
               public void onSourceViewerLoaded(SourceViewer viewer) {
                 // The viewer should not be loaded at the URL we
                 // care about.
