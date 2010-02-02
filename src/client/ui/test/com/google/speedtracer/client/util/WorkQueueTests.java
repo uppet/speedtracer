@@ -38,6 +38,10 @@ public class WorkQueueTests extends GWTTestCase {
       workOrder++;
       sum += workOrder * value;
     }
+
+    public String getDescription() {
+      return "prepend worker";
+    }
   }
 
   @Override
@@ -59,6 +63,10 @@ public class WorkQueueTests extends GWTTestCase {
             * 100000;
         assertEquals("Sum", expectedValue, sum);
         finishTest();
+      }
+
+      public String getDescription() {
+        return "sum worker";
       }
     });
 
