@@ -21,8 +21,8 @@ import com.google.speedtracer.client.model.DomEvent;
 import com.google.speedtracer.client.model.DomEventDispatch;
 import com.google.speedtracer.client.model.EvalScript;
 import com.google.speedtracer.client.model.GarbageCollectEvent;
-import com.google.speedtracer.client.model.JavaScriptCompileEvent;
 import com.google.speedtracer.client.model.LayoutEvent;
+import com.google.speedtracer.client.model.LogEvent;
 import com.google.speedtracer.client.model.MouseHoverStyleEvent;
 import com.google.speedtracer.client.model.PaintEvent;
 import com.google.speedtracer.client.model.ParseHtmlEvent;
@@ -47,7 +47,7 @@ public class EventRecordColors {
     colorMap.put(LayoutEvent.TYPE, Color.BLUEVIOLET);
     colorMap.put(PaintEvent.TYPE, Color.MIDNIGHT_BLUE);
     colorMap.put(ParseHtmlEvent.TYPE, Color.INDIAN_RED);
-    colorMap.put(JavaScriptCompileEvent.TYPE, Color.CYAN);
+    colorMap.put(LogEvent.TYPE, Color.CYAN);
     colorMap.put(TimerFiredEvent.TYPE, Color.BLUE);
     colorMap.put(XhrReadyStateChangeEvent.TYPE, Color.LIGHTGREEN);
     colorMap.put(RecalcStyleEvent.TYPE, Color.DARKGREEN);
