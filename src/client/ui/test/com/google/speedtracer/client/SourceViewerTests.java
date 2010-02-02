@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,20 +30,44 @@ import com.google.speedtracer.client.SourceViewer.SourceViewerLoadedCallback;
  * We are not able to test <code>SourceViewer.create()</code> since that depends
  * on Chrome Extension functionality (via the resource fetcher proxy html).
  */
-public class SourceViewerTest extends GWTTestCase {
-  private static final int TEST_FINISH_DELAY = 3000;
-
+public class SourceViewerTests extends GWTTestCase {
   interface Resources extends ClientBundle {
     // Ignore this red squiggly. It is a GWTEP bug.
     @Source("../public/test-source.js")
     TextResource testSource();
   }
 
+  private static final int TEST_FINISH_DELAY = 10000;
+
   @Override
   public String getModuleName() {
     return "com.google.speedtracer.ModelTests";
   }
 
+  /**
+   * Tests that we get notified when a resource fetch fails.
+   * 
+   * WARNING: These tests are asynchronous and depend on callbacks from the
+   * underlying iframe and XHR ready state changes.Failed assertions don't seem
+   * to log to the JUNIT logger. We detect them simply as timeouts.
+   */
+  public void testFailedFetch() {
+    SourceViewer.Resources resources = GWT.create(SourceViewer.Resources.class);
+    SourceViewer.create(Document.get().getBody(), "does-not-existsource.js", resources,
+        new SourceViewerLoadedCallback() {
+          public void onSourceFetchFail(int statusCode, SourceViewer viewer) {
+            assertTrue(statusCode != 200);
+            finishTest();            
+          }
+
+          public void onSourceViewerLoaded(SourceViewer viewer) {
+            assertTrue("Fetch should have failed.", false);            
+          }
+        });
+
+    this.delayTestFinish(TEST_FINISH_DELAY);
+  }
+  
   /**
    * Tests that we can retrieve the line contents given a line number.
    * 
@@ -58,6 +82,10 @@ public class SourceViewerTest extends GWTTestCase {
     SourceViewer.Resources resources = GWT.create(SourceViewer.Resources.class);
     SourceViewer.create(Document.get().getBody(), "test-source.js", resources,
         new SourceViewerLoadedCallback() {
+          public void onSourceFetchFail(int statusCode, SourceViewer viewer) {
+            assertTrue("Fetch failed.", false);
+          }
+
           public void onSourceViewerLoaded(SourceViewer viewer) {
             for (int i = 0; i < testSource.length; i++) {
               // 1 based indexes for line numbers.
@@ -88,6 +116,10 @@ public class SourceViewerTest extends GWTTestCase {
     final SourceViewer.Resources resources = GWT.create(SourceViewer.Resources.class);
     SourceViewer.create(Document.get().getBody(), "test-source.js", resources,
         new SourceViewerLoadedCallback() {
+          public void onSourceFetchFail(int statusCode, SourceViewer viewer) {
+            assertTrue("Fetch failed.", false);
+          }
+
           public void onSourceViewerLoaded(SourceViewer viewer) {
             SourceViewer.CodeCss styles = resources.sourceViewerCodeCss();
 

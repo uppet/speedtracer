@@ -101,6 +101,8 @@ public class SourceViewer {
    */
   public interface SourceViewerLoadedCallback {
     void onSourceViewerLoaded(SourceViewer viewer);
+
+    void onSourceFetchFail(int statusCode, SourceViewer viewer);
   }
 
   /**
@@ -108,7 +110,7 @@ public class SourceViewer {
    * fetched the source resource.
    */
   private interface SourceFetcherCallback {
-    void onContentReady();
+    void onContentReady(int statusCode);
   }
 
   private static final String LINE_CONTENT = "webkit-line-content";
@@ -169,8 +171,8 @@ public class SourceViewer {
       String targetSource, SourceFetcherCallback callback) /*-{
     var frameWindow = sourceFrame.contentWindow;
     if (frameWindow && frameWindow._doFetchUrl) {
-      frameWindow._doFetchUrl(targetSource, function() {
-        callback.@com.google.speedtracer.client.SourceViewer.SourceFetcherCallback::onContentReady()();
+      frameWindow._doFetchUrl(targetSource, function(statusCode) {
+        callback.@com.google.speedtracer.client.SourceViewer.SourceFetcherCallback::onContentReady(I)(statusCode);
       });
     }
   }-*/;
@@ -268,8 +270,11 @@ public class SourceViewer {
     if (highlightedRow != null) {
       highlightedRow.removeClassName(styles.highlightedLine());
     }
-    highlightedRow = getTableRowElement(lineNumber);
-    highlightedRow.addClassName(styles.highlightedLine());
+    TableRowElement row = getTableRowElement(lineNumber);
+    if (row != null) {
+      highlightedRow = row;
+      highlightedRow.addClassName(styles.highlightedLine());
+    }
   }
 
   /**
@@ -296,7 +301,7 @@ public class SourceViewer {
     }
 
     fetchSource(sourceFrame, resource, new SourceFetcherCallback() {
-      public void onContentReady() {
+      public void onContentReady(int statusCode) {
         // This target source resource should now be fetched and the table
         // constructed.
         sourceFrame.setAttribute("viewSource", "true");
@@ -305,7 +310,11 @@ public class SourceViewer {
         // Display the name of the resource URL and a link to close it.
         titleElement.setInnerText("Viewing: " + currentResourceUrl);
 
-        callback.onSourceViewerLoaded(SourceViewer.this);
+        if (statusCode == 200) {
+          callback.onSourceViewerLoaded(SourceViewer.this);
+        } else {
+          callback.onSourceFetchFail(statusCode, SourceViewer.this);
+        }
       }
     });
   }

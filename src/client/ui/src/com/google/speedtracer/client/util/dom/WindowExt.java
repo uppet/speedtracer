@@ -82,6 +82,10 @@ public class WindowExt extends Window {
     return (urlPieces.length > 1) ? urlPieces[1] : "";
   }
 
+  public final native void log(String msg) /*-{
+    this.console.log(msg);
+  }-*/;
+
   /**
    * Opens a new child window.
    * 

@@ -1,0 +1,11 @@
+/**
+ * Annotated CSS for StackFrameRenderer.java.
+ */
+.stackFrame {
+  padding: 5px;
+}
+
+.resymbolizedSymbol {
+  font-size: 0.85em;
+  text-decoration: none;
+}

@@ -69,6 +69,16 @@ public class Url {
     return originUrl;
   }
 
+  /**
+   * Returns the URL minus the last path component.
+   * 
+   * @return the URL base, which is the URL minus the last path component.
+   */
+  public String getResourceBase() {
+    int lastSlashIndex = url.lastIndexOf('/');
+    return url.substring(0, lastSlashIndex + 1);
+  }
+
   public String getUrl() {
     return url;
   }

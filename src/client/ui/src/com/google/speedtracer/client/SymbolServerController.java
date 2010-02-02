@@ -88,19 +88,19 @@ public class SymbolServerController {
     resourceSymbols.put(resource, symbols);
   }
 
-  private boolean manifestLoaded = false;
+  private final Url mainResourceUrl;
 
-  private final String resourceBase;
+  private boolean manifestLoaded = false;
 
   private final List<PendingRequest> pendingRequests;
 
-  private final String symbolManifestUrl;
+  private final Url symbolManifestUrl;
 
   private SymbolServerManifest symbolServerManifest;
 
-  SymbolServerController(String resourceBase, String symbolManifestUrl) {
-    this.resourceBase = resourceBase;
-    this.symbolManifestUrl = symbolManifestUrl;
+  SymbolServerController(Url mainResourceUrl, String symbolManifestUrl) {
+    this.mainResourceUrl = mainResourceUrl;
+    this.symbolManifestUrl = new Url(symbolManifestUrl);
     this.pendingRequests = new ArrayList<PendingRequest>();
     // Start xhr for fetching our associated symbol manifest.
     init();
@@ -140,7 +140,7 @@ public class SymbolServerController {
   }
 
   private void init() {
-    Xhr.get(symbolManifestUrl, new XhrCallback() {
+    Xhr.get(symbolManifestUrl.getUrl(), new XhrCallback() {
 
       public void onFail(XMLHttpRequest xhr) {
         // Let pending requests know that the manifest failed to load.
@@ -165,13 +165,22 @@ public class SymbolServerController {
   }
 
   private ResourceSymbolInfo lookupEntryInManifest(String resourceUrl) {
-    // First try looking for the resource using the full URL.
-    ResourceSymbolInfo resourceSymbolInfo = symbolServerManifest.getResourceSymbolInfo(resourceUrl);
-    // If the lookup was null, then attempt a relative url lookup.
-    if (resourceSymbolInfo == null) {
-      String relativeUrl = Url.convertToRelativeUrl(resourceBase,
-          resourceUrl);
-      return symbolServerManifest.getResourceSymbolInfo(relativeUrl);
+    ResourceSymbolInfo resourceSymbolInfo = null;
+
+    // If the resourceUrl begins with a '/' then we assume it is relative to the
+    // origin.
+    if (resourceUrl.charAt(0) == '/') {
+      resourceSymbolInfo = symbolServerManifest.getResourceSymbolInfo(Url.convertToRelativeUrl(
+          mainResourceUrl.getOrigin(), resourceUrl));
+    } else {
+      // First try looking for the resource using the full URL.
+      resourceSymbolInfo = symbolServerManifest.getResourceSymbolInfo(resourceUrl);
+      // If the lookup was null, then attempt a relative url lookup.
+      if (resourceSymbolInfo == null) {
+        String relativeUrl = Url.convertToRelativeUrl(
+            mainResourceUrl.getResourceBase(), resourceUrl);
+        return symbolServerManifest.getResourceSymbolInfo(relativeUrl);
+      }
     }
     return resourceSymbolInfo;
   }
@@ -185,18 +194,29 @@ public class SymbolServerController {
       callback.onSymbolsFetchFailed(ERROR_SYMBOL_FETCH_FAIL);
       return;
     }
-    Xhr.get(resourceSymbolInfo.getSymbolMapUrl(), new XhrCallback() {
 
-      public void onFail(XMLHttpRequest xhr) {
-        callback.onSymbolsFetchFailed(ERROR_SYMBOL_FETCH_FAIL);
-      }
+    JsSymbolMap symbolMap = get(resourceSymbolInfo.getSymbolMapUrl());
+    if (symbolMap == null) {
+      // fetch over the network.
+      Xhr.get(symbolManifestUrl.getResourceBase()
+          + resourceSymbolInfo.getSymbolMapUrl(), new XhrCallback() {
 
-      public void onSuccess(XMLHttpRequest xhr) {
-        JsSymbolMap symbolMap = JsSymbolMap.parse(
-            resourceSymbolInfo.getSourceServer(), resourceSymbolInfo.getType(),
-            xhr.getResponseText());
-        callback.onSymbolsReady(symbolMap);
-      }
-    });
+        public void onFail(XMLHttpRequest xhr) {
+          callback.onSymbolsFetchFailed(ERROR_SYMBOL_FETCH_FAIL);
+        }
+
+        public void onSuccess(XMLHttpRequest xhr) {
+          JsSymbolMap fetchedSymbolMap = JsSymbolMap.parse(
+              resourceSymbolInfo.getSourceServer(),
+              resourceSymbolInfo.getType(), xhr.getResponseText());
+          put(resourceSymbolInfo.getSymbolMapUrl(), fetchedSymbolMap);
+          callback.onSymbolsReady(fetchedSymbolMap);
+        }
+      });
+    } else {
+      // We have already fetched this and parsed it before. Send it to the
+      // callback.
+      callback.onSymbolsReady(symbolMap);
+    }
   }
 }
