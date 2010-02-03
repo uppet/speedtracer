@@ -15,67 +15,14 @@
  */
 package com.google.speedtracer.client.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.google.gwt.core.client.JsArrayString;
+import com.google.speedtracer.client.util.Csv;
 
 /**
  * Uses a window of the previous 'n' log entries to use in decompressing the v8
  * log when compression is enabled.
  */
 public class V8LogDecompressor {
-  // States used by splitLogLine()
-  static final int SPLIT_LOOKING_FOR_COMMA = 0;
-  static final int SPLIT_IN_STRING = 1;
-  static final int SPLIT_IN_ESCAPE = 2;
-
-  /**
-   * Split a comma separated value log line while ignoring escaped strings.
-   */
-  public static String[] splitLogLine(String logLine) {
-    // Implemented as a little state machine
-    int state;
-    List<String> results = new ArrayList<String>();
-    int index = 0;
-    int entryStart = 0;
-
-    state = SPLIT_LOOKING_FOR_COMMA;
-    while (index < logLine.length()) {
-      char nextCharacter = logLine.charAt(index);
-      switch (state) {
-        case SPLIT_LOOKING_FOR_COMMA:
-          switch (nextCharacter) {
-            case ',':
-              results.add(logLine.substring(entryStart, index));
-              entryStart = index + 1;
-              break;
-            case '"':
-              state = SPLIT_IN_STRING;
-              break;
-          }
-          break;
-        case SPLIT_IN_STRING:
-          switch (nextCharacter) {
-            case '\\':
-              state = SPLIT_IN_ESCAPE;
-              break;
-            case '"':
-              state = SPLIT_LOOKING_FOR_COMMA;
-              break;
-          }
-          break;
-        case SPLIT_IN_ESCAPE:
-          state = SPLIT_IN_STRING;
-          break;
-      }
-      index++;
-    }
-
-    if (entryStart != index) {
-      results.add(logLine.substring(entryStart, index));
-    }
-    return results.toArray(new String[0]);
-  }
-
   private String window[];
   private int windowSize;
   private int lastWindow;
@@ -120,19 +67,27 @@ public class V8LogDecompressor {
               colonStart));
           charOffset = Integer.parseInt(compressionString.substring(colonStart + 1));
         }
+        assert charOffset >= 0;
         decompressedLogEntry = logLine.substring(0, compressionStart)
             + fetchLogBackref(lineOffset, charOffset);
       }
     }
-    String logEntry[] = splitLogLine(decompressedLogEntry);
-    if (logEntry.length == 0 || logEntry[0].equals("profiler")) {
-      // don't add this line to the window.
-    } else if (logEntry[0].equals("repeat") || logEntry[0].equals("r")) {
-      // skip the first 2 fields.
-      appendLogEntry(decompressedLogEntry.substring(logEntry[0].length()
-          + logEntry[1].length() + 2));
+    JsArrayString logEntry = Csv.split(decompressedLogEntry);
+    if (logEntry.length() == 0) {
+
     } else {
-      appendLogEntry(decompressedLogEntry);
+      String command = logEntry.get(0);
+      if (command.equals("profiler")) {
+        // ignore
+      } else if (command.equals("repeat") || command.equals("r")) {
+        // skip the first 2 fields.
+        int firstCommaOffset = decompressedLogEntry.indexOf(",");
+        int secondCommaOffset = decompressedLogEntry.indexOf(",",
+            firstCommaOffset + 1);
+        appendLogEntry(decompressedLogEntry.substring(secondCommaOffset + 1));
+      } else {
+        appendLogEntry(decompressedLogEntry);
+      }
     }
     return decompressedLogEntry;
   }
@@ -143,6 +98,8 @@ public class V8LogDecompressor {
   }
 
   private String fetchLogBackref(int lineOffset, int charOffset) {
+    assert charOffset >= 0;
+    assert lineOffset >= 0;
     return this.getWindowBackref(lineOffset).substring(charOffset);
   }
 
@@ -151,6 +108,7 @@ public class V8LogDecompressor {
     if (arrayIndex < 0) {
       arrayIndex = windowSize + arrayIndex;
     }
+    assert (arrayIndex >= 0 && arrayIndex < window.length);
     return window[arrayIndex];
   }
 }

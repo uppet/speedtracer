@@ -95,14 +95,14 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
     JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(false);
     String logRecs = "code-creation,LoadIC,5910913e,179,\"parentNode\"\n"
         + "code-creation,RegExp,3f830f,566,\"[^+&gt;] [^+&gt;]\"\n"
-        + "code-creation,LazyCompile,59117070,2791,\"last_click http://www.reddit.com/static/reddit.js?v=437941e91e4684e9b4b00eca75a46dd9:62\"\"\n";
+        + "code-creation,LazyCompile,59117070,2791,\"last_click http://www.reddit.com/static/reddit.js?v=437941e91e4684e9b4b00eca75a46dd9:62\"\n";
     JavaScriptProfileEvent rawEvent = makeV8ProfileEvent(logRecs);
     UiEvent refRecord = UiEvent.createObject().cast();
     refRecord.setSequence(1);
     JavaScriptProfile profile = new JavaScriptProfile();
     impl.parseRawEvent(rawEvent, refRecord, profile);
     assertEquals(0.0, profile.getTotalTime());
-    Symbol found = impl.findSymbol((double) 0x5910913e);
+    Symbol found = impl.findSymbol(0x5910913e);
     assertNotNull(found);
   }
 

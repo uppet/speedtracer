@@ -15,6 +15,8 @@
  */
 package com.google.speedtracer.client.visualizations.model;
 
+import com.google.gwt.core.client.JsArrayString;
+import com.google.speedtracer.client.util.Csv;
 import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.visualizations.model.JsSymbolMap.JsSymbol;
 
@@ -73,8 +75,10 @@ public class JsStackTrace {
   protected void init(String backTrace) {
     JSOArray<String> frameStrings = JSOArray.splitString(backTrace, ";");
     for (int i = 0, n = frameStrings.size(); i < n; i++) {
-      JSOArray<String> stackFrame = JSOArray.splitString(frameStrings.get(i), ",");
-      final String resourceUrl = stackFrame.get(1);
+      // The second field is quoted, so a simple split() won't work.
+      JsArrayString stackFrame = Csv.split(frameStrings.get(i));
+
+      String resourceUrl = stackFrame.get(1);
       int resourceBaseEnd = resourceUrl.lastIndexOf("/") + 1;
       String resourceUrlBase = resourceUrl.substring(0, resourceBaseEnd);
       // Note that resourceName can be the empty string for main resources (like
@@ -89,7 +93,7 @@ public class JsStackTrace {
       // We get a funcName and an inferredName.
       // Prefer the last argument
       String symbolName = stackFrame.get(5);
-      // but if it isnt there, try the 3rd.
+      // but if it isnt there, try the 4th.
       symbolName = (symbolName.equals("")) ? stackFrame.get(4) : symbolName;
 
       this.frames.add(new JsStackFrame(resourceUrlBase, resourceName,

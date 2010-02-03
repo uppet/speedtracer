@@ -57,33 +57,6 @@ public class V8LogDecompressorTests extends GWTTestCase {
     result = decompressor.decompressLogEntry("ab#3");
     assertEquals("abbaz", result);
   }
-
-  public void testLogLineSplit() {
-    String results[];
-    results = V8LogDecompressor.splitLogLine("1,2,3");
-    assertEquals(3, results.length);
-    assertEquals("1", results[0]);
-    assertEquals("2", results[1]);
-    assertEquals("3", results[2]);
-    
-    results = V8LogDecompressor.splitLogLine("1,\"2\",3");
-    assertEquals(3, results.length);
-    assertEquals("1", results[0]);
-    assertEquals("\"2\"", results[1]);
-    assertEquals("3", results[2]);
-    
-    results = V8LogDecompressor.splitLogLine("1,\"\\\"foo\\\"\",3");
-    assertEquals(3, results.length);
-    assertEquals("1", results[0]);
-    assertEquals("\"\\\"foo\\\"\"", results[1]);
-    assertEquals("3", results[2]);    
-    
-    results = V8LogDecompressor.splitLogLine("1,\"2,2\",3");
-    assertEquals(3, results.length);
-    assertEquals("1", results[0]);
-    assertEquals("\"2,2\"", results[1]);
-    assertEquals("3", results[2]);
-  }
   
   public void testRepeatInteraction() {
     V8LogDecompressor decompressor = new V8LogDecompressor(4);
@@ -96,6 +69,24 @@ public class V8LogDecompressorTests extends GWTTestCase {
     result = decompressor.decompressLogEntry("#1:1");
     assertEquals("oo", result);
   }
+    
+  public void testProfilerInteraction() {
+    V8LogDecompressor decompressor = new V8LogDecompressor(4);
+    String result;
+    result = decompressor.decompressLogEntry("10,foo");
+    assertEquals("10,foo", result);
+    result = decompressor.decompressLogEntry("10,bar");
+    assertEquals("10,bar", result);
+    result = decompressor.decompressLogEntry("10,baz");
+    assertEquals("10,baz", result);
+    result = decompressor.decompressLogEntry("10,foobar");
+    assertEquals("10,foobar", result);
+    result = decompressor.decompressLogEntry("profiler,\"resume\"");
+    assertEquals("profiler,\"resume\"", result);
+    result = decompressor.decompressLogEntry("#1");
+    assertEquals("10,foobar", result);
+  }
+  
 
   public void testSubLineCompression() {
     V8LogDecompressor decompressor = new V8LogDecompressor(4);

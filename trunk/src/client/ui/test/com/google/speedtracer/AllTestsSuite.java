@@ -28,6 +28,7 @@ import com.google.speedtracer.client.model.V8SymbolTableTests;
 import com.google.speedtracer.client.timeline.GraphModelTests;
 import com.google.speedtracer.client.timeline.HighlightModelTests;
 import com.google.speedtracer.client.timeline.ModelDataTests;
+import com.google.speedtracer.client.util.CsvTests;
 import com.google.speedtracer.client.util.PostMessageChannelTests;
 import com.google.speedtracer.client.util.TimeStampFormatterTests;
 import com.google.speedtracer.client.util.UrlTests;
@@ -62,6 +63,7 @@ public class AllTestsSuite extends GWTTestSuite {
     suite.addTestSuite(UrlTests.class);
     suite.addTestSuite(SymbolServerControllerTests.class);
     suite.addTestSuite(WorkQueueTests.class);
+    suite.addTestSuite(CsvTests.class);
     return suite;
   }
 }
