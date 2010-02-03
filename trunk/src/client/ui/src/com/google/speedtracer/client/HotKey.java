@@ -27,6 +27,9 @@ import com.google.speedtracer.client.util.JsIntegerMap;
 /**
  * Provides a mean for registering global hot key bindings, particularly
  * spring-loaded hot keys.
+ * 
+ * All hot keys depend on CTRL being depressed so as not to interfere with
+ * regular typing.
  */
 public class HotKey {
   /**
@@ -157,7 +160,8 @@ public class HotKey {
 
   /**
    * Removes all handlers registered with the
-   * {@link #register(int, com.google.speedtracer.client.HotKey.Handler, String) method.
+   * {@link #register(int, com.google.speedtracer.client.HotKey.Handler, String)
+   * method.
    */
   public static void unregisterAll() {
     if (handlers != null) {
@@ -174,7 +178,7 @@ public class HotKey {
         KeyDownEvent.NAME, Document.get(), new EventListener() {
           public void handleEvent(Event event) {
             final Data data = handlers.get(event.getKeyCode());
-            if (data == null) {
+            if (data == null || !event.getCtrlKey()) {
               return;
             }
             Handler handler = data.getHandler();
