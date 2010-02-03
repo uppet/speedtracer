@@ -471,10 +471,10 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
         (HintletReportModel) pageStates.get(0).getVisualizationModel(
             HintletReport.TITLE), resources);
 
-    HotKey.register('P', new BuildInfoView(version),
+    HotKey.register('B', new BuildInfoView(version),
         "Show revision information.");
 
-    HotKey.register('O', new SymbolServerEntryPanel(model.getTabDescription()),
+    HotKey.register('M', new SymbolServerEntryPanel(model.getTabDescription()),
         "UI for configuring the SymbolMap manifest location.");
 
     // Start fetching the symbol manifest if it is available.
