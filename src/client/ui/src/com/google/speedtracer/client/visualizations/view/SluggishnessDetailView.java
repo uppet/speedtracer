@@ -389,11 +389,6 @@ public class SluggishnessDetailView extends DetailView {
             }
 
             public void onSymbolsReady(final JsSymbolMap symbols) {
-              // The fetch succeeded, but the symbol map was not generated,
-              // possibly due to it being of the wrong format.
-              if (symbols == null) {
-                return;
-              }
               // Extract the source symbol.
               final JsSymbol sourceSymbol = symbols.lookup(frame.getSymbolName());
 
@@ -836,7 +831,6 @@ public class SluggishnessDetailView extends DetailView {
           if (details.javaScriptProfileInProgress) {
             details.updateProfile();
           }
-
         }
 
         public void onMouseOver(MouseOverEvent event) {
