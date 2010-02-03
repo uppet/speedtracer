@@ -319,8 +319,9 @@ public class EventRecordType {
         return "DOM (" + ((DomEvent) e).getDomEventType() + ")";
       case LogEvent.TYPE:
         String logMessage = ((LogEvent) e).getMessage();
-        logMessage = (logMessage.length() > 20) ? logMessage.substring(0, 8)
-            + "..." + logMessage.substring(12, 20) : logMessage;
+        int logLength = logMessage.length();
+        logMessage = (logLength > 20) ? logMessage.substring(0, 8) + "..."
+            + logMessage.substring(logLength - 8, logLength) : logMessage;
         return "Log: " + logMessage;
       case DomEventDispatch.TYPE:
         return "Dom Dispatch (" + ((DomEventDispatch) e).getPhase() + ")";
