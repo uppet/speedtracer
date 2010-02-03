@@ -38,6 +38,9 @@ public class MockModelGenerator {
     @Source("../../tools/data/maps-stacktraces")
     TextResource mapsDotGoogleDotComWithStackTraces();
 
+    @Source("../../tools/data/marktimeline")
+    TextResource markTimeline();
+
     @Source("../../tools/data/profiler-test1-compressed")
     TextResource profilerTest1Compressed();
 
@@ -109,6 +112,7 @@ public class MockModelGenerator {
           mockResources.profilerTest1Uncompressed()));
       dataSets.add(new DataSet("reddit.com (profiling)",
           mockResources.redditDotComWithProfiling()));
+      dataSets.add(new DataSet("markTimeline", mockResources.markTimeline()));
     }
   }
 }

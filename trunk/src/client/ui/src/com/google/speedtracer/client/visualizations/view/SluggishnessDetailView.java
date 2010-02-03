@@ -51,12 +51,10 @@ import com.google.speedtracer.client.model.EvalScript;
 import com.google.speedtracer.client.model.EventRecordType;
 import com.google.speedtracer.client.model.EventVisitorTraverser;
 import com.google.speedtracer.client.model.HintRecord;
-import com.google.speedtracer.client.model.LayoutEvent;
 import com.google.speedtracer.client.model.LogEvent;
 import com.google.speedtracer.client.model.LotsOfLittleEvents;
 import com.google.speedtracer.client.model.PaintEvent;
 import com.google.speedtracer.client.model.ParseHtmlEvent;
-import com.google.speedtracer.client.model.RecalcStyleEvent;
 import com.google.speedtracer.client.model.TimerCleared;
 import com.google.speedtracer.client.model.TimerFiredEvent;
 import com.google.speedtracer.client.model.TimerInstalled;
@@ -775,7 +773,7 @@ public class SluggishnessDetailView extends DetailView {
 
         attemptResymbolization(table, frame, frameRenderer);
       }
-      
+
       /**
        * Conditionally puts the profile UI below the trace tree.
        */
@@ -1039,15 +1037,12 @@ public class SluggishnessDetailView extends DetailView {
         details.put("Duration", TimeStampFormatter.formatMilliseconds(
             e.getDuration(), 3));
       }
-      String backTrace;
+      String backTrace = e.getBackTrace();
+      if (backTrace != null) {
+        details.put(STACK_TRACE_KEY, backTrace);
+      }
+
       switch (e.getType()) {
-        case LayoutEvent.TYPE:
-          LayoutEvent layoutEvent = e.cast();
-          backTrace = layoutEvent.getBackTrace();
-          if (backTrace != null) {
-            details.put(STACK_TRACE_KEY, backTrace);
-          }
-          break;
         case DomEvent.TYPE:
           // TODO(jaimeyap): Re-instrument the following.
           /*
@@ -1058,13 +1053,6 @@ public class SluggishnessDetailView extends DetailView {
            * TimeStampFormatter.formatMilliseconds(domEvent.getBubbleDuration
            * ()));
            */
-          break;
-        case RecalcStyleEvent.TYPE:
-          RecalcStyleEvent styleEvent = e.cast();
-          backTrace = styleEvent.getBackTrace();
-          if (backTrace != null) {
-            details.put(STACK_TRACE_KEY, backTrace);
-          }
           break;
         case LotsOfLittleEvents.TYPE:
           JSOArray<TypeCountDurationTuple> tuples = e.<LotsOfLittleEvents> cast().getTypeCountDurationTuples();
@@ -1167,8 +1155,7 @@ public class SluggishnessDetailView extends DetailView {
   private UiEventModel sourceModel;
 
   public SluggishnessDetailView(Container parent,
-      SluggishnessVisualization viz,
-      MainTimeLine timeLine,
+      SluggishnessVisualization viz, MainTimeLine timeLine,
       UiEventModel sourceModel, final SluggishnessDetailView.Resources resources) {
     super(parent, viz);
     this.resources = resources;

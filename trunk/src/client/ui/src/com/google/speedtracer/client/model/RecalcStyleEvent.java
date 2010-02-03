@@ -23,8 +23,4 @@ public class RecalcStyleEvent extends UiEvent {
   
   protected RecalcStyleEvent() {
   }
-
-  public final String getBackTrace() {
-    return getData().getStringProperty("backTrace");
-  }
 }
