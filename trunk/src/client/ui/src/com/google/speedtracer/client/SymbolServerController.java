@@ -197,7 +197,7 @@ public class SymbolServerController {
 
     JsSymbolMap symbolMap = get(resourceSymbolInfo.getSymbolMapUrl());
     if (symbolMap == null) {
-      // fetch over the network.
+      // We have not yet parsed it.
       Xhr.get(symbolManifestUrl.getResourceBase()
           + resourceSymbolInfo.getSymbolMapUrl(), new XhrCallback() {
 
@@ -206,10 +206,14 @@ public class SymbolServerController {
         }
 
         public void onSuccess(XMLHttpRequest xhr) {
-          JsSymbolMap fetchedSymbolMap = JsSymbolMap.parse(
-              resourceSymbolInfo.getSourceServer(),
-              resourceSymbolInfo.getType(), xhr.getResponseText());
-          put(resourceSymbolInfo.getSymbolMapUrl(), fetchedSymbolMap);
+          // Double check that another XHR didnt pull it down and parse it.
+          JsSymbolMap fetchedSymbolMap = get(resourceSymbolInfo.getSymbolMapUrl());
+          if (fetchedSymbolMap == null) {
+            fetchedSymbolMap = JsSymbolMap.parse(
+                resourceSymbolInfo.getSourceServer(),
+                resourceSymbolInfo.getType(), xhr.getResponseText());
+            put(resourceSymbolInfo.getSymbolMapUrl(), fetchedSymbolMap);
+          }
           callback.onSymbolsReady(fetchedSymbolMap);
         }
       });

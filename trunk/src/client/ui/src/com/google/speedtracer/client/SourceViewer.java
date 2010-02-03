@@ -33,7 +33,6 @@ import com.google.gwt.events.client.EventListener;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
 import com.google.speedtracer.client.util.Command;
@@ -87,11 +86,9 @@ public class SourceViewer {
     ImageResource columnMarker();
 
     @Source("resources/SourceViewerCode.css")
-    @Strict()
     CodeCss sourceViewerCodeCss();
 
     @Source("resources/SourceViewer.css")
-    @Strict()
     Css sourceViewerCss();
   }
 
@@ -288,6 +285,17 @@ public class SourceViewer {
    */
   public void loadResource(final String resource,
       final SourceViewerLoadedCallback callback) {
+    // Defense against empty urls.
+    if (resource == null || "".equals(resource)) {
+      Command.defer(new Command() {
+        @Override
+        public void execute() {
+          callback.onSourceFetchFail(-1, SourceViewer.this);
+        }
+      });
+      return;
+    }
+
     // Early out if this frame already points at the requested resource.
     if (resource.equals(currentResourceUrl)) {
       // This method is expected to be asynchronous.

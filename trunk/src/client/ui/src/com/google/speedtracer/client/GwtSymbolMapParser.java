@@ -18,21 +18,20 @@ package com.google.speedtracer.client;
 import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.visualizations.model.JsSymbolMap;
 import com.google.speedtracer.client.visualizations.model.JsSymbolMap.JsSymbol;
+import com.google.speedtracer.client.visualizations.model.JsSymbolMap.JsSymbolMapParser;
 
 /**
  * Parses a GWT symbol map and initializes a {@link JsSymbolMap}.
  */
-public class GwtSymbolMapParser {
+public class GwtSymbolMapParser implements JsSymbolMapParser {
   private final JsSymbolMap symbolMap;
 
   public GwtSymbolMapParser(JsSymbolMap symbolMap) {
     this.symbolMap = symbolMap;
   }
 
-  public void parse(String symbolMapStr) {
-    // Go to start of the last line of the header
-    int lastHeaderLine = symbolMapStr.lastIndexOf('#');
-    int start = symbolMapStr.indexOf('\n', lastHeaderLine) + 1;
+  public void parse(String symbolMapStr) {   
+    int start = 0;
     int end = symbolMapStr.indexOf('\n', start);
     while (end != -1) {
       processLine(symbolMapStr.substring(start, end));
@@ -42,6 +41,10 @@ public class GwtSymbolMapParser {
   }
 
   private void processLine(String line) {
+    if (line.charAt(0) == '#') {
+      return;
+    }
+
     JSOArray<String> symbolInfo = JSOArray.splitString(line, ",");
     String jsName = symbolInfo.get(0);
     String className = symbolInfo.get(2);
@@ -54,7 +57,7 @@ public class GwtSymbolMapParser {
     String sourcePath = className.replace('.', '/');
     int lastSlashIndex = sourcePath.lastIndexOf("/") + 1;
     String sourcePathBase = sourcePath.substring(0, lastSlashIndex);
-    
+
     // The sourceUri contains the actual file name.
     String sourceFileName = sourceUri.substring(sourceUri.lastIndexOf('/') + 1,
         sourceUri.length());

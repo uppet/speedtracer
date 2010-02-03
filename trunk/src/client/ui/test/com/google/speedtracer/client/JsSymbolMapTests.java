@@ -39,6 +39,19 @@ public class JsSymbolMapTests extends GWTTestCase {
       + "sc,com.google.apu.demo.client.MultiColumnPanel::$manuallyAdjustColumns(Lcom/google/apu/demo/client/MultiColumnPanel;I)V,com.google.apu.demo.client.MultiColumnPanel,$manuallyAdjustColumns,file:/Users/jaimeyap/src/gitosis/apu-demo-app/src/com/google/apu/demo/client/MultiColumnPanel.java,46"
       + '\n';
 
+  String testCompactGwtSymbolMapString = "# { 3 }"
+      + '\n'
+      + "# { 'user.agent' : 'safari' }"
+      + '\n'
+      + "# %%, package literal, package key"
+      + '\n'
+      + "# jsName, jsniSymbolType, package key, className, memberName, fileName, sourceLine"
+      + '\n' + "%%,,0" + '\n' + "a,,0,<null>[],,,0" + '\n'
+      + "%%,com.google.some.package,1" + '\n'
+      + "v[],,1,Outer$Inner[],,Outer,44" + '\n'
+      + "%%,com.google.another.package,2" + '\n' + "aC,,2,SomeClass,,%,55"
+      + '\n' + "aM,m,2,SomeClass,aMethod,%,57" + '\n';
+
   @Override
   public String getModuleName() {
     return "com.google.speedtracer.Common";
@@ -82,10 +95,29 @@ public class JsSymbolMapTests extends GWTTestCase {
   /**
    * Tests initializing a JsSymbolMap from a GWT symbol map.
    */
+  public void testParseCompactGwtSymbolMap() {
+    String sourceServer = "http://notrealsourceserver";
+    JsSymbolMap symbolMap = JsSymbolMap.parse(sourceServer,
+        JsSymbolMap.COMPACT_GWT_SYMBOL_MAP, testCompactGwtSymbolMapString);
+    assertEquals(4, symbolMap.getSymbolCount());
+
+    // Tests derived from the testGwtSymbolMapString above.
+    testGwtSymbol(symbolMap, "a", "<null>[]", "", "", "Unknown", 0);
+    testGwtSymbol(symbolMap, "v[]", "com.google.some.package.Outer$Inner[]",
+        "", "com/google/some/package/", "Outer.java", 44);
+    testGwtSymbol(symbolMap, "aC", "com.google.another.package.SomeClass", "",
+        "com/google/another/package/", "SomeClass.java", 55);
+    testGwtSymbol(symbolMap, "aM", "com.google.another.package.SomeClass",
+        "aMethod", "com/google/another/package/", "SomeClass.java", 57);
+  }
+
+  /**
+   * Tests initializing a JsSymbolMap from a GWT symbol map.
+   */
   public void testParseGwtSymbolMap() {
     String sourceServer = "http://notrealsourceserver";
-    JsSymbolMap symbolMap = JsSymbolMap.parse(sourceServer, "gwt",
-        testGwtSymbolMapString);
+    JsSymbolMap symbolMap = JsSymbolMap.parse(sourceServer,
+        JsSymbolMap.GWT_SYMBOL_MAP, testGwtSymbolMapString);
     assertEquals(4, symbolMap.getSymbolCount());
 
     // Tests derived from the testGwtSymbolMapString above.
@@ -94,8 +126,10 @@ public class JsSymbolMapTests extends GWTTestCase {
         "", "com/google/gwt/animation/client/", "Animation.java", 28);
     testGwtSymbol(symbolMap, "Ti", "com.google.gwt.animation.client.Animation",
         "$run", "com/google/gwt/animation/client/", "Animation.java", 124);
-    testGwtSymbol(symbolMap, "sc", "com.google.apu.demo.client.MultiColumnPanel",
-        "$manuallyAdjustColumns", "com/google/apu/demo/client/", "MultiColumnPanel.java", 46);
+    testGwtSymbol(symbolMap, "sc",
+        "com.google.apu.demo.client.MultiColumnPanel",
+        "$manuallyAdjustColumns", "com/google/apu/demo/client/",
+        "MultiColumnPanel.java", 46);
   }
 
   private void testGwtSymbol(JsSymbolMap symbolMap, String obfuscatedSymbol,

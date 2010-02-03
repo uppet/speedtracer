@@ -34,7 +34,6 @@ public class Csv {
     int state;
     JsArrayString results = JsArrayString.createArray().cast();
     int index = 0;
-    int entryStart = 0;
     StringBuilder field = new StringBuilder();
 
     state = SPLIT_LOOKING_FOR_COMMA;
@@ -73,7 +72,6 @@ public class Csv {
           break;
         default:
           field.append(nextCharacter);
-
       }
       index++;
     }

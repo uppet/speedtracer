@@ -16,6 +16,7 @@
 
 package com.google.speedtracer.client.visualizations.model;
 
+import com.google.speedtracer.client.CompactGwtSymbolMapParser;
 import com.google.speedtracer.client.GwtSymbolMapParser;
 import com.google.speedtracer.client.util.IterableFastStringMap;
 
@@ -27,8 +28,6 @@ import com.google.speedtracer.client.util.IterableFastStringMap;
  * character mapping.
  */
 public class JsSymbolMap {
-  public static final String UNKNOWN_RESOURCE_PATH = "Unknown";
-
   /**
    * A Source and line number for a JavaScript symbol as specified in the symbol
    * mapping.
@@ -79,6 +78,19 @@ public class JsSymbolMap {
   }
 
   /**
+   * Symbol map parsers implement this interface.
+   */
+  public interface JsSymbolMapParser {
+    void parse(String symbolMapStr);
+  }
+
+  public static final String UNKNOWN_RESOURCE_PATH = "Unknown";
+
+  public static final String COMPACT_GWT_SYMBOL_MAP = "compactGwt";
+
+  public static final String GWT_SYMBOL_MAP = "gwt";
+
+  /**
    * Parses the JavaScript symbol map and initializes a {@link JsSymbolMap} with
    * the corresponding symbols and their source mappings.
    * 
@@ -89,14 +101,18 @@ public class JsSymbolMap {
    */
   public static JsSymbolMap parse(String sourceServer, String type,
       String symbolMapStr) {
-    // For now we only support GWT symbol maps.
-    if (!"gwt".equals(type.toLowerCase())) {
-      return null;
+    JsSymbolMap symbolMap = new JsSymbolMap(sourceServer);
+    JsSymbolMapParser parser = null;
+
+    if (GWT_SYMBOL_MAP.equals(type)) {
+      parser = new GwtSymbolMapParser(symbolMap);
+    } else if (COMPACT_GWT_SYMBOL_MAP.equals(type)) {
+      parser = new CompactGwtSymbolMapParser(symbolMap);
     }
 
-    JsSymbolMap symbolMap = new JsSymbolMap(sourceServer);
-    GwtSymbolMapParser parser = new GwtSymbolMapParser(symbolMap);
-    parser.parse(symbolMapStr);
+    if (parser != null) {
+      parser.parse(symbolMapStr);
+    }
 
     return symbolMap;
   }
