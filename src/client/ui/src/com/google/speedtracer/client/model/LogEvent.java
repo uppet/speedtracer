@@ -20,10 +20,10 @@ package com.google.speedtracer.client.model;
  */
 public class LogEvent extends UiEvent {
   public static final int TYPE = EventRecordType.LOG_MESSAGE_EVENT;
-  
-  protected LogEvent() {    
+
+  protected LogEvent() {
   }
-  
+
   public final String getMessage() {
     return getData().getStringProperty("message");
   }

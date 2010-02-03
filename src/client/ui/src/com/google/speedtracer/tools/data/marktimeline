@@ -1,0 +1,14 @@
+{"data":{},"children":[],"type":2,"duration":0,"time":0,"sequence":0}
+{"type":24,"time":-1,"data":{"resourceId":"4","httpMethod":"GET","headers":{"User-Agent":"Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/532.9 (KHTML, like Gecko) Chrome/5.0.307.0 Safari/532.9"},"url":"file:///C:/cygwin/home/zundel/SpeedTracer/src/test/markTimeline/test1.html","lastPathComponent":"test1.html"},"sequence":1}
+{"time":0,"type":16,"data":{"url":"file:///C:/cygwin/home/zundel/SpeedTracer/src/test/markTimeline/test1.html"},"sequence":2}
+{"type":23,"time":0,"data":{"resourceId":"4","mimeType":"text/html","headers":{},"responseCode":0,"isCached":false,"url":"file:///C:/cygwin/home/zundel/SpeedTracer/src/test/markTimeline/test1.html"},"sequence":3}
+{"data":{},"children":[],"type":2,"duration":0,"time":42,"sequence":4}
+{"data":{"length":352,"startLine":0,"endLine":16},"children":[{"data":{"url":"file:///C:/cygwin/home/zundel/SpeedTracer/src/test/markTimeline/test1.html","lineNumber":6},"children":[{"data":{"message":"test1","backTrace":"0,\"file:///C:/cygwin/home/zundel/SpeedTracer/src/test/markTimeline/test1.html\",8,13,,"},"type":11,"time":46},{"data":{"length":15,"startLine":0,"endLine":0},"children":[],"type":4,"duration":0,"time":49.000244140625}],"type":10,"duration":5.000244140625,"time":44}],"type":4,"duration":6.000244140625,"time":43,"sequence":5}
+{"data":{"type":"DOMContentLoaded"},"children":[],"type":0,"duration":0.999755859375,"time":49.000244140625,"sequence":6}
+{"data":{"url":"","lineNumber":1},"children":[],"type":10,"duration":2,"time":63,"sequence":7}
+{"data":{"url":"chrome-extension://hmdcokjjdocjffgennpeacffgbhgopji/data_loader.js","lineNumber":1},"children":[],"type":10,"duration":1,"time":66,"sequence":8}
+{"data":{"width":1323,"height":616},"children":[{"data":{"width":1323,"height":616},"children":[],"type":1,"duration":0,"time":68}],"type":1,"duration":0,"time":68,"sequence":9}
+{"data":{"x":0,"y":0,"width":1323,"height":616},"children":[],"type":3,"duration":1.999755859375,"time":72.000244140625,"sequence":10}
+{"data":{"url":"","lineNumber":1},"children":[],"type":10,"duration":0,"time":80,"sequence":11}
+{"data":{"url":"chrome-extension://jpjpnpmbddbjkfaccnmhnkdgjideieim/record_tab_id.js","lineNumber":1},"children":[],"type":10,"duration":1,"time":80,"sequence":12}
+{"data":{"x":0,"y":0,"width":1323,"height":616},"children":[],"type":3,"duration":1,"time":89,"sequence":13}

@@ -15,7 +15,6 @@
  */
 package com.google.speedtracer.client.model;
 
-import com.google.gwt.topspin.client.Command;
 import com.google.speedtracer.client.util.JSOArray;
 
 import java.util.List;
@@ -55,14 +54,5 @@ public class MockDataModel extends DataModel {
   @Override
   protected void bind(TabDescription tabDescription, DataInstance dataInstance) {
     setTabDescription(tabDescription);
-    Command.defer(new Command() {
-      @Override
-      public void execute() {
-        MockModelGenerator.simulateDataSet(MockDataModel.this, 0);
-      }
-      // Allow the hintlet engine to come up.
-      // TODO(zundel): come up with a more definitive way to know the hintlet
-      // engine is running.
-    }, 50);
   }
 }

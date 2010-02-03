@@ -70,6 +70,10 @@ public class UiEvent extends EventRecord {
     visitor.visitUiEvent(this);
   }
 
+  public final native String getBackTrace() /*-{
+    return (this.data && this.data.backTrace) ? this.data.backTrace : null;
+  }-*/;
+
   public final native JSOArray<UiEvent> getChildren() /*-{
     return this.children || [];
   }-*/;
