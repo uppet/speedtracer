@@ -16,10 +16,12 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.Duration;
+import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.model.V8SymbolTable.Symbol;
+import com.google.speedtracer.client.util.Csv;
 import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.JsIntegerMap;
 import com.google.speedtracer.client.util.WorkQueue;
@@ -38,7 +40,7 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    * Used to store actions for parsing lines in the log.
    */
   interface LogAction {
-    void doAction(String[] logLine);
+    void doAction(JsArrayString logLine);
   }
 
   /**
@@ -51,9 +53,9 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
       this.commandName = commandName;
     }
 
-    public void doAction(String[] logLine) {
+    public void doAction(JsArrayString logLine) {
       Logging.getLogger().logText(
-          "Unimplemented command: " + commandName + " alias: " + logLine[0]);
+          "Unimplemented command: " + commandName + " alias: " + logLine.get(0));
     }
   }
 
@@ -359,17 +361,6 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     return scrubbingDiv.getInnerText();
   }
 
-  private String concatLogEntries(String[] entries) {
-    StringBuilder builder = new StringBuilder();
-    for (int i = 0; i < entries.length; ++i) {
-      if (i > 0) {
-        builder.append(",");
-      }
-      builder.append(entries[i]);
-    }
-    return builder.toString();
-  }
-
   /**
    * Convenience method to create a new ActionType and add it to the map.
    */
@@ -401,9 +392,14 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    * Given an array of the fields in a single log line, execute the appropriate
    * action on that entry based on the first field.
    */
-  private void parseLogEntry(String logEntries[]) {
-    String command = logEntries[0];
-    assert command != null;
+  private void parseLogEntry(JsArrayString logEntries) {
+    if (logEntries.length() == 0) {
+      return;
+    }
+    String command = logEntries.get(0);
+    if (command.length() == 0) {
+      return;
+    }
     LogAction cmdMethod = logActions.get(actionTypeMap.get(command));
     if (cmdMethod != null) {
       cmdMethod.doAction(logEntries);
@@ -418,11 +414,11 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    * 
    * alias, aliasName, originalName
    */
-  private void parseV8AliasEntry(String[] logEntries) {
-    assert logEntries.length == 3;
+  private void parseV8AliasEntry(JsArrayString logEntries) {
+    assert logEntries.length() == 3;
 
-    String originalName = logEntries[2];
-    String aliasName = logEntries[1];
+    String originalName = logEntries.get(2);
+    String aliasName = logEntries.get(1);
 
     SymbolType symbol = symbolTypeMap.get(originalName);
     if (symbol != null) {
@@ -433,8 +429,8 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
         actionTypeMap.put(aliasName, action);
       } else {
         Logging.getLogger().logText(
-            "Unable to find command: '" + logEntries[2] + "' to match alias:"
-                + logEntries[1]);
+            "Unable to find command: '" + logEntries.get(2)
+                + "' to match alias:" + logEntries.get(1));
       }
     }
   }
@@ -447,13 +443,13 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    * e.g. code-creation,lic,-5910913e,179,"parentNode"
    * 
    */
-  private void parseV8CodeCreationEntry(String[] logEntries) {
-    assert logEntries.length == 5;
-    int symbolType = getSymbolType(logEntries[1]);
+  private void parseV8CodeCreationEntry(JsArrayString logEntries) {
+    assert logEntries.length() == 5;
+    int symbolType = getSymbolType(logEntries.get(1));
 
-    String name = stripQuotes(logEntries[4]);
-    double address = parseAddress(logEntries[2], ADDRESS_TAG_CODE);
-    int executableSize = Integer.parseInt(logEntries[3]);
+    String name = logEntries.get(4);
+    double address = parseAddress(logEntries.get(2), ADDRESS_TAG_CODE);
+    int executableSize = Integer.parseInt(logEntries.get(3));
 
     // Keep some debugging stats around
     Symbol found = symbolTable.lookup(address);
@@ -473,9 +469,9 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    * 
    * code-delete, address
    */
-  private void parseV8CodeDeleteEntry(String[] logEntries) {
-    assert logEntries.length == 2;
-    double address = parseAddress(logEntries[1], ADDRESS_TAG_CODE);
+  private void parseV8CodeDeleteEntry(JsArrayString logEntries) {
+    assert logEntries.length() == 2;
+    double address = parseAddress(logEntries.get(1), ADDRESS_TAG_CODE);
     Symbol symbol = symbolTable.lookup(address);
     if (symbol != null) {
       symbolTable.remove(symbol);
@@ -492,10 +488,10 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    * 
    * code-move, fromAddress, toAddress
    */
-  private void parseV8CodeMoveEntry(String[] logEntries) {
-    assert logEntries.length == 3;
-    double fromAddress = parseAddress(logEntries[1], ADDRESS_TAG_CODE);
-    double toAddress = parseAddress(logEntries[2], ADDRESS_TAG_CODE_MOVE);
+  private void parseV8CodeMoveEntry(JsArrayString logEntries) {
+    assert logEntries.length() == 3;
+    double fromAddress = parseAddress(logEntries.get(1), ADDRESS_TAG_CODE);
+    double toAddress = parseAddress(logEntries.get(2), ADDRESS_TAG_CODE_MOVE);
     Symbol symbol = symbolTable.lookup(fromAddress);
     if (symbol != null) {
       symbolTable.remove(symbol);
@@ -515,19 +511,19 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    * 
    * profiler, "type", ...
    */
-  private void parseV8ProfilerEntry(String[] logEntries) {
-    if (logEntries[1].equals("\"compression\"")) {
-      int windowSize = Integer.parseInt(logEntries[2]);
+  private void parseV8ProfilerEntry(JsArrayString logEntries) {
+    final String arg = logEntries.get(1);
+    if (arg.equals("compression")) {
+      int windowSize = Integer.parseInt(logEntries.get(2));
       this.logDecompressor = new V8LogDecompressor(windowSize);
-    } else if (logEntries[1].endsWith("\"begin\"")) {
+    } else if (arg.equals("begin")) {
       // TODO(zundel): make sure all state is reset
       populateAddressTags();
-    } else if (logEntries[1].equals("\"pause\"")
-        || logEntries[1].endsWith("\"resume\"")) {
+    } else if (arg.equals("pause") || arg.equals("resume")) {
       // ignore pause and resume entries.
     } else {
       Logging.getLogger().logText(
-          "Ignoring profiler command: " + concatLogEntries(logEntries));
+          "Ignoring profiler command: " + logEntries.join());
     }
   }
 
@@ -535,13 +531,13 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    * A repeat entry is used to indicate that the command following is repeated
    * multiple times.
    */
-  private void parseV8RepeatEntry(String[] logEntries) {
-    int numRepeats = Integer.parseInt(logEntries[1]);
-    int subLength = logEntries.length - 2;
-    String[] subLogEntries = new String[subLength];
-    System.arraycopy(logEntries, 2, subLogEntries, 0, subLength);
+  private void parseV8RepeatEntry(JsArrayString logEntries) {
+    int numRepeats = Integer.parseInt(logEntries.get(1));
+    // run the command after the first 2 arguments numRepeats times.
+    logEntries.shift();
+    logEntries.shift();
     for (int i = 0; i < numRepeats; ++i) {
-      parseLogEntry(subLogEntries);
+      parseLogEntry(logEntries);
     }
   }
 
@@ -552,13 +548,13 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    * 
    * e.g.: t,-7364bb,+45c,0
    */
-  private void parseV8TickEntry(String[] logEntries) {
-    assert logEntries.length >= 4;
-    double address = parseAddress(logEntries[1], ADDRESS_TAG_CODE);
+  private void parseV8TickEntry(JsArrayString logEntries) {
+    assert logEntries.length() >= 4;
+    double address = parseAddress(logEntries.get(1), ADDRESS_TAG_CODE);
     // stack address is currently ignored, but it must be parsed to keep the
-    // stack address tag up to date.
-    double stackAddress = parseAddress(logEntries[2], ADDRESS_TAG_STACK);
-    int vmState = Integer.parseInt(logEntries[3]);
+    // stack address tag up to date if anyone else ever wants to use it.
+    // double stackAddress = parseAddress(logEntries.get(2), ADDRESS_TAG_STACK);
+    int vmState = Integer.parseInt(logEntries.get(3));
     currentProfile.addStateTime(vmState, 1.0);
     JavaScriptProfileNode bottomUpProfile = currentProfile.getOrCreateBottomUpProfile();
     bottomUpProfile.addTime(1.0);
@@ -566,8 +562,8 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
         address, false);
 
     addressTags.put(ADDRESS_TAG_SCRATCH, address);
-    for (int i = 4; i < logEntries.length; ++i) {
-      address = parseAddress(logEntries[i], ADDRESS_TAG_SCRATCH);
+    for (int i = 4; i < logEntries.length(); ++i) {
+      address = parseAddress(logEntries.get(i), ADDRESS_TAG_SCRATCH);
       child = recordAddressInProfile(child, address,
           !child.equals(bottomUpProfile));
     }
@@ -594,37 +590,37 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     ActionType repeatType = createActionType("repeat", ACTION_TYPE_REPEAT);
 
     logActions.put(aliasType, new LogAction() {
-      public void doAction(String[] logLine) {
+      public void doAction(JsArrayString logLine) {
         parseV8AliasEntry(logLine);
       }
     });
     logActions.put(profilerType, new LogAction() {
-      public void doAction(String[] logLine) {
+      public void doAction(JsArrayString logLine) {
         parseV8ProfilerEntry(logLine);
       }
     });
     logActions.put(codeCreationType, new LogAction() {
-      public void doAction(String[] logLine) {
+      public void doAction(JsArrayString logLine) {
         parseV8CodeCreationEntry(logLine);
       }
     });
     logActions.put(codeMoveType, new LogAction() {
-      public void doAction(String[] logLine) {
+      public void doAction(JsArrayString logLine) {
         parseV8CodeMoveEntry(logLine);
       }
     });
     logActions.put(codeDeleteType, new LogAction() {
-      public void doAction(String[] logLine) {
+      public void doAction(JsArrayString logLine) {
         parseV8CodeDeleteEntry(logLine);
       }
     });
     logActions.put(tickType, new LogAction() {
-      public void doAction(String[] logLine) {
+      public void doAction(JsArrayString logLine) {
         parseV8TickEntry(logLine);
       }
     });
     logActions.put(repeatType, new LogAction() {
-      public void doAction(String[] logLine) {
+      public void doAction(JsArrayString logLine) {
         parseV8RepeatEntry(logLine);
       }
     });
@@ -681,11 +677,11 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
       }
 
       String logLine = logLines.get(currentLine);
-      if (logDecompressor != null) {
+      if (logDecompressor != null && logLine.length() > 0) {
         logLine = logDecompressor.decompressLogEntry(logLine);
       }
-      String[] decompressedLogLine = V8LogDecompressor.splitLogLine(logLine);
-      if (decompressedLogLine.length > 0) {
+      JsArrayString decompressedLogLine = Csv.split(logLine);
+      if (decompressedLogLine.length() > 0) {
         parseLogEntry(decompressedLogLine);
       }
 
@@ -731,12 +727,5 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
       return child;
     }
     return bottomUpProfile;
-  }
-
-  private String stripQuotes(String value) {
-    int startOffset = value.startsWith("\"") ? 1 : 0;
-    int endOffset = value.endsWith("\"") ? value.length() - 1
-        : value.length() - 2;
-    return value.substring(startOffset, endOffset);
   }
 }
