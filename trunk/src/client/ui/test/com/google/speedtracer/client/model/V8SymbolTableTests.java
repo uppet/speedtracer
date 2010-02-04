@@ -17,6 +17,7 @@ package com.google.speedtracer.client.model;
 
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.speedtracer.client.Logging;
+import com.google.speedtracer.client.model.V8SymbolTable.AliasableEntry;
 import com.google.speedtracer.client.model.V8SymbolTable.V8Symbol;
 
 /**
@@ -31,16 +32,17 @@ public class V8SymbolTableTests extends GWTTestCase {
 
   public void testSymbolTable() {
     V8SymbolTable symbolTable = new V8SymbolTable();
-    V8Symbol symbolOne = new V8Symbol("test1", 1, 0x100, 0x10);
+    AliasableEntry mockSymbolType = new AliasableEntry("Mock", 1);
+    V8Symbol symbolOne = new V8Symbol("test1", mockSymbolType, 0x100, 0x10);
     assertEquals("test1 : 0x100-0x110", symbolOne.toString());
     symbolTable.add(symbolOne);
-    V8Symbol symbolTwo = new V8Symbol("test2", 1, 0x120, 0x5);
+    V8Symbol symbolTwo = new V8Symbol("test2", mockSymbolType, 0x120, 0x5);
     assertEquals("test2 : 0x120-0x125", symbolTwo.toString());
     symbolTable.add(symbolTwo);
-    V8Symbol symbolThree = new V8Symbol("test3", 1, 0x90, 0x5);
+    V8Symbol symbolThree = new V8Symbol("test3", mockSymbolType, 0x90, 0x5);
     assertEquals("test3 : 0x90-0x95", symbolThree.toString());
     symbolTable.add(symbolThree);
-    
+
     assertEquals(symbolOne.toString(), symbolTable.lookup(0x100).toString());
     assertEquals(symbolOne.toString(), symbolTable.lookup(0x101).toString());
     assertEquals(symbolOne.toString(), symbolTable.lookup(0x110).toString());
