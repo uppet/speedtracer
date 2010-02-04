@@ -88,7 +88,7 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
     JavaScriptProfile profile = new JavaScriptProfile();
     impl.parseRawEvent(rawEvent, refRecord, profile);
     assertEquals(0.0, profile.getTotalTime());
-    assertNull(profile.getBottomUpProfile());
+    assertNull(profile.getProfile(JavaScriptProfile.PROFILE_TYPE_BOTTOM_UP));
   }
 
   public void testCodeCreationSimple() {
@@ -115,7 +115,7 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
     refRecord.setSequence(1);
     JavaScriptProfile profile = new JavaScriptProfile();
     impl.parseRawEvent(rawEvent, refRecord, profile);
-    JavaScriptProfileNode bottomUpProfile = profile.getBottomUpProfile();
+    JavaScriptProfileNode bottomUpProfile = profile.getProfile(JavaScriptProfile.PROFILE_TYPE_BOTTOM_UP);
     assertNotNull(bottomUpProfile);
     assertEquals(5.0, profile.getTotalTime(), .001);
 
@@ -136,7 +136,7 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
     refRecord.setSequence(1);
     JavaScriptProfile profile = new JavaScriptProfile();
     impl.parseRawEvent(rawEvent, refRecord, profile);
-    JavaScriptProfileNode bottomUpProfile = profile.getBottomUpProfile();
+    JavaScriptProfileNode bottomUpProfile = profile.getProfile(JavaScriptProfile.PROFILE_TYPE_BOTTOM_UP);
     assertNotNull(bottomUpProfile);
     assertEquals(1.0, profile.getTotalTime(), .001);
     List<JavaScriptProfileNode> children = bottomUpProfile.getChildren();
