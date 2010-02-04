@@ -230,11 +230,13 @@ public class SluggishnessModel implements VisualizationModel,
    * event.
    * 
    * @param event an event to find associated profile data for
+   * @param profileType {@link JavaScriptProfileModel} PROFILE_TYPE_XXX
+   *          definition.
    * @return a text representation of the profile intended for debugging
    */
-  public String getProfileHtmlForEvent(UiEvent event) {
+  public String getProfileHtmlForEvent(UiEvent event, int profileType) {
     JavaScriptProfileModel profileModel = dataModel.getJavaScriptProfileModel();
-    return profileModel.getProfileHtmlForEvent(event.getSequence());
+    return profileModel.getProfileHtmlForEvent(event.getSequence(), profileType);
   }
 
   public UiEventModel getSourceModel() {

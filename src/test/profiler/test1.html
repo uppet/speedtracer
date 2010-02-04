@@ -15,19 +15,19 @@ function wait(msecs) {
 }
 
 function outer() {
-  for (var i = 0 ; i < 10; ++i) {
-    wait(100);
+  for (var i = 0 ; i < 5; ++i) {
+    wait(20);
     inner();
   }
 }
 
 function inner() {
-  wait(100);
+  wait(5);
 }
 
 function busyWork() {
   for (var i = 0 ; i < 4; ++i) {
-    wait(10);   
+    wait(4);   
     outer();
   }
   document.getElementById("status").innerHTML = "Done.";

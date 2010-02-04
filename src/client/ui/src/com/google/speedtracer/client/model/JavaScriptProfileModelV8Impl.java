@@ -20,13 +20,16 @@ import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.speedtracer.client.Logging;
-import com.google.speedtracer.client.model.V8SymbolTable.Symbol;
+import com.google.speedtracer.client.model.V8SymbolTable.AliasableEntry;
+import com.google.speedtracer.client.model.V8SymbolTable.V8Symbol;
 import com.google.speedtracer.client.util.Csv;
 import com.google.speedtracer.client.util.JSOArray;
-import com.google.speedtracer.client.util.JsIntegerMap;
 import com.google.speedtracer.client.util.WorkQueue;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -65,32 +68,6 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     }
   }
 
-  /**
-   * Associates a symbol or action with a numeric constant. This is useful in
-   * the compressed log because multiple strings map to the same type.
-   */
-  private static class AliasableEntry {
-    private final String name;
-    private final int value;
-
-    protected AliasableEntry(String name, int value) {
-      this.name = name;
-      this.value = value;
-    }
-
-    public String getName() {
-      return this.name;
-    }
-
-    public int getValue() {
-      return this.value;
-    }
-
-    public String toString() {
-      return (this.name + ":" + this.value);
-    }
-  }
-
   private static class DebugStats {
     public int lookupMisses;
     public int removeMisses;
@@ -114,13 +91,13 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
       this.currentOffset = currentOffset;
     }
 
+    public void execute() {
+      processLogLines(refRecord, logLines, currentOffset);
+    }
+
     public String getDescription() {
       return "LogLineWorkQueueNode seq " + refRecord.getSequence() + " offset "
           + currentOffset;
-    }
-
-    public void execute() {
-      processLogLines(refRecord, logLines, currentOffset);
     }
   }
 
@@ -139,20 +116,20 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
       this.rawEvent = rawEvent;
     }
 
-    public String getDescription() {
-      return "NewProfileDataWorkQueueNode seq " + refRecord.getSequence();
-    }
-
     public void execute() {
       currentProfile = profile;
       JSOArray<String> logLines = JSOArray.splitString(
           rawEvent.getProfileData(), "\n");
       workQueue.prepend(new LogLineWorker(logLines, refRecord, 0));
     }
+
+    public String getDescription() {
+      return "NewProfileDataWorkQueueNode seq " + refRecord.getSequence();
+    }
   }
 
-  private static class SymbolType extends AliasableEntry {
-    public SymbolType(String name, int value) {
+  private static class V8SymbolType extends AliasableEntry {
+    public V8SymbolType(String name, int value) {
       super(name, value);
     }
   }
@@ -237,8 +214,7 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     }
   }
 
-  private Map<String, SymbolType> symbolTypeMap = new HashMap<String, SymbolType>();
-  private JsIntegerMap<SymbolType> symbolTypeMapByInt = JsIntegerMap.create().cast();
+  private Map<String, V8SymbolType> symbolTypeMap = new HashMap<String, V8SymbolType>();
   private Map<String, ActionType> actionTypeMap = new HashMap<String, ActionType>();
   private Map<ActionType, LogAction> logActions = new HashMap<ActionType, LogAction>();
   private V8SymbolTable symbolTable = new V8SymbolTable();
@@ -308,7 +284,7 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
   /**
    * This method is intended for use by the unit tests only.
    */
-  Symbol findSymbol(double address) {
+  V8Symbol findSymbol(double address) {
     return symbolTable.lookup(address);
   }
 
@@ -374,18 +350,8 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    * Convenience method to create a new SymbolType and add it to the map.
    */
   private void createSymbolType(String symbolName, int symbolValue) {
-    SymbolType type = new SymbolType(symbolName, symbolValue);
+    V8SymbolType type = new V8SymbolType(symbolName, symbolValue);
     symbolTypeMap.put(symbolName, type);
-    symbolTypeMapByInt.put(symbolValue, type);
-  }
-
-  /**
-   * Returns the constant associated with the symbol type string or -1 if not
-   * found.
-   */
-  private int getSymbolType(String typeString) {
-    SymbolType result = symbolTypeMap.get(typeString);
-    return result == null ? -1 : result.getValue();
   }
 
   /**
@@ -420,7 +386,7 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     String originalName = logEntries.get(2);
     String aliasName = logEntries.get(1);
 
-    SymbolType symbol = symbolTypeMap.get(originalName);
+    V8SymbolType symbol = symbolTypeMap.get(originalName);
     if (symbol != null) {
       symbolTypeMap.put(aliasName, symbol);
     } else {
@@ -445,20 +411,20 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    */
   private void parseV8CodeCreationEntry(JsArrayString logEntries) {
     assert logEntries.length() == 5;
-    int symbolType = getSymbolType(logEntries.get(1));
+    V8SymbolType symbolType = symbolTypeMap.get(logEntries.get(1));
 
     String name = logEntries.get(4);
     double address = parseAddress(logEntries.get(2), ADDRESS_TAG_CODE);
     int executableSize = Integer.parseInt(logEntries.get(3));
 
     // Keep some debugging stats around
-    Symbol found = symbolTable.lookup(address);
+    V8Symbol found = symbolTable.lookup(address);
     if (found != null) {
       debugStats.addCollisions++;
     }
 
-    Symbol symbol = new Symbol(scrubStringForXSS(name), symbolType, address,
-        executableSize);
+    V8Symbol symbol = new V8Symbol(scrubStringForXSS(name), symbolType,
+        address, executableSize);
     symbolTable.add(symbol);
   }
 
@@ -472,7 +438,7 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
   private void parseV8CodeDeleteEntry(JsArrayString logEntries) {
     assert logEntries.length() == 2;
     double address = parseAddress(logEntries.get(1), ADDRESS_TAG_CODE);
-    Symbol symbol = symbolTable.lookup(address);
+    V8Symbol symbol = symbolTable.lookup(address);
     if (symbol != null) {
       symbolTable.remove(symbol);
     } else {
@@ -492,11 +458,12 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     assert logEntries.length() == 3;
     double fromAddress = parseAddress(logEntries.get(1), ADDRESS_TAG_CODE);
     double toAddress = parseAddress(logEntries.get(2), ADDRESS_TAG_CODE_MOVE);
-    Symbol symbol = symbolTable.lookup(fromAddress);
+    V8Symbol symbol = symbolTable.lookup(fromAddress);
     if (symbol != null) {
       symbolTable.remove(symbol);
-      Symbol newSymbol = new Symbol(symbol.getName(), symbol.getSymbolType(),
-          toAddress, symbol.getAddressSpan().getLength());
+      V8Symbol newSymbol = new V8Symbol(symbol.getName(),
+          symbol.getSymbolType(), toAddress,
+          symbol.getAddressSpan().getLength());
       symbolTable.add(newSymbol);
     } else {
       // update debugging stats
@@ -556,25 +523,24 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     // double stackAddress = parseAddress(logEntries.get(2), ADDRESS_TAG_STACK);
     int vmState = Integer.parseInt(logEntries.get(3));
     currentProfile.addStateTime(vmState, 1.0);
-    JavaScriptProfileNode bottomUpProfile = currentProfile.getOrCreateBottomUpProfile();
-    bottomUpProfile.addTime(1.0);
-    JavaScriptProfileNode child = recordAddressInProfile(bottomUpProfile,
-        address, false);
 
+    List<V8Symbol> symbols = new ArrayList<V8Symbol>();
+    V8Symbol found = symbolTable.lookup(address);
+    if (found != null) {
+      symbols.add(found);
+    }
     addressTags.put(ADDRESS_TAG_SCRATCH, address);
     for (int i = 4; i < logEntries.length(); ++i) {
       address = parseAddress(logEntries.get(i), ADDRESS_TAG_SCRATCH);
-      child = recordAddressInProfile(child, address,
-          !child.equals(bottomUpProfile));
+      found = symbolTable.lookup(address);
+      if (found != null) {
+        symbols.add(found);
+      }
     }
 
-    if (child.equals(bottomUpProfile)) {
-      // No entry has been found in the symbol table and we are at the bottom
-      // of the tick stack frame. Add or update an unknown entry.
-      child = bottomUpProfile.getOrInsertChild("unknown - "
-          + JavaScriptProfile.stateToString(vmState));
-      child.addSelfTime(1.0);
-    }
+    updateFlatProfile(symbols, vmState);
+    updateBottomUpProfile(symbols, vmState);
+    updateTopDownProfile(symbols, vmState);
   }
 
   private void populateActionTypes() {
@@ -694,7 +660,7 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
       workQueue.prepend(new LogLineWorker(logLines, refRecord, currentLine));
     } else {
       // All done!
-      if (currentProfile.getBottomUpProfile() == null) {
+      if (currentProfile.getProfile(JavaScriptProfile.PROFILE_TYPE_BOTTOM_UP) == null) {
         refRecord.setHasJavaScriptProfile(false);
       } else {
         refRecord.setHasJavaScriptProfile(true);
@@ -703,29 +669,83 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
   }
 
   private JavaScriptProfileNode recordAddressInProfile(
-      JavaScriptProfileNode bottomUpProfile, double address,
+      JavaScriptProfileNode profileNode, V8Symbol symbol,
       boolean recordedSelfTime) {
-    JavaScriptProfileNode child = null;
-    Symbol found = symbolTable.lookup(address);
-    if (found != null && bottomUpProfile != null) {
-      child = bottomUpProfile.getOrInsertChild(found.getName());
-      assert child != null;
+    assert profileNode != null;
+    JavaScriptProfileNode child = profileNode.getOrInsertChild(symbol.getName());
+    assert child != null;
+
+    if (!recordedSelfTime) {
+      child.addSelfTime(1.0);
     } else {
-      debugStats.lookupMisses++;
+      child.addTime(1.0);
     }
 
-    if (child != null) {
-      if (!recordedSelfTime) {
-        child.addSelfTime(1.0);
-        SymbolType symbolType = symbolTypeMapByInt.get(found.getSymbolType());
-        if (symbolType != null) {
-          child.setSymbolType(symbolType.getName());
-        }
-      } else {
-        child.addTime(1.0);
+    child.setSymbolType((symbol.getSymbolType().getName()));
+
+    return child;
+  }
+
+  /**
+   * No entry has been found in the symbol table. Add or update an unknown
+   * entry.
+   */
+  private void recordUnknownTick(JavaScriptProfileNode profileNode, int vmState) {
+
+    JavaScriptProfileNode child = profileNode.getOrInsertChild("unknown - "
+        + JavaScriptProfile.stateToString(vmState));
+    child.addSelfTime(1.0);
+  }
+
+  /**
+   * Add this stack frame of resolved symbols to the bottom up profile.
+   */
+  private void updateBottomUpProfile(List<V8Symbol> symbols, int vmState) {
+    JavaScriptProfileNode bottomUpProfile = currentProfile.getOrCreateProfile(JavaScriptProfile.PROFILE_TYPE_BOTTOM_UP);
+    bottomUpProfile.addTime(1.0);
+
+    if (symbols.size() == 0) {
+      recordUnknownTick(bottomUpProfile, vmState);
+    } else {
+      JavaScriptProfileNode child = bottomUpProfile;
+      for (int i = 0, length = symbols.size(); i < length; ++i) {
+        child = recordAddressInProfile(child, symbols.get(i), i > 0);
       }
-      return child;
     }
-    return bottomUpProfile;
+  }
+
+  /**
+   * Add this stack frame of resolved symbols to the flat profile.
+   */
+  private void updateFlatProfile(List<V8Symbol> symbols, int vmState) {
+    JavaScriptProfileNode flatProfile = currentProfile.getOrCreateProfile(JavaScriptProfile.PROFILE_TYPE_FLAT);
+    flatProfile.addTime(1.0);
+
+    if (symbols.size() == 0) {
+      recordUnknownTick(flatProfile, vmState);
+    } else {
+      for (int i = 0; i < symbols.size(); ++i) {
+        recordAddressInProfile(flatProfile, symbols.get(i), i > 0);
+      }
+    }
+  }
+
+  /**
+   * Add this stack frame of resolved symbols to the top down profile.
+   */
+  private void updateTopDownProfile(List<V8Symbol> symbols, int vmState) {
+    JavaScriptProfileNode topDownProfile = currentProfile.getOrCreateProfile(JavaScriptProfile.PROFILE_TYPE_TOP_DOWN);
+    topDownProfile.addTime(1.0);
+
+    if (symbols.size() == 0) {
+      recordUnknownTick(topDownProfile, vmState);
+    } else {
+      JavaScriptProfileNode child = topDownProfile;
+      Collections.reverse(symbols);
+      for (int i = 0, length = symbols.size(); i < length; ++i) {
+        child = recordAddressInProfile(child, symbols.get(i),
+            !(i == (symbols.size() - 1)));
+      }
+    }
   }
 }
