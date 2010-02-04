@@ -66,7 +66,7 @@ public class SymbolServerEntryPanel extends HotKeyPanel {
   protected void populateContent(Element contentElement) {
     // No-need to build the UI. UI binder does it all.
     // Only need to populate default values.
-    Url resourceUrl = new Url(tabDescription.getUrl());
+    final Url resourceUrl = new Url(tabDescription.getUrl());
     final String applicationUrl = resourceUrl.getApplicationUrl();
     appUrl.setValue(applicationUrl);
     final LocalStorage storage = WindowExt.get().getLocalStorage();
@@ -80,6 +80,11 @@ public class SymbolServerEntryPanel extends HotKeyPanel {
           return;
         }
         storage.setStringItem(applicationUrl, symbolManifestUrl.getValue());
+
+        // Register the SSController.
+        SymbolServerService.registerSymbolServerController(resourceUrl,
+            symbolManifestUrl.getValue());
+
         SymbolServerEntryPanel.this.hide();
       }
     });
