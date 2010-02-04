@@ -17,7 +17,7 @@ package com.google.speedtracer.client.model;
 
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.speedtracer.client.Logging;
-import com.google.speedtracer.client.model.V8SymbolTable.Symbol;
+import com.google.speedtracer.client.model.V8SymbolTable.V8Symbol;
 
 import java.util.List;
 
@@ -102,7 +102,7 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
     JavaScriptProfile profile = new JavaScriptProfile();
     impl.parseRawEvent(rawEvent, refRecord, profile);
     assertEquals(0.0, profile.getTotalTime());
-    Symbol found = impl.findSymbol(0x5910913e);
+    V8Symbol found = impl.findSymbol(0x5910913e);
     assertNotNull(found);
   }
 

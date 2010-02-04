@@ -32,7 +32,7 @@ public class ErrorEvent extends JavaScriptObject {
   }-*/;
 
   public final native int getLineNumber() /*-{
-    return this.lineno;
+    return this.lineno ? this.lineno : 0;
   }-*/;
 
   public final native String getMessage() /*-{

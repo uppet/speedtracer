@@ -17,7 +17,6 @@
   position: absolute;
   height: 39px;
   background-color: #f5f5fa;
-  z-index: 30;
   min-width: controllerBaseWidth;
   overflow: visible;
 }

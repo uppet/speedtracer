@@ -18,6 +18,7 @@ package com.google.speedtracer.client.visualizations.view;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.HeadingElement;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.dom.client.Style.Unit;
@@ -51,6 +52,7 @@ import com.google.speedtracer.client.model.EvalScript;
 import com.google.speedtracer.client.model.EventRecordType;
 import com.google.speedtracer.client.model.EventVisitorTraverser;
 import com.google.speedtracer.client.model.HintRecord;
+import com.google.speedtracer.client.model.JavaScriptProfile;
 import com.google.speedtracer.client.model.LogEvent;
 import com.google.speedtracer.client.model.LotsOfLittleEvents;
 import com.google.speedtracer.client.model.PaintEvent;
@@ -152,7 +154,7 @@ public class SluggishnessDetailView extends DetailView {
       FilteringScrollTable.Resources, PieChart.Resources, CommonResources,
       HintletRecordsTree.Resources, LazyEventTree.Resources,
       HoveringPopup.Resources, SourceViewer.Resources,
-      StackFrameRenderer.Resources {
+      StackFrameRenderer.Resources, ScopeBar.Resources {
     @Source("resources/magnify-16px.png")
     ImageResource filterPanelIcon();
 
@@ -251,6 +253,28 @@ public class SluggishnessDetailView extends DetailView {
      * statistics for the UiEvent.
      */
     private class UiEventDetails extends RowDetails {
+      private class ProfileClickListener implements ClickListener {
+        private int profileType;
+        private DivElement displayDiv;
+
+        private ProfileClickListener(int profileType, DivElement displayDiv) {
+          this.profileType = profileType;
+          this.displayDiv = displayDiv;
+        }
+
+        public void onClick(ClickEvent clickEvent) {
+          displayDiv.setInnerHTML(getModel().getProfileHtmlForEvent(event,
+              profileType));
+          // Defer this so there is no infinite loop
+          Command.defer(new Command() {
+            @Override
+            public void execute() {
+              fixHeightOfParentRow();
+            }
+          });
+        }
+      }
+
       private static final int DISPLAYED_EVENTS = 3;
       private ColorCodedDataList aggregateStats;
       private List<ColorCodedValue> data;
@@ -262,6 +286,7 @@ public class SluggishnessDetailView extends DetailView {
       private Div profileDiv;
       private HintletRecordsTree hintletTree;
       private SourceViewer sourceViewer;
+
       private DivElement treeDiv;
 
       // Profiles are processed in the background. This variable tells the click
@@ -428,6 +453,25 @@ public class SluggishnessDetailView extends DetailView {
             }
           });
         }
+      }
+
+      private void buildProfileUi() {
+        profileDiv.getElement().setInnerHTML("");
+        Container container = new DefaultContainerImpl(profileDiv.getElement());
+        HeadingElement profileHeading = container.getDocument().createHElement(
+            3);
+        profileDiv.getElement().appendChild(profileHeading);
+        profileHeading.setInnerText("Profile");
+        ScopeBar bar = new ScopeBar(container, resources);
+        final DivElement displayDiv = container.getDocument().createDivElement();
+        profileDiv.getElement().appendChild(displayDiv);
+        Element flatProfile = bar.add("Flat", new ProfileClickListener(
+            JavaScriptProfile.PROFILE_TYPE_FLAT, displayDiv));
+        bar.add("Top Down", new ProfileClickListener(
+            JavaScriptProfile.PROFILE_TYPE_TOP_DOWN, displayDiv));
+        bar.add("Bottom Up", new ProfileClickListener(
+            JavaScriptProfile.PROFILE_TYPE_BOTTOM_UP, displayDiv));
+        bar.setSelected(flatProfile, true);
       }
 
       /**
@@ -775,7 +819,7 @@ public class SluggishnessDetailView extends DetailView {
       private void updateProfile() {
         if (event.hasJavaScriptProfile()) {
           javaScriptProfileInProgress = false;
-          profileDiv.setHtml(getModel().getProfileHtmlForEvent(event));
+          buildProfileUi();
         } else if (event.processingJavaScriptProfile()) {
           this.javaScriptProfileInProgress = true;
           profileDiv.setHtml("<h3>Profile</h3><div><i>Processing...</i></div>");

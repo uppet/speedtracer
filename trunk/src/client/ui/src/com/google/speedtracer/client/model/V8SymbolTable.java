@@ -88,15 +88,42 @@ public class V8SymbolTable {
   }
 
   /**
+   * Associates a symbol or action with a numeric constant. This is useful in
+   * the compressed log because multiple strings map to the same type.
+   */
+  static class AliasableEntry {
+    private final String name;
+    private final int value;
+
+    protected AliasableEntry(String name, int value) {
+      this.name = name;
+      this.value = value;
+    }
+
+    public String getName() {
+      return this.name;
+    }
+
+    public int getValue() {
+      return this.value;
+    }
+
+    public String toString() {
+      return (this.name + ":" + this.value);
+    }
+  }
+
+  /**
    * code-creation entries in the log create these symbols to be used to lookup
    * program counter entries in the tick data.
    */
-  static class Symbol {
+  static class V8Symbol {
     private final AddressSpan addressSpan;
     private final String name;
-    private final int symbolType;
+    private final AliasableEntry symbolType;
 
-    Symbol(String name, int symbolType, double address, int addressLength) {
+    V8Symbol(String name, AliasableEntry symbolType, double address,
+        int addressLength) {
       this.name = name;
       this.symbolType = symbolType;
       this.addressSpan = new AddressSpan(address, addressLength);
@@ -110,7 +137,7 @@ public class V8SymbolTable {
       return this.name;
     }
 
-    public int getSymbolType() {
+    public AliasableEntry getSymbolType() {
       return this.symbolType;
     }
 
@@ -119,7 +146,7 @@ public class V8SymbolTable {
     }
   }
 
-  private TreeMap<AddressSpan, Symbol> table = new TreeMap<AddressSpan, Symbol>();
+  private TreeMap<AddressSpan, V8Symbol> table = new TreeMap<AddressSpan, V8Symbol>();
 
   public V8SymbolTable() {
   }
@@ -129,7 +156,7 @@ public class V8SymbolTable {
    * 
    * Note collisions overwrite the previous value.
    */
-  public void add(Symbol toAdd) {
+  public void add(V8Symbol toAdd) {
     table.put(toAdd.getAddressSpan(), toAdd);
   }
 
@@ -139,21 +166,24 @@ public class V8SymbolTable {
   public void debugDumpHtml(StringBuilder output) {
     output.append("<table>");
     output.append("<tr><th>Name</th><th>Address</th><th>Length</th></tr>");
-    for (Symbol child : table.values()) {
+    for (V8Symbol child : table.values()) {
       output.append("<tr>");
       output.append("<td>" + child.getName() + "</td>");
-      output.append("<td>" + Long.toHexString((long) child.getAddressSpan().getAddress()) + "</td>");
-      output.append("<td>" + Long.toString(child.getAddressSpan().addressLength) + "</td>");
+      output.append("<td>"
+          + Long.toHexString((long) child.getAddressSpan().getAddress())
+          + "</td>");
+      output.append("<td>"
+          + Long.toString(child.getAddressSpan().addressLength) + "</td>");
       output.append("</tr>");
     }
     output.append("</table>");
   }
 
-  public Symbol lookup(double address) {
+  public V8Symbol lookup(double address) {
     return table.get(new AddressSpan(address, 0));
   }
 
-  public void remove(Symbol toRemove) {
+  public void remove(V8Symbol toRemove) {
     table.remove(toRemove.getAddressSpan());
   }
 }

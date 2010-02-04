@@ -22,6 +22,9 @@ import com.google.gwt.core.client.JsArrayNumber;
  * data stored in the {@link JavaScriptProfileModel}.
  */
 public class JavaScriptProfile {
+  public static final int PROFILE_TYPE_FLAT = 0;
+  public static final int PROFILE_TYPE_BOTTOM_UP = 1;
+  public static final int PROFILE_TYPE_TOP_DOWN = 2;
 
   public static final int STATE_JS = 0;
   public static final int STATE_GC = 1;
@@ -49,8 +52,7 @@ public class JavaScriptProfile {
     }
   }
 
-  private JavaScriptProfileNode bottomUpProfile = null;
-  private JavaScriptProfileNode topDownProfile = null;
+  private JavaScriptProfileNode profiles[] = new JavaScriptProfileNode[3];
 
   private final JsArrayNumber stateTimes = JsArrayNumber.createArray().cast();
 
@@ -65,22 +67,8 @@ public class JavaScriptProfile {
     stateTimes.set(stateIndex, found + msecs);
   }
 
-  public JavaScriptProfileNode getBottomUpProfile() {
-    return bottomUpProfile;
-  }
-
-  public JavaScriptProfileNode getOrCreateBottomUpProfile() {
-    if (bottomUpProfile == null) {
-      this.bottomUpProfile = new JavaScriptProfileNode("(root)");
-    }
-    return bottomUpProfile;
-  }
-
-  public JavaScriptProfileNode getOrCreateTopDownProfile() {
-    if (topDownProfile == null) {
-      this.bottomUpProfile = new JavaScriptProfileNode("(root)");
-    }
-    return topDownProfile;
+  public JavaScriptProfileNode getProfile(int profileType) {
+    return profiles[profileType];
   }
 
   public double getStateTime(int stateIndex) {
@@ -88,15 +76,18 @@ public class JavaScriptProfile {
   }
 
   public double getTotalTime() {
-    if (bottomUpProfile == null) {
+    if (profiles[PROFILE_TYPE_FLAT] == null) {
       return 0.0;
     }
 
     // The total time is stored in the root node of the profile.
-    return bottomUpProfile.getTime();
+    return profiles[PROFILE_TYPE_FLAT].getTime();
   }
 
-  public JavaScriptProfileNode topDownProfile() {
-    return topDownProfile;
+  JavaScriptProfileNode getOrCreateProfile(int profileType) {
+    if (profiles[profileType] == null) {
+      profiles[profileType] = new JavaScriptProfileNode("(root)");
+    }
+    return profiles[profileType];
   }
 }
