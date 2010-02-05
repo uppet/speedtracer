@@ -62,10 +62,15 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
         final JavaScriptProfileEvent profileData = data.cast();
         // Add a reference to this record from the preceding event.
         int refSequence = profileData.getSequence() - 1;
-        final UiEvent rec = (UiEvent) dataModel.findEventRecord(refSequence);
-        if (rec != null) {
-          processProfileData(rec, profileData);
+        UiEvent rec = (UiEvent) dataModel.findEventRecord(refSequence);
+        // TODO(zundel): creating a dummy record is a hack to keep
+        // processProfileData from throwing an NPE on the 'rec' field.
+        if (rec == null || profileData.isOrphaned()) {
+          // create a dummy record.
+          rec = UiEvent.createObject().cast();
+          rec.setSequence(-1);
         }
+        processProfileData(rec, profileData);
       }
     };
   }
@@ -152,7 +157,11 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
     }
     Collections.sort(children, nodeTimeComparator);
     result.append("<table>\n");
-    result.append("<tr><th>Symbol</th><th>Self Time</th><th>Time</th></tr>\n");
+    result.append("<tr>");
+    result.append("<th>Symbol</th>");
+    result.append("<th>Self Time</th>");
+    result.append("</tr>\n");
+
     for (int i = 0, length = children.size(); i < length; ++i) {
       JavaScriptProfileNode child = children.get(i);
 
@@ -160,16 +169,10 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
       result.append("<td>" + formatSymbolName(child.getSymbolName()) + "</td>");
       double relativeSelfTime = (totalTime > 0
           ? (child.getSelfTime() / totalTime) * 100 : 0);
-      double relativeTime = (totalTime > 0
-          ? (child.getTime() / totalTime) * 100 : 0);
       result.append("<td><b>");
       result.append(TimeStampFormatter.formatToFixedDecimalPoint(
           relativeSelfTime, 1));
       result.append("%</b></td>");
-      result.append("<td>");
-      result.append(TimeStampFormatter.formatToFixedDecimalPoint(relativeTime,
-          1));
-      result.append("%</td>");
       result.append("</tr>\n");
     }
     result.append("</table>\n");
@@ -261,6 +264,8 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
 
     JavaScriptProfile profile = new JavaScriptProfile();
     impl.parseRawEvent(profileData, rec, profile);
-    profileMap.put(rec.getSequence(), profile);
+    if (rec.getSequence() >= 0) {
+      profileMap.put(rec.getSequence(), profile);
+    }
   }
 }

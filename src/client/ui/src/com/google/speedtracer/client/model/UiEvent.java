@@ -97,6 +97,15 @@ public class UiEvent extends EventRecord {
   }
 
   /**
+   * Overhead time caused by the act of taking measurements in milliseconds. p *
+   * 
+   * @return
+   */
+  public final native double getOverhead() /*-{
+    return this.overhead || 0;
+  }-*/;
+
+  /**
    * Pulls the cached canvas element corresponding to the rendered
    * {@link com.google.speedtracer.client.visualizations.view.EventTraceBreakdown.MasterEventTraceGraph}
    * from a {@link UiEvent} or null if it hasn't been rendered yet.

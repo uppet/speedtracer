@@ -32,6 +32,10 @@ public class JavaScriptProfileEvent extends EventRecord {
     return getData().getStringProperty("format");
   };
 
+  public final boolean isOrphaned() {
+    return getData().getBooleanProperty("orphan");
+  }
+  
   public final String getProfileData() {
     return getData().getStringProperty("profileData");
   }

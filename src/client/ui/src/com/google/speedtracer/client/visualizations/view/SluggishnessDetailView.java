@@ -1150,6 +1150,11 @@ public class SluggishnessDetailView extends DetailView {
           break;
       }
 
+      if (e.getOverhead() > 0) {
+        details.put("Overhead", TimeStampFormatter.formatMilliseconds(
+            e.getOverhead(), 2));
+      }
+
       return details;
     }
 
