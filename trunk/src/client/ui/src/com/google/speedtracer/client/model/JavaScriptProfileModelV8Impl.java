@@ -672,7 +672,9 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
       JavaScriptProfileNode profileNode, V8Symbol symbol,
       boolean recordedSelfTime) {
     assert profileNode != null;
-    JavaScriptProfileNode child = profileNode.getOrInsertChild(symbol.getName());
+    String name = symbol.getName();
+    JavaScriptProfileNode child = profileNode.getOrInsertChild("".equals(name)
+        ? "(unknown)" : name);
     assert child != null;
 
     if (!recordedSelfTime) {
@@ -691,7 +693,6 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    * entry.
    */
   private void recordUnknownTick(JavaScriptProfileNode profileNode, int vmState) {
-
     JavaScriptProfileNode child = profileNode.getOrInsertChild("unknown - "
         + JavaScriptProfile.stateToString(vmState));
     child.addSelfTime(1.0);
