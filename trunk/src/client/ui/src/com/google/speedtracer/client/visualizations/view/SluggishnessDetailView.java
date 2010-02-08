@@ -445,7 +445,7 @@ public class SluggishnessDetailView extends DetailView {
                               // URL we care about.
                               sourceViewer.show();
                               sourceViewer.highlightLine(sourceSymbol.getLineNumber());
-                              sourceViewer.scrollHighlightedLineIntoView(table.getElement().getOffsetTop());
+                              sourceViewer.scrollHighlightedLineIntoView();
                             }
                           });
                     }
@@ -742,8 +742,11 @@ public class SluggishnessDetailView extends DetailView {
       private void ensureSourceViewer(String resourceUrl,
           final SourceViewerLoadedCallback callback) {
         if (sourceViewer == null) {
-          SourceViewer.create(eventTraceContainerCell, resourceUrl, resources,
-              new SourceViewerLoadedCallback() {
+          // Attach the container above the table so that the source viewer is
+          // positioned independent of the table scroll and of the currently
+          // viewed row.
+          SourceViewer.create(getTableContents().getParentElement(),
+              resourceUrl, resources, new SourceViewerLoadedCallback() {
 
                 public void onSourceFetchFail(int statusCode,
                     SourceViewer viewer) {
@@ -754,7 +757,14 @@ public class SluggishnessDetailView extends DetailView {
 
                 public void onSourceViewerLoaded(SourceViewer viewer) {
                   UiEventDetails.this.sourceViewer = viewer;
-                  viewer.getElement().getStyle().setWidth(50, Unit.PCT);
+                  // Position the source viewer so that it fills half the
+                  // details view. Below the table header, and flush with the
+                  // bottom of the window.
+                  viewer.getElement().getStyle().setTop(
+                      resources.filteringScrollTableCss().headerHeight() + 1,
+                      Unit.PX);
+                  // Half the width with a little space for border of the table.
+                  viewer.getElement().getStyle().setRight(51, Unit.PCT);
 
                   // Now forward to the callback.
                   callback.onSourceViewerLoaded(viewer);
@@ -804,7 +814,7 @@ public class SluggishnessDetailView extends DetailView {
                 sourceViewer.highlightLine(frame.getLineNumber());
                 sourceViewer.markColumn(frame.getLineNumber(),
                     frame.getColNumber());
-                sourceViewer.scrollColumnMarkerIntoView(table.getElement().getOffsetTop());
+                sourceViewer.scrollColumnMarkerIntoView();
               }
             });
           }

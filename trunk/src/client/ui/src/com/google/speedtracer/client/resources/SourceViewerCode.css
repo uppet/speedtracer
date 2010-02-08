@@ -1,6 +1,8 @@
 /**
  * Annotated Css for the code in the source iframe found in SourceViewer.java.
- */ 
+ */
+ @def scrollPadding 30px;
+ 
 .highlightedLine {
   background-color: yellow;
 }
