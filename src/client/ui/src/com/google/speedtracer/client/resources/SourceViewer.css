@@ -5,6 +5,7 @@
  
 .base {
   position: absolute;
+  display: none;
   background-color: #fff;
   z-index: 201;
   top:0;

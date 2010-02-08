@@ -61,6 +61,12 @@ public class SourceViewer {
     String columnMarker();
 
     String highlightedLine();
+
+    /**
+     * Some spacing between the top of the source viewer and the line that is
+     * scrolled into view.
+     */
+    int scrollPadding();
   }
 
   /**
@@ -356,24 +362,18 @@ public class SourceViewer {
 
   /**
    * We scroll to the highlighted node to the top of the source viewer frame.
-   * 
-   * @param parentScroll optional additional scroll in case the caller is within
-   *          an element that is also scrolled.
    */
-  public void scrollColumnMarkerIntoView(int parentScroll) {
+  public void scrollColumnMarkerIntoView() {
     sourceFrame.getContentDocument().setScrollTop(
-        columnMarker.getOffsetTop() - parentScroll);
+        columnMarker.getOffsetTop() - styles.scrollPadding());
   }
 
   /**
    * We scroll to the highlighted line to the top of the source viewer frame.
-   * 
-   * @param parentScroll optional additional scroll in case the caller is within
-   *          an element that is also scrolled.
    */
-  public void scrollHighlightedLineIntoView(int parentScroll) {
+  public void scrollHighlightedLineIntoView() {
     sourceFrame.getContentDocument().setScrollTop(
-        highlightedRow.getOffsetTop() - parentScroll);
+        highlightedRow.getOffsetTop() - styles.scrollPadding());
   }
 
   public void show() {
