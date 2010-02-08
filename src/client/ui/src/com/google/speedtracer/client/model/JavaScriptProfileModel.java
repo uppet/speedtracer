@@ -31,10 +31,6 @@ import java.util.List;
  * 
  */
 public class JavaScriptProfileModel implements EventCallbackProxyProvider {
-  private JavaScriptProfileModelImpl impl;
-  private final EventCallbackProxy profileProxy;
-  private final JsIntegerMap<JavaScriptProfile> profileMap = JsIntegerMap.createObject().cast();
-
   /**
    * Sorts in descending order, first by self time, then by time fields.
    */
@@ -54,6 +50,10 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
       return 0;
     }
   };
+
+  private JavaScriptProfileModelImpl impl;
+  private final EventCallbackProxy profileProxy;
+  private final JsIntegerMap<JavaScriptProfile> profileMap = JsIntegerMap.createObject().cast();
 
   JavaScriptProfileModel(final DataModel dataModel) {
     profileProxy = new EventCallbackProxy() {

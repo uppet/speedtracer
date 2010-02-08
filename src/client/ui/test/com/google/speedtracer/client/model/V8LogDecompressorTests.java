@@ -57,19 +57,7 @@ public class V8LogDecompressorTests extends GWTTestCase {
     result = decompressor.decompressLogEntry("ab#3");
     assertEquals("abbaz", result);
   }
-  
-  public void testRepeatInteraction() {
-    V8LogDecompressor decompressor = new V8LogDecompressor(4);
-    String result;
-    result = decompressor.decompressLogEntry("repeat,10,foo");
-    assertEquals("repeat,10,foo", result);
-    result = decompressor.decompressLogEntry("#1");
-    assertEquals("foo", result);
-    result = decompressor.decompressLogEntry("repeat,10,foo");
-    result = decompressor.decompressLogEntry("#1:1");
-    assertEquals("oo", result);
-  }
-    
+
   public void testProfilerInteraction() {
     V8LogDecompressor decompressor = new V8LogDecompressor(4);
     String result;
@@ -86,7 +74,18 @@ public class V8LogDecompressorTests extends GWTTestCase {
     result = decompressor.decompressLogEntry("#1");
     assertEquals("10,foobar", result);
   }
-  
+
+  public void testRepeatInteraction() {
+    V8LogDecompressor decompressor = new V8LogDecompressor(4);
+    String result;
+    result = decompressor.decompressLogEntry("repeat,10,foo");
+    assertEquals("repeat,10,foo", result);
+    result = decompressor.decompressLogEntry("#1");
+    assertEquals("foo", result);
+    result = decompressor.decompressLogEntry("repeat,10,foo");
+    result = decompressor.decompressLogEntry("#1:1");
+    assertEquals("oo", result);
+  }
 
   public void testSubLineCompression() {
     V8LogDecompressor decompressor = new V8LogDecompressor(4);
@@ -106,7 +105,7 @@ public class V8LogDecompressorTests extends GWTTestCase {
     result = decompressor.decompressLogEntry("#1:10");
     assertEquals("klmnopqrstuvwxyz", result);
   }
-  
+
   @Override
   protected void gwtSetUp() throws Exception {
     Logging.createListenerLogger(null);

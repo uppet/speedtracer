@@ -310,15 +310,14 @@ public class SourceViewer {
 
     fetchSource(sourceFrame, resource, new SourceFetcherCallback() {
       public void onContentReady(int statusCode) {
-        // This target source resource should now be fetched and the table
-        // constructed.
-        sourceFrame.setAttribute("viewSource", "true");
-        currentResourceUrl = resource;
-
-        // Display the name of the resource URL and a link to close it.
-        titleElement.setInnerText("Viewing: " + currentResourceUrl);
-
         if (statusCode == 200) {
+          // This target source resource should now be fetched and the table
+          // constructed.
+          sourceFrame.setAttribute("viewSource", "true");
+          currentResourceUrl = resource;
+
+          // Display the name of the resource URL and a link to close it.
+          titleElement.setInnerText("Viewing: " + currentResourceUrl);
           callback.onSourceViewerLoaded(SourceViewer.this);
         } else {
           callback.onSourceFetchFail(statusCode, SourceViewer.this);

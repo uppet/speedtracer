@@ -189,6 +189,8 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
 
   private static final int LOG_PROCESS_CHUNK_TIME_MS = 60;
 
+  private static Element scrubbingDiv = Document.get().createDivElement();
+
   // TODO(zundel): this method is just for debugging. Not for production use.
   static void getProfileBreakdownText(StringBuilder result,
       JavaScriptProfileEvent rawEvent) {
@@ -223,7 +225,6 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
   private Map<ActionType, LogAction> logActions = new HashMap<ActionType, LogAction>();
   private V8SymbolTable symbolTable = new V8SymbolTable();
   private Map<String, Double> addressTags = new HashMap<String, Double>();
-  private static Element scrubbingDiv = Document.get().createDivElement();
   private V8LogDecompressor logDecompressor = null;
   private JavaScriptProfile currentProfile = null;
 
@@ -689,7 +690,6 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
         ? "(unknown)" : name);
     assert child != null;
 
-    
     if (!recordedSelfTime) {
       child.addSelfTime(1.0);
     } else {
@@ -748,7 +748,6 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
         }
       }
     }
-
   }
 
   /**
