@@ -87,7 +87,6 @@ public class CsvTests extends GWTTestCase {
     assertEquals("[^+&gt;] [^+&gt;]", results.get(4));
     
     results = Csv.split("code-creation,RegExp,0x1906720,566,\"[\\\\\\\\\\\\\"\\\\x00-\\\\x1f\\\\x80-\\\\uffff]\"");
-    assertEquals(5, results.length());    
-    
+    assertEquals(5, results.length());        
   }
 }

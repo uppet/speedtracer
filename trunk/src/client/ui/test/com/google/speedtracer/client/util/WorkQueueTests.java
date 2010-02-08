@@ -20,12 +20,9 @@ import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.util.WorkQueue.Node;
 
 /**
- * Tests the WorkQueue class
+ * Tests the WorkQueue class.
  */
 public class WorkQueueTests extends GWTTestCase {
-
-  private int workOrder = 0;
-  private int sum = 0;
 
   private class PrependWorkNode implements Node {
     private int value;
@@ -43,15 +40,13 @@ public class WorkQueueTests extends GWTTestCase {
       return "prepend worker";
     }
   }
+  private int sum = 0;
+
+  private int workOrder = 0;
 
   @Override
   public String getModuleName() {
     return "com.google.speedtracer.Common";
-  }
-
-  @Override
-  protected void gwtSetUp() throws Exception {
-    Logging.createListenerLogger(null);
   }
 
   public void testWorkQueue1() {
@@ -75,5 +70,10 @@ public class WorkQueueTests extends GWTTestCase {
     wq.prepend(new PrependWorkNode(1000));
     wq.prepend(new PrependWorkNode(100));
     wq.prepend(new PrependWorkNode(10));
+  }
+
+  @Override
+  protected void gwtSetUp() throws Exception {
+    Logging.createListenerLogger(null);
   }
 }
