@@ -26,20 +26,20 @@ public class JavaScriptProfileNode {
   private final String symbolName;
   private String symbolType = "";
   private List<JavaScriptProfileNode> children = new ArrayList<JavaScriptProfileNode>();
-  private double selfTimeMsecs = 0;
-  private double timeMsecs = 0;
+  private double selfTime = 0;
+  private double time = 0;
 
   public JavaScriptProfileNode(String symbolName) {
     this.symbolName = symbolName;
   }
 
   public void addSelfTime(double msecs) {
-    this.timeMsecs += msecs;
-    this.selfTimeMsecs += msecs;
+    this.time += msecs;
+    this.selfTime += msecs;
   }
 
   public void addTime(double msecs) {
-    this.timeMsecs += msecs;
+    this.time += msecs;
   }
 
   public List<JavaScriptProfileNode> getChildren() {
@@ -60,12 +60,12 @@ public class JavaScriptProfileNode {
   }
 
   /**
-   * Returns the self time in Milliseconds.
+   * Returns the self time.
    * 
    * @return
    */
   public double getSelfTime() {
-    return this.selfTimeMsecs;
+    return this.selfTime;
   }
 
   public String getSymbolName() {
@@ -77,12 +77,12 @@ public class JavaScriptProfileNode {
   }
 
   /**
-   * Returns time spent in this node in milliseconds.
+   * Returns time spent in this node.
    * 
    * @return
    */
   public double getTime() {
-    return this.timeMsecs;
+    return this.time;
   }
 
   public void setSymbolType(String symbolType) {

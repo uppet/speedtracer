@@ -19,12 +19,23 @@ import com.google.gwt.junit.client.GWTTestCase;
 import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.model.V8SymbolTable.V8Symbol;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
  * Tests for parsing profile data from the v8 JavaScript engine.
  */
 public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
+  private static final String profileDataSet1 = //
+  "code-creation,LazyCompile,0x100,10,\"parentNode\"\n" //
+      + "code-creation,LazyCompile,0x200,10,\"child1\"\n" //
+      + "code-creation,LazyCompile,0x300,10,\"child2\"\n" //
+      + "tick,0x100,+1,0\n" //
+      + "tick,0x200,+1,0,0x100\n" //
+      + "tick,0x200,+1,0,0x100\n" //
+      + "tick,0x300,+1,0,0x200,0x100\n" //
+      + "tick,0x300,+1,0,0x200,0x100\n" //
+      + "tick,0x300,+1,0,0x200,0x100\n";
 
   private static native JavaScriptProfileEvent makeV8ProfileEvent(
       String profileData) /*-{
@@ -83,10 +94,8 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
         + "alias,lic,LoadIC\n" + "alias,re,RegExp\n" + "alias,sc,Script\n"
         + "alias,sic,StoreIC\n" + "alias,s,Stub\n";
     JavaScriptProfileEvent rawEvent = makeV8ProfileEvent(ccrecs);
-    UiEvent refRecord = UiEvent.createObject().cast();
-    refRecord.setSequence(1);
     JavaScriptProfile profile = new JavaScriptProfile();
-    impl.parseRawEvent(rawEvent, refRecord, profile);
+    impl.parseRawEvent(rawEvent, null, profile);
     assertEquals(0.0, profile.getTotalTime());
     assertNull(profile.getProfile(JavaScriptProfile.PROFILE_TYPE_BOTTOM_UP));
   }
@@ -97,13 +106,35 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
         + "code-creation,RegExp,3f830f,566,\"[^+&gt;] [^+&gt;]\"\n"
         + "code-creation,LazyCompile,59117070,2791,\"last_click http://www.reddit.com/static/reddit.js?v=437941e91e4684e9b4b00eca75a46dd9:62\"\n";
     JavaScriptProfileEvent rawEvent = makeV8ProfileEvent(logRecs);
-    UiEvent refRecord = UiEvent.createObject().cast();
-    refRecord.setSequence(1);
     JavaScriptProfile profile = new JavaScriptProfile();
-    impl.parseRawEvent(rawEvent, refRecord, profile);
+    impl.parseRawEvent(rawEvent, null, profile);
     assertEquals(0.0, profile.getTotalTime());
     V8Symbol found = impl.findSymbol(0x5910913e);
     assertNotNull(found);
+  }
+
+  /**
+   * In a flat profile, if we see the same function more than once in the stack,
+   * we don't want to double count it.
+   */
+  public void testRecursiveNodeFlat() {
+    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(false);
+    String logRecs = "code-creation,LoadIC,0x5910913e,179,\"parentNode\"\n"
+        + "code-creation,LoadIC,0x59109000,10,\"childNode\"\n"
+        + "tick,0x5910913e,+1,0,0x59109000,0x5910913e\n";
+    JavaScriptProfileEvent rawEvent = makeV8ProfileEvent(logRecs);
+    JavaScriptProfile profile = new JavaScriptProfile();
+    impl.parseRawEvent(rawEvent, null, profile);
+    JavaScriptProfileNode flatProfile = profile.getProfile(JavaScriptProfile.PROFILE_TYPE_FLAT);
+    assertNotNull(flatProfile);
+    assertEquals(1.0, profile.getTotalTime(), .001);
+    List<JavaScriptProfileNode> children = flatProfile.getChildren();
+    assertEquals(2, children.size());
+    JavaScriptProfileNode child;
+    child = children.get(0);
+    assertEquals(1.0, child.getTime(), .001);
+    child = children.get(1);
+    assertEquals(1.0, child.getTime(), .001);
   }
 
   public void testRepeatSimple() {
@@ -111,11 +142,9 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
     String logRecs = "code-creation,LoadIC,5910913e,179,\"parentNode\"\n"
         + "repeat,5,tick,5910913e,+1,0\n";
     JavaScriptProfileEvent rawEvent = makeV8ProfileEvent(logRecs);
-    UiEvent refRecord = UiEvent.createObject().cast();
-    refRecord.setSequence(1);
     JavaScriptProfile profile = new JavaScriptProfile();
-    impl.parseRawEvent(rawEvent, refRecord, profile);
-    JavaScriptProfileNode bottomUpProfile = profile.getProfile(JavaScriptProfile.PROFILE_TYPE_BOTTOM_UP);
+    impl.parseRawEvent(rawEvent, null, profile);
+    JavaScriptProfileNode bottomUpProfile = profile.getProfile(JavaScriptProfile.PROFILE_TYPE_FLAT);
     assertNotNull(bottomUpProfile);
     assertEquals(5.0, profile.getTotalTime(), .001);
 
@@ -132,19 +161,169 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
     String logRecs = "code-creation,LoadIC,5910913e,179,\"parentNode\"\n"
         + "tick,5910913e,+1,0\n";
     JavaScriptProfileEvent rawEvent = makeV8ProfileEvent(logRecs);
-    UiEvent refRecord = UiEvent.createObject().cast();
-    refRecord.setSequence(1);
     JavaScriptProfile profile = new JavaScriptProfile();
-    impl.parseRawEvent(rawEvent, refRecord, profile);
-    JavaScriptProfileNode bottomUpProfile = profile.getProfile(JavaScriptProfile.PROFILE_TYPE_BOTTOM_UP);
-    assertNotNull(bottomUpProfile);
+    impl.parseRawEvent(rawEvent, null, profile);
+
+    JavaScriptProfileNode profileRoot;
+    List<JavaScriptProfileNode> children;
+    JavaScriptProfileNode child;
+
+    profileRoot = profile.getProfile(JavaScriptProfile.PROFILE_TYPE_BOTTOM_UP);
+    assertNotNull(profileRoot);
     assertEquals(1.0, profile.getTotalTime(), .001);
-    List<JavaScriptProfileNode> children = bottomUpProfile.getChildren();
+    children = profileRoot.getChildren();
     assertEquals(children.size(), 1);
-    JavaScriptProfileNode child = children.get(0);
+    child = children.get(0);
     assertEquals(child.getSymbolName(), "parentNode");
     assertEquals(1.0, child.getTime(), .001);
     assertEquals(1.0, child.getSelfTime(), .001);
+
+    profileRoot = profile.getProfile(JavaScriptProfile.PROFILE_TYPE_FLAT);
+    assertNotNull(profileRoot);
+    assertEquals(1.0, profile.getTotalTime(), .001);
+    children = profileRoot.getChildren();
+    assertEquals(children.size(), 1);
+    child = children.get(0);
+    assertEquals(child.getSymbolName(), "parentNode");
+    assertEquals(1.0, child.getTime(), .001);
+    assertEquals(1.0, child.getSelfTime(), .001);
+
+    profileRoot = profile.getProfile(JavaScriptProfile.PROFILE_TYPE_TOP_DOWN);
+    assertNotNull(profileRoot);
+    assertEquals(1.0, profile.getTotalTime(), .001);
+    children = profileRoot.getChildren();
+    assertEquals(children.size(), 1);
+    child = children.get(0);
+    assertEquals(child.getSymbolName(), "parentNode");
+    assertEquals(1.0, child.getTime(), .001);
+    assertEquals(1.0, child.getSelfTime(), .001);
+  }
+
+  public void testFlatProfile() {
+    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(false);
+    JavaScriptProfileEvent rawEvent = makeV8ProfileEvent(profileDataSet1);
+    JavaScriptProfile profile = new JavaScriptProfile();
+    impl.parseRawEvent(rawEvent, null, profile);
+
+    JavaScriptProfileNode profileRoot;
+    List<JavaScriptProfileNode> children;
+    JavaScriptProfileNode child;
+    profileRoot = profile.getProfile(JavaScriptProfile.PROFILE_TYPE_FLAT);
+    assertNotNull(profileRoot);
+    assertEquals(6.0, profileRoot.getTime(), .001);
+
+    children = profileRoot.getChildren();
+    assertEquals(3, children.size());
+    Collections.sort(children, JavaScriptProfileModel.nodeTimeComparator);
+    child = children.get(0);
+    assertEquals("child2", child.getSymbolName());
+    assertEquals(3, child.getSelfTime(), .001);
+    assertEquals(3, child.getTime(), .001);
+    assertEquals(0, child.getChildren().size());
+    child = children.get(1);
+    assertEquals("child1", child.getSymbolName());
+    assertEquals(2, child.getSelfTime(), .001);
+    assertEquals(5, child.getTime(), .001);
+    assertEquals(0, child.getChildren().size());
+    child = children.get(2);
+    assertEquals("parentNode", child.getSymbolName());
+    assertEquals(6.0, child.getTime(), .001);
+    assertEquals(1.0, child.getSelfTime(), .001);
+    assertEquals(0, child.getChildren().size());
+  }
+
+  public void testBottomUpProfile() {
+    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(false);
+    JavaScriptProfileEvent rawEvent = makeV8ProfileEvent(profileDataSet1);
+    JavaScriptProfile profile = new JavaScriptProfile();
+    impl.parseRawEvent(rawEvent, null, profile);
+
+    JavaScriptProfileNode profileRoot;
+    List<JavaScriptProfileNode> children;
+    JavaScriptProfileNode child;
+    profileRoot = profile.getProfile(JavaScriptProfile.PROFILE_TYPE_BOTTOM_UP);
+    assertNotNull(profileRoot);
+    assertEquals(6.0, profileRoot.getTime(), .001);
+
+    // look at the top level of children
+    children = profileRoot.getChildren();
+    assertEquals(3, children.size());
+    Collections.sort(children, JavaScriptProfileModel.nodeTimeComparator);
+
+    child = children.get(2);
+    assertEquals("parentNode", child.getSymbolName());
+    assertEquals(1.0, child.getTime(), .001);
+    assertEquals(1.0, child.getSelfTime(), .001);
+    assertEquals(0, child.getChildren().size());
+
+    child = children.get(1);
+    assertEquals("child1", child.getSymbolName());
+    assertEquals(2.0, child.getTime(), .001);
+    assertEquals(2.0, child.getSelfTime(), .001);
+    assertEquals(1, child.getChildren().size());
+    JavaScriptProfileNode child1Parent = child.getChildren().get(0);
+    assertEquals("parentNode", child1Parent.getSymbolName());
+    assertEquals(2.0, child1Parent.getTime(), .001);
+    assertEquals(0.0, child1Parent.getSelfTime(), .001);
+    assertEquals(0, child1Parent.getChildren().size());
+
+    child = children.get(0);
+    assertEquals("child2", child.getSymbolName());
+    assertEquals(3.0, child.getTime(), .001);
+    assertEquals(3.0, child.getSelfTime(), .001);
+    JavaScriptProfileNode child2Parent = child.getChildren().get(0);
+    assertEquals("child1", child2Parent.getSymbolName());
+    assertEquals(3.0, child2Parent.getTime(), .001);
+    assertEquals(0.0, child2Parent.getSelfTime(), .001);
+    assertEquals(1, child2Parent.getChildren().size());
+    child1Parent = child2Parent.getChildren().get(0);
+    assertEquals("parentNode", child1Parent.getSymbolName());
+    assertEquals(3.0, child1Parent.getTime(), .001);
+    assertEquals(0.0, child1Parent.getSelfTime(), .001);
+    assertEquals(0, child1Parent.getChildren().size());
+  }
+
+  public void testTopDownProfile() {
+    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(false);
+    JavaScriptProfileEvent rawEvent = makeV8ProfileEvent(profileDataSet1);
+    JavaScriptProfile profile = new JavaScriptProfile();
+    impl.parseRawEvent(rawEvent, null, profile);
+
+    JavaScriptProfileNode profileRoot;
+    List<JavaScriptProfileNode> children;
+    JavaScriptProfileNode child;
+    profileRoot = profile.getProfile(JavaScriptProfile.PROFILE_TYPE_TOP_DOWN);
+    assertNotNull(profileRoot);
+    assertEquals(6.0, profileRoot.getTime(), .001);
+
+    // look at the top level of children
+    children = profileRoot.getChildren();
+    assertEquals(1, children.size());
+    child = children.get(0);
+    assertEquals("parentNode", child.getSymbolName());
+    assertEquals(6.0, child.getTime(), .001);
+    assertEquals(1.0, child.getSelfTime(), .001);
+
+    // look at the next level of children
+    children = child.getChildren();
+    assertEquals(1, children.size());
+    Collections.sort(children, JavaScriptProfileModel.nodeTimeComparator);
+    child = children.get(0);
+    assertEquals("child1", child.getSymbolName());
+    assertEquals(2.0, child.getSelfTime(), .001);
+    assertEquals(5.0, child.getTime(), .001);
+
+    // look at the next level of children
+    children = child.getChildren();
+    assertEquals(1, children.size());
+    child = children.get(0);
+    assertEquals("child2", child.getSymbolName());
+    assertEquals(3.0, child.getSelfTime(), .001);
+    assertEquals(3, child.getTime(), .001);
+
+    children = child.getChildren();
+    assertEquals(0, children.size());
+
   }
 
   @Override
