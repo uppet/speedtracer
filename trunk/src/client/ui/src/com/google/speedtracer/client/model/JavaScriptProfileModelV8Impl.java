@@ -29,8 +29,10 @@ import com.google.speedtracer.client.util.WorkQueue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 /**
@@ -96,7 +98,8 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     }
 
     public String getDescription() {
-      return "LogLineWorkQueueNode seq " + refRecord.getSequence() + " offset "
+      int refSequence = (refRecord == null) ? -1 : refRecord.getSequence();
+      return "LogLineWorkQueueNode seq " + refSequence + " offset "
           + currentOffset;
     }
   }
@@ -124,7 +127,8 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     }
 
     public String getDescription() {
-      return "NewProfileDataWorkQueueNode seq " + refRecord.getSequence();
+      int refSequence = (refRecord == null) ? -1 : refRecord.getSequence();
+      return "NewProfileDataWorkQueueNode seq " + refSequence;
     }
   }
 
@@ -263,7 +267,9 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     assert rawEvent.getFormat().equals(FORMAT);
     String profileData = rawEvent.getProfileData();
     if (profileData == null || profileData.length() == 0) {
-      refRecord.setHasJavaScriptProfile(false);
+      if (refRecord != null) {
+        refRecord.setHasJavaScriptProfile(false);
+      }
       return;
     }
 
@@ -276,7 +282,9 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     } else {
       // Process the log entries using a deferred command to keep from blocking
       // the UI thread.
-      refRecord.setProcessingJavaScriptProfile();
+      if (refRecord != null) {
+        refRecord.setProcessingJavaScriptProfile();
+      }
       workQueue.append(new NewProfileDataWorker(refRecord, profile, rawEvent));
     }
   }
@@ -661,9 +669,13 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     } else {
       // All done!
       if (currentProfile.getProfile(JavaScriptProfile.PROFILE_TYPE_BOTTOM_UP) == null) {
-        refRecord.setHasJavaScriptProfile(false);
+        if (refRecord != null) {
+          refRecord.setHasJavaScriptProfile(false);
+        }
       } else {
-        refRecord.setHasJavaScriptProfile(true);
+        if (refRecord != null) {
+          refRecord.setHasJavaScriptProfile(true);
+        }
       }
     }
   }
@@ -677,6 +689,7 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
         ? "(unknown)" : name);
     assert child != null;
 
+    
     if (!recordedSelfTime) {
       child.addSelfTime(1.0);
     } else {
@@ -725,10 +738,17 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     if (symbols.size() == 0) {
       recordUnknownTick(flatProfile, vmState);
     } else {
+      Set<V8Symbol> addresses = new HashSet<V8Symbol>();
       for (int i = 0; i < symbols.size(); ++i) {
-        recordAddressInProfile(flatProfile, symbols.get(i), i > 0);
+        V8Symbol symbol = symbols.get(i);
+        // We don't want to double-record recursive calls.
+        if (!addresses.contains(symbol)) {
+          recordAddressInProfile(flatProfile, symbol, i > 0);
+          addresses.add(symbol);
+        }
       }
     }
+
   }
 
   /**

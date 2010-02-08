@@ -38,7 +38,7 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
   /**
    * Sorts in descending order, first by self time, then by time fields.
    */
-  private Comparator<JavaScriptProfileNode> nodeTimeComparator = new Comparator<JavaScriptProfileNode>() {
+  public static final Comparator<JavaScriptProfileNode> nodeTimeComparator = new Comparator<JavaScriptProfileNode>() {
 
     public int compare(JavaScriptProfileNode o1, JavaScriptProfileNode o2) {
       if (o1.getSelfTime() > o2.getSelfTime()) {
@@ -60,15 +60,12 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
       public void onEventRecord(EventRecord data) {
 
         final JavaScriptProfileEvent profileData = data.cast();
-        // Add a reference to this record from the preceding event.
-        int refSequence = profileData.getSequence() - 1;
-        UiEvent rec = (UiEvent) dataModel.findEventRecord(refSequence);
-        // TODO(zundel): creating a dummy record is a hack to keep
-        // processProfileData from throwing an NPE on the 'rec' field.
-        if (rec == null || profileData.isOrphaned()) {
-          // create a dummy record.
-          rec = UiEvent.createObject().cast();
-          rec.setSequence(-1);
+        // Add a reference to this record from the preceding event, unless this
+        // profile is marked as not belonging to a timeline event (log entries
+        // that were created between events).
+        UiEvent rec = null;
+        if (!profileData.isOrphaned()) {
+          rec = (UiEvent) dataModel.findEventRecord(profileData.getSequence() - 1);
         }
         processProfileData(rec, profileData);
       }
@@ -160,6 +157,7 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
     result.append("<tr>");
     result.append("<th>Symbol</th>");
     result.append("<th>Self Time</th>");
+    result.append("<th>Time</th>");
     result.append("</tr>\n");
 
     for (int i = 0, length = children.size(); i < length; ++i) {
@@ -169,10 +167,16 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
       result.append("<td>" + formatSymbolName(child.getSymbolName()) + "</td>");
       double relativeSelfTime = (totalTime > 0
           ? (child.getSelfTime() / totalTime) * 100 : 0);
+      double relativeTime = (totalTime > 0
+          ? (child.getTime() / totalTime) * 100 : 0);
       result.append("<td><b>");
       result.append(TimeStampFormatter.formatToFixedDecimalPoint(
           relativeSelfTime, 1));
       result.append("%</b></td>");
+      result.append("<td>");
+      result.append(TimeStampFormatter.formatToFixedDecimalPoint(relativeTime,
+          1));
+      result.append("%</td>");
       result.append("</tr>\n");
     }
     result.append("</table>\n");
@@ -234,9 +238,14 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
     return result.toString();
   }
 
-  private void processProfileData(UiEvent rec,
+  /**
+   * 
+   * @param recordSequence If >= 0, associate this profile with the specified
+   *          node.
+   * @param profileData the unprocessed profile data timeline record.
+   */
+  private void processProfileData(UiEvent refRecord,
       JavaScriptProfileEvent profileData) {
-
     // Lazily initialize the impl class. We don't know which one to
     // instantiate until we get the first profile record.
     if (impl == null) {
@@ -261,11 +270,10 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
         };
       }
     }
-
     JavaScriptProfile profile = new JavaScriptProfile();
-    impl.parseRawEvent(profileData, rec, profile);
-    if (rec.getSequence() >= 0) {
-      profileMap.put(rec.getSequence(), profile);
+    impl.parseRawEvent(profileData, refRecord, profile);
+    if (refRecord != null) {
+      profileMap.put(refRecord.getSequence(), profile);
     }
   }
 }
