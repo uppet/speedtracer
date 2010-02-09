@@ -31,10 +31,13 @@ public class JavaScriptProfileNodeTests extends GWTTestCase {
 
   public void testJavaScriptProfileNodeHierarchy() {
     JavaScriptProfileNode topNode = new JavaScriptProfileNode("top");
-    JavaScriptProfileNode child0 = topNode.getOrInsertChild("child0");
-    JavaScriptProfileNode child1 = topNode.getOrInsertChild("child1");
-    JavaScriptProfileNode child2 = child1.getOrInsertChild("child2");
-
+    JavaScriptProfileNode child0 = new JavaScriptProfileNode("child0");
+    topNode.addChild(child0);
+    JavaScriptProfileNode child1 = new JavaScriptProfileNode("child1");
+    topNode.addChild(child1);
+    JavaScriptProfileNode child2 = new JavaScriptProfileNode("child2");
+    child1.addChild(child2);
+    
     List<JavaScriptProfileNode> topChildren = topNode.getChildren();
     assertEquals(2, topChildren.size());
     assertEquals(child0, topChildren.get(0));
@@ -50,9 +53,13 @@ public class JavaScriptProfileNodeTests extends GWTTestCase {
 
   public void testJavaScriptProfileNodeTime() {
     JavaScriptProfileNode topNode = new JavaScriptProfileNode("top");
-    JavaScriptProfileNode child0 = topNode.getOrInsertChild("child0");
-    JavaScriptProfileNode child1 = topNode.getOrInsertChild("child1");
-    JavaScriptProfileNode child2 = child1.getOrInsertChild("child2");
+    JavaScriptProfileNode child0 = new JavaScriptProfileNode("child0");
+    topNode.addChild(child0);
+    JavaScriptProfileNode child1 = new JavaScriptProfileNode("child1");
+    topNode.addChild(child1);
+    JavaScriptProfileNode child2 = new JavaScriptProfileNode("child2");
+    child1.addChild(child2);
+    
     child0.addSelfTime(1.0);
     child0.addSelfTime(1.0);
     child1.addTime(1.0);
