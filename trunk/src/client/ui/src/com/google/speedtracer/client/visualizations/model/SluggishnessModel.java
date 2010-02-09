@@ -21,6 +21,7 @@ import com.google.speedtracer.client.model.EventRecord;
 import com.google.speedtracer.client.model.EventRecordType;
 import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.HintletEngineHost;
+import com.google.speedtracer.client.model.JavaScriptProfile;
 import com.google.speedtracer.client.model.JavaScriptProfileModel;
 import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.client.model.UiEventModel;
@@ -223,6 +224,11 @@ public class SluggishnessModel implements VisualizationModel,
 
     int[] result = {(eventIndex + 1), endIndex};
     return result;
+  }
+
+  public JavaScriptProfile getJavaScriptProfileForEvent(UiEvent event) {
+    JavaScriptProfileModel profileModel = dataModel.getJavaScriptProfileModel();
+    return profileModel.getProfileForEvent(event.getSequence());
   }
 
   /**

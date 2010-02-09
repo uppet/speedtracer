@@ -23,14 +23,22 @@ import java.util.List;
  * profiles.
  */
 public class JavaScriptProfileNode {
+
+  // TODO(zundel): reuse JsSymbol here
   private final String symbolName;
   private String symbolType = "";
   private List<JavaScriptProfileNode> children = new ArrayList<JavaScriptProfileNode>();
   private double selfTime = 0;
   private double time = 0;
+  private String resourceUrl = "";
+  private int resourceLineNumber = 0;
 
   public JavaScriptProfileNode(String symbolName) {
     this.symbolName = symbolName;
+  }
+
+  public void addChild(JavaScriptProfileNode child) {
+    children.add(child);
   }
 
   public void addSelfTime(double msecs) {
@@ -46,17 +54,12 @@ public class JavaScriptProfileNode {
     return children;
   }
 
-  public JavaScriptProfileNode getOrInsertChild(String symbolName) {
-    // It might be better to use a hash table, but we don't
-    // expect large numbers of children at each level.
-    for (JavaScriptProfileNode node : children) {
-      if (node.getSymbolName().equals(symbolName)) {
-        return node;
-      }
-    }
-    JavaScriptProfileNode result = new JavaScriptProfileNode(symbolName);
-    children.add(result);
-    return result;
+  public int getResourceLineNumber() {
+    return this.resourceLineNumber;
+  }
+
+  public String getResourceUrl() {
+    return this.resourceUrl;
   }
 
   /**
@@ -83,6 +86,25 @@ public class JavaScriptProfileNode {
    */
   public double getTime() {
     return this.time;
+  }
+
+  public JavaScriptProfileNode lookup(String symbolName) {
+    // It might be better to use a hash table, but we don't
+    // expect large numbers of children at each level.
+    for (JavaScriptProfileNode node : children) {
+      if (node.getSymbolName().equals(symbolName)) {
+        return node;
+      }
+    }
+    return null;
+  }
+
+  public void setResourceLineNumber(int resourceLineNumber) {
+    this.resourceLineNumber = resourceLineNumber;
+  }
+
+  public void setResourceUrl(String resourceUrl) {
+    this.resourceUrl = resourceUrl;
   }
 
   public void setSymbolType(String symbolType) {

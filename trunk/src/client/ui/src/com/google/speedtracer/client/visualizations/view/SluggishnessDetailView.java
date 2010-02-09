@@ -86,6 +86,8 @@ import com.google.speedtracer.client.visualizations.model.SluggishnessModel;
 import com.google.speedtracer.client.visualizations.model.SluggishnessVisualization;
 import com.google.speedtracer.client.visualizations.model.JsStackTrace.JsStackFrame;
 import com.google.speedtracer.client.visualizations.model.JsSymbolMap.JsSymbol;
+import com.google.speedtracer.client.visualizations.view.JavaScriptProfileRenderer.ResizeCallback;
+import com.google.speedtracer.client.visualizations.view.JavaScriptProfileRenderer.SourceClickCallback;
 import com.google.speedtracer.client.visualizations.view.Tree.ExpansionChangeListener;
 import com.google.speedtracer.client.visualizations.view.Tree.Item;
 import com.google.speedtracer.client.visualizations.view.Tree.SelectionChangeListener;
@@ -255,21 +257,53 @@ public class SluggishnessDetailView extends DetailView {
     private class UiEventDetails extends RowDetails {
       private class ProfileClickListener implements ClickListener {
         private int profileType;
-        private DivElement displayDiv;
 
-        private ProfileClickListener(int profileType, DivElement displayDiv) {
+        private ProfileClickListener(int profileType) {
           this.profileType = profileType;
-          this.displayDiv = displayDiv;
         }
 
         public void onClick(ClickEvent clickEvent) {
-          displayDiv.setInnerHTML(getModel().getProfileHtmlForEvent(event,
-              profileType));
+          jsProfileRenderer.show(profileType);
           // Defer this so there is no infinite loop
           Command.defer(new Command() {
             @Override
             public void execute() {
               fixHeightOfParentRow();
+            }
+          });
+        }
+      }
+
+      private class ResymbolizeClickListener implements ClickListener {
+        private JsSymbolMap symbols;
+        private JsSymbol sourceSymbol;
+
+        public ResymbolizeClickListener(JsSymbolMap symbols,
+            JsSymbol sourceSymbol) {
+          this.symbols = symbols;
+          this.sourceSymbol = sourceSymbol;
+        }
+
+        public void onClick(ClickEvent event) {
+          // This is a click on the re-symbolized source
+          // symbol. Load the source in the source viewer.
+          String sourceUrl = symbols.getSourceServer()
+              + sourceSymbol.getResourceBase() + sourceSymbol.getResourceName();
+
+          // TODO(jaimeyap): Put up a spinner or something. It
+          // may take a while to load the resource.
+          ensureSourceViewer(sourceUrl, new SourceViewerLoadedCallback() {
+
+            public void onSourceFetchFail(int statusCode, SourceViewer viewer) {
+              sourceViewer.hide();
+            }
+
+            public void onSourceViewerLoaded(SourceViewer viewer) {
+              // The viewer should not be loaded at the
+              // URL we care about.
+              sourceViewer.show();
+              sourceViewer.highlightLine(sourceSymbol.getLineNumber());
+              sourceViewer.scrollHighlightedLineIntoView();
             }
           });
         }
@@ -286,6 +320,7 @@ public class SluggishnessDetailView extends DetailView {
       private Div profileDiv;
       private HintletRecordsTree hintletTree;
       private SourceViewer sourceViewer;
+      private JavaScriptProfileRenderer jsProfileRenderer;
 
       private DivElement treeDiv;
 
@@ -402,10 +437,9 @@ public class SluggishnessDetailView extends DetailView {
         return elem;
       }
 
-      private void attemptResymbolization(final Table table,
-          final JsStackFrame frame, final StackFrameRenderer frameRenderer) {
-        final String resourceUrl = frame.getResourceUrl();
-        // Add resymbolized frame if it is available.
+      private void attemptResymbolization(final String resourceUrl,
+          final String symbolName, final StackFrameRenderer renderer) {
+        // Add resymbolized data to frame/profile if it is available.
         SymbolServerController ssController = getCurrentSymbolServerController();
         if (ssController != null) {
           ssController.requestSymbolsFor(resourceUrl, new Callback() {
@@ -415,41 +449,14 @@ public class SluggishnessDetailView extends DetailView {
 
             public void onSymbolsReady(final JsSymbolMap symbols) {
               // Extract the source symbol.
-              final JsSymbol sourceSymbol = symbols.lookup(frame.getSymbolName());
+              final JsSymbol sourceSymbol = symbols.lookup(symbolName);
 
               if (sourceSymbol == null) {
                 return;
               }
               // Enhance the rendered frame with the resymbolization.
-              frameRenderer.reSymbolize(symbols.getSourceServer(),
-                  sourceSymbol, new ClickListener() {
-                    public void onClick(ClickEvent event) {
-                      // This is a click on the re-symbolized source
-                      // symbol. Load the source in the source viewer.
-                      String sourceUrl = symbols.getSourceServer()
-                          + sourceSymbol.getResourceBase()
-                          + sourceSymbol.getResourceName();
-
-                      // TODO(jaimeyap): Put up a spinner or something. It
-                      // may take a while to load the resource.
-                      ensureSourceViewer(sourceUrl,
-                          new SourceViewerLoadedCallback() {
-
-                            public void onSourceFetchFail(int statusCode,
-                                SourceViewer viewer) {
-                              sourceViewer.hide();
-                            }
-
-                            public void onSourceViewerLoaded(SourceViewer viewer) {
-                              // The viewer should not be loaded at the
-                              // URL we care about.
-                              sourceViewer.show();
-                              sourceViewer.highlightLine(sourceSymbol.getLineNumber());
-                              sourceViewer.scrollHighlightedLineIntoView();
-                            }
-                          });
-                    }
-                  });
+              renderer.reSymbolize(symbols.getSourceServer(), sourceSymbol,
+                  new ResymbolizeClickListener(symbols, sourceSymbol));
             }
           });
         }
@@ -463,14 +470,42 @@ public class SluggishnessDetailView extends DetailView {
         profileDiv.getElement().appendChild(profileHeading);
         profileHeading.setInnerText("Profile");
         ScopeBar bar = new ScopeBar(container, resources);
-        final DivElement displayDiv = container.getDocument().createDivElement();
-        profileDiv.getElement().appendChild(displayDiv);
+        jsProfileRenderer = new JavaScriptProfileRenderer(container,
+            getModel().getJavaScriptProfileForEvent(event),
+            new SourceClickCallback() {
+              public void onSourceClick(String resourceUrl, final int lineNumber) {
+                // TODO(jaimeyap): Put up a spinner or something. It may
+                // take a while to load the resource.
+                ensureSourceViewer(resourceUrl,
+                    new SourceViewerLoadedCallback() {
+
+                      public void onSourceFetchFail(int statusCode,
+                          SourceViewer viewer) {
+                        sourceViewer.hide();
+                      }
+
+                      public void onSourceViewerLoaded(SourceViewer viewer) {
+                        // The viewer should not be loaded at the URL we
+                        // care about.
+                        sourceViewer.show();
+
+                        sourceViewer.highlightLine(lineNumber);
+                        sourceViewer.scrollHighlightedLineIntoView();
+                      }
+                    });
+              }
+            }, getCurrentSymbolServerController(), new ResizeCallback() {
+              public void onResize() {
+                fixHeightOfParentRow();
+              }
+            });
+        trackRemover(jsProfileRenderer.getRemover());
         Element flatProfile = bar.add("Flat", new ProfileClickListener(
-            JavaScriptProfile.PROFILE_TYPE_FLAT, displayDiv));
+            JavaScriptProfile.PROFILE_TYPE_FLAT));
         bar.add("Top Down", new ProfileClickListener(
-            JavaScriptProfile.PROFILE_TYPE_TOP_DOWN, displayDiv));
+            JavaScriptProfile.PROFILE_TYPE_TOP_DOWN));
         bar.add("Bottom Up", new ProfileClickListener(
-            JavaScriptProfile.PROFILE_TYPE_BOTTOM_UP, displayDiv));
+            JavaScriptProfile.PROFILE_TYPE_BOTTOM_UP));
         bar.setSelected(flatProfile, true);
       }
 
@@ -534,7 +569,7 @@ public class SluggishnessDetailView extends DetailView {
           private void fillDetailRowValue(TableCellElement cell, String key,
               String val) {
             if (key.equals(STACK_TRACE_KEY)) {
-              formatStackTrace(table, cell, val);
+              formatStackTrace(cell, val);
             } else {
               cell.setInnerText(val);
             }
@@ -782,21 +817,24 @@ public class SluggishnessDetailView extends DetailView {
         getParentRow().getElement().getStyle().setPropertyPx("height", height);
       }
 
-      private void formatStackTrace(final Table table, TableCellElement cell,
-          String val) {
+      private void formatStackTrace(TableCellElement cell, String val) {
         JsStackTrace stackTrace = JsStackTrace.create(val);
         List<JsStackFrame> frames = stackTrace.getFrames();
         for (int i = 0, n = frames.size(); i < n; i++) {
           final JsStackFrame frame = frames.get(i);
           final StackFrameRenderer frameRenderer = new StackFrameRenderer(cell,
               frame, resources);
-          renderStackFrame(table, frame, frameRenderer);
+          trackRemover(frameRenderer.getRemover());
+          renderStackFrame(frame, frameRenderer);
         }
       }
 
-      private void renderStackFrame(final Table table,
-          final JsStackFrame frame, final StackFrameRenderer frameRenderer) {
+      private void renderStackFrame(final JsStackFrame frame,
+          final StackFrameRenderer frameRenderer) {
         final String resourceUrl = frame.getResourceUrl();
+
+        // TODO(zundel) this click listener could be consolidated with the
+        // JavaScriptProfileRenderer's click listener.
         frameRenderer.renderFrame(new ClickListener() {
           public void onClick(ClickEvent event) {
             // TODO(jaimeyap): Put up a spinner or something. It may
@@ -820,7 +858,8 @@ public class SluggishnessDetailView extends DetailView {
           }
         });
 
-        attemptResymbolization(table, frame, frameRenderer);
+        attemptResymbolization(frame.getResourceUrl(), frame.getSymbolName(),
+            frameRenderer);
       }
 
       /**

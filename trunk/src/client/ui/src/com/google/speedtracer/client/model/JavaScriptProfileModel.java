@@ -83,6 +83,10 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
     return null;
   }
 
+  public JavaScriptProfile getProfileForEvent(int sequence) {
+    return profileMap.get(sequence);
+  }
+
   /**
    * Return the profile for the specified event in a simple HTML representation.
    * 
@@ -99,7 +103,7 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
       return result.toString();
     }
 
-    getVmStateHtml(result, profile);
+    profile.getVmStateHtml(result);
     result.append("<p></p>");
 
     JavaScriptProfileNode topNode = profile.getProfile(profileType);
@@ -122,28 +126,6 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
     // Some additional debugging info
     // result.append(impl.getDebugDumpHtml());
     return result.toString();
-  }
-
-  /**
-   * Return the profile for the specified event in a simple HTML representation.
-   * 
-   * TODO(zundel): This method is here just for debugging purposes.
-   */
-  public void getVmStateHtml(StringBuilder result, JavaScriptProfile profile) {
-    // Give a table of the time spent in each VM state
-    result.append("<table>");
-    double total = profile.getTotalTime();
-    for (int index = 0; index < JavaScriptProfile.NUM_STATES; ++index) {
-      double value = profile.getStateTime(index);
-      if (value > 0.0) {
-        String percentage = TimeStampFormatter.formatToFixedDecimalPoint(
-            (value / total) * 100.0, 1);
-        result.append("<tr><td>" + JavaScriptProfile.stateToString(index)
-            + "</td><td>" + (int) value + "</td><td>ticks</td><td>"
-            + percentage + "%</td></tr>");
-      }
-    }
-    result.append("</table>");
   }
 
   private void dumpNodeChildrenFlat(double totalTime,

@@ -35,6 +35,7 @@ import com.google.speedtracer.client.visualizations.model.JsSymbolMap.JsSymbol;
  * Supports showing both an obfuscated and a re-symbolized stack trace.
  */
 public class StackFrameRenderer extends EventCleanupTrait {
+  
   /**
    * Externalized Resource interface.
    */
@@ -78,7 +79,7 @@ public class StackFrameRenderer extends EventCleanupTrait {
     String resourceName = stackFrame.getResourceName().equals("")
         ? stackFrame.getResourceBase() : stackFrame.getResourceName();
 
-    // If we still dont have anything, replace with [unknown]
+    // If we still don't have anything, replace with [unknown]
     String symbolName = (stackFrame.getSymbolName().equals("")) ? "[unknown] "
         : stackFrame.getSymbolName() + "() ";
 
