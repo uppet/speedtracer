@@ -32,6 +32,7 @@ public class JsSymbolMap {
    * A Source and line number for a JavaScript symbol as specified in the symbol
    * mapping.
    */
+  // TODO(zundel): Reuse JsSymbol in JavaScriptProfileNode
   public static class JsSymbol {
     private final int lineNumber;
 

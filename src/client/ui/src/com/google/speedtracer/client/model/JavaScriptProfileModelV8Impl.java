@@ -236,7 +236,8 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     populateAddressTags();
     populateActionTypes();
     populateSymbolTypes();
-    // TODO (zundel): populate windows C++ symbols from .map files
+    // TODO (zundel): We could populate chrome's C++ symbols from nm or windows
+    // .map files
   }
 
   @Override
@@ -686,18 +687,21 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
       boolean recordedSelfTime) {
     assert profileNode != null;
     String name = symbol.getName();
-    JavaScriptProfileNode child = profileNode.getOrInsertChild("".equals(name)
-        ? "(unknown)" : name);
-    assert child != null;
+
+    JavaScriptProfileNode child = profileNode.lookup(name);
+    if (child == null) {
+      child = new JavaScriptProfileNode("".equals(name) ? "(unknown)" : name);
+      child.setResourceUrl(symbol.getResourceUrl());
+      child.setResourceLineNumber(symbol.getResourceLineNumber());
+      child.setSymbolType((symbol.getSymbolType().getName()));
+      profileNode.addChild(child);
+    }
 
     if (!recordedSelfTime) {
       child.addSelfTime(1.0);
     } else {
       child.addTime(1.0);
     }
-
-    child.setSymbolType((symbol.getSymbolType().getName()));
-
     return child;
   }
 
@@ -706,8 +710,12 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    * entry.
    */
   private void recordUnknownTick(JavaScriptProfileNode profileNode, int vmState) {
-    JavaScriptProfileNode child = profileNode.getOrInsertChild("unknown - "
-        + JavaScriptProfile.stateToString(vmState));
+    String name = "unknown - " + JavaScriptProfile.stateToString(vmState);
+    JavaScriptProfileNode child = profileNode.lookup(name);
+    if (child == null) {
+      child = new JavaScriptProfileNode(name);
+      profileNode.addChild(child);
+    }
     child.addSelfTime(1.0);
   }
 

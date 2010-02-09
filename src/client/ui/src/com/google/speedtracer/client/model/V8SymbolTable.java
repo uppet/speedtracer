@@ -15,6 +15,8 @@
  */
 package com.google.speedtracer.client.model;
 
+import com.google.speedtracer.client.util.JSOArray;
+
 import java.util.TreeMap;
 
 /**
@@ -119,12 +121,29 @@ public class V8SymbolTable {
    */
   static class V8Symbol {
     private final AddressSpan addressSpan;
+    // TODO(zundel): Use JsSymbol here?
     private final String name;
+    private final int resourceLineNumber;
+    private final String resourceUrl;
     private final AliasableEntry symbolType;
 
     V8Symbol(String name, AliasableEntry symbolType, double address,
         int addressLength) {
-      this.name = name;
+      JSOArray<String> vals = JSOArray.splitString(name, " ");
+      if (vals.size() <= 1) {
+        this.name = name;
+        this.resourceUrl = "";
+        resourceLineNumber = 0;
+      } else {
+        this.name = vals.get(0);
+        int colonOffset = vals.get(1).lastIndexOf(":");
+        this.resourceLineNumber = findLineNumber(vals.get(1), colonOffset);
+        if (resourceLineNumber > 0) {
+          this.resourceUrl = vals.get(1).substring(0, colonOffset);
+        } else {
+          this.resourceUrl = vals.get(1);
+        }
+      }
       this.symbolType = symbolType;
       this.addressSpan = new AddressSpan(address, addressLength);
     }
@@ -137,12 +156,32 @@ public class V8SymbolTable {
       return this.name;
     }
 
+    public int getResourceLineNumber() {
+      return this.resourceLineNumber;
+    }
+
+    public String getResourceUrl() {
+      return this.resourceUrl;
+    }
+
     public AliasableEntry getSymbolType() {
       return this.symbolType;
     }
 
     public String toString() {
       return name + " : " + addressSpan.toString();
+    }
+
+    private int findLineNumber(String resource, int colonOffset) {
+      if (colonOffset <= 0) {
+        return 0;
+      }
+      try {
+        String lineNumberString = resource.substring(colonOffset + 1);
+        return Integer.parseInt(lineNumberString);
+      } catch (NumberFormatException ex) {
+        return 0;
+      }
     }
   }
 

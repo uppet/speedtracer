@@ -16,6 +16,7 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.JsArrayNumber;
+import com.google.speedtracer.client.util.TimeStampFormatter;
 
 /**
  * This class stores a profile for a single top level event. It references into
@@ -82,6 +83,27 @@ public class JavaScriptProfile {
 
     // The total time is stored in the root node of the profile.
     return profiles[PROFILE_TYPE_FLAT].getTime();
+  }
+
+  /**
+   * Return the profile for the specified event in a simple HTML representation.
+   * 
+   */
+  public void getVmStateHtml(StringBuilder result) {
+    // Give a table of the time spent in each VM state
+    result.append("<table>");
+    double total = getTotalTime();
+    for (int index = 0; index < JavaScriptProfile.NUM_STATES; ++index) {
+      double value = getStateTime(index);
+      if (value > 0.0) {
+        String percentage = TimeStampFormatter.formatToFixedDecimalPoint(
+            (value / total) * 100.0, 1);
+        result.append("<tr><td>" + JavaScriptProfile.stateToString(index)
+            + "</td><td>" + (int) value + "</td><td>ticks</td><td>"
+            + percentage + "%</td></tr>");
+      }
+    }
+    result.append("</table>");
   }
 
   JavaScriptProfileNode getOrCreateProfile(int profileType) {
