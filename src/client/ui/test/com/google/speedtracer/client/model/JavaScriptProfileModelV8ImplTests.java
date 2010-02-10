@@ -119,33 +119,33 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
     Collections.sort(children, JavaScriptProfileModel.nodeTimeComparator);
 
     child = children.get(2);
-    assertEquals("parentNode", child.getSymbolName());
+    assertEquals("parentNode", child.getSymbol().getSymbolName());
     assertEquals(1.0, child.getTime(), .001);
     assertEquals(1.0, child.getSelfTime(), .001);
     assertEquals(0, child.getChildren().size());
 
     child = children.get(1);
-    assertEquals("child1", child.getSymbolName());
+    assertEquals("child1", child.getSymbol().getSymbolName());
     assertEquals(2.0, child.getTime(), .001);
     assertEquals(2.0, child.getSelfTime(), .001);
     assertEquals(1, child.getChildren().size());
     JavaScriptProfileNode child1Parent = child.getChildren().get(0);
-    assertEquals("parentNode", child1Parent.getSymbolName());
+    assertEquals("parentNode", child1Parent.getSymbol().getSymbolName());
     assertEquals(2.0, child1Parent.getTime(), .001);
     assertEquals(0.0, child1Parent.getSelfTime(), .001);
     assertEquals(0, child1Parent.getChildren().size());
 
     child = children.get(0);
-    assertEquals("child2", child.getSymbolName());
+    assertEquals("child2", child.getSymbol().getSymbolName());
     assertEquals(3.0, child.getTime(), .001);
     assertEquals(3.0, child.getSelfTime(), .001);
     JavaScriptProfileNode child2Parent = child.getChildren().get(0);
-    assertEquals("child1", child2Parent.getSymbolName());
+    assertEquals("child1", child2Parent.getSymbol().getSymbolName());
     assertEquals(3.0, child2Parent.getTime(), .001);
     assertEquals(0.0, child2Parent.getSelfTime(), .001);
     assertEquals(1, child2Parent.getChildren().size());
     child1Parent = child2Parent.getChildren().get(0);
-    assertEquals("parentNode", child1Parent.getSymbolName());
+    assertEquals("parentNode", child1Parent.getSymbol().getSymbolName());
     assertEquals(3.0, child1Parent.getTime(), .001);
     assertEquals(0.0, child1Parent.getSelfTime(), .001);
     assertEquals(0, child1Parent.getChildren().size());
@@ -181,17 +181,17 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
     assertEquals(3, children.size());
     Collections.sort(children, JavaScriptProfileModel.nodeTimeComparator);
     child = children.get(0);
-    assertEquals("child2", child.getSymbolName());
+    assertEquals("child2", child.getSymbol().getSymbolName());
     assertEquals(3, child.getSelfTime(), .001);
     assertEquals(3, child.getTime(), .001);
     assertEquals(0, child.getChildren().size());
     child = children.get(1);
-    assertEquals("child1", child.getSymbolName());
+    assertEquals("child1", child.getSymbol().getSymbolName());
     assertEquals(2, child.getSelfTime(), .001);
     assertEquals(5, child.getTime(), .001);
     assertEquals(0, child.getChildren().size());
     child = children.get(2);
-    assertEquals("parentNode", child.getSymbolName());
+    assertEquals("parentNode", child.getSymbol().getSymbolName());
     assertEquals(6.0, child.getTime(), .001);
     assertEquals(1.0, child.getSelfTime(), .001);
     assertEquals(0, child.getChildren().size());
@@ -235,7 +235,7 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
     List<JavaScriptProfileNode> children = bottomUpProfile.getChildren();
     assertEquals(children.size(), 1);
     JavaScriptProfileNode child = children.get(0);
-    assertEquals(child.getSymbolName(), "parentNode");
+    assertEquals(child.getSymbol().getSymbolName(), "parentNode");
     assertEquals(5.0, child.getTime(), .001);
     assertEquals(5.0, child.getSelfTime(), .001);
   }
@@ -258,7 +258,7 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
     children = profileRoot.getChildren();
     assertEquals(children.size(), 1);
     child = children.get(0);
-    assertEquals(child.getSymbolName(), "parentNode");
+    assertEquals(child.getSymbol().getSymbolName(), "parentNode");
     assertEquals(1.0, child.getTime(), .001);
     assertEquals(1.0, child.getSelfTime(), .001);
 
@@ -268,7 +268,7 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
     children = profileRoot.getChildren();
     assertEquals(children.size(), 1);
     child = children.get(0);
-    assertEquals(child.getSymbolName(), "parentNode");
+    assertEquals(child.getSymbol().getSymbolName(), "parentNode");
     assertEquals(1.0, child.getTime(), .001);
     assertEquals(1.0, child.getSelfTime(), .001);
 
@@ -278,7 +278,7 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
     children = profileRoot.getChildren();
     assertEquals(children.size(), 1);
     child = children.get(0);
-    assertEquals(child.getSymbolName(), "parentNode");
+    assertEquals(child.getSymbol().getSymbolName(), "parentNode");
     assertEquals(1.0, child.getTime(), .001);
     assertEquals(1.0, child.getSelfTime(), .001);
   }
@@ -300,7 +300,7 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
     children = profileRoot.getChildren();
     assertEquals(1, children.size());
     child = children.get(0);
-    assertEquals("parentNode", child.getSymbolName());
+    assertEquals("parentNode", child.getSymbol().getSymbolName());
     assertEquals(6.0, child.getTime(), .001);
     assertEquals(1.0, child.getSelfTime(), .001);
 
@@ -309,7 +309,7 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
     assertEquals(1, children.size());
     Collections.sort(children, JavaScriptProfileModel.nodeTimeComparator);
     child = children.get(0);
-    assertEquals("child1", child.getSymbolName());
+    assertEquals("child1", child.getSymbol().getSymbolName());
     assertEquals(2.0, child.getSelfTime(), .001);
     assertEquals(5.0, child.getTime(), .001);
 
@@ -317,7 +317,7 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
     children = child.getChildren();
     assertEquals(1, children.size());
     child = children.get(0);
-    assertEquals("child2", child.getSymbolName());
+    assertEquals("child2", child.getSymbol().getSymbolName());
     assertEquals(3.0, child.getSelfTime(), .001);
     assertEquals(3, child.getTime(), .001);
 

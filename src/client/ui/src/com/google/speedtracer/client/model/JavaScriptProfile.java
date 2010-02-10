@@ -35,6 +35,8 @@ public class JavaScriptProfile {
   public static final int STATE_UNKNOWN = 5;
   public static final int NUM_STATES = 6;
 
+  private static final JsSymbol rootSymbol = new JsSymbol("", "", 0, "(root)");
+
   public static String stateToString(int state) {
     switch (state) {
       case JavaScriptProfile.STATE_COMPILER:
@@ -108,7 +110,7 @@ public class JavaScriptProfile {
 
   JavaScriptProfileNode getOrCreateProfile(int profileType) {
     if (profiles[profileType] == null) {
-      profiles[profileType] = new JavaScriptProfileNode("(root)");
+      profiles[profileType] = new JavaScriptProfileNode(rootSymbol);
     }
     return profiles[profileType];
   }

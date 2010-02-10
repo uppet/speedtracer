@@ -19,8 +19,8 @@ package com.google.speedtracer.client;
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.gwt.user.client.Window;
 import com.google.speedtracer.client.SymbolServerController.Callback;
+import com.google.speedtracer.client.model.JsSymbolMap;
 import com.google.speedtracer.client.util.Url;
-import com.google.speedtracer.client.visualizations.model.JsSymbolMap;
 
 /**
  * Tests {@link SymbolServerController}.

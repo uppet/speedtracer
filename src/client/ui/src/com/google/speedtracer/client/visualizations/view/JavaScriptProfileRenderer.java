@@ -29,7 +29,7 @@ import com.google.speedtracer.client.SymbolServerController;
 import com.google.speedtracer.client.model.JavaScriptProfile;
 import com.google.speedtracer.client.model.JavaScriptProfileModel;
 import com.google.speedtracer.client.model.JavaScriptProfileNode;
-import com.google.speedtracer.client.util.JSOArray;
+import com.google.speedtracer.client.model.JsSymbol;
 import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.util.dom.EventCleanup.EventCleanupTrait;
 
@@ -37,17 +37,23 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Presents a UI for a JavaScriptprofile
+ * Presents a UI for a JavaScriptprofile.
  * 
  */
 public class JavaScriptProfileRenderer extends EventCleanupTrait {
-
+  /**
+   * Callback invoked when clicking on the source line number link in the
+   * profile.
+   */
   public interface SourceClickCallback {
-    public void onSourceClick(String resourceUrl, int lineNumber);
+    void onSourceClick(String resourceUrl, int lineNumber);
   }
 
+  /**
+   * Callback invoked when the screen dimensions of the profile changes.
+   */
   public interface ResizeCallback {
-    public void onResize();
+    void onResize();
   }
 
   private final Div profileDiv;
@@ -106,22 +112,35 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
     double relativeTime = (totalTime > 0 ? (child.getTime() / totalTime) * 100
         : 0);
     profileTable.appendRow();
+
+    final JsSymbol childSymbol = child.getSymbol();
     final TableCellElement symbolNameCell = profileTable.appendCell(rowIndex);
-    symbolNameCell.setInnerText(formatResourceUrl(child.getSymbolName(), -1));
+    symbolNameCell.setInnerText("".equals(childSymbol.getSymbolName())
+        ? "[unknown]" : childSymbol.getSymbolName());
     final TableCellElement resourceCell = profileTable.appendCell(rowIndex);
     final Anchor anchor = new Anchor(new DefaultContainerImpl(resourceCell));
-    anchor.setText(formatResourceUrl(child.getResourceUrl(),
-        child.getResourceLineNumber()));
-    anchor.setHref("javascript:;");
-    trackRemover(anchor.addClickListener(new ClickListener() {
-      public void onClick(ClickEvent event) {
-        Logging.getLogger().logText(
-            "opening resource " + child.getResourceUrl() + " line: "
-                + child.getResourceLineNumber());
-        sourceClickCallback.onSourceClick(child.getResourceUrl(),
-            child.getResourceLineNumber());
-      }
-    }));
+    String resourceLocation = childSymbol.getResourceName();
+
+    if (!childSymbol.isNativeSymbol()) {
+      resourceLocation = "".equals(resourceLocation) ? "" : resourceLocation
+          + ":" + childSymbol.getLineNumber();
+      anchor.setHref("javascript:;");
+      trackRemover(anchor.addClickListener(new ClickListener() {
+        public void onClick(ClickEvent event) {
+          String resourceUrl = childSymbol.getResourceBase()
+              + childSymbol.getResourceName();
+          Logging.getLogger().logText(
+              "opening resource " + resourceUrl + " line: "
+                  + childSymbol.getLineNumber());
+          sourceClickCallback.onSourceClick(resourceUrl,
+              childSymbol.getLineNumber());
+        }
+      }));
+    } else {
+      resourceLocation = "native " + resourceLocation;
+    }
+    anchor.setText(resourceLocation);
+
     profileTable.appendCell(rowIndex).setInnerHTML(
         "<b>"
             + TimeStampFormatter.formatToFixedDecimalPoint(relativeSelfTime, 1)
@@ -203,9 +222,10 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
       int relativeTime = (int) (totalTime > 0
           ? (child.getTime() / totalTime) * 100 : 0);
 
+      JsSymbol symbol = child.getSymbol();
       result.append("<li>\n");
-      result.append(formatResourceUrl(child.getSymbolName(),
-          child.getResourceLineNumber()));
+      result.append("".equals(symbol.getSymbolName()) ? "[unknown]"
+          : symbol.getSymbolName());
       result.append(" <b>self: ");
       result.append(TimeStampFormatter.formatToFixedDecimalPoint(
           relativeSelfTime, 1));
@@ -218,32 +238,5 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
       dumpNodeChildrenRecursive(child, result);
     }
     result.append("</ul>\n");
-  }
-
-  private String formatResourceUrl(String symbolName, int lineNumber) {
-    JSOArray<String> vals = JSOArray.splitString(symbolName, " ");
-    StringBuilder result = new StringBuilder();
-    for (int i = 0, length = vals.size(); i < length; ++i) {
-      String val = vals.get(i);
-      if (val.startsWith("http://") || val.startsWith("https://")
-          || val.startsWith("file://") || val.startsWith("chrome://")
-          || val.startsWith("chrome-extension://")) {
-        // Presenting the entire URL takes too much space. Just show the last
-        // path component.
-        String resource = val.substring(val.lastIndexOf("/") + 1);
-
-        resource = "".equals(resource) ? val : resource;
-        result.append(resource);
-      } else {
-        result.append(val);
-      }
-      if (i < length - 1) {
-        result.append(" ");
-      }
-    }
-    if (lineNumber > 0) {
-      result.append(":" + lineNumber);
-    }
-    return result.toString();
   }
 }

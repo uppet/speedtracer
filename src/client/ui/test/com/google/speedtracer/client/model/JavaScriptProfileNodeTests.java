@@ -30,36 +30,44 @@ public class JavaScriptProfileNodeTests extends GWTTestCase {
   }
 
   public void testJavaScriptProfileNodeHierarchy() {
-    JavaScriptProfileNode topNode = new JavaScriptProfileNode("top");
-    JavaScriptProfileNode child0 = new JavaScriptProfileNode("child0");
+    JavaScriptProfileNode topNode = new JavaScriptProfileNode(new JsSymbol("",
+        "", 0, "top"));
+    JavaScriptProfileNode child0 = new JavaScriptProfileNode(new JsSymbol("",
+        "", 0, "child0"));
     topNode.addChild(child0);
-    JavaScriptProfileNode child1 = new JavaScriptProfileNode("child1");
+    JavaScriptProfileNode child1 = new JavaScriptProfileNode(new JsSymbol("",
+        "", 0, "child1"));
     topNode.addChild(child1);
-    JavaScriptProfileNode child2 = new JavaScriptProfileNode("child2");
+    JavaScriptProfileNode child2 = new JavaScriptProfileNode(new JsSymbol("",
+        "", 0, "child2"));
     child1.addChild(child2);
-    
+
     List<JavaScriptProfileNode> topChildren = topNode.getChildren();
     assertEquals(2, topChildren.size());
     assertEquals(child0, topChildren.get(0));
-    assertEquals("child0", topChildren.get(0).getSymbolName());
+    assertEquals("child0", topChildren.get(0).getSymbol().getSymbolName());
     assertEquals(child1, topChildren.get(1));
-    assertEquals("child1", topChildren.get(1).getSymbolName());
+    assertEquals("child1", topChildren.get(1).getSymbol().getSymbolName());
 
     List<JavaScriptProfileNode> child1Children = topChildren.get(1).getChildren();
     assertEquals(1, child1Children.size());
     assertEquals(child2, child1Children.get(0));
-    assertEquals("child2", child1Children.get(0).getSymbolName());
+    assertEquals("child2", child1Children.get(0).getSymbol().getSymbolName());
   }
 
   public void testJavaScriptProfileNodeTime() {
-    JavaScriptProfileNode topNode = new JavaScriptProfileNode("top");
-    JavaScriptProfileNode child0 = new JavaScriptProfileNode("child0");
+    JavaScriptProfileNode topNode = new JavaScriptProfileNode(new JsSymbol("",
+        "", 0, "top"));
+    JavaScriptProfileNode child0 = new JavaScriptProfileNode(new JsSymbol("",
+        "", 0, "child0"));
     topNode.addChild(child0);
-    JavaScriptProfileNode child1 = new JavaScriptProfileNode("child1");
+    JavaScriptProfileNode child1 = new JavaScriptProfileNode(new JsSymbol("",
+        "", 0, "child1"));
     topNode.addChild(child1);
-    JavaScriptProfileNode child2 = new JavaScriptProfileNode("child2");
+    JavaScriptProfileNode child2 = new JavaScriptProfileNode(new JsSymbol("",
+        "", 0, "child2"));
     child1.addChild(child2);
-    
+
     child0.addSelfTime(1.0);
     child0.addSelfTime(1.0);
     child1.addTime(1.0);

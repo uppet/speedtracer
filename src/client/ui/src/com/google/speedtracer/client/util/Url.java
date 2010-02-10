@@ -56,6 +56,16 @@ public class Url {
   }
 
   /**
+   * Returns the URL last path component.
+   * 
+   * @return the resource name
+   */
+  public String getLastPathComponent() {
+    int lastSlashIndex = url.lastIndexOf('/');
+    return url.substring(lastSlashIndex + 1, url.length());
+  }
+
+  /**
    * Returns the protocol, domain and port of the URL. The origin does not
    * typically include a trailing slash.
    * 
