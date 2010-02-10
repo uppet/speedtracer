@@ -146,7 +146,8 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
       JavaScriptProfileNode child = children.get(i);
 
       result.append("<tr>");
-      result.append("<td>" + formatSymbolName(child.getSymbolName()) + "</td>");
+      result.append("<td>"
+          + formatSymbolName(child.getSymbol().getSymbolName()) + "</td>");
       double relativeSelfTime = (totalTime > 0
           ? (child.getSelfTime() / totalTime) * 100 : 0);
       double relativeTime = (totalTime > 0
@@ -183,7 +184,7 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
           ? (child.getTime() / totalTime) * 100 : 0);
 
       result.append("<li>\n");
-      result.append(formatSymbolName(child.getSymbolName()));
+      result.append(formatSymbolName(child.getSymbol().getSymbolName()));
       result.append(" <b>self: ");
       result.append(TimeStampFormatter.formatToFixedDecimalPoint(
           relativeSelfTime, 1));

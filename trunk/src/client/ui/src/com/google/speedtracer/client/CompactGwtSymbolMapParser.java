@@ -15,11 +15,11 @@
  */
 package com.google.speedtracer.client;
 
+import com.google.speedtracer.client.model.JsSymbol;
+import com.google.speedtracer.client.model.JsSymbolMap;
+import com.google.speedtracer.client.model.JsSymbolMap.JsSymbolMapParser;
 import com.google.speedtracer.client.util.IterableFastStringMap;
 import com.google.speedtracer.client.util.JSOArray;
-import com.google.speedtracer.client.visualizations.model.JsSymbolMap;
-import com.google.speedtracer.client.visualizations.model.JsSymbolMap.JsSymbol;
-import com.google.speedtracer.client.visualizations.model.JsSymbolMap.JsSymbolMapParser;
 
 /**
  * Parses a compressed form of the Gwt Symbol map.

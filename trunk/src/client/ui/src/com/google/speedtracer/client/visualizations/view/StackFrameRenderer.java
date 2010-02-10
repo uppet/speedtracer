@@ -23,9 +23,9 @@ import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
+import com.google.speedtracer.client.model.JsSymbol;
 import com.google.speedtracer.client.util.dom.EventCleanup.EventCleanupTrait;
 import com.google.speedtracer.client.visualizations.model.JsStackTrace.JsStackFrame;
-import com.google.speedtracer.client.visualizations.model.JsSymbolMap.JsSymbol;
 
 /**
  * Simple class with utility methods used to create DOM structure to render

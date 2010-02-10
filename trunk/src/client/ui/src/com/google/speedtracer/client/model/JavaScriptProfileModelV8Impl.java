@@ -23,6 +23,7 @@ import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.model.V8SymbolTable.AliasableEntry;
 import com.google.speedtracer.client.model.V8SymbolTable.V8Symbol;
 import com.google.speedtracer.client.util.Csv;
+import com.google.speedtracer.client.util.IterableFastStringMap;
 import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.WorkQueue;
 
@@ -71,10 +72,10 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
   }
 
   private static class DebugStats {
-    public int lookupMisses;
-    public int removeMisses;
     public int addCollisions;
+    public int lookupMisses;
     public int moveMisses;
+    public int removeMisses;
   }
 
   /**
@@ -82,9 +83,9 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    * iteratively using the work queue.
    */
   private class LogLineWorker implements WorkQueue.Node {
+    public int currentOffset;
     public final JSOArray<String> logLines;
     public final UiEvent refRecord;
-    public int currentOffset;
 
     public LogLineWorker(JSOArray<String> logLines, UiEvent refRecord,
         int currentOffset) {
@@ -108,9 +109,9 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    * Introduces a new profile to be processed on the work queue.
    */
   private class NewProfileDataWorker implements WorkQueue.Node {
-    public final UiEvent refRecord;
     public final JavaScriptProfile profile;
     public final JavaScriptProfileEvent rawEvent;
+    public final UiEvent refRecord;
 
     public NewProfileDataWorker(UiEvent refRecord, JavaScriptProfile profile,
         JavaScriptProfileEvent rawEvent) {
@@ -138,13 +139,10 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     }
   }
 
-  static final DebugStats debugStats = new DebugStats();
-
-  public static final int VM_STATE_JS = 0;
-  public static final int VM_STATE_GC = 1;
-  public static final int VM_STATE_COMPILER = 2;
-  public static final int VM_STATE_OTHER = 3;
-  public static final int VM_STATE_EXTERNAL = 4;
+  public static final String ADDRESS_TAG_CODE = "code";
+  public static final String ADDRESS_TAG_CODE_MOVE = "code-move";
+  public static final String ADDRESS_TAG_SCRATCH = "scratch";
+  public static final String ADDRESS_TAG_STACK = "stack";
 
   /**
    * String constant in the data that identifies the profile data record as
@@ -152,40 +150,43 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    */
   public static final String FORMAT = "v8";
 
-  static final String ADDRESS_TAG_CODE = "code";
-  static final String ADDRESS_TAG_CODE_MOVE = "code-move";
-  static final String ADDRESS_TAG_STACK = "stack";
-  static final String ADDRESS_TAG_SCRATCH = "scratch";
+  public static final int ACTION_TYPE_ALIAS = 1;
+  public static final int ACTION_TYPE_PROFILER = 2;
+  public static final int ACTION_TYPE_CODE_CREATION = 3;
+  public static final int ACTION_TYPE_CODE_MOVE = 4;
+  public static final int ACTION_TYPE_CODE_DELETE = 5;
+  public static final int ACTION_TYPE_TICK = 6;
+  public static final int ACTION_TYPE_REPEAT = 7;
 
-  private static final int ACTION_TYPE_ALIAS = 1;
-  private static final int ACTION_TYPE_PROFILER = 2;
-  private static final int ACTION_TYPE_CODE_CREATION = 3;
-  private static final int ACTION_TYPE_CODE_MOVE = 4;
-  private static final int ACTION_TYPE_CODE_DELETE = 5;
-  private static final int ACTION_TYPE_TICK = 6;
-  private static final int ACTION_TYPE_REPEAT = 7;
+  public static final int SYMBOL_TYPE_BUILTIN = 8;
+  public static final int SYMBOL_TYPE_CALL_DEBUG_BREAK = 9;
+  public static final int SYMBOL_TYPE_CALL_DEBUG_PREPARE_STEP_IN = 10;
+  public static final int SYMBOL_TYPE_CALL_IC = 11;
+  public static final int SYMBOL_TYPE_CALL_INITIALIZE = 12;
+  public static final int SYMBOL_TYPE_CALL_MEGAMORPHIC = 13;
+  public static final int SYMBOL_TYPE_CALL_MISS = 14;
+  public static final int SYMBOL_TYPE_CALL_NORMAL = 15;
+  public static final int SYMBOL_TYPE_PRE_MONOMORPHIC = 16;
+  public static final int SYMBOL_TYPE_CALLBACK = 17;
+  public static final int SYMBOL_TYPE_EVAL = 18;
+  public static final int SYMBOL_TYPE_FUNCTION = 19;
+  public static final int SYMBOL_TYPE_LOAD_IC = 20;
+  public static final int SYMBOL_TYPE_KEYED_CALL_IC = 21;
+  public static final int SYMBOL_TYPE_KEYED_LOAD_IC = 22;
+  public static final int SYMBOL_TYPE_KEYED_STORE_IC = 23;
+  public static final int SYMBOL_TYPE_LAZY_COMPILE = 24;
+  public static final int SYMBOL_TYPE_REG_EXP = 25;
+  public static final int SYMBOL_TYPE_SCRIPT = 26;
+  public static final int SYMBOL_TYPE_STORE_IC = 27;
+  public static final int SYMBOL_TYPE_STUB = 28;
 
-  private static final int SYMBOL_TYPE_BUILTIN = 8;
-  private static final int SYMBOL_TYPE_CALL_DEBUG_BREAK = 9;
-  private static final int SYMBOL_TYPE_CALL_DEBUG_PREPARE_STEP_IN = 10;
-  private static final int SYMBOL_TYPE_CALL_IC = 11;
-  private static final int SYMBOL_TYPE_CALL_INITIALIZE = 12;
-  private static final int SYMBOL_TYPE_CALL_MEGAMORPHIC = 13;
-  private static final int SYMBOL_TYPE_CALL_MISS = 14;
-  private static final int SYMBOL_TYPE_CALL_NORMAL = 15;
-  private static final int SYMBOL_TYPE_PRE_MONOMORPHIC = 16;
-  private static final int SYMBOL_TYPE_CALLBACK = 17;
-  private static final int SYMBOL_TYPE_EVAL = 18;
-  private static final int SYMBOL_TYPE_FUNCTION = 19;
-  private static final int SYMBOL_TYPE_LOAD_IC = 20;
-  private static final int SYMBOL_TYPE_KEYED_CALL_IC = 21;
-  private static final int SYMBOL_TYPE_KEYED_LOAD_IC = 22;
-  private static final int SYMBOL_TYPE_KEYED_STORE_IC = 23;
-  private static final int SYMBOL_TYPE_LAZY_COMPILE = 24;
-  private static final int SYMBOL_TYPE_REG_EXP = 25;
-  private static final int SYMBOL_TYPE_SCRIPT = 26;
-  private static final int SYMBOL_TYPE_STORE_IC = 27;
-  private static final int SYMBOL_TYPE_STUB = 28;
+  public static final int VM_STATE_JS = 0;
+  public static final int VM_STATE_GC = 1;
+  public static final int VM_STATE_OTHER = 3;
+  public static final int VM_STATE_COMPILER = 2;
+  public static final int VM_STATE_EXTERNAL = 4;
+
+  static final DebugStats debugStats = new DebugStats();
 
   private static final int LOG_PROCESS_CHUNK_TIME_MS = 60;
 
@@ -220,13 +221,15 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     }
   }
 
-  private Map<String, V8SymbolType> symbolTypeMap = new HashMap<String, V8SymbolType>();
   private Map<String, ActionType> actionTypeMap = new HashMap<String, ActionType>();
-  private Map<ActionType, LogAction> logActions = new HashMap<ActionType, LogAction>();
-  private V8SymbolTable symbolTable = new V8SymbolTable();
   private Map<String, Double> addressTags = new HashMap<String, Double>();
-  private V8LogDecompressor logDecompressor = null;
   private JavaScriptProfile currentProfile = null;
+  private final IterableFastStringMap<V8Symbol> lazyCompiledSymbols = new IterableFastStringMap<V8Symbol>();
+  private Map<ActionType, LogAction> logActions = new HashMap<ActionType, LogAction>();
+  private V8LogDecompressor logDecompressor = null;
+  private V8SymbolTable symbolTable = new V8SymbolTable();
+
+  private Map<String, V8SymbolType> symbolTypeMap = new HashMap<String, V8SymbolType>();
 
   private final WorkQueue workQueue;
 
@@ -254,7 +257,10 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     output.append("<tr><td>Move Misses</td><td>" + debugStats.moveMisses
         + "</td></tr>");
     output.append("</table>\n");
-    // symbolTable.debugDumpHtml(output);
+
+    // TODO(zundel): Put this behind a deferred binding.
+    // Uncomment below to enable dumping the symbol table for debugging.
+    symbolTable.debugDumpHtml(output);
     return output.toString();
   }
 
@@ -406,7 +412,7 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
       } else {
         Logging.getLogger().logText(
             "Unable to find command: '" + logEntries.get(2)
-                + "' to match alias:" + logEntries.get(1));
+                + "' to match alias: " + logEntries.get(1));
       }
     }
   }
@@ -424,17 +430,37 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     V8SymbolType symbolType = symbolTypeMap.get(logEntries.get(1));
 
     String name = logEntries.get(4);
+
     double address = parseAddress(logEntries.get(2), ADDRESS_TAG_CODE);
     int executableSize = Integer.parseInt(logEntries.get(3));
 
     // Keep some debugging stats around
     V8Symbol found = symbolTable.lookup(address);
+
     if (found != null) {
       debugStats.addCollisions++;
     }
 
     V8Symbol symbol = new V8Symbol(scrubStringForXSS(name), symbolType,
         address, executableSize);
+
+    // We have a heuristic for finding the resource for a Code Creation for
+    // functions. The symbol name and function length. It is just a guess, seems
+    // to work, and its better than not knowing 100% of the time where a symbol
+    // comes from.
+    if (symbolType.getValue() == SYMBOL_TYPE_LAZY_COMPILE) {
+      lazyCompiledSymbols.put(symbol.getJsSymbol().getSymbolName()
+          + symbol.getAddressSpan().addressLength, symbol);
+    }
+
+    if (symbolType.getValue() == SYMBOL_TYPE_FUNCTION) {
+      V8Symbol lazySymbol = lazyCompiledSymbols.get(symbol.getJsSymbol().getSymbolName()
+          + symbol.getAddressSpan().addressLength);
+      if (lazySymbol != null) {
+        symbol.getJsSymbol().merge(lazySymbol.getJsSymbol());
+      }
+    }
+
     symbolTable.add(symbol);
   }
 
@@ -458,7 +484,7 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
   }
 
   /**
-   * Process a code-move entry
+   * Process a code-move entry.
    * 
    * The format of this entry is:
    * 
@@ -471,10 +497,8 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     V8Symbol symbol = symbolTable.lookup(fromAddress);
     if (symbol != null) {
       symbolTable.remove(symbol);
-      V8Symbol newSymbol = new V8Symbol(symbol.getName(),
-          symbol.getSymbolType(), toAddress,
-          symbol.getAddressSpan().getLength());
-      symbolTable.add(newSymbol);
+      symbol.getAddressSpan().setAddress(toAddress);
+      symbolTable.add(symbol);
     } else {
       // update debugging stats
       debugStats.moveMisses++;
@@ -686,13 +710,12 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
       JavaScriptProfileNode profileNode, V8Symbol symbol,
       boolean recordedSelfTime) {
     assert profileNode != null;
-    String name = symbol.getName();
 
-    JavaScriptProfileNode child = profileNode.lookup(name);
+    JsSymbol jsSymbol = symbol.getJsSymbol();
+    JavaScriptProfileNode child = profileNode.lookup(jsSymbol,
+        symbol.getSymbolType().getName());
     if (child == null) {
-      child = new JavaScriptProfileNode("".equals(name) ? "(unknown)" : name);
-      child.setResourceUrl(symbol.getResourceUrl());
-      child.setResourceLineNumber(symbol.getResourceLineNumber());
+      child = new JavaScriptProfileNode(jsSymbol);
       child.setSymbolType((symbol.getSymbolType().getName()));
       profileNode.addChild(child);
     }
@@ -710,10 +733,12 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    * entry.
    */
   private void recordUnknownTick(JavaScriptProfileNode profileNode, int vmState) {
-    String name = "unknown - " + JavaScriptProfile.stateToString(vmState);
-    JavaScriptProfileNode child = profileNode.lookup(name);
+    JsSymbol unknownSymbol = new JsSymbol("", "", 0, "unknown - "
+        + JavaScriptProfile.stateToString(vmState));
+    JavaScriptProfileNode child = profileNode.lookup(unknownSymbol,
+        profileNode.getSymbolType());
     if (child == null) {
-      child = new JavaScriptProfileNode(name);
+      child = new JavaScriptProfileNode(unknownSymbol);
       profileNode.addChild(child);
     }
     child.addSelfTime(1.0);

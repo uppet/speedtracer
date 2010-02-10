@@ -16,6 +16,7 @@
 package com.google.speedtracer.client.model;
 
 import com.google.speedtracer.client.util.JSOArray;
+import com.google.speedtracer.client.util.Url;
 
 import java.util.TreeMap;
 
@@ -28,8 +29,8 @@ public class V8SymbolTable {
    * data structure.
    */
   static class AddressSpan implements Comparable<AddressSpan> {
-    int addressLength;
     double address;
+    int addressLength;
 
     public AddressSpan(double address, int addressLength) {
       this.address = address;
@@ -65,6 +66,10 @@ public class V8SymbolTable {
 
     public int getLength() {
       return addressLength;
+    }
+
+    public void setAddress(double newAddress) {
+      this.address = newAddress;
     }
 
     public String toString() {
@@ -121,47 +126,71 @@ public class V8SymbolTable {
    */
   static class V8Symbol {
     private final AddressSpan addressSpan;
-    // TODO(zundel): Use JsSymbol here?
-    private final String name;
-    private final int resourceLineNumber;
-    private final String resourceUrl;
+    private final JsSymbol jsSymbol;
     private final AliasableEntry symbolType;
 
     V8Symbol(String name, AliasableEntry symbolType, double address,
         int addressLength) {
-      JSOArray<String> vals = JSOArray.splitString(name, " ");
-      if (vals.size() <= 1) {
-        this.name = name;
-        this.resourceUrl = "";
-        resourceLineNumber = 0;
-      } else {
-        this.name = vals.get(0);
-        int colonOffset = vals.get(1).lastIndexOf(":");
-        this.resourceLineNumber = findLineNumber(vals.get(1), colonOffset);
-        if (resourceLineNumber > 0) {
-          this.resourceUrl = vals.get(1).substring(0, colonOffset);
-        } else {
-          this.resourceUrl = vals.get(1);
-        }
-      }
       this.symbolType = symbolType;
       this.addressSpan = new AddressSpan(address, addressLength);
+      this.jsSymbol = convertToJsSymbol(name);
+    }
+
+    public JsSymbol convertToJsSymbol(String rawName) {
+      JsSymbol symbol;
+      // Process the inputted name to extract the symbol name, resourceUrl, and
+      // line number.
+      switch (symbolType.getValue()) {
+        case JavaScriptProfileModelV8Impl.SYMBOL_TYPE_CALLBACK:
+          symbol = new JsSymbol("", "", 0, rawName, true);
+          break;
+        case JavaScriptProfileModelV8Impl.SYMBOL_TYPE_SCRIPT:
+          Url scriptUrl = new Url(rawName);
+          symbol = new JsSymbol("", scriptUrl.getLastPathComponent(), 0,
+              "[ScriptCompilation]");
+          break;
+        default:
+          // We assume that the rest is a symbol in the page.
+          JSOArray<String> pieces = JSOArray.splitString(rawName, " ");
+
+          if (pieces.size() < 2) {
+            symbol = new JsSymbol("", "", 0, rawName);
+            break;
+          }
+
+          String urlAndLine = pieces.get(1);
+          String symbolName = pieces.get(0);
+          boolean isNative = false;
+
+          if (urlAndLine.equals("native")) {
+            urlAndLine = pieces.get(2);
+            isNative = true;
+          }
+
+          int lineNumberIndex = urlAndLine.lastIndexOf(':');
+
+          if (lineNumberIndex > 0) {
+            Url resourceUrl = new Url(urlAndLine.substring(0, lineNumberIndex));
+            // The assumption is that this will always have a line number.
+            // Should test to verify.
+            int lineNumber = Integer.parseInt(urlAndLine.substring(lineNumberIndex + 1));
+            symbol = new JsSymbol(resourceUrl.getResourceBase(),
+                resourceUrl.getLastPathComponent(), lineNumber, symbolName,
+                isNative);
+          } else {
+            symbol = new JsSymbol("", urlAndLine, 0, symbolName, isNative);
+          }
+          break;
+      }
+      return symbol;
     }
 
     public AddressSpan getAddressSpan() {
       return this.addressSpan;
     }
 
-    public String getName() {
-      return this.name;
-    }
-
-    public int getResourceLineNumber() {
-      return this.resourceLineNumber;
-    }
-
-    public String getResourceUrl() {
-      return this.resourceUrl;
+    public JsSymbol getJsSymbol() {
+      return this.jsSymbol;
     }
 
     public AliasableEntry getSymbolType() {
@@ -169,19 +198,7 @@ public class V8SymbolTable {
     }
 
     public String toString() {
-      return name + " : " + addressSpan.toString();
-    }
-
-    private int findLineNumber(String resource, int colonOffset) {
-      if (colonOffset <= 0) {
-        return 0;
-      }
-      try {
-        String lineNumberString = resource.substring(colonOffset + 1);
-        return Integer.parseInt(lineNumberString);
-      } catch (NumberFormatException ex) {
-        return 0;
-      }
+      return this.jsSymbol.getSymbolName() + " : " + addressSpan.toString();
     }
   }
 
@@ -204,15 +221,19 @@ public class V8SymbolTable {
    */
   public void debugDumpHtml(StringBuilder output) {
     output.append("<table>");
-    output.append("<tr><th>Name</th><th>Address</th><th>Length</th></tr>");
+    output.append("<tr><th>Name</th><th>Resource</th><th>Address</th><th>Length</th><th>type</th></tr>");
     for (V8Symbol child : table.values()) {
       output.append("<tr>");
-      output.append("<td>" + child.getName() + "</td>");
+      output.append("<td>" + child.getJsSymbol().getSymbolName() + "</td>");
+      output.append("<td>" + child.getJsSymbol().getResourceName()
+          + child.getJsSymbol().getLineNumber() + "</td>");
+
       output.append("<td>"
           + Long.toHexString((long) child.getAddressSpan().getAddress())
           + "</td>");
       output.append("<td>"
           + Long.toString(child.getAddressSpan().addressLength) + "</td>");
+      output.append("<td>" + child.getSymbolType() + "</td>");
       output.append("</tr>");
     }
     output.append("</table>");

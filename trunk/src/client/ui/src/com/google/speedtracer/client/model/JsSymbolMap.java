@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.google.speedtracer.client.visualizations.model;
+package com.google.speedtracer.client.model;
 
 import com.google.speedtracer.client.CompactGwtSymbolMapParser;
 import com.google.speedtracer.client.GwtSymbolMapParser;
@@ -29,67 +29,17 @@ import com.google.speedtracer.client.util.IterableFastStringMap;
  */
 public class JsSymbolMap {
   /**
-   * A Source and line number for a JavaScript symbol as specified in the symbol
-   * mapping.
-   */
-  // TODO(zundel): Reuse JsSymbol in JavaScriptProfileNode
-  public static class JsSymbol {
-    private final int lineNumber;
-
-    private final String resourceName;
-
-    private final String resourcePathBase;
-
-    private final String symbolName;
-
-    public JsSymbol(String resourcePathBase, String resourceName,
-        int lineNumber, String symbolName) {
-      this.resourcePathBase = resourcePathBase;
-      this.resourceName = resourceName;
-      this.lineNumber = lineNumber;
-      this.symbolName = symbolName;
-    }
-
-    public int getLineNumber() {
-      return lineNumber;
-    }
-
-    /**
-     * The base of the resource. The base can be interpreted as the base of the
-     * URL to the resource.
-     * 
-     * @return the resource base path.
-     */
-    public String getResourceBase() {
-      return resourcePathBase;
-    }
-
-    /**
-     * The name of the source file or resource containing the symbol.
-     * 
-     * @return the name of the source file containing the symbol.
-     */
-    public String getResourceName() {
-      return resourceName;
-    }
-
-    public String getSymbolName() {
-      return symbolName;
-    }
-  }
-
-  /**
    * Symbol map parsers implement this interface.
    */
   public interface JsSymbolMapParser {
     void parse(String symbolMapStr);
   }
 
-  public static final String UNKNOWN_RESOURCE_PATH = "Unknown";
-
   public static final String COMPACT_GWT_SYMBOL_MAP = "compactGwt";
 
   public static final String GWT_SYMBOL_MAP = "gwt";
+
+  public static final String UNKNOWN_RESOURCE_PATH = "Unknown";
 
   /**
    * Parses the JavaScript symbol map and initializes a {@link JsSymbolMap} with

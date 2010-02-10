@@ -17,12 +17,12 @@ package com.google.speedtracer.client;
 
 import com.google.gwt.xhr.client.XMLHttpRequest;
 import com.google.speedtracer.client.SymbolServerManifest.ResourceSymbolInfo;
+import com.google.speedtracer.client.model.JsSymbolMap;
 import com.google.speedtracer.client.util.IterableFastStringMap;
 import com.google.speedtracer.client.util.JSON;
 import com.google.speedtracer.client.util.Url;
 import com.google.speedtracer.client.util.Xhr;
 import com.google.speedtracer.client.util.Xhr.XhrCallback;
-import com.google.speedtracer.client.visualizations.model.JsSymbolMap;
 
 import java.util.ArrayList;
 import java.util.List;

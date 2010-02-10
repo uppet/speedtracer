@@ -15,6 +15,7 @@
  */
 package com.google.speedtracer.client.model;
 
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,18 +24,14 @@ import java.util.List;
  * profiles.
  */
 public class JavaScriptProfileNode {
-
-  // TODO(zundel): reuse JsSymbol here
-  private final String symbolName;
-  private String symbolType = "";
+  JsSymbol symbol;
   private List<JavaScriptProfileNode> children = new ArrayList<JavaScriptProfileNode>();
   private double selfTime = 0;
+  private String symbolType = "";
   private double time = 0;
-  private String resourceUrl = "";
-  private int resourceLineNumber = 0;
 
-  public JavaScriptProfileNode(String symbolName) {
-    this.symbolName = symbolName;
+  public JavaScriptProfileNode(JsSymbol symbol) {
+    this.symbol = symbol;
   }
 
   public void addChild(JavaScriptProfileNode child) {
@@ -54,14 +51,6 @@ public class JavaScriptProfileNode {
     return children;
   }
 
-  public int getResourceLineNumber() {
-    return this.resourceLineNumber;
-  }
-
-  public String getResourceUrl() {
-    return this.resourceUrl;
-  }
-
   /**
    * Returns the self time.
    * 
@@ -71,8 +60,8 @@ public class JavaScriptProfileNode {
     return this.selfTime;
   }
 
-  public String getSymbolName() {
-    return symbolName;
+  public JsSymbol getSymbol() {
+    return this.symbol;
   }
 
   public String getSymbolType() {
@@ -88,23 +77,16 @@ public class JavaScriptProfileNode {
     return this.time;
   }
 
-  public JavaScriptProfileNode lookup(String symbolName) {
+  public JavaScriptProfileNode lookup(JsSymbol symbol, String typeName) {
     // It might be better to use a hash table, but we don't
     // expect large numbers of children at each level.
     for (JavaScriptProfileNode node : children) {
-      if (node.getSymbolName().equals(symbolName)) {
+      if (node.getSymbol().sameAs(symbol)
+          && node.getSymbolType().equals(typeName)) {
         return node;
       }
     }
     return null;
-  }
-
-  public void setResourceLineNumber(int resourceLineNumber) {
-    this.resourceLineNumber = resourceLineNumber;
-  }
-
-  public void setResourceUrl(String resourceUrl) {
-    this.resourceUrl = resourceUrl;
   }
 
   public void setSymbolType(String symbolType) {
