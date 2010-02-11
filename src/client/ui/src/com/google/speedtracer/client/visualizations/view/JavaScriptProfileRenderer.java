@@ -15,8 +15,13 @@
  */
 package com.google.speedtracer.client.visualizations.view;
 
+import com.google.gwt.dom.client.AnchorElement;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.TableCellElement;
+import com.google.gwt.dom.client.TableRowElement;
+import com.google.gwt.dom.client.Style.Display;
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.graphics.client.Color;
 import com.google.gwt.topspin.ui.client.Anchor;
 import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
@@ -26,6 +31,8 @@ import com.google.gwt.topspin.ui.client.Div;
 import com.google.gwt.topspin.ui.client.Table;
 import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.SymbolServerController;
+import com.google.speedtracer.client.SourceViewer.SourcePresenter;
+import com.google.speedtracer.client.SymbolServerController.Resymbolizeable;
 import com.google.speedtracer.client.model.JavaScriptProfile;
 import com.google.speedtracer.client.model.JavaScriptProfileModel;
 import com.google.speedtracer.client.model.JavaScriptProfileNode;
@@ -37,10 +44,16 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Presents a UI for a JavaScriptprofile.
- * 
+ * Presents a UI for a JavaScript profile.
  */
 public class JavaScriptProfileRenderer extends EventCleanupTrait {
+  /**
+   * Callback invoked when the screen dimensions of the profile changes.
+   */
+  public interface ResizeCallback {
+    void onResize();
+  }
+
   /**
    * Callback invoked when clicking on the source line number link in the
    * profile.
@@ -49,28 +62,118 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
     void onSourceClick(String resourceUrl, int lineNumber);
   }
 
-  /**
-   * Callback invoked when the screen dimensions of the profile changes.
-   */
-  public interface ResizeCallback {
-    void onResize();
+  private class FlatChildRowRenderer implements Resymbolizeable {
+    private final JavaScriptProfileNode child;
+    private final TableRowElement row;
+    private final double totalTime;
+    private TableCellElement symbolNameCell;
+
+    FlatChildRowRenderer(JavaScriptProfileNode child, TableRowElement row,
+        double totalTime) {
+      this.child = child;
+      this.row = row;
+      this.totalTime = totalTime;
+    }
+
+    public void reSymbolize(final String sourceServer,
+        final JsSymbol sourceSymbol, final SourcePresenter sourcePresenter) {
+      AnchorElement resymbolizedSymbol = symbolNameCell.getOwnerDocument().createAnchorElement();
+      // TODO(jaimeyap): Consider adding a CssResource for future styling.
+      resymbolizedSymbol.getStyle().setDisplay(Display.BLOCK);
+      resymbolizedSymbol.getStyle().setFontSize(0.85, Unit.EM);
+      resymbolizedSymbol.setInnerText(sourceSymbol.getSymbolName());
+      resymbolizedSymbol.setHref("javascript:;");
+
+      symbolNameCell.appendChild(resymbolizedSymbol);
+      trackRemover(ClickEvent.addClickListener(resymbolizedSymbol,
+          resymbolizedSymbol, new ClickListener() {
+            public void onClick(ClickEvent event) {
+              sourcePresenter.showSource(sourceServer
+                  + sourceSymbol.getResourceBase()
+                  + sourceSymbol.getResourceName(),
+                  sourceSymbol.getLineNumber(), 0);
+            }
+          }));
+
+      resizeCallback.onResize();
+    }
+
+    void render() {
+      double relativeSelfTime = (totalTime > 0
+          ? (child.getSelfTime() / totalTime) * 100 : 0);
+      double relativeTime = (totalTime > 0
+          ? (child.getTime() / totalTime) * 100 : 0);
+
+      final JsSymbol childSymbol = child.getSymbol();
+
+      symbolNameCell = row.insertCell(-1);
+
+      symbolNameCell.setInnerText("".equals(childSymbol.getSymbolName())
+          ? "[unknown]" : childSymbol.getSymbolName());
+      final TableCellElement resourceCell = row.insertCell(-1);
+      final Anchor anchor = new Anchor(new DefaultContainerImpl(resourceCell));
+      String resourceLocation = childSymbol.getResourceName();
+
+      if (!childSymbol.isNativeSymbol()) {
+        resourceLocation = "".equals(resourceLocation) ? "" : resourceLocation
+            + ":" + childSymbol.getLineNumber();
+        anchor.setHref("javascript:;");
+        trackRemover(anchor.addClickListener(new ClickListener() {
+          public void onClick(ClickEvent event) {
+            String resourceUrl = childSymbol.getResourceBase()
+                + childSymbol.getResourceName();
+            Logging.getLogger().logText(
+                "opening resource " + resourceUrl + " line: "
+                    + childSymbol.getLineNumber());
+            sourceClickCallback.onSourceClick(resourceUrl,
+                childSymbol.getLineNumber());
+          }
+        }));
+      } else {
+        resourceLocation = "native " + resourceLocation;
+      }
+      anchor.setText(resourceLocation);
+
+      row.insertCell(-1).setInnerHTML(
+          "<b>"
+              + TimeStampFormatter.formatToFixedDecimalPoint(relativeSelfTime,
+                  1) + "%</b></td>");
+      row.insertCell(-1).setInnerHTML(
+          "<b>" + TimeStampFormatter.formatToFixedDecimalPoint(relativeTime, 1)
+              + "%</td>");
+
+      Color rowColor = rowEvenOdd ? Color.WHITE : Color.CHROME_BLUE;
+      row.getStyle().setBackgroundColor(rowColor.toString());
+      rowEvenOdd = !rowEvenOdd;
+    }
   }
 
-  private final Div profileDiv;
+  // Flips between true and false depending on when a flat profile row gets
+  // rendered.
+  private static boolean rowEvenOdd = true;
+
   private JavaScriptProfile profile;
-  private final SourceClickCallback sourceClickCallback;
-  private final SymbolServerController symbolServerController;
+
+  private final Div profileDiv;
+
   private final ResizeCallback resizeCallback;
 
+  private final SourceClickCallback sourceClickCallback;
+
+  private final SourcePresenter sourcePresenter;
+
+  private final SymbolServerController ssController;
+
   public JavaScriptProfileRenderer(Container container,
+      SymbolServerController ssController, SourcePresenter sourcePresenter,
       JavaScriptProfile profile, SourceClickCallback sourceClickCallback,
-      SymbolServerController symbolServerController,
       ResizeCallback resizeCallback) {
-    profileDiv = new Div(container);
+    this.profileDiv = new Div(container);
     this.profile = profile;
     this.sourceClickCallback = sourceClickCallback;
-    this.symbolServerController = symbolServerController;
     this.resizeCallback = resizeCallback;
+    this.ssController = ssController;
+    this.sourcePresenter = sourcePresenter;
   }
 
   /**
@@ -107,49 +210,19 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
 
   private void addFlatChild(final JavaScriptProfileNode child,
       Table profileTable, int rowIndex, double totalTime) {
-    double relativeSelfTime = (totalTime > 0
-        ? (child.getSelfTime() / totalTime) * 100 : 0);
-    double relativeTime = (totalTime > 0 ? (child.getTime() / totalTime) * 100
-        : 0);
-    profileTable.appendRow();
 
-    final JsSymbol childSymbol = child.getSymbol();
-    final TableCellElement symbolNameCell = profileTable.appendCell(rowIndex);
-    symbolNameCell.setInnerText("".equals(childSymbol.getSymbolName())
-        ? "[unknown]" : childSymbol.getSymbolName());
-    final TableCellElement resourceCell = profileTable.appendCell(rowIndex);
-    final Anchor anchor = new Anchor(new DefaultContainerImpl(resourceCell));
-    String resourceLocation = childSymbol.getResourceName();
+    TableRowElement row = profileTable.appendRow();
+    FlatChildRowRenderer childRenderer = new FlatChildRowRenderer(child, row,
+        totalTime);
+    childRenderer.render();
 
-    if (!childSymbol.isNativeSymbol()) {
-      resourceLocation = "".equals(resourceLocation) ? "" : resourceLocation
-          + ":" + childSymbol.getLineNumber();
-      anchor.setHref("javascript:;");
-      trackRemover(anchor.addClickListener(new ClickListener() {
-        public void onClick(ClickEvent event) {
-          String resourceUrl = childSymbol.getResourceBase()
-              + childSymbol.getResourceName();
-          Logging.getLogger().logText(
-              "opening resource " + resourceUrl + " line: "
-                  + childSymbol.getLineNumber());
-          sourceClickCallback.onSourceClick(resourceUrl,
-              childSymbol.getLineNumber());
-        }
-      }));
-    } else {
-      resourceLocation = "native " + resourceLocation;
+    // Add resymbolized data to frame/profile if it is available.
+    if (ssController != null) {
+      final JsSymbol childSymbol = child.getSymbol();
+      ssController.attemptResymbolization(childSymbol.getResourceBase()
+          + childSymbol.getResourceName(), childSymbol.getSymbolName(),
+          childRenderer, sourcePresenter);
     }
-    anchor.setText(resourceLocation);
-
-    profileTable.appendCell(rowIndex).setInnerHTML(
-        "<b>"
-            + TimeStampFormatter.formatToFixedDecimalPoint(relativeSelfTime, 1)
-            + "%</b></td>");
-    profileTable.appendCell(rowIndex).setInnerHTML(
-        "<b>" + TimeStampFormatter.formatToFixedDecimalPoint(relativeTime, 1)
-            + "%</td>");
-
-    // TODO(zundel): Request resymbolization of this symbol.
   }
 
   private void dumpNodeChildrenFlat(Container container,
