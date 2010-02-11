@@ -105,6 +105,8 @@ public class SymbolServerController {
 
   private final List<PendingRequest> pendingRequests;
 
+  private final IterableFastStringMap<List<XhrCallback>> queuedSymbolMapRequests = new IterableFastStringMap<List<XhrCallback>>();
+
   private final Url symbolManifestUrl;
 
   private SymbolServerManifest symbolServerManifest;
@@ -238,28 +240,59 @@ public class SymbolServerController {
       return;
     }
 
-    JsSymbolMap symbolMap = get(resourceSymbolInfo.getSymbolMapUrl());
+    final String symbolMapUrl = resourceSymbolInfo.getSymbolMapUrl();
+    JsSymbolMap symbolMap = get(symbolMapUrl);
+    // We only want to request and parse for symbolMaps we havn't already
+    // parsed.
     if (symbolMap == null) {
-      // We have not yet parsed it.
-      Xhr.get(symbolManifestUrl.getResourceBase()
-          + resourceSymbolInfo.getSymbolMapUrl(), new XhrCallback() {
+      // Create the XhrCallback to service this request.
+      XhrCallback xhrCallback = new XhrCallback() {
 
         public void onFail(XMLHttpRequest xhr) {
           callback.onSymbolsFetchFailed(ERROR_SYMBOL_FETCH_FAIL);
+          dequeuePendingXhrs(symbolMapUrl, xhr, false);
         }
 
         public void onSuccess(XMLHttpRequest xhr) {
           // Double check that another XHR didnt pull it down and parse it.
-          JsSymbolMap fetchedSymbolMap = get(resourceSymbolInfo.getSymbolMapUrl());
+          JsSymbolMap fetchedSymbolMap = get(symbolMapUrl);
           if (fetchedSymbolMap == null) {
             fetchedSymbolMap = JsSymbolMap.parse(
                 resourceSymbolInfo.getSourceServer(),
                 resourceSymbolInfo.getType(), xhr.getResponseText());
-            put(resourceSymbolInfo.getSymbolMapUrl(), fetchedSymbolMap);
+            put(symbolMapUrl, fetchedSymbolMap);
           }
           callback.onSymbolsReady(fetchedSymbolMap);
+          dequeuePendingXhrs(symbolMapUrl, xhr, true);
         }
-      });
+
+        private void dequeuePendingXhrs(String symbolMapUrl,
+            XMLHttpRequest xhr, boolean success) {
+          List<XhrCallback> callbacks = queuedSymbolMapRequests.get(symbolMapUrl);
+          if (callbacks != null) {
+            while (!callbacks.isEmpty()) {
+              XhrCallback callback = callbacks.remove(0);
+              if (success) {
+                callback.onSuccess(xhr);
+              } else {
+                callback.onFail(xhr);
+              }
+            }
+          }
+        }
+      };
+
+      // Check to see if we have a request in flight.
+      List<XhrCallback> requestCallbacks = queuedSymbolMapRequests.get(symbolMapUrl);
+      if (requestCallbacks == null) {
+        // Make an entry indicating a request is in flight.
+        queuedSymbolMapRequests.put(symbolMapUrl, new ArrayList<XhrCallback>());
+        Xhr.get(symbolManifestUrl.getResourceBase() + symbolMapUrl, xhrCallback);
+      } else {
+        // There are pending XHRs out. Which means that we should just queue
+        // this request.
+        requestCallbacks.add(xhrCallback);
+      }
     } else {
       // We have already fetched this and parsed it before. Send it to the
       // callback.

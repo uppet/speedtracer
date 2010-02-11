@@ -262,12 +262,11 @@ public class SluggishnessDetailView extends DetailView {
 
         public void onClick(ClickEvent clickEvent) {
           jsProfileRenderer.show(profileType);
-          // Defer this so there is no infinite loop
           Command.defer(new Command() {
             @Override
             public void execute() {
               fixHeightOfParentRow();
-            }
+            }            
           });
         }
       }
