@@ -37,6 +37,7 @@ import com.google.speedtracer.client.model.JavaScriptProfile;
 import com.google.speedtracer.client.model.JavaScriptProfileModel;
 import com.google.speedtracer.client.model.JavaScriptProfileNode;
 import com.google.speedtracer.client.model.JsSymbol;
+import com.google.speedtracer.client.util.Command;
 import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.util.dom.EventCleanup.EventCleanupTrait;
 
@@ -65,8 +66,8 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
   private class FlatChildRowRenderer implements Resymbolizeable {
     private final JavaScriptProfileNode child;
     private final TableRowElement row;
-    private final double totalTime;
     private TableCellElement symbolNameCell;
+    private final double totalTime;
 
     FlatChildRowRenderer(JavaScriptProfileNode child, TableRowElement row,
         double totalTime) {
@@ -148,6 +149,10 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
     }
   }
 
+  // Constant for limiting the number of symbols we show initially for the flat
+  // profile.
+  private static final int FLAT_PROFILE_PAGE_SIZE = 15;
+
   // Flips between true and false depending on when a flat profile row gets
   // rendered.
   private static boolean rowEvenOdd = true;
@@ -212,17 +217,22 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
       Table profileTable, int rowIndex, double totalTime) {
 
     TableRowElement row = profileTable.appendRow();
-    FlatChildRowRenderer childRenderer = new FlatChildRowRenderer(child, row,
+    final FlatChildRowRenderer childRenderer = new FlatChildRowRenderer(child, row,
         totalTime);
     childRenderer.render();
 
     // Add resymbolized data to frame/profile if it is available.
-    if (ssController != null) {
-      final JsSymbol childSymbol = child.getSymbol();
-      ssController.attemptResymbolization(childSymbol.getResourceBase()
-          + childSymbol.getResourceName(), childSymbol.getSymbolName(),
-          childRenderer, sourcePresenter);
-    }
+    Command.defer(new Command() {
+      @Override
+      public void execute() {
+        if (ssController != null) {
+          final JsSymbol childSymbol = child.getSymbol();
+          ssController.attemptResymbolization(childSymbol.getResourceBase()
+              + childSymbol.getResourceName(), childSymbol.getSymbolName(),
+              childRenderer, sourcePresenter);
+        }
+      }
+    });
   }
 
   private void dumpNodeChildrenFlat(Container container,
@@ -246,7 +256,8 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
       JavaScriptProfileNode child = children.get(rowIndex);
       // Truncate the display by default to show only nodes where self time
       // occurred.
-      if (child.getSelfTime() <= 0 && (length - rowIndex > 4)) {
+      if (child.getSelfTime() <= 0 && (length - rowIndex > 4)
+          || rowIndex > FLAT_PROFILE_PAGE_SIZE) {
         break;
       }
       addFlatChild(child, profileTable, rowIndex + 1, totalTime);
