@@ -23,6 +23,8 @@ import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
+import com.google.speedtracer.client.SourceViewer.SourcePresenter;
+import com.google.speedtracer.client.SymbolServerController.Resymbolizeable;
 import com.google.speedtracer.client.model.JsSymbol;
 import com.google.speedtracer.client.util.dom.EventCleanup.EventCleanupTrait;
 import com.google.speedtracer.client.visualizations.model.JsStackTrace.JsStackFrame;
@@ -34,8 +36,18 @@ import com.google.speedtracer.client.visualizations.model.JsStackTrace.JsStackFr
  * 
  * Supports showing both an obfuscated and a re-symbolized stack trace.
  */
-public class StackFrameRenderer extends EventCleanupTrait {
-  
+public class StackFrameRenderer extends EventCleanupTrait implements
+    Resymbolizeable {
+
+  /**
+   * Styles.
+   */
+  public interface Css extends CssResource {
+    String resymbolizedSymbol();
+
+    String stackFrame();
+  }
+
   /**
    * Externalized Resource interface.
    */
@@ -43,22 +55,15 @@ public class StackFrameRenderer extends EventCleanupTrait {
     @Source("resources/StackFrameRenderer.css")
     Css stackFrameRendererCss();
   }
-  
-  /**
-   * Styles.
-   */
-  public interface Css extends CssResource {
-    String stackFrame();
-    String resymbolizedSymbol();
-  }
-  
+
+  private final Css css;
+
   private final Element myElem;
 
   private final JsStackFrame stackFrame;
 
-  private final Css css;
-  
-  public StackFrameRenderer(Element parent, JsStackFrame stackFrame, Resources resources) {
+  public StackFrameRenderer(Element parent, JsStackFrame stackFrame,
+      Resources resources) {
     this.myElem = parent.getOwnerDocument().createDivElement();
     this.stackFrame = stackFrame;
     this.css = resources.stackFrameRendererCss();
@@ -88,6 +93,7 @@ public class StackFrameRenderer extends EventCleanupTrait {
     // We make a link out of the line number which should pop open
     // the Source Viewer when clicked.
     AnchorElement lineLink = document.createAnchorElement();
+    lineLink.getStyle().setProperty("whiteSpace", "nowrap");
     lineLink.setInnerText("Line " + stackFrame.getLineNumber() + " Col "
         + stackFrame.getColNumber());
     lineLink.setHref("javascript:;");
@@ -105,11 +111,11 @@ public class StackFrameRenderer extends EventCleanupTrait {
    *          relative path for the source file
    * @param sourceSymbol The symbol mapping in the original source for the
    *          function symbol in our stack frame.
-   * @param resymbolizedSymbolClickHandler The {@link ClickListener} that will
-   *          handle the click on the resymbolized symbol.
+   * @param sourcePresenter The {@link SourcePresenter} that will handle
+   *          displaying the source of the resymbolized symbol.
    */
-  public void reSymbolize(String sourceServer, JsSymbol sourceSymbol,
-      ClickListener resymbolizedSymbolClickHandler) {
+  public void reSymbolize(final String sourceServer,
+      final JsSymbol sourceSymbol, final SourcePresenter sourcePresenter) {
     Document document = myElem.getOwnerDocument();
     AnchorElement symbolLink = document.createAnchorElement();
 
@@ -119,6 +125,13 @@ public class StackFrameRenderer extends EventCleanupTrait {
     myElem.appendChild(symbolLink);
     myElem.appendChild(document.createBRElement());
     trackRemover(ClickEvent.addClickListener(symbolLink, symbolLink,
-        resymbolizedSymbolClickHandler));
+        new ClickListener() {
+          public void onClick(ClickEvent event) {
+            sourcePresenter.showSource(sourceServer
+                + sourceSymbol.getResourceBase()
+                + sourceSymbol.getResourceName(), sourceSymbol.getLineNumber(),
+                0);
+          }
+        }));
   }
 }

@@ -16,7 +16,9 @@
 package com.google.speedtracer.client;
 
 import com.google.gwt.xhr.client.XMLHttpRequest;
+import com.google.speedtracer.client.SourceViewer.SourcePresenter;
 import com.google.speedtracer.client.SymbolServerManifest.ResourceSymbolInfo;
+import com.google.speedtracer.client.model.JsSymbol;
 import com.google.speedtracer.client.model.JsSymbolMap;
 import com.google.speedtracer.client.util.IterableFastStringMap;
 import com.google.speedtracer.client.util.JSON;
@@ -46,6 +48,15 @@ public class SymbolServerController {
      * Called when the symbols for a resource have been loaded.
      */
     void onSymbolsReady(JsSymbolMap symbols);
+  }
+
+  /**
+   * Callback interface for renderers that wish to consume a resymbolized
+   * symbol.
+   */
+  public interface Resymbolizeable {
+    void reSymbolize(String sourceServer, JsSymbol sourceSymbol,
+        SourcePresenter sourcePresenter);
   }
 
   /**
@@ -104,6 +115,38 @@ public class SymbolServerController {
     this.pendingRequests = new ArrayList<PendingRequest>();
     // Start xhr for fetching our associated symbol manifest.
     init();
+  }
+
+  /**
+   * Attempts to resymbolize a given symbol name within a given resource.
+   * 
+   * @param resourceUrl the url of the resource that contains the symbol we want
+   *          to resymblize
+   * @param symbolName the symbol we want to resymbolize
+   * @param renderer the recipient of the resymbolization
+   * @param sourcePresenter the entity responsible for displaying the source of
+   *          the resymbolized symbol
+   */
+  public void attemptResymbolization(final String resourceUrl,
+      final String symbolName, final Resymbolizeable renderer,
+      final SourcePresenter sourcePresenter) {
+    requestSymbolsFor(resourceUrl, new Callback() {
+      public void onSymbolsFetchFailed(int errorReason) {
+        // TODO (jaimeyap): Do something here... or not.
+      }
+
+      public void onSymbolsReady(final JsSymbolMap symbols) {
+        // Extract the source symbol.
+        final JsSymbol sourceSymbol = symbols.lookup(symbolName);
+
+        if (sourceSymbol == null) {
+          return;
+        }
+        // Enhance the rendered frame with the resymbolization.
+        renderer.reSymbolize(symbols.getSourceServer(), sourceSymbol,
+            sourcePresenter);
+      }
+    });
   }
 
   /**

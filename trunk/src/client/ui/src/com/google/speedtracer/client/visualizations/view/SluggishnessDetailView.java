@@ -44,8 +44,8 @@ import com.google.speedtracer.client.SourceViewer;
 import com.google.speedtracer.client.SymbolServerController;
 import com.google.speedtracer.client.SymbolServerService;
 import com.google.speedtracer.client.MonitorResources.CommonResources;
+import com.google.speedtracer.client.SourceViewer.SourcePresenter;
 import com.google.speedtracer.client.SourceViewer.SourceViewerLoadedCallback;
-import com.google.speedtracer.client.SymbolServerController.Callback;
 import com.google.speedtracer.client.model.AggregateTimeVisitor;
 import com.google.speedtracer.client.model.DomEvent;
 import com.google.speedtracer.client.model.EvalScript;
@@ -53,8 +53,6 @@ import com.google.speedtracer.client.model.EventRecordType;
 import com.google.speedtracer.client.model.EventVisitorTraverser;
 import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.JavaScriptProfile;
-import com.google.speedtracer.client.model.JsSymbol;
-import com.google.speedtracer.client.model.JsSymbolMap;
 import com.google.speedtracer.client.model.LogEvent;
 import com.google.speedtracer.client.model.LotsOfLittleEvents;
 import com.google.speedtracer.client.model.PaintEvent;
@@ -254,7 +252,7 @@ public class SluggishnessDetailView extends DetailView {
      * also exposes a method for getting an element containing aggregate
      * statistics for the UiEvent.
      */
-    private class UiEventDetails extends RowDetails {
+    private class UiEventDetails extends RowDetails implements SourcePresenter {
       private class ProfileClickListener implements ClickListener {
         private int profileType;
 
@@ -274,42 +272,25 @@ public class SluggishnessDetailView extends DetailView {
         }
       }
 
-      private class ResymbolizeClickListener implements ClickListener {
-        private JsSymbolMap symbols;
-        private JsSymbol sourceSymbol;
+      private class SourceSymbolClickListener implements ClickListener {
+        private final int colNumber;
+        private final int lineNumber;
+        private final String resourceUrl;
 
-        public ResymbolizeClickListener(JsSymbolMap symbols,
-            JsSymbol sourceSymbol) {
-          this.symbols = symbols;
-          this.sourceSymbol = sourceSymbol;
+        SourceSymbolClickListener(String resourceUrl, int lineNumber,
+            int colNumber) {
+          this.resourceUrl = resourceUrl;
+          this.lineNumber = lineNumber;
+          this.colNumber = colNumber;
         }
 
         public void onClick(ClickEvent event) {
-          // This is a click on the re-symbolized source
-          // symbol. Load the source in the source viewer.
-          String sourceUrl = symbols.getSourceServer()
-              + sourceSymbol.getResourceBase() + sourceSymbol.getResourceName();
-
-          // TODO(jaimeyap): Put up a spinner or something. It
-          // may take a while to load the resource.
-          ensureSourceViewer(sourceUrl, new SourceViewerLoadedCallback() {
-
-            public void onSourceFetchFail(int statusCode, SourceViewer viewer) {
-              sourceViewer.hide();
-            }
-
-            public void onSourceViewerLoaded(SourceViewer viewer) {
-              // The viewer should not be loaded at the
-              // URL we care about.
-              sourceViewer.show();
-              sourceViewer.highlightLine(sourceSymbol.getLineNumber());
-              sourceViewer.scrollHighlightedLineIntoView();
-            }
-          });
+          showSource(resourceUrl, lineNumber, colNumber);
         }
       }
 
       private static final int DISPLAYED_EVENTS = 3;
+
       private ColorCodedDataList aggregateStats;
       private List<ColorCodedValue> data;
       private Table detailsTable;
@@ -317,16 +298,15 @@ public class SluggishnessDetailView extends DetailView {
       private final UiEvent event;
       private TableCellElement eventTraceContainerCell;
       private Command heightFixer;
-      private Div profileDiv;
       private HintletRecordsTree hintletTree;
-      private SourceViewer sourceViewer;
-      private JavaScriptProfileRenderer jsProfileRenderer;
-
-      private DivElement treeDiv;
-
       // Profiles are processed in the background. This variable tells the click
       // handler if the profile needs to be refreshed.
       private boolean javaScriptProfileInProgress = false;
+      private JavaScriptProfileRenderer jsProfileRenderer;
+      private Div profileDiv;
+      private SourceViewer sourceViewer;
+
+      private DivElement treeDiv;
 
       protected UiEventDetails(UiEvent event, TableRow parent) {
         super(parent);
@@ -360,6 +340,31 @@ public class SluggishnessDetailView extends DetailView {
         } else {
           hintletTree.refresh(event.getHintRecords());
         }
+      }
+
+      public void showSource(String resourceUrl, final int lineNumber,
+          final int colNumber) {
+        // TODO(jaimeyap): Put up a spinner or something. It may
+        // take a while to load the resource.
+        ensureSourceViewer(resourceUrl, new SourceViewerLoadedCallback() {
+
+          public void onSourceFetchFail(int statusCode, SourceViewer viewer) {
+            sourceViewer.hide();
+          }
+
+          public void onSourceViewerLoaded(SourceViewer viewer) {
+            // The viewer should not be loaded at the URL we
+            // care about.
+            sourceViewer.show();
+            sourceViewer.highlightLine(lineNumber);
+            if (colNumber > 0) {
+              sourceViewer.markColumn(lineNumber, colNumber);
+              sourceViewer.scrollColumnMarkerIntoView();
+            } else {
+              sourceViewer.scrollHighlightedLineIntoView();
+            }
+          }
+        });
       }
 
       /**
@@ -437,31 +442,6 @@ public class SluggishnessDetailView extends DetailView {
         return elem;
       }
 
-      private void attemptResymbolization(final String resourceUrl,
-          final String symbolName, final StackFrameRenderer renderer) {
-        // Add resymbolized data to frame/profile if it is available.
-        SymbolServerController ssController = getCurrentSymbolServerController();
-        if (ssController != null) {
-          ssController.requestSymbolsFor(resourceUrl, new Callback() {
-            public void onSymbolsFetchFailed(int errorReason) {
-              // TODO (jaimeyap): Do something here... or not.
-            }
-
-            public void onSymbolsReady(final JsSymbolMap symbols) {
-              // Extract the source symbol.
-              final JsSymbol sourceSymbol = symbols.lookup(symbolName);
-
-              if (sourceSymbol == null) {
-                return;
-              }
-              // Enhance the rendered frame with the resymbolization.
-              renderer.reSymbolize(symbols.getSourceServer(), sourceSymbol,
-                  new ResymbolizeClickListener(symbols, sourceSymbol));
-            }
-          });
-        }
-      }
-
       private void buildProfileUi() {
         profileDiv.getElement().setInnerHTML("");
         Container container = new DefaultContainerImpl(profileDiv.getElement());
@@ -471,34 +451,18 @@ public class SluggishnessDetailView extends DetailView {
         profileHeading.setInnerText("Profile");
         ScopeBar bar = new ScopeBar(container, resources);
         jsProfileRenderer = new JavaScriptProfileRenderer(container,
+            getCurrentSymbolServerController(), this,
             getModel().getJavaScriptProfileForEvent(event),
             new SourceClickCallback() {
               public void onSourceClick(String resourceUrl, final int lineNumber) {
-                // TODO(jaimeyap): Put up a spinner or something. It may
-                // take a while to load the resource.
-                ensureSourceViewer(resourceUrl,
-                    new SourceViewerLoadedCallback() {
-
-                      public void onSourceFetchFail(int statusCode,
-                          SourceViewer viewer) {
-                        sourceViewer.hide();
-                      }
-
-                      public void onSourceViewerLoaded(SourceViewer viewer) {
-                        // The viewer should not be loaded at the URL we
-                        // care about.
-                        sourceViewer.show();
-
-                        sourceViewer.highlightLine(lineNumber);
-                        sourceViewer.scrollHighlightedLineIntoView();
-                      }
-                    });
+                showSource(resourceUrl, lineNumber, 0);
               }
-            }, getCurrentSymbolServerController(), new ResizeCallback() {
+            }, new ResizeCallback() {
               public void onResize() {
                 fixHeightOfParentRow();
               }
             });
+
         trackRemover(jsProfileRenderer.getRemover());
         Element flatProfile = bar.add("Flat", new ProfileClickListener(
             JavaScriptProfile.PROFILE_TYPE_FLAT));
@@ -833,33 +797,15 @@ public class SluggishnessDetailView extends DetailView {
           final StackFrameRenderer frameRenderer) {
         final String resourceUrl = frame.getResourceUrl();
 
-        // TODO(zundel) this click listener could be consolidated with the
-        // JavaScriptProfileRenderer's click listener.
-        frameRenderer.renderFrame(new ClickListener() {
-          public void onClick(ClickEvent event) {
-            // TODO(jaimeyap): Put up a spinner or something. It may
-            // take a while to load the resource.
-            ensureSourceViewer(resourceUrl, new SourceViewerLoadedCallback() {
+        frameRenderer.renderFrame(new SourceSymbolClickListener(resourceUrl,
+            frame.getLineNumber(), frame.getColNumber()));
 
-              public void onSourceFetchFail(int statusCode, SourceViewer viewer) {
-                sourceViewer.hide();
-              }
-
-              public void onSourceViewerLoaded(SourceViewer viewer) {
-                // The viewer should not be loaded at the URL we
-                // care about.
-                sourceViewer.show();
-                sourceViewer.highlightLine(frame.getLineNumber());
-                sourceViewer.markColumn(frame.getLineNumber(),
-                    frame.getColNumber());
-                sourceViewer.scrollColumnMarkerIntoView();
-              }
-            });
-          }
-        });
-
-        attemptResymbolization(frame.getResourceUrl(), frame.getSymbolName(),
-            frameRenderer);
+        // Add resymbolized data to frame/profile if it is available.
+        SymbolServerController ssController = getCurrentSymbolServerController();
+        if (ssController != null) {
+          ssController.attemptResymbolization(frame.getResourceUrl(),
+              frame.getSymbolName(), frameRenderer, this);
+        }
       }
 
       /**

@@ -49,6 +49,7 @@ public class Color {
   public static final Color MIDNIGHT_BLUE = new Color("#7483aa");
   public static final Color PALE_GREEN = new Color("#98FB98");
   public static final Color BROWN = new Color("#ab8f38");
+  public static final Color CHROME_BLUE = new Color("#eeeeff");
 
   private String colorStr = "";
 

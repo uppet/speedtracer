@@ -54,6 +54,15 @@ import com.google.speedtracer.client.util.Command;
  */
 public class SourceViewer {
   /**
+   * Things that contain a SourceViewer can implement this interface to have
+   * external entities display source through them.
+   */
+  public interface SourcePresenter {
+    void showSource(String resourceUrl, final int lineNumber,
+        final int colNumber);
+  }
+
+  /**
    * Styles that get applied to the internals of the iFrame for highlighting
    * line numbers and other code styling.
    */
