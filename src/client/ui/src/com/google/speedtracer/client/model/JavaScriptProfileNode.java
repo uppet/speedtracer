@@ -15,7 +15,6 @@
  */
 package com.google.speedtracer.client.model;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,12 +25,17 @@ import java.util.List;
 public class JavaScriptProfileNode {
   JsSymbol symbol;
   private List<JavaScriptProfileNode> children = new ArrayList<JavaScriptProfileNode>();
+  private final String symbolType;
   private double selfTime = 0;
-  private String symbolType = "";
   private double time = 0;
 
   public JavaScriptProfileNode(JsSymbol symbol) {
+    this(symbol, "");
+  }
+
+  public JavaScriptProfileNode(JsSymbol symbol, String symbolType) {
     this.symbol = symbol;
+    this.symbolType = symbolType;
   }
 
   public void addChild(JavaScriptProfileNode child) {
@@ -53,8 +57,6 @@ public class JavaScriptProfileNode {
 
   /**
    * Returns the self time.
-   * 
-   * @return
    */
   public double getSelfTime() {
     return this.selfTime;
@@ -70,8 +72,6 @@ public class JavaScriptProfileNode {
 
   /**
    * Returns time spent in this node.
-   * 
-   * @return
    */
   public double getTime() {
     return this.time;
@@ -89,7 +89,8 @@ public class JavaScriptProfileNode {
     return null;
   }
 
-  public void setSymbolType(String symbolType) {
-    this.symbolType = symbolType;
+  public void merge(JavaScriptProfileNode profileChild) {
+    selfTime += profileChild.getSelfTime();
+    time += profileChild.getTime();
   }
 }

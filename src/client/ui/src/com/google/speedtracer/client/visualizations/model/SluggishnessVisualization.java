@@ -94,7 +94,7 @@ public class SluggishnessVisualization extends
   @Override
   public SluggishnessDetailView createDetailsView(Container container,
       MainTimeLine timeLine) {
-    return new SluggishnessDetailView(container, this, timeLine,
+    return new SluggishnessDetailView(container, this,
         getModel().getSourceModel(), resources);
   }
 

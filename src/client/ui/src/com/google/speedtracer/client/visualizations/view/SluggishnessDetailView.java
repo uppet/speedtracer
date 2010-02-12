@@ -78,7 +78,6 @@ import com.google.speedtracer.client.util.dom.DocumentExt;
 import com.google.speedtracer.client.util.dom.WindowExt;
 import com.google.speedtracer.client.view.DetailView;
 import com.google.speedtracer.client.view.HoveringPopup;
-import com.google.speedtracer.client.view.MainTimeLine;
 import com.google.speedtracer.client.visualizations.model.JsStackTrace;
 import com.google.speedtracer.client.visualizations.model.LogMessageVisitor;
 import com.google.speedtracer.client.visualizations.model.SluggishnessModel;
@@ -1192,7 +1191,7 @@ public class SluggishnessDetailView extends DetailView {
   private UiEventModel sourceModel;
 
   public SluggishnessDetailView(Container parent,
-      SluggishnessVisualization viz, MainTimeLine timeLine,
+      SluggishnessVisualization viz,
       UiEventModel sourceModel, final SluggishnessDetailView.Resources resources) {
     super(parent, viz);
     this.resources = resources;

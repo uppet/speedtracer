@@ -19,7 +19,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.events.client.EventListenerRemover;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
 import com.google.gwt.topspin.ui.client.Container;
@@ -54,7 +53,6 @@ public class ScopeBar extends Widget {
   public interface Resources extends ClientBundle {
 
     @Source("resources/ScopeBar.css")
-    @Strict()
     ScopeBar.Css scopeBarCss();
   }
 

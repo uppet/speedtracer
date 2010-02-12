@@ -96,7 +96,9 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
             }
           }));
 
-      resizeCallback.onResize();
+      if (resizeCallback != null) {
+        resizeCallback.onResize();
+      }
     }
 
     void render() {
@@ -188,6 +190,10 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
    */
   public void show(int profileType) {
     JavaScriptProfileNode profileRoot = profile.getProfile(profileType);
+    if (profileRoot == null) {
+      profileDiv.setHtml("Profile is empty.");
+      return;
+    }
     profileDiv.setHtml("");
     Container container = new DefaultContainerImpl(profileDiv.getElement());
     // show VM states (Garbage Collect, etc)
@@ -281,7 +287,9 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
             JavaScriptProfileNode child = children.get(i);
             addFlatChild(child, profileTable, i + 1, totalTime);
           }
-          resizeCallback.onResize();
+          if (resizeCallback != null) {
+            resizeCallback.onResize();
+          }
         }
       }));
     }

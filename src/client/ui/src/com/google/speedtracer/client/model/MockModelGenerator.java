@@ -47,6 +47,9 @@ public class MockModelGenerator {
     @Source("../../tools/data/profiler-test1-uncompressed")
     TextResource profilerTest1Uncompressed();
 
+    @Source("../../tools/data/profiler-test2-logs")
+    TextResource profilerTest2Logs();
+
     @Source("../../tools/data/reddit.com-profiling")
     TextResource redditDotComWithProfiling();
   }
@@ -110,8 +113,8 @@ public class MockModelGenerator {
           mockResources.profilerTest1Compressed()));
       dataSets.add(new DataSet("Profiler Test 1 (uncompressed)",
           mockResources.profilerTest1Uncompressed()));
-      dataSets.add(new DataSet("reddit.com (profiling)",
-          mockResources.redditDotComWithProfiling()));
+      dataSets.add(new DataSet("Profiler Test 2 (logs)",
+          mockResources.profilerTest2Logs()));
       dataSets.add(new DataSet("markTimeline", mockResources.markTimeline()));
     }
   }

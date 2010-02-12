@@ -15,12 +15,14 @@
  */
 package com.google.speedtracer.client.model;
 
+import com.google.gwt.core.client.JsArrayNumber;
 import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.model.DataModel.EventCallbackProxy;
 import com.google.speedtracer.client.model.DataModel.EventCallbackProxyProvider;
 import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.JsIntegerMap;
 import com.google.speedtracer.client.util.TimeStampFormatter;
+import com.google.speedtracer.client.util.WorkQueue;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -28,9 +30,30 @@ import java.util.List;
 
 /**
  * Handles profile data records and stores parsed profiles for later retrieval.
- * 
  */
 public class JavaScriptProfileModel implements EventCallbackProxyProvider {
+  private class VisitProfileWorker implements WorkQueue.Node {
+    private final EventVisitor visitor;
+    private JsArrayNumber eventsWithProfiles;
+    private int currentEventSequence;
+
+    public VisitProfileWorker(EventVisitor visitor,
+        JsArrayNumber eventsWithProfiles, int currentEventSequence) {
+      this.visitor = visitor;
+      this.eventsWithProfiles = eventsWithProfiles;
+      this.currentEventSequence = currentEventSequence;
+    }
+
+    public void execute() {
+      doVisitEventsWithProfiles(visitor, eventsWithProfiles,
+          currentEventSequence);
+    }
+
+    public String getDescription() {
+      return "VisitProfileWorker";
+    }
+  }
+
   /**
    * Sorts in descending order, first by self time, then by time fields.
    */
@@ -50,12 +73,15 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
       return 0;
     }
   };
-
+  private final EventRecordLookup eventRecordLookup;
   private JavaScriptProfileModelImpl impl;
   private final EventCallbackProxy profileProxy;
   private final JsIntegerMap<JavaScriptProfile> profileMap = JsIntegerMap.createObject().cast();
 
-  JavaScriptProfileModel(final DataModel dataModel) {
+  private final WorkQueue workQueue = new WorkQueue();
+
+  JavaScriptProfileModel(final EventRecordLookup eventRecordLookup) {
+    this.eventRecordLookup = eventRecordLookup;
     profileProxy = new EventCallbackProxy() {
       public void onEventRecord(EventRecord data) {
 
@@ -65,7 +91,7 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
         // that were created between events).
         UiEvent rec = null;
         if (!profileData.isOrphaned()) {
-          rec = (UiEvent) dataModel.findEventRecord(profileData.getSequence() - 1);
+          rec = eventRecordLookup.findEventRecord(profileData.getSequence() - 1).cast();
         }
         processProfileData(rec, profileData);
       }
@@ -88,9 +114,10 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
   }
 
   /**
-   * Return the profile for the specified event in a simple HTML representation.
+   * TODO(zundel): This method is here just for debugging purposes. Eventually
+   * we need to remove it or put behind deferred binding.
    * 
-   * TODO(zundel): This method is here just for debugging purposes.
+   * Return the profile for the specified event in a simple HTML representation.
    * 
    * @param sequence the event sequence number to look for
    * @param profileType one of {@link JavaScriptProfileModel} PROFILE_TYPE
@@ -126,6 +153,39 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
     // Some additional debugging info
     // result.append(impl.getDebugDumpHtml());
     return result.toString();
+  }
+
+  /**
+   * Iterates over any UiEvent that has processed profile data.
+   */
+  public void visitEventsWithProfiles(EventVisitor visitor) {
+    JsArrayNumber eventsWithProfiles = profileMap.getKeys();
+    int currentEventSequence = 0;
+
+    WorkQueue.Node worker = new VisitProfileWorker(visitor, eventsWithProfiles,
+        currentEventSequence);
+    if (workQueue == null) {
+      workQueue.append(worker);
+    } else {
+      worker.execute();
+    }
+  }
+
+  private void doVisitEventsWithProfiles(EventVisitor visitor,
+      JsArrayNumber eventsWithProfiles, int currentEventSequence) {
+    for (int i = currentEventSequence, length = eventsWithProfiles.length(); i < length; ++i) {
+      int eventSequence = (int) eventsWithProfiles.get(i);
+      UiEvent event = (UiEvent) eventRecordLookup.findEventRecord(eventSequence);
+      if (event.hasJavaScriptProfile()) {
+        visitor.visitUiEvent(event);
+      }
+      if (workQueue != null && workQueue.isTimeSliceExpired()) {
+        workQueue.append(new VisitProfileWorker(visitor, eventsWithProfiles,
+            i + 1));
+        return;
+      }
+    }
+    visitor.postProcess();
   }
 
   private void dumpNodeChildrenFlat(double totalTime,
@@ -222,6 +282,7 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
   }
 
   /**
+   * Delegates processing to the implementation specific profile data parser.
    * 
    * @param recordSequence If >= 0, associate this profile with the specified
    *          node.
@@ -234,7 +295,7 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
     if (impl == null) {
       String format = profileData.getFormat();
       if (format.equals(JavaScriptProfileModelV8Impl.FORMAT)) {
-        impl = new JavaScriptProfileModelV8Impl(true);
+        impl = new JavaScriptProfileModelV8Impl(workQueue);
       } else {
         Logging.getLogger().logText(
             "No profile model available for profile format: " + format);

@@ -17,7 +17,6 @@ package com.google.speedtracer.client.visualizations.view;
 
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.gwt.topspin.ui.client.Div;
@@ -71,7 +70,6 @@ public class HintletReport extends Div {
       SortableTableHeader.Resources, HintletIndicator.Resources {
 
     @Source("resources/HintletReport.css")
-    @Strict
     HintletReport.Css hintletReportCss();
   }
 

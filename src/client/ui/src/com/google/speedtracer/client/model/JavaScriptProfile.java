@@ -89,7 +89,6 @@ public class JavaScriptProfile {
 
   /**
    * Return the profile for the specified event in a simple HTML representation.
-   * 
    */
   public void getVmStateHtml(StringBuilder result) {
     // Give a table of the time spent in each VM state
@@ -108,10 +107,49 @@ public class JavaScriptProfile {
     result.append("</table>");
   }
 
+  /**
+   * Merge an existing profile into this one.
+   */
+  public void merge(JavaScriptProfile profile) {
+    mergeVmStates(profile);
+    mergeProfile(profile, PROFILE_TYPE_FLAT);
+    mergeProfile(profile, PROFILE_TYPE_BOTTOM_UP);
+    mergeProfile(profile, PROFILE_TYPE_TOP_DOWN);
+  }
+
   JavaScriptProfileNode getOrCreateProfile(int profileType) {
     if (profiles[profileType] == null) {
       profiles[profileType] = new JavaScriptProfileNode(rootSymbol);
     }
     return profiles[profileType];
+  }
+
+  private void mergeProfile(JavaScriptProfile profile, int profileType) {
+    JavaScriptProfileNode root = getOrCreateProfile(profileType);
+    JavaScriptProfileNode profileRoot = profile.getOrCreateProfile(profileType);
+    root.merge(profileRoot);
+    mergeProfileChildren(root, profileRoot);
+  }
+
+  private void mergeProfileChildren(JavaScriptProfileNode parent,
+      JavaScriptProfileNode profileParent) {
+    for (int i = 0, length = profileParent.getChildren().size(); i < length; ++i) {
+      JavaScriptProfileNode profileChild = profileParent.getChildren().get(i);
+      JavaScriptProfileNode child = parent.lookup(profileChild.getSymbol(),
+          profileChild.getSymbolType());
+      if (child == null) {
+        child = new JavaScriptProfileNode(profileChild.getSymbol(),
+            profileChild.getSymbolType());
+        parent.addChild(child);
+      }
+      child.merge(profileChild);
+      mergeProfileChildren(child, profileChild);
+    }
+  }
+
+  private void mergeVmStates(JavaScriptProfile profile) {
+    for (int i = 0; i < NUM_STATES; ++i) {
+      stateTimes.set(i, stateTimes.get(i) + profile.stateTimes.get(i));
+    }
   }
 }
