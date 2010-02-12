@@ -1,7 +1,6 @@
 /**
  * Annotated CSS for ScopeBar.java
  */
-
 .scopeBar {
   display: inline-block;
 }
@@ -13,6 +12,7 @@
   margin-right: 1px;
   font-weight: bold;
   display: inline-block;
+  cursor: pointer;
 }
 
 .scopeBarButtonSelected {

@@ -49,7 +49,7 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
 
   public void testAddressParse() {
 
-    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(false);
+    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(null);
     double address;
     address = impl.parseAddress("0x100",
         JavaScriptProfileModelV8Impl.ADDRESS_TAG_CODE);
@@ -80,7 +80,7 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
   }
 
   public void testAlias() {
-    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(false);
+    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(null);
     String ccrecs = "profiler,\"begin\",1\n" + "profiler,\"compression\",4\n"
         + "alias,cc,code-creation\n" + "alias,cm,code-move\n"
         + "alias,cd,code-delete\n" + "alias,t,tick\n" + "alias,r,repeat\n"
@@ -101,7 +101,7 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
   }
 
   public void testBottomUpProfile() {
-    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(false);
+    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(null);
     JavaScriptProfileEvent rawEvent = makeV8ProfileEvent(profileDataSet1);
     JavaScriptProfile profile = new JavaScriptProfile();
     impl.parseRawEvent(rawEvent, null, profile);
@@ -152,7 +152,7 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
   }
 
   public void testCodeCreationSimple() {
-    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(false);
+    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(null);
     String logRecs = "code-creation,LoadIC,5910913e,179,\"parentNode\"\n"
         + "code-creation,RegExp,3f830f,566,\"[^+&gt;] [^+&gt;]\"\n"
         + "code-creation,LazyCompile,59117070,2791,\"last_click http://www.reddit.com/static/reddit.js?v=437941e91e4684e9b4b00eca75a46dd9:62\"\n";
@@ -165,7 +165,7 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
   }
 
   public void testFlatProfile() {
-    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(false);
+    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(null);
     JavaScriptProfileEvent rawEvent = makeV8ProfileEvent(profileDataSet1);
     JavaScriptProfile profile = new JavaScriptProfile();
     impl.parseRawEvent(rawEvent, null, profile);
@@ -202,7 +202,7 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
    * we don't want to double count it.
    */
   public void testRecursiveNodeFlat() {
-    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(false);
+    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(null);
     String logRecs = "code-creation,LoadIC,0x5910913e,179,\"parentNode\"\n"
         + "code-creation,LoadIC,0x59109000,10,\"childNode\"\n"
         + "tick,0x5910913e,+1,0,0x59109000,0x5910913e\n";
@@ -222,7 +222,7 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
   }
 
   public void testRepeatSimple() {
-    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(false);
+    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(null);
     String logRecs = "code-creation,LoadIC,5910913e,179,\"parentNode\"\n"
         + "repeat,5,tick,5910913e,+1,0\n";
     JavaScriptProfileEvent rawEvent = makeV8ProfileEvent(logRecs);
@@ -241,7 +241,7 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
   }
 
   public void testTickSimple() {
-    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(false);
+    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(null);
     String logRecs = "code-creation,LoadIC,5910913e,179,\"parentNode\"\n"
         + "tick,5910913e,+1,0\n";
     JavaScriptProfileEvent rawEvent = makeV8ProfileEvent(logRecs);
@@ -284,7 +284,7 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
   }
 
   public void testTopDownProfile() {
-    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(false);
+    JavaScriptProfileModelV8Impl impl = new JavaScriptProfileModelV8Impl(null);
     JavaScriptProfileEvent rawEvent = makeV8ProfileEvent(profileDataSet1);
     JavaScriptProfile profile = new JavaScriptProfile();
     impl.parseRawEvent(rawEvent, null, profile);

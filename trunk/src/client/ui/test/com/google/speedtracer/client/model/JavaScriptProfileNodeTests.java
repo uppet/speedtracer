@@ -82,4 +82,25 @@ public class JavaScriptProfileNodeTests extends GWTTestCase {
     assertEquals(1.0, child2.getTime(), .001);
   }
 
+  public void testJavaScriptProfileNodeMerge() {
+    JavaScriptProfileNode child0 = new JavaScriptProfileNode(new JsSymbol("",
+        "", 0, "child0"));
+    child0.addSelfTime(1);
+    child0.addTime(2);
+    assertEquals(1.0, child0.getSelfTime(), .001);
+    assertEquals(3.0, child0.getTime(), .001);
+
+    JavaScriptProfileNode child1 = new JavaScriptProfileNode(new JsSymbol("",
+        "", 0, "child1"));
+    child1.addSelfTime(3);
+    child1.addTime(10);
+    assertEquals(3.0, child1.getSelfTime(), .001);
+    assertEquals(13.0, child1.getTime(), .001);
+
+    child0.merge(child1);
+    assertEquals(3.0, child1.getSelfTime(), .001);
+    assertEquals(13.0, child1.getTime(), .001);
+    assertEquals(4.0, child0.getSelfTime(), .001);
+    assertEquals(16.0, child0.getTime(), .001);
+  }
 }

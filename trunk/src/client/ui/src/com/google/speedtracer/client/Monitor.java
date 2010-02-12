@@ -52,6 +52,7 @@ import com.google.speedtracer.client.view.InlineMenu;
 import com.google.speedtracer.client.visualizations.model.HintletReportModel;
 import com.google.speedtracer.client.visualizations.view.HintletReport;
 import com.google.speedtracer.client.visualizations.view.HintletReportDialog;
+import com.google.speedtracer.client.visualizations.view.MergeProfilesPanel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -477,6 +478,9 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     HotKey.register('M', new SymbolServerEntryPanel(model.getTabDescription()),
         "UI for configuring the SymbolMap manifest location.");
 
+    HotKey.register('1', new MergeProfilesPanel(model, resources),
+        "Search for JavaScript profiles with the same Log entry and merge");
+    
     // Start fetching the symbol manifest if it is available.
     maybeInitializeSymbolServerController(model.getTabDescription());
 

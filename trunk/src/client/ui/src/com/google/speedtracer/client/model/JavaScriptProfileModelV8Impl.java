@@ -15,7 +15,6 @@
  */
 package com.google.speedtracer.client.model;
 
-import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -188,8 +187,6 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
 
   static final DebugStats debugStats = new DebugStats();
 
-  private static final int LOG_PROCESS_CHUNK_TIME_MS = 60;
-
   private static Element scrubbingDiv = Document.get().createDivElement();
 
   // TODO(zundel): this method is just for debugging. Not for production use.
@@ -233,9 +230,9 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
 
   private final WorkQueue workQueue;
 
-  public JavaScriptProfileModelV8Impl(boolean useWorkQueue) {
+  public JavaScriptProfileModelV8Impl(WorkQueue workQueue) {
     super("v8");
-    workQueue = (useWorkQueue ? new WorkQueue() : null);
+    this.workQueue = workQueue;
     populateAddressTags();
     populateActionTypes();
     populateSymbolTypes();
@@ -663,15 +660,12 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    */
   private void processLogLines(final UiEvent refRecord,
       final JSOArray<String> logLines, int currentLine) {
-    final double endTime = Duration.currentTimeMillis()
-        + LOG_PROCESS_CHUNK_TIME_MS;
     final int logLinesLength = logLines.size();
 
     for (; currentLine < logLinesLength; ++currentLine) {
       if (workQueue != null) {
         // Occasionally check to see if the time to run this chunk has expired.
-        if ((currentLine % 10 == 0)
-            && (Duration.currentTimeMillis() >= endTime)) {
+        if ((currentLine % 10 == 0) && workQueue.isTimeSliceExpired()) {
           break;
         }
       }
@@ -715,8 +709,8 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     JavaScriptProfileNode child = profileNode.lookup(jsSymbol,
         symbol.getSymbolType().getName());
     if (child == null) {
-      child = new JavaScriptProfileNode(jsSymbol);
-      child.setSymbolType((symbol.getSymbolType().getName()));
+      child = new JavaScriptProfileNode(jsSymbol,
+          symbol.getSymbolType().getName());
       profileNode.addChild(child);
     }
 

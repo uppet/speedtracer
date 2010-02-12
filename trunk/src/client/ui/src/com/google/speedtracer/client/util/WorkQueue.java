@@ -15,6 +15,7 @@
  */
 package com.google.speedtracer.client.util;
 
+import com.google.gwt.core.client.Duration;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DeferredCommand;
 
@@ -27,6 +28,7 @@ import java.util.List;
  * control priority.
  */
 public class WorkQueue implements Command {
+  public static final int WORK_QUEUE_NODE_TIME_SLICE_MS = 60;
 
   /**
    * Implement WorkQueueNode to create a new task to add to the
@@ -39,6 +41,7 @@ public class WorkQueue implements Command {
   // Makes sure only one command is enqueued at a time.
   private boolean commandQueued = false;
   private List<Node> queue = new ArrayList<Node>();
+  private double executeStartTime;
 
   public WorkQueue() {
   }
@@ -51,10 +54,15 @@ public class WorkQueue implements Command {
     enqueueCommand();
   }
 
+  public boolean isTimeSliceExpired() {
+    return (Duration.currentTimeMillis() - executeStartTime) >= WORK_QUEUE_NODE_TIME_SLICE_MS;
+  }
+
   public void execute() throws RuntimeException {
     commandQueued = false;
     // Execute the first item off the queue.
     Node node = queue.remove(0);
+    executeStartTime = Duration.currentTimeMillis();
     node.execute();
     enqueueCommand();
   }
