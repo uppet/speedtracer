@@ -467,7 +467,7 @@ public abstract class BackgroundPage extends Extension {
     assert (tabModel != null);
 
     Windows.create(MONITOR_RESOURCE_PATH + "?tabId=" + tabId + "&browserId="
-        + browserId, 0, 0, 850, 700, new OnWindowCallback() {
+        + Integer.toString(browserId), 0, 0, 850, 700, new OnWindowCallback() {
       public void onWindow(Window window) {
         tabModel.monitorClosed = false;
         // The Tab containing the Monitor UI should not have a valid browser
