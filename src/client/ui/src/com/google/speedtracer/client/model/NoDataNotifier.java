@@ -45,8 +45,7 @@ public class NoDataNotifier implements DomainObserver {
     model.addDomainObserver(this);
 
     // Set a timeout to check for data in 5 seconds.
-    Command.defer(new Command() {
-      @Override
+    Command.defer(new Command.Method() {
       public void execute() {
         if (hasData) {
           return;
@@ -64,8 +63,7 @@ public class NoDataNotifier implements DomainObserver {
     NoDataNotifier.this.slideout.hide();
 
     // Remove ourselves from the domain observer sometime later.
-    Command.defer(new Command() {
-      @Override
+    Command.defer(new Command.Method() {
       public void execute() {
         NoDataNotifier.this.model.removeDomainObserver(NoDataNotifier.this);
       }

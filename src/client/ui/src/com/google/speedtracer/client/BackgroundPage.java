@@ -287,7 +287,7 @@ public abstract class BackgroundPage extends Extension {
         }-*/;
       };
 
-      // Connect the datainstance to receive data from the data_loader
+      // Connect the DataInstance to receive data from the data_loader
       port.getOnMessageEvent().addListener(new MessageEvent.Listener() {
         public void onMessage(MessageEvent.Message message) {
           EventRecordMessageEvent evtRecordMessage = message.cast();
@@ -360,7 +360,7 @@ public abstract class BackgroundPage extends Extension {
                 doRecordingData(channel, data);
                 break;
               case ResetBaseTimeMessage.TYPE:
-                doResetBaseTime(channel, data);
+                doResetBaseTime(data);
                 break;
               default:
                 assert false : "Unhandled Message" + type;
@@ -429,7 +429,6 @@ public abstract class BackgroundPage extends Extension {
             // state.
             request.getMonitorWindow().addUnloadListener(new EventListener() {
               public void handleEvent(Event event) {
-                assert (browserConnection != null);
                 TabModel tabModel = browserConnection.tabMap.get(tabId);
                 channel.close();
                 tabModel.channel = null;
@@ -442,8 +441,7 @@ public abstract class BackgroundPage extends Extension {
             });
           }
 
-          private void doResetBaseTime(final Client channel,
-              WindowChannel.Message data) {
+          private void doResetBaseTime(WindowChannel.Message data) {
             final ResetBaseTimeMessage request = data.cast();
             final int tabId = request.getTabId();
             final int browserId = request.getBrowserId();

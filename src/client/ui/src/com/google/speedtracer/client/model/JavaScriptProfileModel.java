@@ -77,7 +77,6 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
   private JavaScriptProfileModelImpl impl;
   private final EventCallbackProxy profileProxy;
   private final JsIntegerMap<JavaScriptProfile> profileMap = JsIntegerMap.createObject().cast();
-
   private final WorkQueue workQueue = new WorkQueue();
 
   JavaScriptProfileModel(final EventRecordLookup eventRecordLookup) {

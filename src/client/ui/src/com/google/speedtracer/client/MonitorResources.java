@@ -18,7 +18,6 @@ package com.google.speedtracer.client;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.speedtracer.client.view.Controller;
 import com.google.speedtracer.client.view.HoveringPopup;
 
@@ -41,7 +40,6 @@ public class MonitorResources {
    */
   public interface CommonResources extends ClientBundle {
     @Source("resources/Common.css")
-    @Strict()
     CommonCss commonCss();
   }
 
@@ -58,7 +56,6 @@ public class MonitorResources {
   public interface Resources extends HoveringPopup.Resources,
       Controller.Resources, MonitorVisualizationsPanel.Resources {
     @Source("resources/Monitor.css")
-    @Strict()
     Css monitorCss();
   }
 

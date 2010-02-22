@@ -17,14 +17,14 @@ package com.google.speedtracer.client.util;
 
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.speedtracer.client.Logging;
-import com.google.speedtracer.client.util.WorkQueue.Node;
 
 /**
  * Tests the WorkQueue class.
  */
 public class WorkQueueTests extends GWTTestCase {
+  WorkQueue workQueue;
 
-  private class PrependWorkNode implements Node {
+  private class PrependWorkNode implements WorkQueue.Node {
     private int value;
 
     public PrependWorkNode(int value) {
@@ -40,8 +40,23 @@ public class WorkQueueTests extends GWTTestCase {
       return "prepend worker";
     }
   }
-  private int sum = 0;
 
+  private class InitialWorkNode implements WorkQueue.Node {
+    public InitialWorkNode() {
+    }
+
+    public void execute() {
+      int expectedValue = 1 * 10 + 2 * 100 + 3 * 1000 + 4 * 10000 + 5 * 100000;
+      assertEquals("Sum", expectedValue, sum);
+      finishTest();
+    }
+
+    public String getDescription() {
+      return "sum worker";
+    }
+  }
+
+  private int sum = 0;
   private int workOrder = 0;
 
   @Override
@@ -51,25 +66,14 @@ public class WorkQueueTests extends GWTTestCase {
 
   public void testWorkQueue1() {
     delayTestFinish(2000);
-    WorkQueue wq = new WorkQueue();
-    wq.append(new Node() {
-      public void execute() {
-        int expectedValue = 1 * 10 + 2 * 100 + 3 * 1000 + 4 * 10000 + 5
-            * 100000;
-        assertEquals("Sum", expectedValue, sum);
-        finishTest();
-      }
+    workQueue = new WorkQueue();
+    workQueue.append(new InitialWorkNode());
 
-      public String getDescription() {
-        return "sum worker";
-      }
-    });
-
-    wq.prepend(new PrependWorkNode(100000));
-    wq.prepend(new PrependWorkNode(10000));
-    wq.prepend(new PrependWorkNode(1000));
-    wq.prepend(new PrependWorkNode(100));
-    wq.prepend(new PrependWorkNode(10));
+    workQueue.prepend(new PrependWorkNode(100000));
+    workQueue.prepend(new PrependWorkNode(10000));
+    workQueue.prepend(new PrependWorkNode(1000));
+    workQueue.prepend(new PrependWorkNode(100));
+    workQueue.prepend(new PrependWorkNode(10));
   }
 
   @Override

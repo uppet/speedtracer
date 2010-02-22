@@ -18,7 +18,6 @@ package com.google.gwt.graphics.client.charts;
 import com.google.gwt.graphics.client.Canvas;
 import com.google.gwt.graphics.client.Color;
 import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.gwt.topspin.ui.client.Widget;
@@ -43,7 +42,6 @@ public class PieChart extends SimpleChart {
    */
   public interface Resources extends Legend.Resources {
     @Source("resources/PieChart.css")
-    @Strict()
     PieChart.Css pieChartCss();
   }
 

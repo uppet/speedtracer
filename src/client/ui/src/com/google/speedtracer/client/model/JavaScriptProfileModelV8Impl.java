@@ -225,9 +225,7 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
   private Map<ActionType, LogAction> logActions = new HashMap<ActionType, LogAction>();
   private V8LogDecompressor logDecompressor = null;
   private V8SymbolTable symbolTable = new V8SymbolTable();
-
   private Map<String, V8SymbolType> symbolTypeMap = new HashMap<String, V8SymbolType>();
-
   private final WorkQueue workQueue;
 
   public JavaScriptProfileModelV8Impl(WorkQueue workQueue) {

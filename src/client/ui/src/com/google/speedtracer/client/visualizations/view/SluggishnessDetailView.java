@@ -153,7 +153,8 @@ public class SluggishnessDetailView extends DetailView {
       FilteringScrollTable.Resources, PieChart.Resources, CommonResources,
       HintletRecordsTree.Resources, LazyEventTree.Resources,
       HoveringPopup.Resources, SourceViewer.Resources,
-      StackFrameRenderer.Resources, ScopeBar.Resources {
+      StackFrameRenderer.Resources, JavaScriptProfileRenderer.Resources,
+      ScopeBar.Resources {
     @Source("resources/magnify-16px.png")
     ImageResource filterPanelIcon();
 
@@ -261,11 +262,10 @@ public class SluggishnessDetailView extends DetailView {
 
         public void onClick(ClickEvent clickEvent) {
           jsProfileRenderer.show(profileType);
-          Command.defer(new Command() {
-            @Override
+          Command.defer(new Command.Method() {
             public void execute() {
               fixHeightOfParentRow();
-            }            
+            }
           });
         }
       }
@@ -295,7 +295,7 @@ public class SluggishnessDetailView extends DetailView {
       private Container detailsTableContainer;
       private final UiEvent event;
       private TableCellElement eventTraceContainerCell;
-      private Command heightFixer;
+      private Command.Method heightFixer;
       private HintletRecordsTree hintletTree;
       // Profiles are processed in the background. This variable tells the click
       // handler if the profile needs to be refreshed.
@@ -423,8 +423,7 @@ public class SluggishnessDetailView extends DetailView {
             WindowExt.get(), new ResizeListener() {
               public void onResize(ResizeEvent event) {
                 if (heightFixer == null && getParentRow().isExpanded()) {
-                  heightFixer = new Command() {
-                    @Override
+                  heightFixer = new Command.Method() {
                     public void execute() {
                       // We don't want to do this for each resize, but once at
                       // the end.
@@ -448,7 +447,7 @@ public class SluggishnessDetailView extends DetailView {
         profileDiv.getElement().appendChild(profileHeading);
         profileHeading.setInnerText("Profile");
         ScopeBar bar = new ScopeBar(container, resources);
-        jsProfileRenderer = new JavaScriptProfileRenderer(container,
+        jsProfileRenderer = new JavaScriptProfileRenderer(container, resources,
             getCurrentSymbolServerController(), this,
             getModel().getJavaScriptProfileForEvent(event),
             new SourceClickCallback() {
@@ -1191,8 +1190,8 @@ public class SluggishnessDetailView extends DetailView {
   private UiEventModel sourceModel;
 
   public SluggishnessDetailView(Container parent,
-      SluggishnessVisualization viz,
-      UiEventModel sourceModel, final SluggishnessDetailView.Resources resources) {
+      SluggishnessVisualization viz, UiEventModel sourceModel,
+      final SluggishnessDetailView.Resources resources) {
     super(parent, viz);
     this.resources = resources;
     css = resources.sluggishnessDetailViewCss();

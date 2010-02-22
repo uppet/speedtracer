@@ -21,50 +21,53 @@ import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;
 /**
  * Fork of Topspin's Command that does not reference $wnd.
  */
-public abstract class Command {
+public class Command {
 
   /**
-   * Causes a command to be called in the immediate future, after the current
-   * event handler returns control to the browser.
-   * 
-   * @param command the command to be called
+   * Interface implemented by callers to pass in a new method to be executed.
    */
-  public static void defer(Command command) {
-    defer(command, 0);
+  public interface Method {
+    void execute();
   }
 
   /**
-   * Causes a command to be called at some point in the future, as specified by
-   * the 'delay' parameter. This command will not be called before the current
-   * event handler terminates.
+   * Causes a method to be called in the immediate future, after the current
+   * event handler returns control to the browser.
    * 
-   * @param command the command to be called
-   * @param delay the delay, in milliseconds, after which the command will be
-   *        called
+   * @param method the method to be called.
    */
-  public static native void defer(Command command, int delay) /*-{
-     window.setTimeout(function() {
-       command.@com.google.speedtracer.client.util.Command::fire()();
-     }, delay);
-   }-*/;
+  public static void defer(Method method) {
+    defer(method, 0);
+  }
 
   /**
-   * Abstract method that will be called when the command is ready.
+   * Causes a method to be called at some point in the future, as specified by
+   * the 'delay' parameter. This method will not be called before the current
+   * event handler terminates.
+   * 
+   * @param method the method to be called.
+   * @param delay the delay, in milliseconds, after which the method will be
+   *          called
    */
-  public abstract void execute();
+  public static native void defer(Method method, int delay) /*-{
+    window.setTimeout(function() {
+      @com.google.speedtracer.client.util.Command::fire(Lcom/google/speedtracer/client/util/Command$Method;)(method);
+    }, delay);
+  }-*/;
 
-  void fire() {
+  @SuppressWarnings("unused")
+  private static void fire(Method method) {
     UncaughtExceptionHandler handler = GWT.getUncaughtExceptionHandler();
     if (handler != null) {
-      fireAndCatch(handler);
+      fireAndCatch(handler, method);
     } else {
-      execute();
+      method.execute();
     }
   }
 
-  private void fireAndCatch(UncaughtExceptionHandler handler) {
+  private static void fireAndCatch(UncaughtExceptionHandler handler, Method method) {
     try {
-      execute();
+      method.execute();
     } catch (Throwable e) {
       handler.onUncaughtException(e);
     }

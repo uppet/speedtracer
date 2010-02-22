@@ -18,7 +18,6 @@ package com.google.speedtracer.client;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
 import com.google.gwt.topspin.ui.client.Container;
@@ -94,7 +93,6 @@ public class MonitorVisualizationsPanel extends Div {
       OverViewTimeLine.Resources, MainTimeLine.Resources,
       HintletReportDialog.Resources {
     @Source("resources/MonitorVisualizationsPanel.css")
-    @Strict()
     MonitorVisualizationsPanel.Css monitorVisualizationsPanelCss();
   }
 
@@ -439,9 +437,10 @@ public class MonitorVisualizationsPanel extends Div {
   }
 
   /**
-   * Adds a {@link Visualization} and its associated {@link DetailView}. It also
-   * hooks up the {@link MainTimeLine} to the underlying {@link GraphModel}
-   * associated with each Visualization.
+   * Adds a {@link Visualization} and its associated
+   * {@link com.google.speedtracer.client.view.DetailView}. It also hooks up the
+   * {@link MainTimeLine} to the underlying {@link GraphModel} associated with
+   * each Visualization.
    * 
    * @param visualization
    */

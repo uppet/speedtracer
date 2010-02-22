@@ -312,7 +312,8 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
         + resources.overViewGraphCss().getText()
         + resources.monitorCss().getText()
         + resources.sourceViewerCss().getText()
-        + resources.stackFrameRendererCss().getText());
+        + resources.stackFrameRendererCss().getText()
+        + resources.javaScriptProfileRendererCss().getText());
 
     final WindowExt window = getBackgroundView();
     channel = Client.connect(window, CHANNEL_NAME, this);
@@ -480,7 +481,7 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
 
     HotKey.register('1', new MergeProfilesPanel(model, resources),
         "Search for JavaScript profiles with the same Log entry and merge");
-    
+
     // Start fetching the symbol manifest if it is available.
     maybeInitializeSymbolServerController(model.getTabDescription());
 

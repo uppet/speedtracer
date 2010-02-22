@@ -16,8 +16,6 @@
 package com.google.speedtracer.client.util;
 
 import com.google.gwt.core.client.Duration;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DeferredCommand;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,16 +25,16 @@ import java.util.List;
  * you to insert new tasks at either the beginning or end of the queue to
  * control priority.
  */
-public class WorkQueue implements Command {
-  public static final int WORK_QUEUE_NODE_TIME_SLICE_MS = 60;
-
+public class WorkQueue implements Command.Method {
   /**
    * Implement WorkQueueNode to create a new task to add to the
-   * {@link WorkQueue}
+   * {@link WorkQueue}.
    */
-  public interface Node extends Command {
-    public String getDescription();
+  public interface Node extends Command.Method {
+    String getDescription();
   }
+
+  public static final int WORK_QUEUE_NODE_TIME_SLICE_MS = 60;
 
   // Makes sure only one command is enqueued at a time.
   private boolean commandQueued = false;
@@ -54,10 +52,6 @@ public class WorkQueue implements Command {
     enqueueCommand();
   }
 
-  public boolean isTimeSliceExpired() {
-    return (Duration.currentTimeMillis() - executeStartTime) >= WORK_QUEUE_NODE_TIME_SLICE_MS;
-  }
-
   public void execute() throws RuntimeException {
     commandQueued = false;
     // Execute the first item off the queue.
@@ -65,6 +59,10 @@ public class WorkQueue implements Command {
     executeStartTime = Duration.currentTimeMillis();
     node.execute();
     enqueueCommand();
+  }
+
+  public boolean isTimeSliceExpired() {
+    return (Duration.currentTimeMillis() - executeStartTime) >= WORK_QUEUE_NODE_TIME_SLICE_MS;
   }
 
   /**
@@ -78,7 +76,7 @@ public class WorkQueue implements Command {
   private void enqueueCommand() {
     // If there is anything else on the queue, queue up a deferred command.
     if (queue.size() > 0 && commandQueued == false) {
-      DeferredCommand.addCommand(this);
+      Command.defer(this);
       commandQueued = true;
     }
   }

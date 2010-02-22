@@ -16,7 +16,6 @@
 package com.google.speedtracer.client.view;
 
 import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.speedtracer.client.model.Visualization;
 import com.google.speedtracer.client.timeline.Constants;
@@ -27,6 +26,7 @@ import com.google.speedtracer.client.timeline.TransientGraphSelection;
 import com.google.speedtracer.client.timeline.fx.Zoom;
 import com.google.speedtracer.client.visualizations.model.NetworkVisualization;
 import com.google.speedtracer.client.visualizations.model.SluggishnessVisualization;
+import com.google.speedtracer.client.visualizations.view.JavaScriptProfileRenderer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,17 +49,16 @@ public class MainTimeLine extends TimeLine {
   public interface Resources extends DetailViews.Resources,
       MainGraph.Resources, OverViewGraph.Resources,
       TransientGraphSelection.Resources, NetworkVisualization.Resources,
-      SluggishnessVisualization.Resources {
+      SluggishnessVisualization.Resources, JavaScriptProfileRenderer.Resources {
     @Source("resources/MainTimeLine.css")
-    @Strict
     MainTimeLine.Css mainTimeLineCss();
   }
 
   private Zoom transition;
 
   public MainTimeLine(Container container,
-      List<Visualization<?, ?>> visualizations, TimeLineModel timeLineModel, Zoom.CallBack cb,
-      MainTimeLine.Resources resources) {
+      List<Visualization<?, ?>> visualizations, TimeLineModel timeLineModel,
+      Zoom.CallBack cb, MainTimeLine.Resources resources) {
     super(container, resources.mainTimeLineCss().mainTimeLine(), timeLineModel);
     this.transition = new Zoom(this);
     transition.setCallBack(cb);

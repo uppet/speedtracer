@@ -302,8 +302,7 @@ public class SourceViewer {
       final SourceViewerLoadedCallback callback) {
     // Defense against empty urls.
     if (resource == null || "".equals(resource)) {
-      Command.defer(new Command() {
-        @Override
+      Command.defer(new Command.Method() {
         public void execute() {
           callback.onSourceFetchFail(-1, SourceViewer.this);
         }
@@ -314,8 +313,7 @@ public class SourceViewer {
     // Early out if this frame already points at the requested resource.
     if (resource.equals(currentResourceUrl)) {
       // This method is expected to be asynchronous.
-      Command.defer(new Command() {
-        @Override
+      Command.defer(new Command.Method() {
         public void execute() {
           callback.onSourceViewerLoaded(SourceViewer.this);
         }

@@ -25,7 +25,6 @@ import com.google.gwt.events.client.EventListenerRemover;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
@@ -399,7 +398,6 @@ public class Tree extends Widget {
     ImageResource itemPlus();
 
     @Source("resources/Tree.css")
-    @Strict()
     Tree.Css treeCss();
   }
 
@@ -421,9 +419,9 @@ public class Tree extends Widget {
 
   private final List<ExpansionChangeListener> expansionListeners = new ArrayList<ExpansionChangeListener>();
 
-  private Command fireExpansionChangeEvent = null;
+  private Command.Method fireExpansionChangeEvent = null;
 
-  private Command fireSelectionChangeEvent = null;
+  private Command.Method fireSelectionChangeEvent = null;
 
   private final List<EventListenerRemover> removeHandles = new ArrayList<EventListenerRemover>();
 
@@ -561,8 +559,7 @@ public class Tree extends Widget {
       return;
     }
 
-    fireExpansionChangeEvent = new Command() {
-      @Override
+    fireExpansionChangeEvent = new Command.Method() {
       public void execute() {
         for (int i = 0, n = expansionListeners.size(); i < n; i++) {
           expansionListeners.get(i).onExpansionChange(changedItem);
@@ -585,8 +582,7 @@ public class Tree extends Widget {
     }
 
     // Fire selection change event sometime later.
-    fireSelectionChangeEvent = new Command() {
-      @Override
+    fireSelectionChangeEvent = new Command.Method() {
       public void execute() {
         for (int i = 0, n = selectionListeners.size(); i < n; i++) {
           selectionListeners.get(i).onSelectionChange(
