@@ -1,11 +1,28 @@
+/*
+ * Copyright 2010 Google Inc.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.junit.client.GWTTestCase;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DeferredCommand;
 import com.google.speedtracer.client.model.DataModel.EventCallbackProxy;
+import com.google.speedtracer.client.util.Command;
 import com.google.speedtracer.client.util.JsIntegerMap;
 
+/**
+ * Tests for JavaScriptProfileModel.
+ */
 public class JavaScriptProfileModelTests extends GWTTestCase {
 
   private static class Lookup implements EventRecordLookup {
@@ -49,13 +66,13 @@ public class JavaScriptProfileModelTests extends GWTTestCase {
     final JavaScriptProfile profile = profileModel.getProfileForEvent(1);
     assert profile != null;
 
-    DeferredCommand.addCommand(new Command() {
+    Command.defer(new Command.Method() {
       public void execute() {
         if (testEvent.hasJavaScriptProfile()) {
           assertEquals(1.0, profile.getTotalTime(), .001);
           finishTest();
         } else {
-          DeferredCommand.addCommand(this);
+          Command.defer(this);
         }
       }
     });
@@ -89,14 +106,14 @@ public class JavaScriptProfileModelTests extends GWTTestCase {
     cb.onEventRecord(profileEvent);
 
     // Wait until processing is done, then run some more checks
-    DeferredCommand.addCommand(new Command() {
+    Command.defer(new Command.Method() {
       public void execute() {
         UiEvent event1 = (UiEvent) lookup.findEventRecord(1);
         UiEvent event3 = (UiEvent) lookup.findEventRecord(3);
         if (event1.hasJavaScriptProfile() && event3.hasJavaScriptProfile()) {
           doTestVisit(profileModel);
         } else {
-          DeferredCommand.addCommand(this);
+          Command.defer(this);
         }
       }
     });
@@ -121,6 +138,5 @@ public class JavaScriptProfileModelTests extends GWTTestCase {
         foundEvent[sequence] = true;
       }
     });
-
   }
 }

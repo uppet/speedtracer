@@ -50,7 +50,50 @@ import com.google.speedtracer.client.view.AutoHideDiv;
 import com.google.speedtracer.client.view.HotKeyPanel;
 import com.google.speedtracer.client.visualizations.view.JavaScriptProfileRenderer.SourceClickCallback;
 
+/**
+ * Offers a UI to allow merging together profiles from different events.
+ */
 public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
+  class MySourceViewerLoadedCallback implements SourceViewerLoadedCallback {
+    private String resourceUrl;
+    private int lineNumber;
+
+    public MySourceViewerLoadedCallback(String resourceUrl, int lineNumber) {
+      this.resourceUrl = resourceUrl;
+      this.lineNumber = lineNumber;
+    }
+
+    public void onSourceFetchFail(int statusCode, SourceViewer viewer) {
+      if (errorDiv == null) {
+        errorDiv = new ErrorDiv();
+      }
+      errorDiv.getElement().getStyle().setPosition(Position.ABSOLUTE);
+      errorDiv.getElement().getStyle().setTop(0, Unit.PX);
+      errorDiv.getElement().getStyle().setLeft(51, Unit.PX);
+      errorDiv.getElement().getStyle().setRight(0, Unit.PX);
+      errorDiv.getElement().getStyle().setBackgroundColor("#fbe78c");
+      errorDiv.getElement().getStyle().setColor("#000");
+      errorDiv.getElement().getStyle().setProperty("border", "1px black solid");
+      errorDiv.setText("XHR fetch of " + resourceUrl + "failed with status: "
+          + statusCode);
+      errorDiv.show();
+    }
+
+    public void onSourceViewerLoaded(SourceViewer viewer) {
+      // Position the source viewer so that it fills half the
+      // details view. Below the table header, and flush with the
+      // bottom of the window.
+      viewer.getElement().getStyle().setTop(1, Unit.PX);
+      // Half the width with a little space for border of the
+      // table.
+      viewer.getElement().getStyle().setLeft(51, Unit.PCT);
+      viewer.getElement().getStyle().setRight(0, Unit.PCT);
+      viewer.show();
+      viewer.highlightLine(lineNumber);
+      viewer.scrollHighlightedLineIntoView();
+    }
+  }
+
   interface MyUiBinder extends UiBinder<DivElement, MergeProfilesPanel> {
   }
 
@@ -123,13 +166,13 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
 
   @UiField
   DivElement resultsDiv;
-
   private final MonitorResources.Resources resources;
   private final DataModel dataModel;
   private final Element elem;
   private boolean inSearch = false;
   private EventListenerRemover rendererRemover;
   private JSOArray<JavaScriptProfile> matchingProfiles;
+
   private ErrorDiv errorDiv;
 
   public MergeProfilesPanel(DataModel dataModel,
@@ -159,6 +202,11 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
         });
   }
 
+  public void showSource(String resourceUrl, int lineNumber, int colNumber) {
+    SourceViewer.create(elem, resourceUrl, resources,
+        new MySourceViewerLoadedCallback(resourceUrl, lineNumber));
+  }
+
   @Override
   protected Element createContentElement(Document document) {
     return elem;
@@ -170,45 +218,10 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
     resultsDiv.setInnerText("");
   }
 
-  class MySourceViewerLoadedCallback implements SourceViewerLoadedCallback {
-    private String resourceUrl;
-    private int lineNumber;
-
-    public MySourceViewerLoadedCallback(String resourceUrl, int lineNumber) {
-      this.resourceUrl = resourceUrl;
-      this.lineNumber = lineNumber;
-    }
-
-    public void onSourceFetchFail(int statusCode, SourceViewer viewer) {
-      if (errorDiv == null) {
-        errorDiv = new ErrorDiv();
-      }
-      errorDiv.getElement().getStyle().setPosition(Position.ABSOLUTE);
-      errorDiv.getElement().getStyle().setTop(0, Unit.PX);
-      errorDiv.getElement().getStyle().setLeft(51, Unit.PX);
-      errorDiv.getElement().getStyle().setRight(0, Unit.PX);
-      errorDiv.getElement().getStyle().setBackgroundColor("#fbe78c");
-      errorDiv.getElement().getStyle().setColor("#000");
-      errorDiv.getElement().getStyle().setProperty("border", "1px black solid");
-      errorDiv.setText("XHR fetch of " + resourceUrl + "failed with status: "
-          + statusCode);
-      errorDiv.show();
-    }
-
-    public void onSourceViewerLoaded(SourceViewer viewer) {
-      // Position the source viewer so that it fills half the
-      // details view. Below the table header, and flush with the
-      // bottom of the window.
-      viewer.getElement().getStyle().setTop(1, Unit.PX);
-      // Half the width with a little space for border of the
-      // table.
-      viewer.getElement().getStyle().setLeft(51, Unit.PCT);
-      viewer.getElement().getStyle().setRight(0, Unit.PCT);
-      viewer.show();
-      viewer.highlightLine(lineNumber);
-      viewer.scrollHighlightedLineIntoView();
-    }
-  };
+  private SymbolServerController getSymbolServerController() {
+    String url = dataModel.getTabDescription().getUrl();
+    return SymbolServerService.getSymbolServerController(new Url(url));
+  }
 
   /**
    * Runs after the search completes to create a profile that combine all the
@@ -224,8 +237,8 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
     ScopeBar bar = new ScopeBar(resultsContainer, resources);
 
     JavaScriptProfileRenderer renderer = new JavaScriptProfileRenderer(
-        resultsContainer, getSymbolServerController(), this, profile,
-        new SourceClickCallback() {
+        resultsContainer, resources, getSymbolServerController(), this,
+        profile, new SourceClickCallback() {
 
           public void onSourceClick(final String resourceUrl,
               final int lineNumber) {
@@ -263,7 +276,7 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
       private int eventsFound = 0;
       private int logsFound = 0;
       private MatchLogVisitor matchLogVisitor = new MatchLogVisitor(regexp);
-      private PostOrderVisitor visitors[] = {matchLogVisitor};
+      private PostOrderVisitor visitors[] = { matchLogVisitor };
 
       public void postProcess() {
         inSearch = false;
@@ -285,15 +298,5 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
         matchLogVisitor.postProcess();
       }
     });
-  }
-
-  private SymbolServerController getSymbolServerController() {
-    String url = dataModel.getTabDescription().getUrl();
-    return SymbolServerService.getSymbolServerController(new Url(url));
-  }
-
-  public void showSource(String resourceUrl, int lineNumber, int colNumber) {
-    SourceViewer.create(elem, resourceUrl, resources,
-        new MySourceViewerLoadedCallback(resourceUrl, lineNumber));
   }
 }

@@ -414,8 +414,7 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
       if (details != null) {
         // We want to allow the details table to schedule the expansion change
         // listener in front of us on the event loop.
-        Command.defer(new Command() {
-          @Override
+        Command.defer(new Command.Method() {
           public void execute() {
             // Query the height. This should also create the details panel if it
             // hasn't already been create.

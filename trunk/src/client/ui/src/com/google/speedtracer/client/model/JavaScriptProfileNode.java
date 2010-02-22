@@ -77,6 +77,15 @@ public class JavaScriptProfileNode {
     return this.time;
   }
 
+  public boolean hasTwoOrMoreChildren() {
+    int numChildren = children.size();
+    if (numChildren > 1
+        || (numChildren == 1 && children.get(0).children.size() > 0)) {
+      return true;
+    }
+    return false;
+  }
+
   public JavaScriptProfileNode lookup(JsSymbol symbol, String typeName) {
     // It might be better to use a hash table, but we don't
     // expect large numbers of children at each level.
