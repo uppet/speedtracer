@@ -64,7 +64,7 @@ public class PostMessageChannelTests extends GWTTestCase {
 
   @Override
   public String getModuleName() {
-    return "com.google.speedtracer.Common";
+    return "com.google.speedtracer.ModelTests";
   }
 
   public void testClientEcho() {
