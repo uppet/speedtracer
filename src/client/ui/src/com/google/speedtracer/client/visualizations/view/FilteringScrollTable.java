@@ -24,7 +24,6 @@ import com.google.gwt.dom.client.Text;
 import com.google.gwt.events.client.EventListenerRemover;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.resources.client.ImageResource.ImageOptions;
 import com.google.gwt.resources.client.ImageResource.RepeatStyle;
 import com.google.gwt.topspin.ui.client.ClickEvent;
@@ -327,7 +326,6 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
     ImageResource filterBarBg();
 
     @Source("resources/FilteringScrollTable.css")
-    @Strict
     FilteringScrollTable.Css filteringScrollTableCss();
 
     @Source("resources/close-x-10px.png")

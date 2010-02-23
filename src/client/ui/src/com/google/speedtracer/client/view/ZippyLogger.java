@@ -21,7 +21,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
 import com.google.gwt.topspin.ui.client.Container;
@@ -52,7 +51,6 @@ public class ZippyLogger extends Div {
    */
   public interface Resources extends ClientBundle {
     @Source("resources/ZippyLogger.css")
-    @Strict
     ZippyLogger.Css zippyLoggerCss();
   }
 
@@ -98,7 +96,7 @@ public class ZippyLogger extends Div {
   public static ZippyLogger get() {
     if (INSTANCE == null) {
       ZippyLogger.Resources resources = GWT.create(ZippyLogger.Resources.class);
-      StyleInjector.injectStylesheet(resources.zippyLoggerCss().getText());
+      StyleInjector.inject(resources.zippyLoggerCss().getText(), true);
       INSTANCE = new ZippyLogger(resources.zippyLoggerCss(),
           MonitorResources.getResources().commonCss());
     }

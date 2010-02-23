@@ -37,8 +37,8 @@ public class ChartTest implements EntryPoint {
   PieChart.Resources resources = GWT.create(PieChart.Resources.class);
 
   public void onModuleLoad() {
-    StyleInjector.injectStylesheet(resources.pieChartCss().getText()
-        + resources.colorListCss().getText());
+    StyleInjector.inject(resources.pieChartCss().getText()
+        + resources.colorListCss().getText(), true);
     List<ColorCodedValue> data = new ArrayList<ColorCodedValue>();
     data.add(new ColorCodedValue("A", 20, Color.LIGHT_GREY));
     data.add(new ColorCodedValue("B", 20, Color.LIGHTGREEN));

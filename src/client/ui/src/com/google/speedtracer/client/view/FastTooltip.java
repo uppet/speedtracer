@@ -18,7 +18,6 @@ package com.google.speedtracer.client.view;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.Div;
 import com.google.speedtracer.client.util.dom.DocumentExt;
@@ -41,7 +40,6 @@ public class FastTooltip extends Div {
    */
   public interface Resources extends ClientBundle {
     @Source("resources/FastTooltip.css")
-    @Strict
     FastTooltip.Css fastTooltipCss();
   }
 

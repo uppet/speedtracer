@@ -32,8 +32,7 @@ import com.google.speedtracer.client.SourceViewer.SourceViewerLoadedCallback;
  */
 public class SourceViewerTests extends GWTTestCase {
   interface Resources extends ClientBundle {
-    // Ignore this red squiggly. It is a GWTEP bug.
-    @Source("../public/test-source.js")
+    @Source("../pub/test-source.js")
     TextResource testSource();
   }
 

@@ -22,7 +22,6 @@ import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.Table;
 import com.google.speedtracer.client.util.TimeStampFormatter;
@@ -51,7 +50,6 @@ public class ColorCodedDataList extends Table {
    */
   public interface Resources extends ClientBundle {
     @Source("resources/ColorCodedDataList.css")
-    @Strict()
     ColorCodedDataList.Css colorListCss();
   }
 

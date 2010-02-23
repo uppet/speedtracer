@@ -280,7 +280,7 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     MonitorResources.init();
     final Resources resources = MonitorResources.getResources();
     // Inject styles. Compiler should concat all these into a big style String.
-    StyleInjector.injectStylesheet(resources.overViewGraphCss().getText()
+    StyleInjector.inject(resources.overViewGraphCss().getText()
         + resources.mainTimeLineCss().getText()
         + resources.transientGraphSelectionCss().getText()
         + resources.commonCss().getText()
@@ -313,7 +313,7 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
         + resources.monitorCss().getText()
         + resources.sourceViewerCss().getText()
         + resources.stackFrameRendererCss().getText()
-        + resources.javaScriptProfileRendererCss().getText());
+        + resources.javaScriptProfileRendererCss().getText(), true);
 
     final WindowExt window = getBackgroundView();
     channel = Client.connect(window, CHANNEL_NAME, this);

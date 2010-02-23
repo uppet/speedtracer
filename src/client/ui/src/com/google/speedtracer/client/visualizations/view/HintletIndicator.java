@@ -18,7 +18,6 @@ package com.google.speedtracer.client.visualizations.view;
 import com.google.gwt.graphics.client.Color;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.Div;
 import com.google.speedtracer.client.MonitorResources;
@@ -58,7 +57,6 @@ public class HintletIndicator extends Div {
   public interface Resources extends ClientBundle {
 
     @Source("resources/HintletIndicator.css")
-    @Strict
     Css hintletIndicatorCss();
   }
 

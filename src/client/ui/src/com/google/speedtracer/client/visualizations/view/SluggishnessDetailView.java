@@ -701,7 +701,7 @@ public class SluggishnessDetailView extends DetailView {
           if (!aggregateTimeVisitor.alreadyApplied()) {
             PreOrderVisitor[] preOrderVisitors = {whiteListVisitor};
             PostOrderVisitor[] postOrderVisitors = {aggregateTimeVisitor};
-            EventVisitorTraverser.traverse(preOrderVisitors, event,
+            EventVisitorTraverser.traverse(event, preOrderVisitors,
                 postOrderVisitors);
           }
 

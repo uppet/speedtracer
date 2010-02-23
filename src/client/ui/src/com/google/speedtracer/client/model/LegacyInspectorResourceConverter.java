@@ -349,7 +349,7 @@ public class LegacyInspectorResourceConverter extends
   }
 
   /**
-   * Updates the tracked content length
+   * Updates the tracked content length.
    * 
    * @param status
    * @param resource

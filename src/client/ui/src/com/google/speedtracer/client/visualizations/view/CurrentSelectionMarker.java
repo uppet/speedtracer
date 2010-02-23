@@ -21,7 +21,6 @@ import com.google.gwt.graphics.client.Canvas;
 import com.google.gwt.graphics.client.Color;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.topspin.ui.client.Window;
 import com.google.speedtracer.client.util.dom.DocumentExt;
 import com.google.speedtracer.client.view.MainTimeLine;
@@ -60,7 +59,6 @@ public class CurrentSelectionMarker extends TransientMarker {
    */
   public interface Resources extends ClientBundle {
     @Source("resources/CurrentSelectionMarker.css")
-    @Strict
     CurrentSelectionMarker.Css currentSelectionMarkerCss();
   }
 

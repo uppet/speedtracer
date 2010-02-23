@@ -22,7 +22,6 @@ import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.events.client.EventListenerRemover;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
 import com.google.gwt.topspin.ui.client.Container;
@@ -83,7 +82,6 @@ public class NetworkPillBox extends Div {
     ImageResource leftCallout();
 
     @Source("resources/NetworkPillBox.css")
-    @Strict
     NetworkPillBox.Css networkPillBoxCss();
 
     @Source("resources/graphLabelCalloutRight.png")

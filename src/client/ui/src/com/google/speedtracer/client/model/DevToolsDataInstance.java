@@ -158,8 +158,8 @@ public class DevToolsDataInstance extends DataInstance {
         default:
           // We run visitors to normalize the times for this tree and to do any
           // other transformations we want.
-          EventVisitorTraverser.traverse(preOrderVisitors,
-              record.<UiEvent> cast(), postOrderVisitors);
+          EventVisitorTraverser.traverse(record.<UiEvent> cast(),
+              preOrderVisitors, postOrderVisitors);
           // Forward to the dataInstance.
           onEventRecord(record);
       }

@@ -20,7 +20,6 @@ import com.google.gwt.events.client.Event;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.gwt.topspin.ui.client.DoubleClickEvent;
 import com.google.gwt.topspin.ui.client.DoubleClickListener;
@@ -59,7 +58,6 @@ public class DomainRegionSelection {
    */
   public interface Resources extends ClientBundle {
     @Source("resources/DomainRegionSelection.css")
-    @Strict
     DomainRegionSelection.Css domainRegionSelectionCss();
 
     @Source("resources/grippy.png")

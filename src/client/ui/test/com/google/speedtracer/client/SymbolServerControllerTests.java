@@ -33,7 +33,7 @@ public class SymbolServerControllerTests extends GWTTestCase {
 
   @Override
   public String getModuleName() {
-    return "com.google.speedtracer.Common";
+    return "com.google.speedtracer.ModelTests";
   }
 
   private class TestableSymbolServerController extends SymbolServerController {
@@ -55,7 +55,7 @@ public class SymbolServerControllerTests extends GWTTestCase {
     ssController.requestSymbolsFor(relativeUrl, new Callback() {
 
       public void onSymbolsFetchFailed(int errorReason) {
-        assertTrue("Symbol fetch failed :(", false);
+        fail("Symbol fetch failed :(");
       }
 
       public void onSymbolsReady(JsSymbolMap symbols) {
@@ -82,7 +82,7 @@ public class SymbolServerControllerTests extends GWTTestCase {
     ssController.requestSymbolsFor(url, new Callback() {
 
       public void onSymbolsFetchFailed(int errorReason) {
-        assertTrue("Symbol fetch failed :(", false);
+        fail("Symbol fetch failed :(");
       }
 
       public void onSymbolsReady(JsSymbolMap symbols) {
@@ -111,7 +111,7 @@ public class SymbolServerControllerTests extends GWTTestCase {
       }
 
       public void onSymbolsReady(JsSymbolMap symbols) {
-        assertTrue("Fetch was expected to fail", false);
+        fail("Fetch was expected to fail");
       }
     });
 
