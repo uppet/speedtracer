@@ -19,7 +19,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.events.client.Event;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.gwt.topspin.ui.client.Div;
 import com.google.gwt.topspin.ui.client.MouseDownEvent;
@@ -43,7 +42,6 @@ public class TransientGraphSelection extends Div {
    */
   public interface Resources extends ClientBundle {
     @Source("resources/TransientGraphSelection.css")
-    @Strict()
     TransientGraphSelection.Css transientGraphSelectionCss();
   }
 

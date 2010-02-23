@@ -18,7 +18,6 @@ package com.google.speedtracer.client.view;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.gwt.topspin.ui.client.Div;
@@ -49,7 +48,6 @@ public class DetailViews extends Div implements ResizeListener {
    */
   public interface Resources extends ClientBundle {
     @Source("resources/DetailViews.css")
-    @Strict
     DetailViews.Css detailViewsCss();
   }
   

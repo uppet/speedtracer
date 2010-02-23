@@ -18,7 +18,6 @@ package com.google.speedtracer.client.view;
 import com.google.gwt.graphics.client.Color;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.speedtracer.client.model.Visualization;
 import com.google.speedtracer.client.timeline.GraphModel;
 import com.google.speedtracer.client.timeline.GraphUiProps;
@@ -45,7 +44,6 @@ public class OverViewGraph extends TimeLineGraph {
    */
   public interface Resources extends ClientBundle {
     @Source("resources/OverViewGraph.css")
-    @Strict
     Css overViewGraphCss();
   }
 

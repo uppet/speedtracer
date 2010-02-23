@@ -15,7 +15,6 @@
  */
 package com.google.gwt.chrome.crx.linker;
 
-
 /**
  * A set of static utility methods that come in handy when writing a
  * {@link com.google.gwt.core.ext.Generator}.

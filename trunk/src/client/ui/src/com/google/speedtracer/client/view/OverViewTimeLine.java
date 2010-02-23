@@ -17,7 +17,6 @@ package com.google.speedtracer.client.view;
 
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.ResizeEvent;
 import com.google.gwt.topspin.ui.client.ResizeListener;
@@ -103,7 +102,6 @@ public class OverViewTimeLine extends TimeLine {
   public interface Resources extends DomainRegionSelection.Resources,
       OverViewGraph.Resources {
     @Source("resources/OverViewTimeLine.css")
-    @Strict
     Css overViewTimeLineCss();
 
     @Source("resources/new-data.png")

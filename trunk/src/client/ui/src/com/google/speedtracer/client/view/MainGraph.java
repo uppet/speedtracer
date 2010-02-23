@@ -19,7 +19,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.graphics.client.Color;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.resources.client.ImageResource.ImageOptions;
 import com.google.gwt.resources.client.ImageResource.RepeatStyle;
 import com.google.speedtracer.client.model.Visualization;
@@ -58,7 +57,6 @@ public class MainGraph extends TimeLineGraph {
     ImageResource graphScaleLines();
 
     @Source("resources/MainGraph.css")
-    @Strict
     Css mainGraphCss();
 
     @Source("resources/tablist-background.png")

@@ -21,7 +21,6 @@ import com.google.gwt.events.client.Event;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.resources.client.ImageResource.ImageOptions;
 import com.google.gwt.resources.client.ImageResource.RepeatStyle;
 import com.google.gwt.topspin.client.Command;
@@ -71,7 +70,6 @@ public class HoveringPopup extends Div implements MouseDownListener {
     ImageResource closeButton();
 
     @Source("resources/HoveringPopup.css")
-    @Strict
     HoveringPopup.Css hoveringPopupCss();
 
     @Source("resources/content-box-header.png")

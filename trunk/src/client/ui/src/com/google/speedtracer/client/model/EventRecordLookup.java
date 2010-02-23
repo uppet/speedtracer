@@ -26,6 +26,6 @@ public interface EventRecordLookup {
    * @param sequence A sequence number to look for.
    * @return the record with the specified sequence number.
    */
-  public EventRecord findEventRecord(int sequence);
+  EventRecord findEventRecord(int sequence);
 
 }

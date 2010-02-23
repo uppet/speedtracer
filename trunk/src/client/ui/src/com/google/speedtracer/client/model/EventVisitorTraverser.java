@@ -28,13 +28,13 @@ public class EventVisitorTraverser {
    * Traverses a UiEvent Context tree and applies both PreOrder and PostOrder
    * Visitors along the same traversal.
    * 
-   * @param preOrderVisitors the {@link EventVisitor}s to apply in pre order
    * @param eventNode the root node for the traversal
+   * @param preOrderVisitors the {@link EventVisitor}s to apply in pre order
    * @param postOrderVisitors the {@link EventVisitor}s to apply in post
    */
-  public static void traverse(PreOrderVisitor[] preOrderVisitors,
-      UiEvent eventNode, PostOrderVisitor[] postOrderVisitors) {
-    traverseImpl(preOrderVisitors, eventNode, postOrderVisitors);
+  public static void traverse(UiEvent eventNode,
+      PreOrderVisitor[] preOrderVisitors, PostOrderVisitor[] postOrderVisitors) {
+    traverseImpl(eventNode, preOrderVisitors, postOrderVisitors);
 
     // Do post processing steps on all the visitors.
     for (int i = 0, n = preOrderVisitors.length; i < n; i++) {
@@ -46,14 +46,14 @@ public class EventVisitorTraverser {
   }
 
   /**
-   * Pre-order traversal of a UiEvent Context tree applying the visitor.
+   * Post-order traversal of a UiEvent Context tree applying the visitor.
    * 
-   * @param postOrderVisitor visitors to apply.
-   * @param eventNode the root node for the traversal.
+   * @param eventNode the root node for the traversal
+   * @param postOrderVisitors visitors to apply
    */
   public static void traversePostOrder(UiEvent eventNode,
       PostOrderVisitor[] postOrderVisitors) {
-    traverseImpl(null, eventNode, postOrderVisitors);
+    traverseImpl(eventNode, null, postOrderVisitors);
     // Do post processing steps on all the visitors.
     for (int i = 0, n = postOrderVisitors.length; i < n; i++) {
       postOrderVisitors[i].postProcess();
@@ -63,20 +63,20 @@ public class EventVisitorTraverser {
   /**
    * Pre-order traversal of a UiEvent Context tree applying the visitor.
    * 
-   * @param preOrderVisitor visitors to apply.
+   * @param preOrderVisitors visitors to apply.
    * @param eventNode the root node for the traversal.
    */
-  public static void traversePreOrder(PreOrderVisitor[] preOrderVisitors,
-      UiEvent eventNode) {
-    traverseImpl(preOrderVisitors, eventNode, null);
+  public static void traversePreOrder(UiEvent eventNode,
+      PreOrderVisitor[] preOrderVisitors) {
+    traverseImpl(eventNode, preOrderVisitors, null);
     // Do post processing steps on all the visitors.
     for (int i = 0, n = preOrderVisitors.length; i < n; i++) {
       preOrderVisitors[i].postProcess();
     }
   }
 
-  private static void traverseImpl(PreOrderVisitor[] preOrderVisitors,
-      UiEvent eventNode, PostOrderVisitor[] postOrderVisitors) {
+  private static void traverseImpl(UiEvent eventNode,
+      PreOrderVisitor[] preOrderVisitors, PostOrderVisitor[] postOrderVisitors) {
     if (preOrderVisitors != null) {
       // Visit da visitors
       for (int i = 0, n = preOrderVisitors.length; i < n; i++) {
@@ -87,7 +87,7 @@ public class EventVisitorTraverser {
     // Continue da traversal
     JSOArray<UiEvent> children = eventNode.getChildren();
     for (int i = 0, n = children.size(); i < n; i++) {
-      traverseImpl(preOrderVisitors, children.get(i), postOrderVisitors);
+      traverseImpl(children.get(i), preOrderVisitors, postOrderVisitors);
     }
 
     if (postOrderVisitors != null) {

@@ -86,6 +86,7 @@ public class WindowChannelTests extends GWTTestCase {
       return { type: type };
     }-*/;
 
+    @SuppressWarnings("unused")
     protected TestMessage() {
     }
 
@@ -127,7 +128,7 @@ public class WindowChannelTests extends GWTTestCase {
 
   @Override
   public String getModuleName() {
-    return "com.google.speedtracer.Common";
+    return "com.google.speedtracer.ModelTests";
   }
 
   /**

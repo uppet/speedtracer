@@ -18,7 +18,6 @@ package com.google.speedtracer.client.visualizations.view;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.resources.client.ImageResource.ImageOptions;
 import com.google.gwt.resources.client.ImageResource.RepeatStyle;
 import com.google.gwt.topspin.ui.client.Container;
@@ -58,7 +57,6 @@ public class NetworkTimeLineDetailView extends DetailView {
    */
   public interface Resources extends ResourceRow.Resources {
     @Source("resources/NetworkTimeLineDetailView.css")
-    @Strict
     NetworkTimeLineDetailView.Css networkTimeLineDetailViewCss();
 
     @Source("resources/scale_line.png")

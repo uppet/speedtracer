@@ -169,7 +169,7 @@ public class EventFilter {
   private double getSubtypeDuration(UiEvent eventRecord) {
     SubtypeDurationVisitor visitor = (SubtypeDurationVisitor) postOrderVisitors[0];
     visitor.reset();
-    EventVisitorTraverser.traversePreOrder(postOrderVisitors, eventRecord);
+    EventVisitorTraverser.traversePreOrder(eventRecord, postOrderVisitors);
     return visitor.getSubtypeDuration();
   }
 

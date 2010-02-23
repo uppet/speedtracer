@@ -3,4 +3,11 @@
 <module>
   <inherits name="com.google.speedtracer.Common" />
   <inherits name="com.google.speedtracer.Monitor" />
+  <!--
+    TODO(knorton): Remove as soon as we can. This is a work around for a
+    Google Plugin for Eclipse bug. SourceViewTests is unable to
+    reference ../public/test-data.js because public is not a valid
+    classpath package.
+  -->
+  <public path="pub" />
 </module>

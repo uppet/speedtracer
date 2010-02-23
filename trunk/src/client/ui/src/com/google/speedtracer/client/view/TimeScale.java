@@ -21,7 +21,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.resources.client.ImageResource.ImageOptions;
 import com.google.gwt.resources.client.ImageResource.RepeatStyle;
 import com.google.gwt.topspin.ui.client.Container;
@@ -60,7 +59,6 @@ public class TimeScale extends Div {
     ImageResource scaleLines();
 
     @Source("resources/TimeScale.css")
-    @Strict
     Css timeScaleCss();
   }
 

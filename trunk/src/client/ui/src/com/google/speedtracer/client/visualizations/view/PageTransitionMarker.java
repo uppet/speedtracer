@@ -18,7 +18,6 @@ package com.google.speedtracer.client.visualizations.view;
 import com.google.gwt.graphics.client.Canvas;
 import com.google.gwt.graphics.client.Color;
 import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
 import com.google.gwt.topspin.ui.client.Container;
@@ -49,7 +48,6 @@ public class PageTransitionMarker extends StaticGraphMarker {
    */
   public interface Resources extends FastTooltip.Resources {
     @Source("resources/PageTransitionMarker.css")
-    @Strict
     PageTransitionMarker.Css pageTransitionMarkerCss();
   }
 

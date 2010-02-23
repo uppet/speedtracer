@@ -22,7 +22,6 @@ import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.events.client.EventListenerRemover;
 import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.ContainerImpl;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
@@ -64,7 +63,6 @@ public class RequestDetails extends Div {
    */
   public interface Resources extends HintletRecordsTree.Resources {
     @Source("resources/RequestDetails.css")
-    @Strict
     RequestDetails.Css requestDetailsCss();
   }
 

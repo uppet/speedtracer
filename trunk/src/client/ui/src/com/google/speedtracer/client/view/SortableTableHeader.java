@@ -21,7 +21,6 @@ import com.google.gwt.events.client.EventListenerRemover;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.CssResource.Strict;
 import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
 import com.google.gwt.topspin.ui.client.Container;
@@ -63,7 +62,6 @@ public class SortableTableHeader extends Widget {
     ImageResource arrowDescending();
 
     @Source("resources/SortableTableHeader.css")
-    @Strict
     Css sortableTableHeaderCss();
   }
 
