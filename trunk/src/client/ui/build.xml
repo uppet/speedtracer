@@ -164,9 +164,10 @@
   <!-- Set the value "remote.browser" to enable JUnit.  You'll need  -->
   <!-- to setup an instance of BrowserManagerServer running Chrome.      -->
   <!-- Syntax is -Dremote.browser="rmi://{hostname}/{browser name}   -->
-  <target name="tests">
+  <target name="tests" depends="classes.build">
     <fail message="UI tests require that you define remote.browser. Use -Dremote.browser=rmi://hostname/browsername."
         unless="remote.browser" />
+
     <javac srcdir="test" destdir="${classdir}">
       <classpath>
         <path refid="classpath" />
