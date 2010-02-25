@@ -15,7 +15,6 @@
  */
 package com.google.speedtracer.client.view;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -34,6 +33,7 @@ import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.Div;
 import com.google.gwt.topspin.ui.client.Panel;
 import com.google.gwt.topspin.ui.client.Select;
+import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.Monitor;
 import com.google.speedtracer.client.model.DataModel;
 import com.google.speedtracer.client.timeline.Constants;
@@ -254,8 +254,6 @@ public class Controller extends Panel implements DomainObserver,
   // exist.
   private ProfilingOptionsPanel profilingOptions;
 
-  private TestDataPanel testDataPanel;
-
   private final InfoScreen infoScreen;
 
   private MainTimeLine mainTimeline;
@@ -394,11 +392,11 @@ public class Controller extends Panel implements DomainObserver,
       }
     });
 
-    // In a debug build, this button will interact with the mock model.
-    // In a release build, the deferred binding will compile in a class with an
-    // empty implementation and no button will be shown.
-    testDataPanel = GWT.create(TestDataPanel.class);
-    testDataPanel.addButtonToController(resources, this, controllerContainer);
+    // In mock mode, this will add a button to interact with the mock model.
+    if (ClientConfig.isMockMode()) {
+      new MockTestDataPanel().addButtonToController(resources, this,
+          controllerContainer);
+    }
 
     final Anchor helpButton = new Anchor(controllerContainer);
     final Element helpButtonElem = helpButton.getElement();

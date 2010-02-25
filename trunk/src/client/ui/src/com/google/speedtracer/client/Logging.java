@@ -125,7 +125,8 @@ public class Logging {
   private static ListenerLogger logger;
 
   public static void createListenerLogger(DataModel model) {
-    logger = GWT.create(ListenerLogger.class);
+    logger = ClientConfig.isDebugMode() ? new DebugListenerLogger()
+        : new NullListenerLogger();
     if (model != null) {
       logger.listenTo(model);
     }

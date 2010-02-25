@@ -3,5 +3,5 @@
 <module rename-to="monitor">
   <inherits name="com.google.speedtracer.Monitor" />
   <set-configuration-property name="CssResource.style" value="pretty" />
-  <set-property name="speedtracer.show_logging_ui" value="please" />
+  <set-property name="speedtracer.use_debug_mode" value="please" />
 </module>

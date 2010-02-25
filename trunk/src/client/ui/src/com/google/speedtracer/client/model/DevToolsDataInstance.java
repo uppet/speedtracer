@@ -201,6 +201,7 @@ public class DevToolsDataInstance extends DataInstance {
    * Overlay type for our dispatcher used by {@link Proxy}.
    */
   private static class Dispatcher extends JavaScriptObject {
+    @SuppressWarnings("unused")
     protected Dispatcher() {
     }
 

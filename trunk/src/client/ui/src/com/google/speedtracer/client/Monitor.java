@@ -64,14 +64,10 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     TabChangeModel.Listener {
 
   /**
-   * Simple deferred binding impl of the Monitor entry point that allows for
-   * hosted mode debugging. All this has to do is send the Monitor its
-   * initialize call. This temporarily replaces
-   * {@link com.google.speedtracer.client.model.MockModel} until we can get
-   * background pages and the rest of the chrome extensions stuff debuggable in
-   * hosted mode.
+   * Utilities to allow debugging the Monitor in dev mode. This will create a stub
+   * background page capable of responding to the Monitor's initialization request.
    */
-  public static class MockMonitor extends Monitor {
+  private static class MockUtils {
     private static native DataInstance createMockDataInstance() /*-{
       return  { 
         Load: function(callback) {       
@@ -99,8 +95,7 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
       return {id: id, url: url, title: title};
     }-*/;
 
-    @Override
-    public void onModuleLoad() {
+    private static void createMockBackgroundPage() {
       Server.listen(WindowExt.get(), CHANNEL_NAME, new ServerListener() {
         public void onClientChannelRequested(Request request) {
           request.accept(new WindowChannel.Listener() {
@@ -126,8 +121,6 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
           });
         }
       });
-      // Now let the regular entry point connect to us.
-      super.onModuleLoad();
     }
   }
 
@@ -274,6 +267,10 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
   }
 
   public void onModuleLoad() {
+    if (ClientConfig.isMockMode()) {
+      MockUtils.createMockBackgroundPage();
+    }
+    
     browserId = getIdParameter("browserId");
     tabId = getIdParameter("tabId");
 
