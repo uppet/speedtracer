@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * Panel containing list of datasets to choose from.
  */
-public class MockTestDataPanel extends TestDataPanel {
+public class MockTestDataPanel {
 
   /**
    * Resources.
@@ -108,7 +108,8 @@ public class MockTestDataPanel extends TestDataPanel {
     }
   }
 
-  @Override
+  // TODO(knorton): This can be moved into a simple constructor now that
+  // ClientConfig exists.
   public void addButtonToController(Controller.Resources controllerResources,
       Controller controller, Container controllerContainer) {
     this.controller = controller;

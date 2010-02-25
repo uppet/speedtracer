@@ -17,6 +17,7 @@ package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;
+import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.JSON;
 import com.google.speedtracer.client.util.JsIntegerMap;
@@ -60,7 +61,8 @@ public abstract class DataModel implements HintletEngineHost.HintListener,
      */
     public static DataModel createModel(TabDescription tabDescription,
         DataInstance dataInstance) {
-      final DataModel model = GWT.create(DataModel.class);
+      final DataModel model = ClientConfig.isMockMode() ? new MockDataModel()
+          : new DataModelImpl();
       model.setTabDescription(tabDescription);
       model.dataInstance = dataInstance;
       model.bind(tabDescription, dataInstance);
