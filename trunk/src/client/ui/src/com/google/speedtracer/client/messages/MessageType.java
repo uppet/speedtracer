@@ -22,15 +22,21 @@ package com.google.speedtracer.client.messages;
  */
 class MessageType {
   /**
-   * Corresponds to {@link InitializeMonitorMessage}.
+   * {@link com.google.speedtracer.client.WindowChannel.Message} message types.
    */
-  static final int INITIALIZE_MONITOR_TYPE = 1;
-  static final int PAGE_TRANSITION_TYPE = 2;
-  static final int REQUEST_INITIALIZATION_TYPE = 3;
-  static final int REQUEST_FILE_LOAD_TYPE = 4;
-  static final int RECORD_DATA_TYPE = 5;
-  static final int RESEND_PROFILING_DATA_TYPE = 6;
-  static final int RESET_BASE_TIME_TYPE = 7;
+  static final int WC_INITIALIZE_MONITOR_TYPE = 1;
+  static final int WC_PAGE_TRANSITION_TYPE = 2;
+  static final int WC_REQUEST_INITIALIZATION_TYPE = 3;
+  static final int WC_REQUEST_FILE_LOAD_TYPE = 4;
+  static final int WC_RECORD_DATA_TYPE = 5;
+  static final int WC_RESEND_PROFILING_DATA_TYPE = 6;
+  static final int WC_RESET_BASE_TIME_TYPE = 7;
+  
+  /**
+   * {@link com.google.gwt.chrome.crx.client.Port.Message} message types. 
+   */
+  static final int PORT_EVENT_RECORD_TYPE = 100;
+  static final int PORT_PAGE_EVENT_TYPE = 101;
   
   private MessageType() {
   }

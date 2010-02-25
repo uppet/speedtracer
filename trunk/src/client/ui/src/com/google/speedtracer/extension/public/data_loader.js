@@ -9,7 +9,7 @@ function sendData(port, dataContainer) {
     var recordStr = allData.slice(start, end);
     // Make sure the recordStr is not simply all whitespace.
     if (!/^\s*$/.test(recordStr)) {
-      port.postMessage( {
+      port.postMessage({
         record : recordStr
       });
     }

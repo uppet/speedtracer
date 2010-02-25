@@ -16,7 +16,6 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;
 import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.JSON;
@@ -31,67 +30,8 @@ import java.util.List;
  * 
  * Also defines Universal base time, which can be calibrated by subclasses only.
  */
-public abstract class DataModel implements HintletEngineHost.HintListener, EventRecordLookup {
-
-  /**
-   * API for interacting with a JSO that drives our DataModel. This JSO can be
-   * one of the following:
-   * 
-   * 1. NPObject created by our plugin for interacting and receiving data from
-   * other browsers.
-   * 
-   * 2. JSO wired up to a the data_loader content script for loading saved data
-   * dumps.
-   * 
-   * 3. JSO wired up to the devtools extensions API for monitoring Chrome.
-   * 
-   * 4. An empty JSO when running in in Mock mode via the MockModel.
-   */
-  public static class DataInstance extends JavaScriptObject {
-    protected DataInstance() {
-    }
-
-    public final native void load(DataModel model) /*-{
-      var callback = {
-      // This gets called by everyone else (file loader and devtools data instances).
-      onEventRecord: function(record) {
-      model.@com.google.speedtracer.client.model.DataModel::onEventRecord(Lcom/google/speedtracer/client/model/EventRecord;)(record);
-      },
-
-      // This gets called from the plugin.
-      onEventRecordString: function(sequence, recordString) {
-      var data = JSON.parse(recordString);
-      // Populate the sequence field in the record so that we don't have
-      // to keep passing it out of band along with the record.
-      data.sequence = sequence;
-      model.@com.google.speedtracer.client.model.DataModel::onEventRecord(Lcom/google/speedtracer/client/model/EventRecord;)(data);
-      }
-      };
-      this.Load(callback);
-    }-*/;
-
-    public final native void resumeMonitoring() /*-{
-      this.Resume();
-    }-*/;
-
-    public final native void setBaseTime(double baseTime) /*-{
-      this.SetBaseTime(baseTime);
-    }-*/;
-
-    public final native void setProfilingOptions(boolean enableStackTraces,
-        boolean enableCpuProfiling) /*-{
-      this.SetOptions(enableStackTraces, enableCpuProfiling);
-    }-*/;
-
-    public final native void stopMonitoring() /*-{
-      this.Stop();
-    }-*/;
-
-    public final native void unload()/*-{
-      this.Unload();
-    }-*/;
-  }
-
+public abstract class DataModel implements HintletEngineHost.HintListener,
+    EventRecordLookup {
   /**
    * Wrapper objects to proxy callbacks to correct handler.
    */
@@ -143,13 +83,13 @@ public abstract class DataModel implements HintletEngineHost.HintListener, Event
 
   private final NetworkResourceModel networkResourceModel;
 
+  private final JavaScriptProfileModel profileModel;
+
   private TabDescription tabDescription;
 
   private final TabChangeModel tabNavigationModel;
 
   private final UiEventModel uiEventModel;
-
-  private final JavaScriptProfileModel profileModel;
 
   protected DataModel() {
     this.hintletEngineHost = new HintletEngineHost();

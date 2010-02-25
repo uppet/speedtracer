@@ -16,6 +16,8 @@
 package com.google.gwt.chrome.crx.client;
 
 import com.google.gwt.chrome.crx.client.events.ConnectEvent;
+import com.google.gwt.chrome.crx.client.events.ConnectExternalEvent;
+import com.google.gwt.chrome.crx.client.events.RequestExternalEvent;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 
@@ -58,6 +60,14 @@ public class Chrome extends JavaScriptObject {
 
   public final native ConnectEvent getOnConnectEvent() /*-{
     return this.onConnect;
+  }-*/;
+  
+  public final native ConnectExternalEvent getOnConnectExternalEvent() /*-{
+    return this.onConnectExternal;
+  }-*/;
+  
+  public final native RequestExternalEvent getOnRequestExternalEvent() /*-{
+    return this.onRequestExternal;
   }-*/;
 
   /**

@@ -23,21 +23,23 @@ import com.google.speedtracer.client.util.dom.DocumentExt;
 /**
  * Model implementation for hooking into the plugin. Handles registration of
  * callbacks to receive connection events from other browsers.
+ * 
+ * TODO(jaimeyap): This is dead code now. But we will keep it around since it
+ * will be the basis for an external plugin based extension.
  */
 public class PluginModel implements Model {
 
   /**
    * Tagged class to add npapi plugin to our extension manifest.
    * 
-   * TODO(jaimeyap): Temporarily disable adding the plugin info to the
-   * manifest until we have working cross platform plugin.
+   * TODO(jaimeyap): Temporarily disable adding the plugin info to the manifest
+   * until we have working cross platform plugin.
    */
   // @ManifestInfo(path = "plugins/npspeedtracer.dll", isPublic = false)
-  private static class SpeedTracerPlugin { //extends Plugin {
+  private static class SpeedTracerPlugin { // extends Plugin {
   }
 
   private static class ControlInstance extends JavaScriptObject {
-    @SuppressWarnings("unused")
     protected ControlInstance() {
     }
 
@@ -58,7 +60,7 @@ public class PluginModel implements Model {
       Model.Listener listener) /*-{
     return {
       onTabMonitorStarted: function(browserId, tab, dataInstance) {
-        listener.@com.google.speedtracer.client.model.Model.Listener::onTabMonitorStarted(ILcom/google/speedtracer/client/model/TabDescription;Lcom/google/speedtracer/client/model/DataModel$DataInstance;)(browserId, tab, dataInstance);
+        listener.@com.google.speedtracer.client.model.Model.Listener::onTabMonitorStarted(ILcom/google/speedtracer/client/model/TabDescription;Lcom/google/speedtracer/client/model/DataInstance;)(browserId, tab, dataInstance);
       },
       onMonitoredTabChanged: function(browserId, tab) {
         listener.@com.google.speedtracer.client.model.Model.Listener::onMonitoredTabChanged(ILcom/google/speedtracer/client/model/TabDescription;)(browserId, tab);

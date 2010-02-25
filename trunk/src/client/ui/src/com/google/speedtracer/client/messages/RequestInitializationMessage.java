@@ -23,7 +23,7 @@ import com.google.speedtracer.client.util.dom.WindowExt;
  * it be initialized.
  */
 public class RequestInitializationMessage extends WindowChannel.Message {
-  public static final int TYPE = MessageType.REQUEST_INITIALIZATION_TYPE;
+  public static final int TYPE = MessageType.WC_REQUEST_INITIALIZATION_TYPE;
 
   /**
    * Create an instance of this message.

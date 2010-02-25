@@ -16,7 +16,6 @@
 
 package com.google.speedtracer.client.model;
 
-import com.google.speedtracer.client.model.DataModel.DataInstance;
 
 /**
  * The root class in the Monitor's data model. This provides communication with the

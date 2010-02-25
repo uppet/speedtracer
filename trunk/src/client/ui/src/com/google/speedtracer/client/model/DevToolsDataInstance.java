@@ -20,7 +20,6 @@ import com.google.gwt.chrome.crx.client.events.DevToolsPageEvent.Listener;
 import com.google.gwt.chrome.crx.client.events.DevToolsPageEvent.PageEvent;
 import com.google.gwt.chrome.crx.client.events.Event.ListenerHandle;
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.speedtracer.client.model.DataModel.DataInstance;
 import com.google.speedtracer.client.model.EventVisitor.PostOrderVisitor;
 import com.google.speedtracer.client.model.EventVisitor.PreOrderVisitor;
 import com.google.speedtracer.client.model.InspectorResourceConverter.InspectorResourceConverterImpl;
@@ -37,27 +36,28 @@ public class DevToolsDataInstance extends DataInstance {
    * Proxy class that normalizes data coming in from the devtools API into a
    * digestable form, and then forwards it on to the DevToolsDataInstance.
    */
-  public static class DevToolsDataProxy {
+  public static class Proxy implements DataProxy {
     /**
      * Simple routing dispatcher used by the DevToolsDataProxy to quickly route.
      */
-    static native Dispatcher createDispatcher(DevToolsDataProxy delegate) /*-{
+    static native Dispatcher createDispatcher(Proxy delegate) /*-{
       return {
         addRecordToTimeline: function(record) {
-          delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy::onTimeLineRecord(Lcom/google/speedtracer/client/model/EventRecord;)(record[1]);
+          delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onTimeLineRecord(Lcom/google/speedtracer/client/model/EventRecord;)(record[1]);
         },
         // This becomes a dead code path as of webkit r52154, but we need it for
         // older versions.
+        // TODO(jaimeyap): Follow up with a patch that nukes this legacy code path.
         addResource: function(resource) {
-          delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy::onLegacyAddResource(ILcom/google/gwt/core/client/JavaScriptObject;)(resource[1], resource[2]);
+          delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onLegacyAddResource(ILcom/google/gwt/core/client/JavaScriptObject;)(resource[1], resource[2]);
         },
         updateResource: function(update) {
-          delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy::onUpdateResource(ILcom/google/gwt/core/client/JavaScriptObject;)(update[1], update[2]);
+          delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onUpdateResource(ILcom/google/gwt/core/client/JavaScriptObject;)(update[1], update[2]);
         }
       };
     }-*/;
 
-    private double baseTime = -1;
+    private double baseTime;
 
     private DevToolsDataInstance dataInstance;
 
@@ -72,19 +72,54 @@ public class DevToolsDataInstance extends DataInstance {
 
     private InspectorResourceConverter resourceConverter;
 
-    // TODO (jaimeyap): Get rid of this once WebKit r52154 is pushed to Dev
-    // Channel.
+    private final int tabId;
+
+    // TODO (jaimeyap): This and all legacy resource conversion code paths
+    // should be able to be removed now. Do it in a subsequent patch.
     private boolean usingLegacyResourceConverter = false;
 
-    public DevToolsDataProxy() {
-      dispatcher = createDispatcher(this);
+    public Proxy(int tabId) {
+      this.baseTime = -1;
+      this.tabId = tabId;
+      this.dispatcher = createDispatcher(this);
     }
 
     public final void dispatchPageEvent(PageEvent event) {
       dispatcher.invoke(event.getMethod(), event);
     }
 
-    protected void connectToDataSource(int tabId) {
+    public void load(DataInstance dataInstance) {
+      this.dataInstance = dataInstance.cast();
+      if (this.resourceConverter == null) {
+        this.resourceConverter = new InspectorResourceConverterImpl(this);
+      }
+      connectToDataSource();
+    }
+
+    public void resumeMonitoring() {
+      connectToDataSource();
+    }
+
+    public void setBaseTime(double baseTime) {
+      this.baseTime = baseTime;
+    }
+
+    public void setProfilingOptions(boolean enableStackTraces,
+        boolean enableCpuProfiling) {
+      DevTools.setProfilingOptions(tabId, enableStackTraces, enableCpuProfiling);
+    }
+
+    public void stopMonitoring() {
+      disconnect();
+    }
+
+    public void unload() {
+      // reset the base time.
+      this.baseTime = -1;
+      disconnect();
+    }
+
+    protected void connectToDataSource() {
       this.listenerHandle = DevTools.getTabEvents(tabId).getPageEvent().addListener(
           new Listener() {
             public void onPageEvent(PageEvent event) {
@@ -93,21 +128,13 @@ public class DevToolsDataInstance extends DataInstance {
           });
     }
 
-    void connectToDevTools(int tabId, final DevToolsDataInstance dataInstance) {
+    void connectToDevTools(final DevToolsDataInstance dataInstance) {
       // Connect to the devtools API as the data source.
       if (this.dataInstance == null) {
         this.dataInstance = dataInstance;
         this.resourceConverter = new InspectorResourceConverterImpl(this);
       }
-      connectToDataSource(tabId);
-    }
-
-    void disconnect() {
-      if (listenerHandle != null) {
-        listenerHandle.removeListener();
-      }
-
-      listenerHandle = null;
+      connectToDataSource();
     }
 
     double getBaseTime() {
@@ -118,13 +145,12 @@ public class DevToolsDataInstance extends DataInstance {
       dataInstance.onEventRecord(record);
     }
 
-    void setBaseTime(double baseTime) {
-      this.baseTime = baseTime;
-    }
+    private void disconnect() {
+      if (listenerHandle != null) {
+        listenerHandle.removeListener();
+      }
 
-    void setProfilingOptions(int tabId, boolean enableStackTraces,
-        boolean enableCpuProfiling) {
-      DevTools.setProfilingOptions(tabId, enableStackTraces, enableCpuProfiling);
+      listenerHandle = null;
     }
 
     /**
@@ -172,10 +198,9 @@ public class DevToolsDataInstance extends DataInstance {
   }
 
   /**
-   * Overlay type for our dispatcher used by {@link DevToolsDataProxy}.
+   * Overlay type for our dispatcher used by {@link Proxy}.
    */
   private static class Dispatcher extends JavaScriptObject {
-    @SuppressWarnings("unused")
     protected Dispatcher() {
     }
 
@@ -192,75 +217,21 @@ public class DevToolsDataInstance extends DataInstance {
    * @return a newly wired up {@link DevToolsDataInstance}.
    */
   public static DevToolsDataInstance create(int tabId) {
-    DevToolsDataProxy proxy = new DevToolsDataProxy();
-    DevToolsDataInstance dataInstance = createImpl(tabId, proxy);
-    return dataInstance;
+    return DataInstance.create(new Proxy(tabId)).cast();
   }
 
   /**
    * Constructs and returns a {@link DevToolsDataIstance} after wiring it up to
    * receive events over the extensions-devtools API.
    * 
-   * @param tabId the tab that we want to connec to.
    * @param proxy an externally supplied proxy to act as the record
    *          transformation layer
    * @return a newly wired up {@link DevToolsDataInstance}.
    */
-  public static DevToolsDataInstance create(int tabId, DevToolsDataProxy proxy) {
-    DevToolsDataInstance dataInstance = createImpl(tabId, proxy);
-    return dataInstance;
+  public static DevToolsDataInstance create(Proxy proxy) {
+    return DataInstance.create(proxy).cast();
   }
-
-  private static native DevToolsDataInstance createImpl(int tabId,
-      DevToolsDataProxy proxy) /*-{
-    var dataInstance = {
-      Load: function(callback) {
-        this._callback = callback;
-        // Connect to devtools
-        this.Resume();
-      },
-
-      Resume: function() {
-        proxy.@com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy::connectToDevTools(ILcom/google/speedtracer/client/model/DevToolsDataInstance;)(tabId, dataInstance);
-      },
-
-      Stop: function() {
-        proxy.@com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy::disconnect()();
-      },
-
-      Unload: function() {
-        proxy.@com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy::baseTime = -1;
-        proxy.@com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy::disconnect()();
-        // Remove the connection back to the monitor's model in order to prevent
-        // a memory leak.
-        this._callback = null;
-      },
-
-      SetBaseTime: function(baseTime) {
-         proxy.@com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy::setBaseTime(D)(baseTime);
-      },
-      
-      SetOptions: function(enableStackTraces, enableCpuProfiling) {
-        proxy.@com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy::setProfilingOptions(IZZ)(tabId, enableStackTraces, enableCpuProfiling);
-      }
-    };
-    // Initialize the sequence number count to 0
-    dataInstance.seqCount = 0;
-    return dataInstance;
-  }-*/;
 
   protected DevToolsDataInstance() {
   }
-
-  /**
-   * Forwards an EventRecord to the callback. Records that come in before we
-   * have assigned a callback get buffered.
-   * 
-   * @param record
-   */
-  final native void onEventRecord(EventRecord record) /*-{
-    record.sequence = this.seqCount;
-    this._callback.onEventRecord(record);
-    this.seqCount = this.seqCount + 1;
-  }-*/;
 }

@@ -16,7 +16,7 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy;
+import com.google.speedtracer.client.model.DevToolsDataInstance.Proxy;
 import com.google.speedtracer.client.model.NetworkResource.HeaderMap;
 import com.google.speedtracer.client.util.JsIntegerMap;
 
@@ -37,7 +37,7 @@ public abstract class InspectorResourceConverter {
       InspectorResourceConverter {
     private final JsIntegerMap<ResourceStatus> resourceCheckpointMap = JsIntegerMap.<ResourceStatus> create();
 
-    public InspectorResourceConverterImpl(DevToolsDataProxy proxy) {
+    public InspectorResourceConverterImpl(Proxy proxy) {
       super(proxy);
     }
 
@@ -315,9 +315,9 @@ public abstract class InspectorResourceConverter {
     }-*/;
   }
 
-  private final DevToolsDataProxy proxy;
+  private final Proxy proxy;
 
-  public InspectorResourceConverter(DevToolsDataProxy proxy) {
+  public InspectorResourceConverter(Proxy proxy) {
     this.proxy = proxy;
   }
 
@@ -331,7 +331,7 @@ public abstract class InspectorResourceConverter {
   public abstract void onUpdateResource(int resourceId,
       JavaScriptObject updateResource);
 
-  protected DevToolsDataProxy getProxy() {
+  protected Proxy getProxy() {
     return proxy;
   }
 }

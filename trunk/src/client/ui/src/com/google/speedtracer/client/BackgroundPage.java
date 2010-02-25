@@ -27,31 +27,34 @@ import com.google.gwt.chrome.crx.client.Windows.OnWindowCallback;
 import com.google.gwt.chrome.crx.client.Windows.Window;
 import com.google.gwt.chrome.crx.client.events.BrowserActionEvent;
 import com.google.gwt.chrome.crx.client.events.ConnectEvent;
+import com.google.gwt.chrome.crx.client.events.ConnectExternalEvent;
 import com.google.gwt.chrome.crx.client.events.MessageEvent;
+import com.google.gwt.chrome.crx.client.events.RequestExternalEvent;
 import com.google.gwt.chrome.crx.client.events.TabUpdatedEvent;
-import com.google.gwt.chrome.crx.client.events.DevToolsPageEvent.PageEvent;
+import com.google.gwt.chrome.crx.client.events.RequestExternalEvent.SendResponse;
+import com.google.gwt.chrome.crx.client.events.RequestExternalEvent.Sender;
 import com.google.gwt.chrome.crx.client.events.TabUpdatedEvent.ChangeInfo;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.events.client.Event;
 import com.google.gwt.events.client.EventListener;
-import com.google.speedtracer.client.DataLoader.EventRecordMessageEvent;
 import com.google.speedtracer.client.WindowChannel.Client;
 import com.google.speedtracer.client.WindowChannel.Request;
 import com.google.speedtracer.client.WindowChannel.Server;
 import com.google.speedtracer.client.WindowChannel.ServerListener;
 import com.google.speedtracer.client.messages.InitializeMonitorMessage;
+import com.google.speedtracer.client.messages.PageEventMessage;
 import com.google.speedtracer.client.messages.RecordingDataMessage;
 import com.google.speedtracer.client.messages.RequestInitializationMessage;
 import com.google.speedtracer.client.messages.ResendProfilingOptions;
 import com.google.speedtracer.client.messages.ResetBaseTimeMessage;
+import com.google.speedtracer.client.model.DataInstance;
 import com.google.speedtracer.client.model.DevToolsDataInstance;
+import com.google.speedtracer.client.model.ExternalExtensionDataInstance;
 import com.google.speedtracer.client.model.LoadFileDataInstance;
-import com.google.speedtracer.client.model.Model;
 import com.google.speedtracer.client.model.TabDescription;
-import com.google.speedtracer.client.model.DataModel.DataInstance;
-import com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy;
-import com.google.speedtracer.client.util.JSON;
+import com.google.speedtracer.client.model.DevToolsDataInstance.Proxy;
+import com.google.speedtracer.client.model.ExternalExtensionDataInstance.ConnectRequest;
 import com.google.speedtracer.client.util.dom.WindowExt;
 
 import java.util.HashMap;
@@ -65,21 +68,15 @@ import java.util.HashMap;
     "resources/icon128.png"})
 public abstract class BackgroundPage extends Extension {
   /**
-   * Listener that receives callbacks from the ControlInstance. This class is
-   * responsible for tracking connections to the various browsers in a browser
-   * connection map.
+   * Listener that does the bidding of external extensions driving Speed Tracer.
    */
-  class ModelListener implements Model.Listener {
-
-    public void onBrowserConnected(int browserId, String name, String version) {
+  class ExternalExtensionListener {
+    public void onBrowserConnected(int browserId) {
       browserConnectionMap.put(browserId, new BrowserConnectionState());
     }
 
     public void onBrowserDisconnected(int browserId) {
       browserConnectionMap.remove(browserId);
-    }
-
-    public void onMonitoredTabChanged(int browserId, TabDescription tab) {
     }
 
     public void onTabMonitorStarted(int browserId, TabDescription tab,
@@ -91,9 +88,6 @@ public abstract class BackgroundPage extends Extension {
       tabModel.dataInstance = dataInstance;
       tabModel.tabDescription = tab;
       openMonitor(browserId, tab.getId(), tabModel);
-    }
-
-    public void onTabMonitorStopped(int browserId, int tabID) {
     }
   }
 
@@ -209,38 +203,14 @@ public abstract class BackgroundPage extends Extension {
 
     GWT.create(DataLoader.class);
 
-    // We need to keep the browser action icon consistent, as well as retransmit
-    // profiling options.
-    Tabs.getOnUpdatedEvent().addListener(new TabUpdatedEvent.Listener() {
-      public void onTabUpdated(int tabId, ChangeInfo changeInfo, Tab tab) {
-        if (changeInfo.getStatus().equals(ChangeInfo.STATUS_LOADING)) {
-          TabModel tabModel = browserConnectionMap.get(CHROME_BROWSER_ID).tabMap.get(tabId);
-          if (tabModel != null) {
-            // We want the icon to remain what it was before the page
-            // transition.
-            setBrowserActionIcon(tabId, tabModel.currentIcon, tabModel);
-          }
-        }
-      }
-    });
-
-    // A content script connects to us when we want to load data.
-    Chrome.getExtension().getOnConnectEvent().addListener(
-        new ConnectEvent.Listener() {
-          public void onConnect(final Port port) {
-            String portName = port.getName();
-            if (portName.equals(DataLoader.DATA_LOAD)
-                || portName.equals(DataLoader.RAW_DATA_LOAD)) {
-              // We are loading data.
-              doDataLoad(port);
-            }
-          }
-        });
+    initialize();
 
     // Register page action and browser action listeners.
     browserAction.addListener(new MonitorTabClickListener());
 
-    initialize();
+    listenForTabEvents();
+    listenForContentScripts();
+    listenForExternalExtensions(new ExternalExtensionListener());
   }
 
   /**
@@ -261,42 +231,30 @@ public abstract class BackgroundPage extends Extension {
     int tabId = port.getTab().getId();
 
     if (port.getName().equals(DataLoader.DATA_LOAD)) {
-      tabModel.dataInstance = LoadFileDataInstance.create(port);
+      // The DataInstance will get wired up automatically on creation.
+      LoadFileDataInstance dataInstance = LoadFileDataInstance.create(port);
+      tabModel.dataInstance = dataInstance;
       browserConn.tabMap.put(tabId, tabModel);
-
-      // Connect the datainstance to receive data from the data_loader
-      port.getOnMessageEvent().addListener(new MessageEvent.Listener() {
-        public void onMessage(MessageEvent.Message message) {
-          EventRecordMessageEvent evtRecordMessage = message.cast();
-          tabModel.dataInstance.<LoadFileDataInstance> cast().onEventRecord(
-              evtRecordMessage.getRecordString());
-        }
-      });
     } else {
       // We are dealing with RAW data (untransformed inspector data) that still
       // needs conversion.
-      final DevToolsDataProxy proxy = new DevToolsDataProxy() {
+      final Proxy proxy = new Proxy(tabId) {
         @Override
-        protected void connectToDataSource(int tabId) {
+        protected void connectToDataSource() {
           // Tell the data_loader content script to start sending.
-          port.postMessage(createAck());
+          port.postMessage(LoadFileDataInstance.createAck());
         }
-
-        private native JavaScriptObject createAck() /*-{
-          return {ready: true};
-        }-*/;
       };
 
       // Connect the DataInstance to receive data from the data_loader
       port.getOnMessageEvent().addListener(new MessageEvent.Listener() {
         public void onMessage(MessageEvent.Message message) {
-          EventRecordMessageEvent evtRecordMessage = message.cast();
-          PageEvent pageEvent = JSON.parse(evtRecordMessage.getRecordString()).cast();
-          proxy.dispatchPageEvent(pageEvent);
+          PageEventMessage pageEventMessage = message.cast();          
+          proxy.dispatchPageEvent(pageEventMessage.getPageEvent());
         }
       });
 
-      tabModel.dataInstance = DevToolsDataInstance.create(tabId, proxy);
+      tabModel.dataInstance = DevToolsDataInstance.create(proxy);
       browserConn.tabMap.put(tabId, tabModel);
     }
 
@@ -336,11 +294,6 @@ public abstract class BackgroundPage extends Extension {
    * of our Monitor UI.
    */
   private void initialize() {
-    // Inject the plugin and call Load() on it.
-    // TODO(jaimeyap): Uncomment this when we have a building plugin.
-    // final Model model = new PluginModel();
-    // model.load(new ModelListener());
-
     Server.listen(getWindow(), Monitor.CHANNEL_NAME, new ServerListener() {
       public void onClientChannelRequested(Request request) {
         request.accept(new WindowChannel.Listener() {
@@ -391,6 +344,11 @@ public abstract class BackgroundPage extends Extension {
             }
           }
 
+          /**
+           * Called by the monitor's onModuleLoad when it is requesting
+           * initialization from the background page. It is essentially asking
+           * for us to give it a DataInstance and TabDescription.
+           */
           private void doRequestInitialization(final Client channel,
               WindowChannel.Message data) {
             final RequestInitializationMessage request = data.cast();
@@ -454,6 +412,91 @@ public abstract class BackgroundPage extends Extension {
         });
       }
 
+    });
+  }
+
+  private void listenForContentScripts() {
+    // A content script connects to us when we want to load data.
+    Chrome.getExtension().getOnConnectEvent().addListener(
+        new ConnectEvent.Listener() {
+          public void onConnect(final Port port) {
+            String portName = port.getName();
+            if (portName.equals(DataLoader.DATA_LOAD)
+                || portName.equals(DataLoader.RAW_DATA_LOAD)) {
+              // We are loading data.
+              doDataLoad(port);
+            }
+          }
+        });
+  }
+
+  private void listenForExternalExtensions(
+      final ExternalExtensionListener exListener) {
+    // External extensions can also be used as data sources. Hook this up.
+    Chrome.getExtension().getOnRequestExternalEvent().addListener(
+        new RequestExternalEvent.Listener() {
+          public void onRequestExternal(JavaScriptObject request,
+              Sender sender, SendResponse sendResponse) {
+            // Ensure the extension attempting to connect is not blacklisted.
+            if (!ExternalExtensionDataInstance.isBlackListed(sender.getId())) {
+              final ConnectRequest connectRequest = request.cast();
+              final int browserId = connectRequest.getBrowserId();
+
+              BrowserConnectionState connection = browserConnectionMap.get(browserId);
+
+              if (connection == null) {
+                // If this is the first opened connection for this browser type,
+                // then we provision an entry for it in the browser map.
+                exListener.onBrowserConnected(browserId);
+                connection = browserConnectionMap.get(browserId);
+              }
+
+              final int tabId = connectRequest.getTabId();
+              final String portName = ExternalExtensionDataInstance.SPEED_TRACER_EXTERNAL_PORT
+                  + browserId + "-" + tabId;
+
+              // So we will now begin listening for connections on a dedicated
+              // port name for this browser/tab combo.
+              Chrome.getExtension().getOnConnectExternalEvent().addListener(
+                  new ConnectExternalEvent.Listener() {
+                    public void onConnectExternal(Port port) {
+                      if (portName.equals(port.getName())) {
+                        // Provision a DataInstance and a TabDescription.
+                        DataInstance dataInstance = ExternalExtensionDataInstance.create(port);
+                        TabDescription tabDescription = TabDescription.create(
+                            tabId, connectRequest.getTitle(),
+                            connectRequest.getUrl());
+
+                        // Now remember the DataInstance and TabDescription, and
+                        // open a Monitor.
+                        exListener.onTabMonitorStarted(browserId,
+                            tabDescription, dataInstance);
+                      }
+                    }
+                  });
+
+              // Send a response that tells the external extension what port
+              // name to connect to.
+              sendResponse.invoke(ExternalExtensionDataInstance.createResponse(portName));
+            }
+          }
+        });
+  }
+
+  private void listenForTabEvents() {
+    // We need to keep the browser action icon consistent, as well as retransmit
+    // profiling options.
+    Tabs.getOnUpdatedEvent().addListener(new TabUpdatedEvent.Listener() {
+      public void onTabUpdated(int tabId, ChangeInfo changeInfo, Tab tab) {
+        if (changeInfo.getStatus().equals(ChangeInfo.STATUS_LOADING)) {
+          TabModel tabModel = browserConnectionMap.get(CHROME_BROWSER_ID).tabMap.get(tabId);
+          if (tabModel != null) {
+            // We want the icon to remain what it was before the page
+            // transition.
+            setBrowserActionIcon(tabId, tabModel.currentIcon, tabModel);
+          }
+        }
+      }
     });
   }
 

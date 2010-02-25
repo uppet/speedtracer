@@ -22,7 +22,7 @@ import com.google.speedtracer.client.WindowChannel;
  * wants to reset the time normalization in its associated data instance.
  */
 public class ResetBaseTimeMessage extends WindowChannel.Message {
-  public static final int TYPE = MessageType.RESET_BASE_TIME_TYPE;
+  public static final int TYPE = MessageType.WC_RESET_BASE_TIME_TYPE;
 
   /**
    * Create an instance of this message.

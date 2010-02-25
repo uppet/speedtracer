@@ -25,7 +25,7 @@ import com.google.speedtracer.client.WindowChannel.Message;
  * to Monitor when the recording state is changed from another method.
  */
 public class RecordingDataMessage extends Message {
-  public static final int TYPE = MessageType.RECORD_DATA_TYPE;
+  public static final int TYPE = MessageType.WC_RECORD_DATA_TYPE;
 
   public static RecordingDataMessage create(boolean isRecording) {
     return create(Monitor.DEFAULT_ID, Monitor.DEFAULT_ID, isRecording);

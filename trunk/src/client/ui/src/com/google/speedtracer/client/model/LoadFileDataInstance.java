@@ -16,7 +16,9 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.chrome.crx.client.Port;
-import com.google.speedtracer.client.model.DataModel.DataInstance;
+import com.google.gwt.chrome.crx.client.events.MessageEvent;
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.speedtracer.client.messages.EventRecordMessage;
 
 /**
  * This class is used in Chrome when we get data from a loaded file (data_loader
@@ -24,52 +26,62 @@ import com.google.speedtracer.client.model.DataModel.DataInstance;
  * Monitor UI.
  */
 public class LoadFileDataInstance extends DataInstance {
-  // TODO(jaimeyap): Push more of this code into Java.
-  public static native LoadFileDataInstance create(Port port) /*-{
-    var dataInstance = {
-      Load: function(callback) {
-        this._callback = callback;
-        this.Resume();
-      },
+  private static class Proxy implements DataProxy {
+    private final Port port;
 
-      Resume: function() {
-        // Tell the content script to start sending data.
-        port.postMessage({
-          ready: true
-        }); 
-      },
+    Proxy(Port port) {
+      this.port = port;
+    }
 
-      Stop: function() {
-      },
-      
-      Unload: function() {
-      },
-      
-      SetBaseTime: function(baseTime) {
-      },
-      
-      SetOptions: function(enableStackTraces, enableCpuProfiling) {
+    public void load(DataInstance dataInstance) {
+      port.postMessage(createAck());
+    }
+
+    public void resumeMonitoring() {
+    }
+
+    public void setBaseTime(double baseTime) {
+    }
+
+    public void setProfilingOptions(boolean enableStackTraces,
+        boolean enableCpuProfiling) {
+    }
+
+    public void stopMonitoring() {
+    }
+
+    public void unload() {
+    }
+  }
+
+  /**
+   * Static Factory method for obtaining an instance of
+   * {@link LoadFileDataInstance}.
+   * 
+   * @param port the {@link Port} that we will use connect to.
+   * @return
+   */
+  public static LoadFileDataInstance create(Port port) {
+    final LoadFileDataInstance dataInstance = DataInstance.create(
+        new Proxy(port)).cast();
+
+    // Connect the datainstance to receive data from the data_loader.
+    port.getOnMessageEvent().addListener(new MessageEvent.Listener() {
+      public void onMessage(MessageEvent.Message message) {
+        EventRecordMessage eventRecordMessage = message.cast();
+        dataInstance.onEventRecord(eventRecordMessage.getEventRecord());
       }
-    };
-    // Initialize the sequence number count to 0
-    dataInstance.seqCount = 0;
+    });
+
     return dataInstance;
+  }
+
+  public static native JavaScriptObject createAck() /*-{
+    return {
+      ready: true
+    };
   }-*/;
 
   protected LoadFileDataInstance() {
   }
-
-  /**
-   * This gets called with an unevaled record string. It gets JSON.parsed and
-   * assigned a sequence number. Records that come in before we have assigned a
-   * callback get buffered.
-   * 
-   * @param recordString
-   */
-  public final native void onEventRecord(String recordString) /*-{
-    var record = JSON.parse(recordString);
-    record.sequence = this.seqCount;
-    this._callback.onEventRecord(record);
-    this.seqCount = this.seqCount + 1;
-  }-*/;
 }

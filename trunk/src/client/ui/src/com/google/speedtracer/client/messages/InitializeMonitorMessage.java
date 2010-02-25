@@ -16,8 +16,8 @@
 package com.google.speedtracer.client.messages;
 
 import com.google.speedtracer.client.WindowChannel;
+import com.google.speedtracer.client.model.DataInstance;
 import com.google.speedtracer.client.model.TabDescription;
-import com.google.speedtracer.client.model.DataModel.DataInstance;
 
 /**
  * A message to pass the required information to initialize an
@@ -26,7 +26,7 @@ import com.google.speedtracer.client.model.DataModel.DataInstance;
  * 
  */
 public class InitializeMonitorMessage extends WindowChannel.Message {
-  public static final int TYPE = MessageType.INITIALIZE_MONITOR_TYPE;
+  public static final int TYPE = MessageType.WC_INITIALIZE_MONITOR_TYPE;
 
   /**
    * Create an instance of this message.
