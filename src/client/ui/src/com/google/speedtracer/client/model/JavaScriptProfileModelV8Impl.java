@@ -18,6 +18,7 @@ package com.google.speedtracer.client.model;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.model.V8SymbolTable.AliasableEntry;
 import com.google.speedtracer.client.model.V8SymbolTable.V8Symbol;
@@ -59,8 +60,11 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     }
 
     public void doAction(JsArrayString logLine) {
-      Logging.getLogger().logText(
-          "Unimplemented command: " + commandName + " alias: " + logLine.get(0));
+      if (ClientConfig.isDebugMode()) {
+        Logging.getLogger().logText(
+            "Unimplemented command: " + commandName + " alias: "
+                + logLine.get(0));
+      }
     }
   }
 
@@ -380,7 +384,7 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
     LogAction cmdMethod = logActions.get(actionTypeMap.get(command));
     if (cmdMethod != null) {
       cmdMethod.doAction(logEntries);
-    } else {
+    } else if (ClientConfig.isDebugMode()) {
       Logging.getLogger().logText("Unknown v8 profiler command: " + command);
     }
   }
@@ -404,7 +408,7 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
       ActionType action = actionTypeMap.get(originalName);
       if (action != null) {
         actionTypeMap.put(aliasName, action);
-      } else {
+      } else if (ClientConfig.isDebugMode()) {
         Logging.getLogger().logText(
             "Unable to find command: '" + logEntries.get(2)
                 + "' to match alias: " + logEntries.get(1));
@@ -517,7 +521,7 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
       populateAddressTags();
     } else if (arg.equals("pause") || arg.equals("resume")) {
       // ignore pause and resume entries.
-    } else {
+    } else if (ClientConfig.isDebugMode()) {
       Logging.getLogger().logText(
           "Ignoring profiler command: " + logEntries.join());
     }

@@ -31,6 +31,7 @@ import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.gwt.topspin.ui.client.Div;
 import com.google.gwt.topspin.ui.client.Table;
+import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.SymbolServerController;
 import com.google.speedtracer.client.SourceViewer.SourcePresenter;
@@ -378,8 +379,10 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
         new ProfileTree(container, resources, profileRoot);
         break;
       default:
-        Logging.getLogger().logText("Unknown Profile type: " + profileType);
-        assert (false);
+        if (ClientConfig.isDebugMode()) {
+          Logging.getLogger().logText("Unknown Profile type: " + profileType);
+        }
+        assert false : "Unknown profile type: " + profileType;
     }
   }
 
@@ -498,9 +501,11 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
         public void onClick(ClickEvent event) {
           String resourceUrl = jsSymbol.getResourceBase()
               + jsSymbol.getResourceName();
-          Logging.getLogger().logText(
-              "opening resource " + resourceUrl + " line: "
-                  + jsSymbol.getLineNumber());
+          if (ClientConfig.isDebugMode()) {
+            Logging.getLogger().logText(
+                "opening resource " + resourceUrl + " line: "
+                    + jsSymbol.getLineNumber());
+          }
           sourceClickCallback.onSourceClick(resourceUrl,
               jsSymbol.getLineNumber());
         }

@@ -16,6 +16,7 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.JsArrayNumber;
+import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.model.DataModel.EventCallbackProxy;
 import com.google.speedtracer.client.model.DataModel.EventCallbackProxyProvider;
@@ -296,8 +297,10 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
       if (format.equals(JavaScriptProfileModelV8Impl.FORMAT)) {
         impl = new JavaScriptProfileModelV8Impl(workQueue);
       } else {
-        Logging.getLogger().logText(
-            "No profile model available for profile format: " + format);
+        if (ClientConfig.isDebugMode()) {
+          Logging.getLogger().logText(
+              "No profile model available for profile format: " + format);
+        }
 
         // Create a null implementation that just throws the data away
         impl = new JavaScriptProfileModelImpl("null") {
