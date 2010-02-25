@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -71,26 +71,21 @@ public class Logging {
 
     public void onNetworkResourceRequestStarted(
         NetworkResourceStart resourceStart) {
-      // TODO Auto-generated method stub
     }
 
     public void onNetworkResourceResponseFailed(
         NetworkResourceError resourceError) {
-      // TODO Auto-generated method stub
     }
 
     public void onNetworkResourceResponseFinished(
         NetworkResourceFinished resourceFinish) {
-      // TODO Auto-generated method stub
     }
 
     public void onNetworkResourceResponseStarted(
         NetworkResourceResponse resourceResponse) {
-      // TODO Auto-generated method stub
     }
 
     public void onUiEventFinished(UiEvent event) {
-      // TODO Auto-generated method stub
     }
   }
 
@@ -105,34 +100,19 @@ public class Logging {
     void logText(String text);
   }
 
-  /**
-   * No-op class for production debug logging.
-   */
-  public static class NullListenerLogger implements ListenerLogger {
-    public NullListenerLogger() {
-    }
-
-    public void listenTo(DataModel model) {
-    }
-
-    public void logHtml(String html) {
-    }
-
-    public void logText(String text) {
-    }
-  }
-
   private static ListenerLogger logger;
 
   public static void createListenerLogger(DataModel model) {
-    logger = ClientConfig.isDebugMode() ? new DebugListenerLogger()
-        : new NullListenerLogger();
-    if (model != null) {
-      logger.listenTo(model);
+    if (ClientConfig.isDebugMode()) {
+      logger = new DebugListenerLogger();
+      if (model != null) {
+        logger.listenTo(model);
+      }
     }
   }
 
   public static ListenerLogger getLogger() {
+    assert logger != null;
     return logger;
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,6 +22,7 @@ import com.google.gwt.webworker.client.ErrorHandler;
 import com.google.gwt.webworker.client.MessageEvent;
 import com.google.gwt.webworker.client.MessageHandler;
 import com.google.gwt.webworker.client.Worker;
+import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.messages.HintMessage;
 import com.google.speedtracer.client.util.JSON;
@@ -56,7 +57,7 @@ public class HintletEngineHost {
   HintletEngineHost() {
     // Fire up the Dedicated worker that will run the actual hintlet engine.
     hintletEngineWorker = Worker.create("../hintletengine/hintletengine.nocache.js");
-    init(); 
+    init();
   }
 
   public void addExceptionHandler(ExceptionListener listener) {
@@ -119,14 +120,17 @@ public class HintletEngineHost {
 
       private void fireOnHint(MessageEvent event) {
         HintMessage msg = HintMessage.create(event.getDataAsString());
+
         if (msg.isHint()) {
           onHint(msg.getHint());
-        } else if (msg.isLog()) {
-          Logging.getLogger().logText(msg.getLog());
-        } else {
-          Logging.getLogger().logText(
-              "Unknown message type from hintlet engine: " + msg.getType());
-          assert false;
+        } else if (ClientConfig.isDebugMode()) {
+          if (msg.isLog()) {
+            Logging.getLogger().logText(msg.getLog());
+          } else {
+            Logging.getLogger().logText(
+                "Unknown message type from hintlet engine: " + msg.getType());
+            assert false;
+          }
         }
       }
     });
