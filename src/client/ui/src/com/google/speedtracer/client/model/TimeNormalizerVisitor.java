@@ -16,7 +16,7 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy;
+import com.google.speedtracer.client.model.DevToolsDataInstance.Proxy;
 import com.google.speedtracer.client.model.EventVisitor.PreOrderVisitor;
 
 /**
@@ -50,9 +50,9 @@ public class TimeNormalizerVisitor implements PreOrderVisitor {
     }-*/;
   }
 
-  private final DevToolsDataProxy proxy;
+  private final Proxy proxy;
 
-  TimeNormalizerVisitor(DevToolsDataProxy proxy) {
+  TimeNormalizerVisitor(Proxy proxy) {
     this.proxy = proxy;
   }
 

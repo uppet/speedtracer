@@ -16,7 +16,7 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy;
+import com.google.speedtracer.client.model.DevToolsDataInstance.Proxy;
 import com.google.speedtracer.client.model.NetworkResource.HeaderMap;
 import com.google.speedtracer.client.util.JsIntegerMap;
 
@@ -174,7 +174,7 @@ public class LegacyInspectorResourceConverter extends
 
   private final JsIntegerMap<ResourceStatus> resourceCheckpointMap = JsIntegerMap.<ResourceStatus> create();
 
-  public LegacyInspectorResourceConverter(DevToolsDataProxy proxy) {
+  public LegacyInspectorResourceConverter(Proxy proxy) {
     super(proxy);
   }
 

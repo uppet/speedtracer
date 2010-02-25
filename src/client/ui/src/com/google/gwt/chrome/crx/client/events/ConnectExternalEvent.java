@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,19 +21,19 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;
 
 /**
- * Wraps event from chrome.onConnect.
+ * Wraps event from chrome.onConnectExternal.
  * 
  * See documentation at: <a href=
  * "http://dev.chromium.org/developers/design-documents/extensions/content-scripts"
  * >Content Script Messaging</a>
  * 
  */
-public final class ConnectEvent extends Event {
+public class ConnectExternalEvent extends Event {
   /**
    * Called when a ContentScript opens a port.
    */
   public interface Listener {
-    void onConnect(Port port);
+    void onConnectExternal(Port port);
   }
 
   /**
@@ -47,25 +47,25 @@ public final class ConnectEvent extends Event {
     UncaughtExceptionHandler ueh = GWT.getUncaughtExceptionHandler();
     if (ueh != null) {
       try {
-        listener.onConnect(port);
+        listener.onConnectExternal(port);
       } catch (Exception ex) {
         ueh.onUncaughtException(ex);
       }
     } else {
-      listener.onConnect(port);
+      listener.onConnectExternal(port);
     }
   }
 
-  protected ConnectEvent() {
+  protected ConnectExternalEvent() {
   }
 
-  public ListenerHandle addListener(Listener listener) {
+  public final ListenerHandle addListener(Listener listener) {
     return new ListenerHandle(this, addListenerImpl(listener));
   }
 
   private native JavaScriptObject addListenerImpl(Listener listener) /*-{
     var handle = function(port) {
-      @com.google.gwt.chrome.crx.client.events.ConnectEvent::onConnectImpl(Lcom/google/gwt/chrome/crx/client/events/ConnectEvent$Listener;Lcom/google/gwt/chrome/crx/client/Port;)
+      @com.google.gwt.chrome.crx.client.events.ConnectExternalEvent::onConnectImpl(Lcom/google/gwt/chrome/crx/client/events/ConnectExternalEvent$Listener;Lcom/google/gwt/chrome/crx/client/Port;)
       (listener, port);
     }
 

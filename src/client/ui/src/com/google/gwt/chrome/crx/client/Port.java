@@ -28,6 +28,25 @@ import com.google.gwt.core.client.JavaScriptObject;
  * >Content Script Messaging</a>
  */
 public class Port extends JavaScriptObject {
+  /**
+   * Overlay type for messages sent over a Port.
+   */
+  public static class Message extends JavaScriptObject {
+    /**
+     * Subclasses should use this to obtain a JSO and then extend it with custom
+     * fields.
+     */
+    public static native Message create(int type) /*-{
+      return {type: type};
+    }-*/;
+
+    protected Message() {
+    }
+
+    public final native int getType() /*-{
+      return this.type;
+    }-*/;
+  }
 
   protected Port() {
   }
@@ -43,7 +62,7 @@ public class Port extends JavaScriptObject {
   public final native Tab getTab() /*-{
     return this.tab;
   }-*/;
-  
+
   public final native void postMessage(JavaScriptObject msg) /*-{
     this.postMessage(msg);
   }-*/;

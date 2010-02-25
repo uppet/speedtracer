@@ -15,7 +15,7 @@
  */
 package com.google.speedtracer.client.model;
 
-import com.google.speedtracer.client.model.DevToolsDataInstance.DevToolsDataProxy;
+import com.google.speedtracer.client.model.DevToolsDataInstance.Proxy;
 import com.google.speedtracer.client.model.LegacyInspectorResourceConverter.AddResource;
 import com.google.speedtracer.client.model.LegacyInspectorResourceConverter.UpdateResource;
 import com.google.speedtracer.client.util.JSON;
@@ -33,12 +33,16 @@ import java.util.List;
  */
 public class InspectorResourceConverterTests extends GWTTestCase {
   /**
-   * Testable {@link DevToolsDataProxy}. This simply collects output from the
+   * Testable {@link Proxy}. This simply collects output from the
    * LegacyInspectorResourceConverter.
    */
-  private static class MockDevToolsDataProxy extends DevToolsDataProxy {
+  private static class MockDevToolsDataProxy extends Proxy {
     int currentResource = 0;
     List<EventRecord> recordsReceived = new ArrayList<EventRecord>();
+
+    public MockDevToolsDataProxy(int tabId) {
+      super(tabId);
+    }
 
     // We want all normalized times to be the same as the strings in the test
     // resources, so we return 0 here always.
@@ -119,8 +123,9 @@ public class InspectorResourceConverterTests extends GWTTestCase {
         "[\"updateResource\",1,{\"mimeType\":\"text/html\",\"suggestedFilename\":\"\",\"expectedContentLength\":-1,\"statusCode\":200,\"responseHeaders\":{},\"didResponseChange\":true,\"type\":0,\"didTypeChange\":true,\"startTime\":1258059646.920131,\"responseReceivedTime\":1258059646.942131,\"didTimingChange\":true}]",
         "[\"updateResource\",1,{\"failed\":false,\"finished\":true,\"didCompletionChange\":true,\"startTime\":1258059646.920131,\"responseReceivedTime\":1258059646.942131,\"endTime\":1258059646.975131,\"didTimingChange\":true}]"};
 
-    MockDevToolsDataProxy proxy = new MockDevToolsDataProxy();
-    LegacyInspectorResourceConverter converter = new LegacyInspectorResourceConverter(proxy);
+    MockDevToolsDataProxy proxy = new MockDevToolsDataProxy(1);
+    LegacyInspectorResourceConverter converter = new LegacyInspectorResourceConverter(
+        proxy);
 
     // Send an addResource inspector style resource.
     AddResource add = addRecord(resource[0], converter);
@@ -178,8 +183,9 @@ public class InspectorResourceConverterTests extends GWTTestCase {
         "[\"updateResource\",1,{\"mimeType\":\"text/html\",\"suggestedFilename\":\"\",\"expectedContentLength\":-1,\"statusCode\":200,\"responseHeaders\":{},\"didResponseChange\":true,\"type\":0,\"didTypeChange\":true,\"startTime\":1258059646.920131,\"responseReceivedTime\":1258059646.942131,\"didTimingChange\":true}]",
         "[\"updateResource\",1,{\"failed\":false,\"finished\":true,\"didCompletionChange\":true,\"startTime\":1258059646.920131,\"responseReceivedTime\":1258059646.942131,\"endTime\":1258059646.975131,\"didTimingChange\":true}]"};
 
-    MockDevToolsDataProxy proxy = new MockDevToolsDataProxy();
-    LegacyInspectorResourceConverter converter = new LegacyInspectorResourceConverter(proxy);
+    MockDevToolsDataProxy proxy = new MockDevToolsDataProxy(1);
+    LegacyInspectorResourceConverter converter = new LegacyInspectorResourceConverter(
+        proxy);
 
     // Send an addResource inspector style resource.
     addRecord(redirectResource[0], converter);
@@ -268,8 +274,9 @@ public class InspectorResourceConverterTests extends GWTTestCase {
         "[\"updateResource\",1,{\"mimeType\":\"text/html\",\"suggestedFilename\":\"\",\"expectedContentLength\":-1,\"statusCode\":200,\"responseHeaders\":{},\"didResponseChange\":true,\"type\":0,\"didTypeChange\":true,\"startTime\":1258059646.920131,\"responseReceivedTime\":1258059646.942131,\"didTimingChange\":true}]",
         "[\"updateResource\",1,{\"failed\":false,\"finished\":true,\"didCompletionChange\":true,\"startTime\":1258059646.920131,\"responseReceivedTime\":1258059646.942131,\"endTime\":1258059646.975131,\"didTimingChange\":true}]"};
 
-    MockDevToolsDataProxy proxy = new MockDevToolsDataProxy();
-    LegacyInspectorResourceConverter converter = new LegacyInspectorResourceConverter(proxy);
+    MockDevToolsDataProxy proxy = new MockDevToolsDataProxy(1);
+    LegacyInspectorResourceConverter converter = new LegacyInspectorResourceConverter(
+        proxy);
 
     // The id is <redirectCount>-<resourceId>
     String expectedResourceId = "0-1";

@@ -24,7 +24,7 @@ import com.google.speedtracer.client.WindowChannel.Message;
  * target renderer.
  */
 public class ResendProfilingOptions extends Message {
-  public static final int TYPE = MessageType.RESEND_PROFILING_DATA_TYPE;
+  public static final int TYPE = MessageType.WC_RESEND_PROFILING_DATA_TYPE;
 
   public static native ResendProfilingOptions create() /*-{
     return {};
