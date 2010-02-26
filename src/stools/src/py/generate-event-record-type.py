@@ -25,7 +25,7 @@ from optparse import OptionParser
 # Add the events to the list in value order.  The generated code will 
 # break if there are more than one entry with the same value.
 #
-events = [
+webkitEvents = [
 
 # 0-14 Correspond to record types landed as webkit inspector timeline records.
   {
@@ -119,119 +119,80 @@ events = [
     'value' : 14, 
     'constant' : 'RESOURCE_FINISH',
     'desc' : 'Resource Finish',
-    'help_text' : 'A new request for a network resource completed.'
+    'help_text' : 'A new request for a network resource completed.',
   },
-# END INSPECTOR TIMELINE RECORDS
-
 
 # THE FOLLOWING HAS NOT YET LANDED.
   {
     'value' : 15,
-    'constant' : 'PROFILE_DATA', 
+    'constant' : 'PROFILE_DATA',
     'desc' : 'JavaScript CPU profile data',
     'help_text' : 'Contains raw data from the JavaScript engine profiler.',
-  },
-# END NOT LANDED
+  }
+# END NOT YET LANDED.
+]
+# END INSPECTOR TIMELINE RECORDS.
 
 
-# USED INTERNALLY TO TRACK PAGE TRANSITIONS. SPEED TRACER GENERATED.
+# THE FOLLOWING ARE SPEED TRACER SPECIFIC.
+
+# WE COUNT DOWN FROM THE MAX JAVA 32 BIT INTEGER.
+maxInt = 2147483647
+
+speedTracerEvents = [
   {
-    'value' : 16,
-    'constant' : 'TAB_CHANGED',
-    'desc' : 'Tab Changed',
-    'help_text' : 'Something about the Tab where the page viewed changed.  '
-                  + 'Usually this is the title string or the location of '
-                  + 'the page.',
-  },
-# END PAGE TRANSITIONS
-
-
-# THE FOLLOWING HAS NOT YET LANDED
-  {
-    'value' : 17,
+    'value' : maxInt,
     'constant' : 'AGGREGATED_EVENTS',
     'desc' : 'AGGREGATED Events',
     'help_text' : 'This event represents many short events that have been '
                   + 'aggregated to help reduce the total amount of data '
                   + 'displayed.',
   },
-  { 
-    'value' : 18,
-    'constant' : 'DOM_BINDING_EVENT', 
-    'desc' : 'Dom Bindings',
-    'help_text' : 'A DOM property or function was accessed, such as '
-                  + 'HTMLElement.insertBefore()',
+  {
+    'value' : (maxInt - 1),
+    'constant' : 'TAB_CHANGED',
+    'desc' : 'Tab Changed',
+    'help_text' : 'Something about the Tab where the page viewed changed.  '
+                  + 'Usually this is the title string or the location of '
+                  + 'the page.',
   },
-
-  { 
-    'value' : 19,
-    'constant' : 'JAVASCRIPT_COMPILE_EVENT', 
-    'desc' : 'JavaScript Compile',
-    'help_text' : 'A block of JavaScript was parsed and compiled by the '
-                  + 'JavaScript interpreter.',
+  {
+    'value' : (maxInt - 2),
+    'constant' : 'RESOURCE_UPDATED',
+    'desc' : 'Resource Updated',
+    'help_text' : 'Details about a Network Resource were updated.',
   },
-  { 
-    'value' : 20,
-    'constant' : 'WINDOW_EVENT', 
-    'desc' : 'Window',
-    'help_text' : 'A top level Window event fired, such as load or '
-                  + 'unload.',
-  },
-# END NOT LANDED
 
 
 # THE FOLLOWING ARE SPEED TRACER TIMELINE RECORDS FOR TRACKING NETWORK
-# RESOURCES.
+# RESOURCES. THESE WILL SOON BE GOING AWAY.
   {
-    'value' : 21,
+    'value' : (maxInt - 3),
     'constant' : 'NETWORK_RESOURCE_ERROR',
     'desc' : 'Network Resource Error',
     'help_text' : 'A network resource load ended in error.',
   },
   {
-    'value' : 22,
+    'value' : (maxInt - 4),
     'constant' : 'NETWORK_RESOURCE_FINISH',
-    'desc' : 'Network Resource Finished',
+    'desc' : 'Network Resource Finish',
     'help_text' : 'A network resource loaded sucessfully.',
   },
   {
-    'value' : 23, 
+    'value' : (maxInt - 5),
     'constant' : 'NETWORK_RESOURCE_RESPONSE',
     'desc' : 'Network Resource Response',
     'help_text' : 'A network resource load began to recieve data from the server.',
   },
   { 
-    'value' : 24, 
+    'value' : (maxInt - 6),
     'constant' : 'NETWORK_RESOURCE_START',
     'desc' : 'Network Resource Start',
     'help_text' : 'A new request for a network resource started.'
-  },
+  }
+]
 # END SPEEDTRACER RECORDS
 
- 
-# THE FOLLOWING HAS NOT YET LANDED
-  {
-    'value' : 25,
-    'constant' : 'GARBAGE_COLLECT_EVENT',
-    'desc' : 'Garbage Collection',
-    'help_text' : 'The JavaScript engine ran garbage collection.',
-  },
-  {
-    'value' : 26,
-    'constant' : 'MOUSE_HOVER_STYLE_EVENT',
-    'desc' : 'Mouse Hover for Style',
-    'help_text' : 'The UI changed the currently displayed style for an '
-                  + 'Element based on a CSS hover rule.',
-  },
-  {
-    'value' : 27,
-    'constant' : 'DOM_EVENT_DISPATCH', 
-    'desc' : 'Dom Dispatch',
-    'help_text' : 'A DOM event dispatch ran.  The event may be in the capture or bubble phase.',
-  },
-# END NOT LANDED.
-
-]
 
 # End of *EDIT*
 ####
@@ -275,42 +236,50 @@ def writeJavaSource(path):
  */
 
 public class EventRecordType {
+  // Webkit Timeline Types
 """)
-  # Dump the integer constants
-  max_key_value = 0
-  for event in events:
+  # Dump the integer constants for webkit
+  for event in webkitEvents:
     javaSrc.write("  public static final int " + event['constant'] 
-      + " = " + str(event['value']) + ";\n")
-    if (event['value'] > max_key_value):
-      max_key_value = event['value']
+      + " = %d;\n" % event['value'])
+
+  javaSrc.write("\n  // Speed Tracer Types\n")
+  for event in speedTracerEvents:
+    javaSrc.write("  public static final int " + event['constant'] 
+      + " = 0x%08X;\n" % event['value'])
+
   javaSrc.write("\n")
-  javaSrc.write("  // The highest value key represented by the constants above\n")
-  javaSrc.write("  public static final int MAX_KEY = " + str(max_key_value) + ";\n")
-  javaSrc.write("\n")
-  javaSrc.write("  private static final String[] typeStrings = {\n")
-  count = 0
-  for event in events:
+  javaSrc.write("  private static final String[] webkitTypeStrings = {\n")
+  for event in webkitEvents:
     javaSrc.write('    "' + event['desc'] + '"')
-    commaString = ','
-    if (count == max_key_value):
-       commaString = " "
-    count = count + 1;
-    javaSrc.write("%s%*s // %d %s\n" 
-      % (commaString, 32-len(event['desc']), " ", event['value'], 
+    javaSrc.write(",%*s // %d %s\n" 
+      % (32-len(event['desc']), " ", event['value'], 
          event['constant']));
   javaSrc.write("""  };
 
 """)
-  javaSrc.write("  private static final String[] helpStrings = {\n")
-  count = 0
-  for event in events:
+  javaSrc.write("  private static final String[] speedTracerTypeStrings = {\n")
+  for event in speedTracerEvents:
+    javaSrc.write('    "' + event['desc'] + '"')
+    javaSrc.write(",%*s // 0x%08X %s\n" 
+      % (32-len(event['desc']), " ", event['value'], 
+         event['constant']));
+  javaSrc.write("""  };
+
+""")
+  javaSrc.write("  private static final String[] webkitHelpStrings = {\n")
+  for event in webkitEvents:
     javaSrc.write('    // %d %s\n' % (event['value'], event['constant']))
     javaSrc.write('    "' + event['help_text'].replace("\"", "'") + '"')
-    commaString = ','
-    if (count == max_key_value):
-       commaString = " "
-    javaSrc.write("%s\n" % (commaString))
-    count = count + 1;
+    javaSrc.write(",\n")
+  javaSrc.write("""  };
+
+""")
+  javaSrc.write("  private static final String[] speedTracerHelpStrings = {\n")
+  for event in speedTracerEvents:
+    javaSrc.write('    // 0x%08X %s\n' % (event['value'], event['constant']))
+    javaSrc.write('    "' + event['help_text'].replace("\"", "'") + '"')
+    javaSrc.write(",\n")
   javaSrc.write("""  };
 
   public static String typeToDetailedTypeString(UiEvent e) {
@@ -323,12 +292,6 @@ public class EventRecordType {
         logMessage = (logLength > 20) ? logMessage.substring(0, 8) + "..."
             + logMessage.substring(logLength - 8, logLength) : logMessage;
         return "Log: " + logMessage;
-      case DomEventDispatch.TYPE:
-        return "Dom Dispatch (" + ((DomEventDispatch) e).getPhase() + ")";
-      case DomBindingEvent.TYPE:
-        DomBindingEvent domBindingEvent = e.cast();
-        return (domBindingEvent.isGetter() ? "get " : "set ")
-            + domBindingEvent.getName();
       case TimerFiredEvent.TYPE:
         TimerFiredEvent timerEvent = e.cast();
         return "Timer Fire (" + timerEvent.getTimerId() + ")";
@@ -338,17 +301,29 @@ public class EventRecordType {
   }
 
   public static String typeToHelpString(int type) {
-    if (type < 0 || type >= helpStrings.length) {
-      return "(Unknown Event Type: " + type + ")";
+    if (type < 0 || type >= webkitHelpStrings.length) {
+      // Normalize to speed tracer range types.
+      int speedTracerType = Integer.MAX_VALUE - type;
+      if (speedTracerType < 0 || type >= speedTracerHelpStrings.length) {
+        return "(Unknown Event Type: " + type + ")";
+      }
+      
+      return speedTracerHelpStrings[speedTracerType];
     }
-    return helpStrings[type];  
+    return webkitHelpStrings[type];
   }
 
   public static String typeToString(int type) {
-    if (type < 0 || type >= typeStrings.length) {
-      return "(Unknown Event Type: " + type + ")";
+    if (type < 0 || type >= webkitTypeStrings.length) {
+      // Normalize to speed tracer range types.
+      int speedTracerType = Integer.MAX_VALUE - type;
+      if (speedTracerType < 0 || type >= speedTracerTypeStrings.length) {
+        return "(Unknown Event Type: " + type + ")";
+      }
+      
+      return speedTracerTypeStrings[speedTracerType];
     }
-    return typeStrings[type];
+    return webkitTypeStrings[type];
   }
 }
 """)
@@ -363,21 +338,32 @@ def writeJavaScriptSource(path):
   javaScriptSrc = open(path, "w")
   javaScriptSrc.write(header_string + "\n" + regen_string);
   javaScriptSrc.write("hintlet.types = {\n");
-  for event in events:
+  for event in webkitEvents:
+    javaScriptSrc.write("  '" + event['constant'] + "' : " 
+      + str(event['value']) + ",\n");
+  for event in speedTracerEvents:
     javaScriptSrc.write("  '" + event['constant'] + "' : " 
       + str(event['value']) + ",\n");
   javaScriptSrc.write("};\n");
   javaScriptSrc.write("""
-hintlet.typeList = [
+hintlet.webkitTypeList = [
 """);
-  for event in events:
+  for event in webkitEvents:
     javaScriptSrc.write(("  '%s', %*s // %d\n" % 
+      (event['constant'], 32-len(event['constant']), " ", event['value'])))
+  javaScriptSrc.write("];\n");
+  javaScriptSrc.write("""
+hintlet.speedTracerTypeList = [
+""");
+  for event in speedTracerEvents:
+    javaScriptSrc.write(("  '%s', %*s // 0x%08X\n" % 
       (event['constant'], 32-len(event['constant']), " ", event['value'])))
   javaScriptSrc.write("];\n");
   javaScriptSrc.close()
   # end writeJavaScriptSource
 
 
+# TODO(jaimeyap) : Update this when we revive plugin.
 def writeCPlusPlusSource(path):
   """ Creates a file that maps event types to strings and creates a 
       set of constants for use in Java.

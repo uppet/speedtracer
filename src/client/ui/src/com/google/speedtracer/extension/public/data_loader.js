@@ -3,6 +3,8 @@ function isRecordDump() {
 }
 
 function sendData(port, dataContainer) {
+  // 0.8 was the last version to not version saved files.
+  var version = dataContainer.getAttribute("version") || "0.8";
   var allData = dataContainer.innerHTML;
   for (var start = 0, end = allData.indexOf('\n', 0);
        end != -1; end = allData.indexOf('\n', start)) {
@@ -10,6 +12,7 @@ function sendData(port, dataContainer) {
     // Make sure the recordStr is not simply all whitespace.
     if (!/^\s*$/.test(recordStr)) {
       port.postMessage({
+        version: version,
         record : recordStr
       });
     }

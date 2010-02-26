@@ -1,12 +1,12 @@
 /*
  * Copyright 2009 Google Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -17,17 +17,18 @@
 package com.google.speedtracer.client.model;
 
 /*
- * DO NOT EDIT - Automatically generated file. Make modifications to
- * speedtracer/stools/src/py/generate-event-record-type.py and regenerate by
- * running speedtracer/stools/generate-event-record-type.
+ * DO NOT EDIT - Automatically generated file.  Make modifications
+ *   to speedtracer/stools/src/py/generate-event-record-type.py and regenerate
+ *   by running speedtracer/stools/generate-event-record-type.
  */
 
 /**
- * Primitive integer values for the Types of EventRecords to let us switch on an
- * int field which faster than an if ladder or string hash.
+ * Primitive integer values for the Types of EventRecords to let us 
+ * switch on an int field which faster than an if ladder or string hash.
  */
 
 public class EventRecordType {
+  // Webkit Timeline Types
   public static final int DOM_EVENT = 0;
   public static final int LAYOUT_EVENT = 1;
   public static final int RECALC_STYLE_EVENT = 2;
@@ -44,109 +45,96 @@ public class EventRecordType {
   public static final int RESOURCE_RECEIVE_RESPONSE = 13;
   public static final int RESOURCE_FINISH = 14;
   public static final int PROFILE_DATA = 15;
-  public static final int TAB_CHANGED = 16;
-  public static final int AGGREGATED_EVENTS = 17;
-  public static final int DOM_BINDING_EVENT = 18;
-  public static final int JAVASCRIPT_COMPILE_EVENT = 19;
-  public static final int WINDOW_EVENT = 20;
-  public static final int NETWORK_RESOURCE_ERROR = 21;
-  public static final int NETWORK_RESOURCE_FINISH = 22;
-  public static final int NETWORK_RESOURCE_RESPONSE = 23;
-  public static final int NETWORK_RESOURCE_START = 24;
-  public static final int GARBAGE_COLLECT_EVENT = 25;
-  public static final int MOUSE_HOVER_STYLE_EVENT = 26;
-  public static final int DOM_EVENT_DISPATCH = 27;
 
-  // The highest value key represented by the constants above
-  public static final int MAX_KEY = 27;
+  // Speed Tracer Types
+  public static final int AGGREGATED_EVENTS = 0x7FFFFFFF;
+  public static final int TAB_CHANGED = 0x7FFFFFFE;
+  public static final int RESOURCE_UPDATED = 0x7FFFFFFD;
+  public static final int NETWORK_RESOURCE_ERROR = 0x7FFFFFFC;
+  public static final int NETWORK_RESOURCE_FINISH = 0x7FFFFFFB;
+  public static final int NETWORK_RESOURCE_RESPONSE = 0x7FFFFFFA;
+  public static final int NETWORK_RESOURCE_START = 0x7FFFFFF9;
 
-  private static final String[] typeStrings = {"Dom Event", // 0 DOM_EVENT
-      "Layout", // 1 LAYOUT_EVENT
-      "Style Recalculation", // 2 RECALC_STYLE_EVENT
-      "Paint", // 3 PAINT_EVENT
-      "Parse HTML", // 4 PARSE_HTML_EVENT
-      "Timer Installed", // 5 TIMER_INSTALLED
-      "Timer Cleared", // 6 TIMER_CLEARED
-      "Timer Fire", // 7 TIMER_FIRED
-      "XMLHttpRequest", // 8 XHR_READY_STATE_CHANGE
-      "XHR Load", // 9 XHR_LOAD
-      "Script Evaluation", // 10 EVAL_SCRIPT_EVENT
-      "Log Message", // 11 LOG_MESSAGE_EVENT
-      "Resource Request", // 12 RESOURCE_SEND_REQUEST
-      "Resource Response", // 13 RESOURCE_RECEIVE_RESPONSE
-      "Resource Finish", // 14 RESOURCE_FINISH
-      "JavaScript CPU profile data", // 15 PROFILE_DATA
-      "Tab Changed", // 16 TAB_CHANGED
-      "AGGREGATED Events", // 17 AGGREGATED_EVENTS
-      "Dom Bindings", // 18 DOM_BINDING_EVENT
-      "JavaScript Compile", // 19 JAVASCRIPT_COMPILE_EVENT
-      "Window", // 20 WINDOW_EVENT
-      "Network Resource Error", // 21 NETWORK_RESOURCE_ERROR
-      "Network Resource Finished", // 22 NETWORK_RESOURCE_FINISH
-      "Network Resource Response", // 23 NETWORK_RESOURCE_RESPONSE
-      "Network Resource Start", // 24 NETWORK_RESOURCE_START
-      "Garbage Collection", // 25 GARBAGE_COLLECT_EVENT
-      "Mouse Hover for Style", // 26 MOUSE_HOVER_STYLE_EVENT
-      "Dom Dispatch" // 27 DOM_EVENT_DISPATCH
+  private static final String[] webkitTypeStrings = {
+    "Dom Event",                        // 0 DOM_EVENT
+    "Layout",                           // 1 LAYOUT_EVENT
+    "Style Recalculation",              // 2 RECALC_STYLE_EVENT
+    "Paint",                            // 3 PAINT_EVENT
+    "Parse HTML",                       // 4 PARSE_HTML_EVENT
+    "Timer Installed",                  // 5 TIMER_INSTALLED
+    "Timer Cleared",                    // 6 TIMER_CLEARED
+    "Timer Fire",                       // 7 TIMER_FIRED
+    "XMLHttpRequest",                   // 8 XHR_READY_STATE_CHANGE
+    "XHR Load",                         // 9 XHR_LOAD
+    "Script Evaluation",                // 10 EVAL_SCRIPT_EVENT
+    "Log Message",                      // 11 LOG_MESSAGE_EVENT
+    "Resource Request",                 // 12 RESOURCE_SEND_REQUEST
+    "Resource Response",                // 13 RESOURCE_RECEIVE_RESPONSE
+    "Resource Finish",                  // 14 RESOURCE_FINISH
+    "JavaScript CPU profile data",      // 15 PROFILE_DATA
   };
 
-  private static final String[] helpStrings = {
-  // 0 DOM_EVENT
-      "A top level DOM event fired, such as mousemove or DOMContentLoaded fired.",
-      // 1 LAYOUT_EVENT
-      "The browser's rendering engine performed layout calculations.",
-      // 2 RECALC_STYLE_EVENT
-      "The renderer recalculated CSS styles.",
-      // 3 PAINT_EVENT
-      "The browser's rendering engine updated the screen.",
-      // 4 PARSE_HTML_EVENT
-      "A block of HTML was parsed.",
-      // 5 TIMER_INSTALLED
-      "A new JavaScript timer was created.",
-      // 6 TIMER_CLEARED
-      "A JavaScript timer was cancelled.",
-      // 7 TIMER_FIRED
-      "A block of JavaScript was executed due to a JavaScript timer firing.",
-      // 8 XHR_READY_STATE_CHANGE
-      "The handler for an XMLHttpRequest ran.  Check the state field to see if this is an intermediate state or the last call for the request.",
-      // 9 XHR_LOAD
-      "The onload handler for an XMLHttpRequest ran.",
-      // 10 EVAL_SCRIPT_EVENT
-      "A block of JavaScript was parsed/compiled and executed. This only includes script encountered via an HTML <script> tag.",
-      // 11 LOG_MESSAGE_EVENT
-      "A log message written using console.markTimeline.",
-      // 12 RESOURCE_SEND_REQUEST
-      "A network request was queued up to send.",
-      // 13 RESOURCE_RECEIVE_RESPONSE
-      "A network resource load began to recieve data from the server.",
-      // 14 RESOURCE_FINISH
-      "A new request for a network resource completed.",
-      // 15 PROFILE_DATA
-      "Contains raw data from the JavaScript engine profiler.",
-      // 16 TAB_CHANGED
-      "Something about the Tab where the page viewed changed.  Usually this is the title string or the location of the page.",
-      // 17 AGGREGATED_EVENTS
-      "This event represents many short events that have been aggregated to help reduce the total amount of data displayed.",
-      // 18 DOM_BINDING_EVENT
-      "A DOM property or function was accessed, such as HTMLElement.insertBefore()",
-      // 19 JAVASCRIPT_COMPILE_EVENT
-      "A block of JavaScript was parsed and compiled by the JavaScript interpreter.",
-      // 20 WINDOW_EVENT
-      "A top level Window event fired, such as load or unload.",
-      // 21 NETWORK_RESOURCE_ERROR
-      "A network resource load ended in error.",
-      // 22 NETWORK_RESOURCE_FINISH
-      "A network resource loaded sucessfully.",
-      // 23 NETWORK_RESOURCE_RESPONSE
-      "A network resource load began to recieve data from the server.",
-      // 24 NETWORK_RESOURCE_START
-      "A new request for a network resource started.",
-      // 25 GARBAGE_COLLECT_EVENT
-      "The JavaScript engine ran garbage collection.",
-      // 26 MOUSE_HOVER_STYLE_EVENT
-      "The UI changed the currently displayed style for an Element based on a CSS hover rule.",
-      // 27 DOM_EVENT_DISPATCH
-      "A DOM event dispatch ran.  The event may be in the capture or bubble phase."};
+  private static final String[] speedTracerTypeStrings = {
+    "AGGREGATED Events",                // 0x7FFFFFFF AGGREGATED_EVENTS
+    "Tab Changed",                      // 0x7FFFFFFE TAB_CHANGED
+    "Resource Updated",                 // 0x7FFFFFFD RESOURCE_UPDATED
+    "Network Resource Error",           // 0x7FFFFFFC NETWORK_RESOURCE_ERROR
+    "Network Resource Finish",          // 0x7FFFFFFB NETWORK_RESOURCE_FINISH
+    "Network Resource Response",        // 0x7FFFFFFA NETWORK_RESOURCE_RESPONSE
+    "Network Resource Start",           // 0x7FFFFFF9 NETWORK_RESOURCE_START
+  };
+
+  private static final String[] webkitHelpStrings = {
+    // 0 DOM_EVENT
+    "A top level DOM event fired, such as mousemove or DOMContentLoaded fired.",
+    // 1 LAYOUT_EVENT
+    "The browser's rendering engine performed layout calculations.",
+    // 2 RECALC_STYLE_EVENT
+    "The renderer recalculated CSS styles.",
+    // 3 PAINT_EVENT
+    "The browser's rendering engine updated the screen.",
+    // 4 PARSE_HTML_EVENT
+    "A block of HTML was parsed.",
+    // 5 TIMER_INSTALLED
+    "A new JavaScript timer was created.",
+    // 6 TIMER_CLEARED
+    "A JavaScript timer was cancelled.",
+    // 7 TIMER_FIRED
+    "A block of JavaScript was executed due to a JavaScript timer firing.",
+    // 8 XHR_READY_STATE_CHANGE
+    "The handler for an XMLHttpRequest ran.  Check the state field to see if this is an intermediate state or the last call for the request.",
+    // 9 XHR_LOAD
+    "The onload handler for an XMLHttpRequest ran.",
+    // 10 EVAL_SCRIPT_EVENT
+    "A block of JavaScript was parsed/compiled and executed. This only includes script encountered via an HTML <script> tag.",
+    // 11 LOG_MESSAGE_EVENT
+    "A log message written using console.markTimeline.",
+    // 12 RESOURCE_SEND_REQUEST
+    "A network request was queued up to send.",
+    // 13 RESOURCE_RECEIVE_RESPONSE
+    "A network resource load began to recieve data from the server.",
+    // 14 RESOURCE_FINISH
+    "A new request for a network resource completed.",
+    // 15 PROFILE_DATA
+    "Contains raw data from the JavaScript engine profiler.",
+  };
+
+  private static final String[] speedTracerHelpStrings = {
+    // 0x7FFFFFFF AGGREGATED_EVENTS
+    "This event represents many short events that have been aggregated to help reduce the total amount of data displayed.",
+    // 0x7FFFFFFE TAB_CHANGED
+    "Something about the Tab where the page viewed changed.  Usually this is the title string or the location of the page.",
+    // 0x7FFFFFFD RESOURCE_UPDATED
+    "Details about a Network Resource were updated.",
+    // 0x7FFFFFFC NETWORK_RESOURCE_ERROR
+    "A network resource load ended in error.",
+    // 0x7FFFFFFB NETWORK_RESOURCE_FINISH
+    "A network resource loaded sucessfully.",
+    // 0x7FFFFFFA NETWORK_RESOURCE_RESPONSE
+    "A network resource load began to recieve data from the server.",
+    // 0x7FFFFFF9 NETWORK_RESOURCE_START
+    "A new request for a network resource started.",
+  };
 
   public static String typeToDetailedTypeString(UiEvent e) {
     switch (e.getType()) {
@@ -158,12 +146,6 @@ public class EventRecordType {
         logMessage = (logLength > 20) ? logMessage.substring(0, 8) + "..."
             + logMessage.substring(logLength - 8, logLength) : logMessage;
         return "Log: " + logMessage;
-      case DomEventDispatch.TYPE:
-        return "Dom Dispatch (" + ((DomEventDispatch) e).getPhase() + ")";
-      case DomBindingEvent.TYPE:
-        DomBindingEvent domBindingEvent = e.cast();
-        return (domBindingEvent.isGetter() ? "get " : "set ")
-            + domBindingEvent.getName();
       case TimerFiredEvent.TYPE:
         TimerFiredEvent timerEvent = e.cast();
         return "Timer Fire (" + timerEvent.getTimerId() + ")";
@@ -173,16 +155,28 @@ public class EventRecordType {
   }
 
   public static String typeToHelpString(int type) {
-    if (type < 0 || type >= helpStrings.length) {
-      return "(Unknown Event Type: " + type + ")";
+    if (type < 0 || type >= webkitHelpStrings.length) {
+      // Normalize to speed tracer range types.
+      int speedTracerType = Integer.MAX_VALUE - type;
+      if (speedTracerType < 0 || type >= speedTracerHelpStrings.length) {
+        return "(Unknown Event Type: " + type + ")";
+      }
+      
+      return speedTracerHelpStrings[speedTracerType];
     }
-    return helpStrings[type];
+    return webkitHelpStrings[type];
   }
 
   public static String typeToString(int type) {
-    if (type < 0 || type >= typeStrings.length) {
-      return "(Unknown Event Type: " + type + ")";
+    if (type < 0 || type >= webkitTypeStrings.length) {
+      // Normalize to speed tracer range types.
+      int speedTracerType = Integer.MAX_VALUE - type;
+      if (speedTracerType < 0 || type >= speedTracerTypeStrings.length) {
+        return "(Unknown Event Type: " + type + ")";
+      }
+      
+      return speedTracerTypeStrings[speedTracerType];
     }
-    return typeStrings[type];
+    return webkitTypeStrings[type];
   }
 }
