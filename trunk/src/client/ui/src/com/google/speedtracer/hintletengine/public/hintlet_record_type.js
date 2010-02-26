@@ -36,21 +36,16 @@ hintlet.types = {
   'RESOURCE_RECEIVE_RESPONSE' : 13,
   'RESOURCE_FINISH' : 14,
   'PROFILE_DATA' : 15,
-  'TAB_CHANGED' : 16,
-  'AGGREGATED_EVENTS' : 17,
-  'DOM_BINDING_EVENT' : 18,
-  'JAVASCRIPT_COMPILE_EVENT' : 19,
-  'WINDOW_EVENT' : 20,
-  'NETWORK_RESOURCE_ERROR' : 21,
-  'NETWORK_RESOURCE_FINISH' : 22,
-  'NETWORK_RESOURCE_RESPONSE' : 23,
-  'NETWORK_RESOURCE_START' : 24,
-  'GARBAGE_COLLECT_EVENT' : 25,
-  'MOUSE_HOVER_STYLE_EVENT' : 26,
-  'DOM_EVENT_DISPATCH' : 27,
+  'AGGREGATED_EVENTS' : 2147483647,
+  'TAB_CHANGED' : 2147483646,
+  'RESOURCE_UPDATED' : 2147483645,
+  'NETWORK_RESOURCE_ERROR' : 2147483644,
+  'NETWORK_RESOURCE_FINISH' : 2147483643,
+  'NETWORK_RESOURCE_RESPONSE' : 2147483642,
+  'NETWORK_RESOURCE_START' : 2147483641,
 };
 
-hintlet.typeList = [
+hintlet.webkitTypeList = [
   'DOM_EVENT',                         // 0
   'LAYOUT_EVENT',                      // 1
   'RECALC_STYLE_EVENT',                // 2
@@ -67,16 +62,14 @@ hintlet.typeList = [
   'RESOURCE_RECEIVE_RESPONSE',         // 13
   'RESOURCE_FINISH',                   // 14
   'PROFILE_DATA',                      // 15
-  'TAB_CHANGED',                       // 16
-  'AGGREGATED_EVENTS',                 // 17
-  'DOM_BINDING_EVENT',                 // 18
-  'JAVASCRIPT_COMPILE_EVENT',          // 19
-  'WINDOW_EVENT',                      // 20
-  'NETWORK_RESOURCE_ERROR',            // 21
-  'NETWORK_RESOURCE_FINISH',           // 22
-  'NETWORK_RESOURCE_RESPONSE',         // 23
-  'NETWORK_RESOURCE_START',            // 24
-  'GARBAGE_COLLECT_EVENT',             // 25
-  'MOUSE_HOVER_STYLE_EVENT',           // 26
-  'DOM_EVENT_DISPATCH',                // 27
+];
+
+hintlet.speedTracerTypeList = [
+  'AGGREGATED_EVENTS',                 // 0x7FFFFFFF
+  'TAB_CHANGED',                       // 0x7FFFFFFE
+  'RESOURCE_UPDATED',                  // 0x7FFFFFFD
+  'NETWORK_RESOURCE_ERROR',            // 0x7FFFFFFC
+  'NETWORK_RESOURCE_FINISH',           // 0x7FFFFFFB
+  'NETWORK_RESOURCE_RESPONSE',         // 0x7FFFFFFA
+  'NETWORK_RESOURCE_START',            // 0x7FFFFFF9
 ];

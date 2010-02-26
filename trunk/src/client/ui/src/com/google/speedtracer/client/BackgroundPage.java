@@ -42,6 +42,7 @@ import com.google.speedtracer.client.WindowChannel.Client;
 import com.google.speedtracer.client.WindowChannel.Request;
 import com.google.speedtracer.client.WindowChannel.Server;
 import com.google.speedtracer.client.WindowChannel.ServerListener;
+import com.google.speedtracer.client.messages.EventRecordMessage;
 import com.google.speedtracer.client.messages.InitializeMonitorMessage;
 import com.google.speedtracer.client.messages.PageEventMessage;
 import com.google.speedtracer.client.messages.RecordingDataMessage;
@@ -231,10 +232,22 @@ public abstract class BackgroundPage extends Extension {
     int tabId = port.getTab().getId();
 
     if (port.getName().equals(DataLoader.DATA_LOAD)) {
-      // The DataInstance will get wired up automatically on creation.
-      LoadFileDataInstance dataInstance = LoadFileDataInstance.create(port);
+      final LoadFileDataInstance dataInstance = LoadFileDataInstance.create(port);
       tabModel.dataInstance = dataInstance;
       browserConn.tabMap.put(tabId, tabModel);
+      
+      // Connect the datainstance to receive data from the data_loader.
+      port.getOnMessageEvent().addListener(new MessageEvent.Listener() {
+        public void onMessage(MessageEvent.Message message) {
+          EventRecordMessage eventRecordMessage = message.cast();
+          if (getVersion() != eventRecordMessage.getVersion()) {
+            // TODO(jaimeyap): Need to convert this record to the current
+            // version. For now, just bail.
+            return;
+          }
+          dataInstance.onEventRecord(eventRecordMessage.getEventRecord());
+        }
+      });
     } else {
       // We are dealing with RAW data (untransformed inspector data) that still
       // needs conversion.

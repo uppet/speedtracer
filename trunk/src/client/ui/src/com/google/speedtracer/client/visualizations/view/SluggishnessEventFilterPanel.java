@@ -15,7 +15,6 @@
  */
 package com.google.speedtracer.client.visualizations.view;
 
-import com.google.gwt.core.client.JsArrayNumber;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.events.client.EventListenerRemover;
@@ -32,6 +31,7 @@ import com.google.gwt.topspin.ui.client.KeyUpEvent;
 import com.google.gwt.topspin.ui.client.KeyUpListener;
 import com.google.gwt.topspin.ui.client.Select;
 import com.google.speedtracer.client.util.JsIntegerMap;
+import com.google.speedtracer.client.util.JsIntegerMap.IterationCallBack;
 import com.google.speedtracer.client.visualizations.model.SluggishnessModel;
 import com.google.speedtracer.client.visualizations.view.SluggishnessDetailView.EventTable;
 
@@ -48,7 +48,8 @@ public class SluggishnessEventFilterPanel extends Div {
   private final SluggishnessDetailView.Css css;
 
   public SluggishnessEventFilterPanel(Container parent, EventTable eventTable,
-      EventFilter eventFilter, SluggishnessDetailView.Css css, SluggishnessModel model) {
+      EventFilter eventFilter, SluggishnessDetailView.Css css,
+      SluggishnessModel model) {
     super(parent);
     this.eventTable = eventTable;
     this.eventFilter = eventFilter;
@@ -182,7 +183,7 @@ public class SluggishnessEventFilterPanel extends Div {
   private void createEventTypeSelect(Container row1Container,
       SluggishnessModel model) {
     filterPanelEventTypeSelect = new Select(row1Container);
-    filterPanelEventTypeSelect.insertOption("All", 0);
+    filterPanelEventTypeSelect.insertOption("All", "-1", 0);
     refreshEventTypeSelect(model);
   }
 
@@ -200,26 +201,25 @@ public class SluggishnessEventFilterPanel extends Div {
       eventFilterTypeRemover = null;
     }
 
-    JsIntegerMap<String> typesEncountered = model.getTypesEncountered();
-    final int types[] = new int[typesEncountered.getValues().size()];
-    JsArrayNumber keys = typesEncountered.getKeys();
-    for (int i = 0; i < keys.length(); ++i) {
-      double key = keys.get(i);
-      String type = typesEncountered.get((int) key);
-      types[i] = (int) key;
-      filterPanelEventTypeSelect.insertOption(type, i + 1);
-    }
+    final JsIntegerMap<String> typesEncountered = model.getTypesEncountered();
+    typesEncountered.iterate(new IterationCallBack<String>() {
+      int typesIndex = 0;
+
+      public void onIteration(int key, String val) {
+        if (typesEncountered.hasKey(key)) {
+          filterPanelEventTypeSelect.insertOption(val, String.valueOf(key),
+              typesIndex + 1);
+          typesIndex++;
+        }
+      }
+    });
 
     // The click listener has to map the index of the selected item to the
     // sparse array of types we just created.
     eventFilterTypeRemover = filterPanelEventTypeSelect.addChangeListener(new ChangeListener() {
       public void onChange(ChangeEvent event) {
-        int index = filterPanelEventTypeSelect.getSelectedIndex();
-        if (index == 0) {
-          eventFilter.setEventType(-1);
-        } else {
-          eventFilter.setEventType(types[index - 1]);
-        }
+        int eventType = Integer.parseInt(filterPanelEventTypeSelect.getSelectedValue());
+        eventFilter.setEventType(eventType);
         eventTable.renderTable();
       }
     });

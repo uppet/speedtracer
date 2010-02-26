@@ -20,30 +20,34 @@ import com.google.gwt.chrome.crx.client.events.DevToolsPageEvent.PageEvent;
 import com.google.speedtracer.client.util.JSON;
 
 /**
-* Overlay type associated with sending an Inspector PageEvent JSON strings over
+ * Overlay type associated with sending an Inspector PageEvent JSON strings over
  * postMessage from a content script or some other entity over a chromium
  * extension Port.
  */
 public class PageEventMessage extends Message {
   public static final int TYPE = MessageType.PORT_PAGE_EVENT_TYPE;
-  
+
   public static PageEventMessage create(String recordStr) {
     return setFields(Message.create(TYPE), recordStr);
   }
-  
+
   private static native PageEventMessage setFields(Message msg, String recordStr) /*-{
     msg["record"] = recordStr;
     return msg;
   }-*/;
-  
+
   protected PageEventMessage() {
   }
 
   public final PageEvent getPageEvent() {
     return JSON.parse(getRecordString()).cast();
   }
-  
+
   public final native String getRecordString() /*-{
     return this.record;
+  }-*/;
+
+  public final native String getVersion() /*-{
+    return this.version;
   }-*/;
 }

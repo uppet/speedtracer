@@ -16,9 +16,7 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.chrome.crx.client.Port;
-import com.google.gwt.chrome.crx.client.events.MessageEvent;
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.speedtracer.client.messages.EventRecordMessage;
 
 /**
  * This class is used in Chrome when we get data from a loaded file (data_loader
@@ -62,18 +60,7 @@ public class LoadFileDataInstance extends DataInstance {
    * @return
    */
   public static LoadFileDataInstance create(Port port) {
-    final LoadFileDataInstance dataInstance = DataInstance.create(
-        new Proxy(port)).cast();
-
-    // Connect the datainstance to receive data from the data_loader.
-    port.getOnMessageEvent().addListener(new MessageEvent.Listener() {
-      public void onMessage(MessageEvent.Message message) {
-        EventRecordMessage eventRecordMessage = message.cast();
-        dataInstance.onEventRecord(eventRecordMessage.getEventRecord());
-      }
-    });
-
-    return dataInstance;
+    return DataInstance.create(new Proxy(port)).cast();
   }
 
   public static native JavaScriptObject createAck() /*-{

@@ -142,10 +142,17 @@ hintlet.load = function(path) {
  * Returns undefined on failure.
  */
 hintlet.typeToString = function(typeNumber) {
-  if (typeNumber < 0 || typeNumber > hintlet.typeList.length) {
-    return undefined;
+  if (typeNumber < 0 || typeNumber > hintlet.webkitTypeList.length) {
+	// Normalize by Java's Max Int which is 0x7fffffff, or 2147483647 in decimal
+	var maxInt = 2147483647;
+	var speedTracerTypeNumber = maxInt - typeNumber;
+	if (speedTracerTypeNumber < 0 ||
+	  speedTracerTypeNumber > hintlet.speedTracerTypeList.length) {
+	  return undefined;
+	}
+    return hintlet.speedTracerTypeList[speedTracerTypeNumber];
   }
-  return hintlet.typeList[typeNumber];
+  return hintlet.webkitTypeList[typeNumber];
 }
 
 /** 

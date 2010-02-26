@@ -47,4 +47,8 @@ public class EventRecordMessage extends Message {
   public final native String getRecordString() /*-{
     return this.record;
   }-*/;
+
+  public final native String getVersion() /*-{
+    return this.version;
+  }-*/;
 }
