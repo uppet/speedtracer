@@ -107,15 +107,16 @@ public class MockModelGenerator {
     if (mockResources == null) {
       mockResources = GWT.create(MockResources.class);
       dataSets.add(new DataSet("digg.com", mockResources.diggDotCom()));
-      dataSets.add(new DataSet("maps.google.com (stacktraces)",
-          mockResources.mapsDotGoogleDotComWithStackTraces()));
-      dataSets.add(new DataSet("Profiler Test 1 (compressed)",
-          mockResources.profilerTest1Compressed()));
-      dataSets.add(new DataSet("Profiler Test 1 (uncompressed)",
-          mockResources.profilerTest1Uncompressed()));
-      dataSets.add(new DataSet("Profiler Test 2 (logs)",
-          mockResources.profilerTest2Logs()));
       dataSets.add(new DataSet("markTimeline", mockResources.markTimeline()));
+      // TODO(knorton): These need to be regenerated.
+      // dataSets.add(new DataSet("maps.google.com (stacktraces)",
+      // mockResources.mapsDotGoogleDotComWithStackTraces()));
+      // dataSets.add(new DataSet("Profiler Test 1 (compressed)",
+      // mockResources.profilerTest1Compressed()));
+      // dataSets.add(new DataSet("Profiler Test 1 (uncompressed)",
+      // mockResources.profilerTest1Uncompressed()));
+      // dataSets.add(new DataSet("Profiler Test 2 (logs)",
+      // mockResources.profilerTest2Logs()));
     }
   }
 }
