@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -55,6 +55,16 @@ public class RequestDetails extends Div {
     int hintletTreeMargin();
 
     String hintletTreeWrapper();
+
+    String nameCell();
+
+    String nameValueTable();
+
+    String rowEven();
+
+    String sectionHeader();
+
+    String valueCell();
   }
 
   /**
@@ -65,14 +75,82 @@ public class RequestDetails extends Div {
     RequestDetails.Css requestDetailsCss();
   }
 
+  private static class OddEvenIterator {
+    private boolean even = true;
+
+    public boolean next() {
+      return even = !even;
+    }
+  }
+
+  /**
+   * Appends a TableRowElement and populates it with two cells.
+   * 
+   * @param summaryTable
+   * @param title
+   * @param value
+   */
+  private static void addRowPair(Table dataTable, Css css, boolean isEven,
+      String title, String value) {
+    TableRowElement row = dataTable.appendRow();
+    if (isEven) {
+      row.setClassName(css.rowEven());
+    }
+
+    final TableCellElement nameCell = row.insertCell(-1);
+    nameCell.setClassName(css.nameCell());
+    nameCell.setInnerText(title);
+
+    final TableCellElement valueCell = row.insertCell(-1);
+    valueCell.setClassName(css.valueCell());
+    valueCell.setInnerText(value);
+  }
+
+  private static void addSectionHeader(Css css, Document document,
+      Element parent, String text) {
+    final DivElement header = document.createDivElement();
+    header.setClassName(css.sectionHeader());
+    header.setInnerHTML(text);
+    parent.appendChild(header);
+  }
+
+  private static Table createTable(Container container, String classname) {
+    final Table table = new Table(container);
+    table.getElement().setClassName(classname);
+    return table;
+  }
+
+  private static void fillHeaderTable(final Table headerTable, final Css css,
+      HeaderMap headers) {
+    if (headers != null) {
+      headers.iterate(new IterationCallBack() {
+        final OddEvenIterator iter = new OddEvenIterator();
+
+        public void onIteration(String key, String value) {
+          addRowPair(headerTable, css, iter.next(), key, value);
+        }
+      });
+    }
+  }
+
+  /**
+   * Produces a commonly used string in this part of the UI "@23ms for 112ms".
+   * 
+   * @param startTime
+   * @param endTime
+   * @return
+   */
+  private static String formatTimeSpan(double startTime, double endTime) {
+    return "@" + TimeStampFormatter.formatMilliseconds(startTime) + " for "
+        + TimeStampFormatter.formatMilliseconds(endTime - startTime);
+  }
+
   private final CallBack closeCallBack;
 
   private Element contentElem;
 
   private HintletRecordsTree hintletTree;
-
   private DivElement hintletTreeWrapper;
-
   private NetworkResource info;
 
   private boolean isVisible = false;
@@ -92,7 +170,9 @@ public class RequestDetails extends Div {
   private final NetworkPillBox.Css pbCss;
 
   private final Element pillBoxContainer;
+
   private final Resources resources;
+
   private int targetHeight = 0;
 
   /**
@@ -152,33 +232,29 @@ public class RequestDetails extends Div {
           200);
       isVisible = false;
       return false;
-    } else {
-      if (contentElem == null) {
-        // Lazily initialize contentElem
-        contentElem = Document.get().createElement("div");
-        // Takes up 0 space on parent
-        contentElem.getStyle().setProperty("position", "absolute");
-        contentElem.getStyle().setProperty("width", "100%");
-        getElement().appendChild(contentElem);
-
-        // Fill the contentElem
-        populateContent();
-      }
-
-      // Make the element renderable
-      getElement().getStyle().setProperty("display", "block");
-
-      // Sniff the height of the contentElem
-      targetHeight = contentElem.getOffsetHeight();
-
-      // Animate the expansion
-      CssTransitionPx.get().transition(getElement(), "height", 0, targetHeight,
-          200);
-
-      pillBoxContainer.setClassName(pbCss.pillBoxWrapperSelected());
-      isVisible = true;
-      return true;
     }
+
+    if (contentElem == null) {
+      // Lazily initialize contentElem
+      contentElem = Document.get().createDivElement();
+      // Fill the contentElem
+      populateContent();
+      getElement().appendChild(contentElem);
+    }
+
+    // Make the element renderable
+    getElement().getStyle().setProperty("display", "block");
+
+    // Sniff the height of the contentElem
+    targetHeight = contentElem.getOffsetHeight();
+
+    // Animate the expansion
+    CssTransitionPx.get().transition(getElement(), "height", 0, targetHeight,
+        200);
+
+    pillBoxContainer.setClassName(pbCss.pillBoxWrapperSelected());
+    isVisible = true;
+    return true;
   }
 
   /**
@@ -190,24 +266,6 @@ public class RequestDetails extends Div {
   public void updateInfo(NetworkResource info) {
     this.info = info;
     populateContent();
-  }
-
-  /**
-   * Appends a TableRowElement and populates it with two cells.
-   * 
-   * @param summaryTable
-   * @param title
-   * @param value
-   */
-  private void addRowPair(Table dataTable, String title, String value) {
-    TableRowElement row = dataTable.appendRow();
-    TableCellElement cell = row.insertCell(-1);
-    cell.getStyle().setProperty("backgroundColor", "#eef");
-    cell.getStyle().setPropertyPx("width", 90);
-    cell.setInnerText(title);
-    cell = row.insertCell(-1);
-    cell.getStyle().setProperty("wordWrap", "break-word");
-    cell.setInnerText(value);
   }
 
   private void createHintletTree() {
@@ -225,68 +283,45 @@ public class RequestDetails extends Div {
     parentRemovers.add(hintletTree.getRemover());
   }
 
-  private void fillHeaderTable(final Table headerTable, HeaderMap headers) {
-    if (headers != null) {
-      headers.iterate(new IterationCallBack() {
-        public void onIteration(String key, String value) {
-          addRowPair(headerTable, key, value);
-        }
-      });
-    }
-  }
-
   /**
    * Fills in the Summary Data.
    * 
    * @param summaryTable
    * @param info
    */
-  private void fillSummaryTable(Table summaryTable, NetworkResource info) {
-    addRowPair(summaryTable, "URL", info.getUrl());
-    addRowPair(summaryTable, "From Cache", info.isCached() + "");
-    addRowPair(summaryTable, "Method", info.getHttpMethod());
-    addRowPair(summaryTable, "Http Status", info.getStatusCode() + "");
-    addRowPair(summaryTable, "Mime-type", info.getMimeType());
+  private void fillSummaryTable(Table summaryTable, Css css,
+      NetworkResource info) {
+    final OddEvenIterator iter = new OddEvenIterator();
+
+    addRowPair(summaryTable, css, iter.next(), "URL", info.getUrl());
+    addRowPair(summaryTable, css, iter.next(), "From Cache", info.isCached()
+        + "");
+    addRowPair(summaryTable, css, iter.next(), "Method", info.getHttpMethod());
+    addRowPair(summaryTable, css, iter.next(), "Http Status",
+        info.getStatusCode() + "");
+    addRowPair(summaryTable, css, iter.next(), "Mime-type", info.getMimeType());
 
     String requestTiming, responseTiming, totalTiming;
 
-    if (!info.didFail()) {
-      requestTiming = "@"
-          + TimeStampFormatter.formatMilliseconds(info.getStartTime())
-          + " for "
-          + TimeStampFormatter.formatMilliseconds(info.getResponseReceivedTime()
-              - info.getStartTime());
-
-      responseTiming = "@"
-          + TimeStampFormatter.formatMilliseconds(info.getResponseReceivedTime())
-          + " for "
-          + TimeStampFormatter.formatMilliseconds(info.getEndTime()
-              - info.getResponseReceivedTime());
-      totalTiming = "@"
-          + TimeStampFormatter.formatMilliseconds(info.getStartTime())
-          + " for "
-          + TimeStampFormatter.formatMilliseconds(info.getEndTime()
-              - info.getStartTime());
-    } else {
-      // We errored out
-      requestTiming = "@"
-          + TimeStampFormatter.formatMilliseconds(info.getStartTime())
-          + " for "
-          + TimeStampFormatter.formatMilliseconds(info.getEndTime()
-              - info.getStartTime());
-
+    if (info.didFail()) {
+      requestTiming = formatTimeSpan(info.getStartTime(), info.getEndTime());
       responseTiming = "No response";
-      totalTiming = "@"
-          + TimeStampFormatter.formatMilliseconds(info.getStartTime())
-          + " for "
-          + TimeStampFormatter.formatMilliseconds(info.getEndTime()
-              - info.getStartTime()) + " with an error.";
+      totalTiming = formatTimeSpan(info.getStartTime(), info.getEndTime())
+          + " with an error";
+    } else {
+      requestTiming = formatTimeSpan(info.getStartTime(),
+          info.getResponseReceivedTime());
+      responseTiming = formatTimeSpan(info.getResponseReceivedTime(),
+          info.getEndTime());
+      totalTiming = formatTimeSpan(info.getStartTime(), info.getEndTime());
     }
 
-    addRowPair(summaryTable, "Total Bytes", getContentLengthString(info));
-    addRowPair(summaryTable, "Request Timing", requestTiming);
-    addRowPair(summaryTable, "Response Timing", responseTiming);
-    addRowPair(summaryTable, "Total Timing", totalTiming);
+    addRowPair(summaryTable, css, iter.next(), "Total Bytes",
+        getContentLengthString(info));
+    addRowPair(summaryTable, css, iter.next(), "Request Timing", requestTiming);
+    addRowPair(summaryTable, css, iter.next(), "Response Timing",
+        responseTiming);
+    addRowPair(summaryTable, css, iter.next(), "Total Timing", totalTiming);
   }
 
   /**
@@ -320,6 +355,8 @@ public class RequestDetails extends Div {
   private void populateContent() {
     // We may be doing an update. So we blow away the existing content.
     contentElem.setInnerHTML("");
+    final Document document = contentElem.getOwnerDocument();
+
     ContainerImpl container = new DefaultContainerImpl(contentElem);
     Css css = resources.requestDetailsCss();
     hintletTreeWrapper = DocumentExt.get().createDivWithClassName(
@@ -329,32 +366,18 @@ public class RequestDetails extends Div {
       createHintletTree();
     }
 
-    Element summaryTitle = Document.get().createElement("h2");
-    summaryTitle.setInnerText("Summary");
-    contentElem.appendChild(summaryTitle);
+    // Summary Table.
+    addSectionHeader(css, document, contentElem, "Summary");
+    fillSummaryTable(createTable(container, css.nameValueTable()), css, info);
 
-    Table summaryTable = new Table(container);
-    fillSummaryTable(summaryTable, info);
-    summaryTable.getElement().setAttribute("cellspacing", "0");
-    summaryTable.getElement().setAttribute("cellpadding", "2");
+    // Request Headers.
+    addSectionHeader(css, document, contentElem, "Request Headers");
+    fillHeaderTable(createTable(container, css.nameValueTable()), css,
+        info.getRequestHeaders());
 
-    Element requestHeadersTitle = Document.get().createElement("h2");
-    requestHeadersTitle.setInnerText("Request Headers");
-    contentElem.appendChild(requestHeadersTitle);
-
-    Table requestHeaders = new Table(container);
-    requestHeaders.getElement().setAttribute("cellspacing", "0");
-    requestHeaders.getElement().setAttribute("cellpadding", "2");
-
-    fillHeaderTable(requestHeaders, info.getRequestHeaders());
-
-    Element responseHeadersTitle = Document.get().createElement("h2");
-    responseHeadersTitle.setInnerText("Response Headers");
-    contentElem.appendChild(responseHeadersTitle);
-
-    Table responseHeaders = new Table(container);
-    fillHeaderTable(responseHeaders, info.getResponseHeaders());
-    responseHeaders.getElement().setAttribute("cellspacing", "0");
-    responseHeaders.getElement().setAttribute("cellpadding", "2");
+    // Response Headers.
+    addSectionHeader(css, document, contentElem, "Response Headers");
+    fillHeaderTable(createTable(container, css.nameValueTable()), css,
+        info.getResponseHeaders());
   }
 }
