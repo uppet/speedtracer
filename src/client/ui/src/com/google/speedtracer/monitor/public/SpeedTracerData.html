@@ -46,7 +46,7 @@ function format2(arg) {
 }
 
 // This gets called by the opening view.
-var doSave = function (visitedUrls, traceData) {
+var doSave = function (version, visitedUrls, traceData) {
   var date = new Date();
   // Files should be names like SpeedTrace-YYYYMMDDHHMSS
   var fileName = "SpeedTrace-" + date.getFullYear() +
@@ -66,7 +66,9 @@ var doSave = function (visitedUrls, traceData) {
   var traceDataString = traceData.join('\n');
   
   //Inject the data
-  document.getElementById("traceData").innerHTML = traceDataString;
+  var traceDataElem = document.getElementById("traceData");
+  traceDataElem.setAttribute("version", version);
+  traceDataElem.innerHTML = traceDataString;
 
   // Set the save instructions
   var keys = "CTRL+S";

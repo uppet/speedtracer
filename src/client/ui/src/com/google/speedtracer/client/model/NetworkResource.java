@@ -16,6 +16,7 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.speedtracer.client.model.ResourceUpdateEvent.UpdateResource;
 import com.google.speedtracer.client.util.JSOArray;
 
 /**
@@ -40,12 +41,6 @@ public class NetworkResource {
       return this[key];
     }-*/;
 
-    /**
-     * TODO (jaimeyap): IterableFastStringMap shares this implementation.
-     * Consider sharing the IterationCallBack class.
-     * 
-     * @param cb
-     */
     public final native void iterate(IterationCallBack cb) /*-{
       for (var key in this) {
         cb.@com.google.speedtracer.client.model.NetworkResource.HeaderMap.IterationCallBack::onIteration(Ljava/lang/String;Ljava/lang/String;)(key,this[key]);
@@ -57,223 +52,240 @@ public class NetworkResource {
     }-*/;
   }
 
-  private double endTime = Double.NaN;
-  private NetworkResourceError errorEvent;
-  private NetworkResourceFinished finishedEvent;
-  private NetworkResourceResponse responseEvent;
-  private double responseReceivedTime = Double.NaN;
-  private final NetworkResourceStart startEvent;
+  public static boolean isRedirect(int statusCode) {
+    return statusCode == 302 || statusCode == 301;
+  }
 
-  public NetworkResource(NetworkResourceStart start) {
-    this.startEvent = start;
+  private boolean cached;
+
+  private int contentLength = -1;
+
+  private boolean didFail;
+
+  private String domain;
+
+  private double endTime = Double.NaN;
+
+  private int expectedContentLength = -1;
+
+  private ResourceFinishEvent finishEvent;
+
+  private final String httpMethod;
+
+  private final int identifier;
+
+  private final boolean isMainResource;
+
+  private String lastPathComponent = "/";
+
+  private String mimeType;
+
+  // This is the start time reported by Inspector updateResource messages. It is
+  // differenct from startTime solely because the timestamp is grabbed a second
+  // time in the resource tracking code and not the TimelineAgent code. We
+  // keep track of this because if this resource happens to get redirected, we
+  // need to later match things up by URL and startime.
+  private double otherStartTime;
+
+  private String path;
+
+  private HeaderMap requestHeaders;
+
+  // Kept around only because hintlets can be accumulated on it.
+  private ResourceResponseEvent responseEvent;
+
+  private HeaderMap responseHeaders;
+
+  private double responseReceivedTime = Double.NaN;
+
+  // Kept around only because hintlets can be accumulated on it.
+  private final ResourceWillSendEvent startEvent;
+
+  private final double startTime;
+
+  private int statusCode = -1;
+
+  private final String url;
+
+  public NetworkResource(ResourceWillSendEvent startEvent) {
+    this.startTime = startEvent.getTime();
+    this.identifier = startEvent.getIdentifier();
+    this.url = startEvent.getUrl();
+    this.isMainResource = startEvent.isMainResource();
+    this.httpMethod = startEvent.getHttpMethod();
+    // Cache the ResourceEvent to later pull hintlets.
+    this.startEvent = startEvent;
   }
 
   public String asString() {
-    return getResourceId() + " , " + getUrl() + " , " + getStartTime() + " , "
+    return getIdentifier() + " , " + getUrl() + " , " + getStartTime() + " , "
         + getResponseReceivedTime() + " , " + getEndTime();
   }
 
-  public boolean didError() {
-    return errorEvent != null;
+  public boolean didFail() {
+    return didFail;
   }
 
-  /**
-   * Returns the WebKit resource load computed content length (can be -1 if not
-   * set). This does not always agree with the response header Content-Length
-   * entry. Both can be set, or only one can be set. Callers should decide how
-   * to display this based on both numbers.
-   * 
-   * @return the content length in bytes that WebKit reported for this resource.
-   */
   public int getContentLength() {
-    return finishedEvent.getContentLength();
+    return contentLength;
+  }
+
+  public String getDomain() {
+    return domain;
   }
 
   public double getEndTime() {
-    return this.endTime;
+    return endTime;
   }
 
-  public NetworkResourceError getErrorEvent() {
-    return errorEvent;
-  }
-
-  public NetworkResourceFinished getFinishedEvent() {
-    return finishedEvent;
+  public int getExpectedContentLength() {
+    return expectedContentLength;
   }
 
   public JSOArray<HintRecord> getHintRecords() {
-    JSOArray<HintRecord> result = JSOArray.createArray().cast();
-    if (startEvent != null && startEvent.hasHintRecords()) {
-      result = result.concat(startEvent.getHintRecords());
+    JSOArray<HintRecord> hintlets = JSOArray.createArray().cast();
+
+    if (startEvent.hasHintRecords()) {
+      hintlets.concat(startEvent.getHintRecords());
     }
+
     if (responseEvent != null && responseEvent.hasHintRecords()) {
-      result = result.concat(responseEvent.getHintRecords());
+      hintlets.concat(responseEvent.getHintRecords());
     }
-    if (finishedEvent != null && finishedEvent.hasHintRecords()) {
-      result = result.concat(finishedEvent.getHintRecords());
+
+    if (finishEvent != null && finishEvent.hasHintRecords()) {
+      hintlets.concat(finishEvent.getHintRecords());
     }
-    if (errorEvent != null && errorEvent.hasHintRecords()) {
-      result = result.concat(errorEvent.getHintRecords());
-    }
-    if (result.size() <= 0) {
+
+    if (hintlets.size() <= 0) {
       return null;
     }
-    return result;
+    return hintlets;
+  }
+
+  public String getHttpMethod() {
+    return httpMethod;
+  }
+
+  public int getIdentifier() {
+    return identifier;
   }
 
   public String getLastPathComponent() {
-    return startEvent.getLastPathComponent();
+    return lastPathComponent;
   }
 
-  public String getMethod() {
-    return startEvent.getHttpMethod();
+  public String getMimeType() {
+    return mimeType;
+  }
+
+  public double getOtherStartTime() {
+    return otherStartTime;
+  }
+
+  public String getPath() {
+    return path;
   }
 
   public HeaderMap getRequestHeaders() {
-    return startEvent.getHeaders();
+    return requestHeaders;
   }
 
-  public String getResourceId() {
-    return startEvent.getResourceId();
-  }
-
-  /**
-   * Returns the HTTP response code for the network event.
-   * 
-   * @return the HTTP response code for the network event. Returns -1 if the
-   *         response has not been received.
-   */
-  public int getResponseCode() {
-    if (responseEvent != null) {
-      return responseEvent.getResponseCode();
-    }
-    return -1;
-  }
-
-  public NetworkResourceResponse getResponseEvent() {
-    return responseEvent;
-  }
-
-  /**
-   * Returns the headers from the HTTP response.
-   * 
-   * @return the headers from the HTTP response. Returns <code>null</code> if
-   *         the response has not been received.
-   */
   public HeaderMap getResponseHeaders() {
-    if (responseEvent != null) {
-      return responseEvent.getHeaders();
-    }
-    return null;
-  }
-
-  /**
-   * Returns the MIME type from the HTTP Response.
-   * 
-   * @return the MIME type from the HTTP Response. Returns <code>null</code> if
-   *         the response has not been received.
-   */
-  public String getResponseMimeType() {
-    if (responseEvent != null) {
-      return responseEvent.getMimeType();
-    }
-    return null;
+    return responseHeaders;
   }
 
   public double getResponseReceivedTime() {
-    return this.responseReceivedTime;
-  }
-
-  public NetworkResourceStart getStartEvent() {
-    return startEvent;
+    return responseReceivedTime;
   }
 
   public double getStartTime() {
-    return startEvent.getTime();
+    return startTime;
+  }
+
+  public int getStatusCode() {
+    return statusCode;
   }
 
   public String getUrl() {
-    return startEvent.getUrl();
-  }
-
-  public boolean hasError() {
-    return errorEvent != null;
-  }
-
-  public boolean hasFinished() {
-    return finishedEvent != null || errorEvent != null;
-  }
-
-  /**
-   * Returns <code>true</code> if this resource has associated hintlet records.
-   * 
-   * @return <code>true</code> if this resource has associated hintlet records.
-   */
-  public boolean hasHintletRecords() {
-    if (startEvent != null && startEvent.hasHintRecords()) {
-      return true;
-    } else if (responseEvent != null && responseEvent.hasHintRecords()) {
-      return true;
-    } else if (finishedEvent != null && finishedEvent.hasHintRecords()) {
-      return true;
-    } else if (errorEvent != null && errorEvent.hasHintRecords()) {
-      return true;
-    }
-    return false;
-  }
-
-  public boolean hasRecord(NetworkResourceRecord rec) {
-    if (rec.getType() == EventRecordType.NETWORK_RESOURCE_START
-        && startEvent != null) {
-      return rec.getSequence() == startEvent.getSequence();
-    }
-    if (rec.getType() == EventRecordType.NETWORK_RESOURCE_RESPONSE
-        && responseEvent != null) {
-      return rec.getSequence() == responseEvent.getSequence();
-    }
-    if (rec.getType() == EventRecordType.NETWORK_RESOURCE_FINISH
-        && finishedEvent != null) {
-      return rec.getSequence() == finishedEvent.getSequence();
-    }
-    if (rec.getType() == EventRecordType.NETWORK_RESOURCE_ERROR
-        && errorEvent != null) {
-      return rec.getSequence() == errorEvent.getSequence();
-    }
-    return false;
-  }
-
-  public boolean hasResponse() {
-    return responseEvent != null;
+    return url;
   }
 
   public boolean isCached() {
-    if (responseEvent != null) {
-      return responseEvent.isCached();
-    }
-    return false;
+    return cached;
+  }
+
+  public boolean isDidFail() {
+    return didFail;
+  }
+
+  public boolean isMainResource() {
+    return isMainResource;
   }
 
   public boolean isRedirect() {
-    int responseCode = getResponseCode();
-    return responseCode == 302 || responseCode == 301;
+    return isRedirect(statusCode);
   }
 
-  public void update(NetworkResourceError error) {
-    this.errorEvent = error;
-    assert (error.getResourceId().equals(getResourceId()));
-    responseReceivedTime = error.getTime();
-    endTime = error.getTime();
+  public void update(ResourceFinishEvent finishEvent) {
+    this.endTime = finishEvent.getTime();
+    this.didFail = finishEvent.didFail();
+    // Cache the ResourceEvent to later pull hintlets.
+    this.finishEvent = finishEvent;
   }
 
-  public void update(NetworkResourceFinished finish) {
-    this.finishedEvent = finish;
-    assert (finish.getResourceId().equals(getResourceId()));
-    endTime = finish.getTime();
+  public void update(ResourceResponseEvent responseEvent) {
+    this.responseReceivedTime = responseEvent.getTime();
+    this.expectedContentLength = responseEvent.getExpectedContentLength();
+    this.mimeType = responseEvent.getMimeType();
+    this.statusCode = responseEvent.getStatusCode();
+    // Cache the ResourceEvent to later pull hintlets.
+    this.responseEvent = responseEvent;
   }
 
-  public void update(NetworkResourceResponse response) {
-    this.responseEvent = response;
-    assert (response.getResourceId().equals(getResourceId()));
-    responseReceivedTime = response.getTime();
+  /**
+   * Updates information about this record. Note that we use the timeline
+   * checkpoint records to establish all timing information. We therefore ignore
+   * the timing information present in these updates.
+   * 
+   * @param update
+   */
+  public void update(ResourceUpdateEvent updateEvent) {
+    UpdateResource update = updateEvent.getUpdate();
+    if (update.didRequestChange()) {
+      this.domain = update.getHost();
+      this.path = update.getPath();
+      this.lastPathComponent = update.getLastPathComponent();
+      this.requestHeaders = update.getRequestHeaders();
+      this.cached = update.wasCached();
+    }
+
+    if (update.didResponseChange()) {
+      this.responseHeaders = update.getResponseHeaders();
+
+      if (this.statusCode < 0) {
+        this.statusCode = update.getStatusCode();
+      }
+    }
+
+    if (update.didLengthChange()) {
+      this.contentLength = update.getContentLength();
+    }
+
+    if (update.didTimingChange()) {
+      if ((Double.isNaN(this.endTime)) && (update.getEndTime() > 0)) {
+        this.endTime = update.getEndTime();
+      }
+
+      if ((Double.isNaN(this.responseReceivedTime))
+          && (update.getResponseReceivedTime() > 0)) {
+        this.responseReceivedTime = update.getResponseReceivedTime();
+      }
+
+      // We record this for redirect matching purposes.
+      if (update.getStartTime() > 0) {
+        this.otherStartTime = update.getStartTime();
+      }
+    }
   }
 }

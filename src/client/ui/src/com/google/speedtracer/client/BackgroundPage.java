@@ -235,7 +235,7 @@ public abstract class BackgroundPage extends Extension {
       final LoadFileDataInstance dataInstance = LoadFileDataInstance.create(port);
       tabModel.dataInstance = dataInstance;
       browserConn.tabMap.put(tabId, tabModel);
-      
+
       // Connect the datainstance to receive data from the data_loader.
       port.getOnMessageEvent().addListener(new MessageEvent.Listener() {
         public void onMessage(MessageEvent.Message message) {
@@ -262,7 +262,12 @@ public abstract class BackgroundPage extends Extension {
       // Connect the DataInstance to receive data from the data_loader
       port.getOnMessageEvent().addListener(new MessageEvent.Listener() {
         public void onMessage(MessageEvent.Message message) {
-          PageEventMessage pageEventMessage = message.cast();          
+          PageEventMessage pageEventMessage = message.cast();
+          if (getVersion() != pageEventMessage.getVersion()) {
+            // TODO(jaimeyap): Need to convert this record to the current
+            // version. For now, just bail.
+            return;
+          }
           proxy.dispatchPageEvent(pageEventMessage.getPageEvent());
         }
       });

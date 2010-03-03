@@ -41,7 +41,7 @@ public class UiEventModel implements EventCallbackProxyProvider {
       }
     }
   }
-  
+
   /**
    * Listener interface for handling UiEventModel events.
    */
@@ -89,6 +89,12 @@ public class UiEventModel implements EventCallbackProxyProvider {
         });
 
     typeMap.put(EventRecordType.RESOURCE_FINISH, new EventCallbackProxy() {
+      public void onEventRecord(EventRecord data) {
+        // Special cased to do nothing for now.
+      }
+    });
+
+    typeMap.put(EventRecordType.RESOURCE_UPDATED, new EventCallbackProxy() {
       public void onEventRecord(EventRecord data) {
         // Special cased to do nothing for now.
       }

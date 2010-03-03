@@ -122,7 +122,7 @@ public class DataInstance extends JavaScriptObject {
    */
   public final native void onEventRecord(EventRecord record) /*-{
     record.sequence = this.seqCount;
-    this._callback.onEventRecord(record);
+    this._callback.onEventRecord(record);    
     this.seqCount = this.seqCount + 1;
   }-*/;
 

@@ -40,7 +40,7 @@ public class MockDataModel extends DataModel {
   }
 
   @Override
-  public void saveRecords(JSOArray<String> visitedUrls) {
+  public void saveRecords(JSOArray<String> visitedUrls, String version) {
   }
 
   public void simulateDataSet(int dataSetIndex) {

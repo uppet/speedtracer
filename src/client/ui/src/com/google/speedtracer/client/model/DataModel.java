@@ -223,7 +223,7 @@ public abstract class DataModel implements HintletEngineHost.HintListener,
 
   public abstract void resumeMonitoring(int tabId);
 
-  public abstract void saveRecords(JSOArray<String> visitedUrls);
+  public abstract void saveRecords(JSOArray<String> visitedUrls, String version);
 
   public abstract void stopMonitoring();
 
@@ -256,11 +256,10 @@ public abstract class DataModel implements HintletEngineHost.HintListener,
     for (int i = 0, n = eventModels.size(); i < n; i++) {
       callback = eventModels.get(i).getEventCallback(data);
       if (callback != null) {
-        break;
+        // Multiple model types can subscribe to a given record type.
+        callback.onEventRecord(data);
       }
     }
-    assert (callback != null);
-    callback.onEventRecord(data);
   }
 
   @SuppressWarnings("unused")

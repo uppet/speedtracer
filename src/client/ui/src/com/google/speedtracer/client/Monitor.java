@@ -64,8 +64,9 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     TabChangeModel.Listener {
 
   /**
-   * Utilities to allow debugging the Monitor in dev mode. This will create a stub
-   * background page capable of responding to the Monitor's initialization request.
+   * Utilities to allow debugging the Monitor in dev mode. This will create a
+   * stub background page capable of responding to the Monitor's initialization
+   * request.
    */
   private static class MockUtils {
     private static native DataInstance createMockDataInstance() /*-{
@@ -156,6 +157,7 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
   static final String CHANNEL_NAME = "launcher";
 
   private static InlineMenu inlineMenu;
+
   private static HoveringPopup popup;
 
   public static InlineMenu getInlineMenu() {
@@ -193,6 +195,8 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
   private List<ApplicationState> pageStates;
 
   private int tabId = DEFAULT_ID;
+
+  private String version;
 
   /**
    * Adds an newly created applicationState to our page states list, and also
@@ -239,6 +243,10 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     return tabId;
   }
 
+  public String getVersion() {
+    return version;
+  }
+
   public void onChannelClosed(Client channel) {
     pageStates.clear();
     model.clear();
@@ -270,7 +278,7 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     if (ClientConfig.isMockMode()) {
       MockUtils.createMockBackgroundPage();
     }
-    
+
     browserId = getIdParameter("browserId");
     tabId = getIdParameter("tabId");
 
@@ -338,11 +346,14 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
       ApplicationState newState = new ApplicationState(model);
 
       ApplicationState oldState = pageStates.get(pageStates.size() - 1);
-
       // The current ApplicationState should now be neutered and no longer
       // receive updates. It should also transfer relevant old state to the new
       // ApplicationState.
-      oldState.handOffToNewApplicationState(nav.getUrl(), newState);
+      oldState.detachFromSourceModels();
+
+      newState.setFirstDomainValue(nav.getTime());
+      newState.setLastDomainValue(nav.getTime()
+          + Constants.DEFAULT_GRAPH_WINDOW_SIZE);
 
       // Add this new ApplicationState to our collection of states for each page
       int pageIndex = addPageState(nav.getUrl(), newState);
@@ -350,7 +361,6 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
       // Now swap in the page state
       setStateForPageAtIndex(pageIndex);
       controller.setSelectedPage(pageIndex);
-
       // Start fetching the symbol manifest if it is available.
       maybeInitializeSymbolServerController(model.getTabDescription());
     }
@@ -447,6 +457,7 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
       final DataInstance handle, String version) {
     assert (pageStates == null);
 
+    this.version = version;
     final Resources resources = MonitorResources.getResources();
     // Create our collection for ApplicationStates.
     pageStates = new ArrayList<ApplicationState>();
@@ -528,8 +539,8 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     }
   }
 
-  private void setApplicationState(ApplicationState state) {
-    monitorVisualizationsPanel.setApplicationState(state);
-    hintletReportDialog.setHintletReportModel((HintletReportModel) state.getVisualizationModel(HintletReport.TITLE));
+  private void setApplicationState(ApplicationState state) {    
+    monitorVisualizationsPanel.setApplicationState(state);    
+    hintletReportDialog.setHintletReportModel((HintletReportModel) state.getVisualizationModel(HintletReport.TITLE));    
   }
 }
