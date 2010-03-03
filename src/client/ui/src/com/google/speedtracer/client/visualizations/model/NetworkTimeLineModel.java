@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -221,28 +221,6 @@ public class NetworkTimeLineModel implements VisualizationModel,
           }
         }
         i++;
-      }
-    }
-  }
-
-  /**
-   * Adds a NetworkResource to our resource store and sorted resource list that
-   * might be out of order.
-   * 
-   * @param resource the resource we are adding to our book keeping
-   */
-  private void addResourceMaybeOutOfOrder(NetworkResource resource) {
-    resourceStore.put(resource.getIdentifier(), resource);
-
-    if (sortedResources.size() == 0) {
-      return;
-    }
-
-    for (int i = sortedResources.size() - 1; i >= 0; i--) {
-      NetworkResource curr = sortedResources.get(i);
-      if (resource.getStartTime() > curr.getStartTime()) {
-        sortedResources.add(i + 1, resource);
-        break;
       }
     }
   }
