@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,7 @@ import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.SpanElement;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.events.client.EventListenerRemover;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
@@ -284,7 +285,7 @@ public class NetworkPillBox extends Div {
     this.resources = resources;
     Element elem = getElement();
     elem.setClassName(resources.networkPillBoxCss().pillBoxTimeLine());
-    elem.getStyle().setPropertyPx("left", Constants.GRAPH_HEADER_WIDTH);
+    elem.getStyle().setMarginLeft(Constants.GRAPH_HEADER_WIDTH, Unit.PX);
     this.container = new DefaultContainerImpl(elem);
     removers = new ArrayList<EventListenerRemover>();
   }
