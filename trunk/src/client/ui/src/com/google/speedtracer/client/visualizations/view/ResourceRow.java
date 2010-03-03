@@ -27,9 +27,11 @@ import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.gwt.topspin.ui.client.Div;
 import com.google.gwt.topspin.ui.client.MouseOutListener;
 import com.google.gwt.topspin.ui.client.MouseOverListener;
+import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.NetworkResource;
 import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.util.IterableFastStringMap;
+import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.dom.DocumentExt;
 import com.google.speedtracer.client.util.dom.ImageResourceElementCreator;
 
@@ -138,9 +140,8 @@ public class ResourceRow extends Div {
 
     hintletIndicatorContainer = new DefaultContainerImpl(headerElem);
 
-    if (resource.hasHintletRecords()) {
-      addHintletIndicator();
-    }
+    // Adds a hintlet indicator if the record has associated hintlets.
+    addHintletIndicator(resource.getHintRecords());
 
     pillBox = new NetworkPillBox(new DefaultContainerImpl(elem), this,
         resources);
@@ -185,14 +186,18 @@ public class ResourceRow extends Div {
     if (hintletIndicator != null) {
       hintletIndicatorContainer.remove(hintletIndicator);
     }
-    addHintletIndicator();
+    addHintletIndicator(resource.getHintRecords());
 
     pillBox.refresh();
   }
 
-  private void addHintletIndicator() {
+  private void addHintletIndicator(JSOArray<HintRecord> hintRecords) {
+    if (hintRecords == null) {
+      return;
+    }
+
     hintletIndicator = new HintletIndicator(hintletIndicatorContainer,
-        resource.getHintRecords(), resources);
+        hintRecords, resources);
     Element indicatorElem = hintletIndicator.getElement();
     indicatorElem.setId(idCounter++ + "");
     ResourceRow.Css css = resources.resourceRowCss();

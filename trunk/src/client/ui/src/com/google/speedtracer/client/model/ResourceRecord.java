@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,26 +18,22 @@ package com.google.speedtracer.client.model;
 /**
  * Base class for overlays passed up for NetworkResource related EventRecords.
  */
-public class NetworkResourceRecord extends EventRecord {
-  public static String generateResourceId(int redirectCount, int resourceId) {
-    return redirectCount + "-" + resourceId;
-  }
-
-  public static final boolean isNetworkResourceRecord(EventRecord rec) {
+public class ResourceRecord extends EventRecord {
+  public static final boolean isResourceRecord(EventRecord rec) {
     switch (rec.getType()) {
-      case EventRecordType.NETWORK_RESOURCE_ERROR:
-      case EventRecordType.NETWORK_RESOURCE_FINISH:
-      case EventRecordType.NETWORK_RESOURCE_RESPONSE:
-      case EventRecordType.NETWORK_RESOURCE_START:
+      case EventRecordType.RESOURCE_SEND_REQUEST:
+      case EventRecordType.RESOURCE_RECEIVE_RESPONSE:
+      case EventRecordType.RESOURCE_FINISH:
+      case EventRecordType.RESOURCE_UPDATED:
         return true;
     }
     return false;
   }
 
-  protected NetworkResourceRecord() {
+  protected ResourceRecord() {
   }
 
-  public final String getResourceId() {
-    return getData().getStringProperty("resourceId");
+  public final int getIdentifier() {
+    return getData().getIntProperty("identifier");
   }
 }

@@ -28,7 +28,6 @@ import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.gwt.topspin.ui.client.Div;
 import com.google.gwt.topspin.ui.client.Table;
 import com.google.speedtracer.client.model.NetworkResource;
-import com.google.speedtracer.client.model.NetworkResourceFinished;
 import com.google.speedtracer.client.model.NetworkResource.HeaderMap;
 import com.google.speedtracer.client.model.NetworkResource.HeaderMap.IterationCallBack;
 import com.google.speedtracer.client.util.TimeStampFormatter;
@@ -245,20 +244,13 @@ public class RequestDetails extends Div {
   private void fillSummaryTable(Table summaryTable, NetworkResource info) {
     addRowPair(summaryTable, "URL", info.getUrl());
     addRowPair(summaryTable, "From Cache", info.isCached() + "");
-    addRowPair(summaryTable, "Method", info.getMethod());
-    addRowPair(summaryTable, "Http Status", info.getResponseCode() + "");
-
-    // If it was a redirect, show where it tried to redirect to.
-    if (info.isRedirect() && info.getResponseEvent() != null) {
-      addRowPair(summaryTable, "Redirect URL",
-          info.getResponseEvent().getResponseUrl());
-    }
-
-    addRowPair(summaryTable, "Mime-type", info.getResponseMimeType());
+    addRowPair(summaryTable, "Method", info.getHttpMethod());
+    addRowPair(summaryTable, "Http Status", info.getStatusCode() + "");
+    addRowPair(summaryTable, "Mime-type", info.getMimeType());
 
     String requestTiming, responseTiming, totalTiming;
 
-    if (!info.didError()) {
+    if (!info.didFail()) {
       requestTiming = "@"
           + TimeStampFormatter.formatMilliseconds(info.getStartTime())
           + " for "
@@ -316,13 +308,7 @@ public class RequestDetails extends Div {
    * @return returns the content length as a String.
    */
   private String getContentLengthString(NetworkResource info) {
-    NetworkResourceFinished finishedEvent = info.getFinishedEvent();
-
-    if (finishedEvent == null) {
-      return "";
-    }
-
-    int contentLength = finishedEvent.getContentLength();
+    int contentLength = info.getContentLength();
     return ((contentLength < 0) ? "" : contentLength + " bytes");
   }
 

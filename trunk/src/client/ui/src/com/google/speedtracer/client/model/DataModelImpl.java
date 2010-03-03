@@ -39,10 +39,10 @@ public class DataModelImpl extends DataModel {
   }
 
   @Override
-  public void saveRecords(JSOArray<String> visitedUrls) {
+  public void saveRecords(JSOArray<String> visitedUrls, String version) {
     // Create expando on our View so that the tab we create can callback and
     // receive the record data and file information.
-    setupViewCallback(visitedUrls);
+    setupViewCallback(visitedUrls, version);
 
     // Create a new tab at the save data template page. Give it the same query
     // string as our own.
@@ -59,13 +59,15 @@ public class DataModelImpl extends DataModel {
    * Hangs an expando on our view that the save data page will use to request
    * the record data and file information.
    * 
-   * @param sessionId A String identified for this recorded session.
    * @param visitedUrls An array of URLs visited in this data set.
+   * @param version The Speed Tracer version.
    */
-  private native void setupViewCallback(JSOArray<String> visitedUrls) /*-{
+  private native void setupViewCallback(JSOArray<String> visitedUrls,
+      String version) /*-{
     var me = this;
     top._onSaveReady = function(doSave) {
-      doSave(visitedUrls,
+      doSave(version,
+             visitedUrls,
              me.@com.google.speedtracer.client.model.DataModel::getTraceCopy()());
     };
   }-*/;

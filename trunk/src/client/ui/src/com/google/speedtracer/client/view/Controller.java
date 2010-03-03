@@ -270,7 +270,7 @@ public class Controller extends Panel implements DomainObserver,
   private final Css css;
   private final Container controllerContainer;
 
-  public Controller(Container parent, DataModel model, Monitor monitor,
+  public Controller(Container parent, DataModel model, final Monitor monitor,
       Resources resources) {
     super(parent);
     this.model = model;
@@ -307,7 +307,7 @@ public class Controller extends Panel implements DomainObserver,
     saveButton.addClickListener(new ClickListener() {
       public void onClick(ClickEvent event) {
         Controller me = Controller.this;
-        me.model.saveRecords(getVisitedUrls());
+        me.model.saveRecords(getVisitedUrls(), monitor.getVersion());
       }
 
       // TODO(jaimeyap): Revisit this since it is kinda yucky to be using a

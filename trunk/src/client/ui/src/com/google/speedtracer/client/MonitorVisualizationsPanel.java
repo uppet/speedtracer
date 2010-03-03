@@ -339,7 +339,6 @@ public class MonitorVisualizationsPanel extends Div {
     if (state.getLastDomainValue() > mainTimeLine.getModel().getMostRecentDomainValue()) {
       mainTimeLineModel.onDomainChange(state.getLastDomainValue());
     }
-
     // Update all visualizations that have been loaded
     for (int i = 0, n = visualizations.size(); i < n; i++) {
       Visualization<?, ?> viz = visualizations.get(i);
@@ -349,14 +348,11 @@ public class MonitorVisualizationsPanel extends Div {
       viz.setModel(vizModel);
       vizModel.getGraphModel().addDomainObserver(mainTimeLineModel);
     }
-
     loadedState = state;
-
     mainTimeLineModel.updateBounds(state.getFirstDomainValue(),
         state.getLastDomainValue());
     overViewTimeLine.getModel().updateBounds(state.getFirstDomainValue(),
         state.getLastDomainValue());
-
     // Redraw a second frame so that it can rescale correctly
     refresh();
   }

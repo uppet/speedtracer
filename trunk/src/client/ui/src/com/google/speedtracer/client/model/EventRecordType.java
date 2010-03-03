@@ -50,10 +50,6 @@ public class EventRecordType {
   public static final int AGGREGATED_EVENTS = 0x7FFFFFFF;
   public static final int TAB_CHANGED = 0x7FFFFFFE;
   public static final int RESOURCE_UPDATED = 0x7FFFFFFD;
-  public static final int NETWORK_RESOURCE_ERROR = 0x7FFFFFFC;
-  public static final int NETWORK_RESOURCE_FINISH = 0x7FFFFFFB;
-  public static final int NETWORK_RESOURCE_RESPONSE = 0x7FFFFFFA;
-  public static final int NETWORK_RESOURCE_START = 0x7FFFFFF9;
 
   private static final String[] webkitTypeStrings = {
     "Dom Event",                        // 0 DOM_EVENT
@@ -78,10 +74,6 @@ public class EventRecordType {
     "AGGREGATED Events",                // 0x7FFFFFFF AGGREGATED_EVENTS
     "Tab Changed",                      // 0x7FFFFFFE TAB_CHANGED
     "Resource Updated",                 // 0x7FFFFFFD RESOURCE_UPDATED
-    "Network Resource Error",           // 0x7FFFFFFC NETWORK_RESOURCE_ERROR
-    "Network Resource Finish",          // 0x7FFFFFFB NETWORK_RESOURCE_FINISH
-    "Network Resource Response",        // 0x7FFFFFFA NETWORK_RESOURCE_RESPONSE
-    "Network Resource Start",           // 0x7FFFFFF9 NETWORK_RESOURCE_START
   };
 
   private static final String[] webkitHelpStrings = {
@@ -126,14 +118,6 @@ public class EventRecordType {
     "Something about the Tab where the page viewed changed.  Usually this is the title string or the location of the page.",
     // 0x7FFFFFFD RESOURCE_UPDATED
     "Details about a Network Resource were updated.",
-    // 0x7FFFFFFC NETWORK_RESOURCE_ERROR
-    "A network resource load ended in error.",
-    // 0x7FFFFFFB NETWORK_RESOURCE_FINISH
-    "A network resource loaded sucessfully.",
-    // 0x7FFFFFFA NETWORK_RESOURCE_RESPONSE
-    "A network resource load began to recieve data from the server.",
-    // 0x7FFFFFF9 NETWORK_RESOURCE_START
-    "A new request for a network resource started.",
   };
 
   public static String typeToDetailedTypeString(UiEvent e) {

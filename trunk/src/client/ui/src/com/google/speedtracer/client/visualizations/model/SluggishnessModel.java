@@ -15,7 +15,6 @@
  */
 package com.google.speedtracer.client.visualizations.model;
 
-import com.google.speedtracer.client.model.ApplicationState;
 import com.google.speedtracer.client.model.DataModel;
 import com.google.speedtracer.client.model.EventRecord;
 import com.google.speedtracer.client.model.EventRecordType;
@@ -302,11 +301,6 @@ public class SluggishnessModel implements VisualizationModel,
 
   public void setCurrentRight(double currentRight) {
     this.currentRight = currentRight;
-  }
-
-  public void transferEndingState(ApplicationState oldState,
-      ApplicationState newState, String newUrl) {
-    // We don't need to.
   }
 
   private void fireEventRefreshListeners(UiEvent event) {

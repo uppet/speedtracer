@@ -161,34 +161,6 @@ speedTracerEvents = [
     'constant' : 'RESOURCE_UPDATED',
     'desc' : 'Resource Updated',
     'help_text' : 'Details about a Network Resource were updated.',
-  },
-
-
-# THE FOLLOWING ARE SPEED TRACER TIMELINE RECORDS FOR TRACKING NETWORK
-# RESOURCES. THESE WILL SOON BE GOING AWAY.
-  {
-    'value' : (maxInt - 3),
-    'constant' : 'NETWORK_RESOURCE_ERROR',
-    'desc' : 'Network Resource Error',
-    'help_text' : 'A network resource load ended in error.',
-  },
-  {
-    'value' : (maxInt - 4),
-    'constant' : 'NETWORK_RESOURCE_FINISH',
-    'desc' : 'Network Resource Finish',
-    'help_text' : 'A network resource loaded sucessfully.',
-  },
-  {
-    'value' : (maxInt - 5),
-    'constant' : 'NETWORK_RESOURCE_RESPONSE',
-    'desc' : 'Network Resource Response',
-    'help_text' : 'A network resource load began to recieve data from the server.',
-  },
-  { 
-    'value' : (maxInt - 6),
-    'constant' : 'NETWORK_RESOURCE_START',
-    'desc' : 'Network Resource Start',
-    'help_text' : 'A new request for a network resource started.'
   }
 ]
 # END SPEEDTRACER RECORDS

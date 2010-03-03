@@ -80,37 +80,6 @@ public class ApplicationState {
     return visualizationModelMap.get(visualizationTitle);
   }
 
-  /**
-   * This method finalizes this ApplicationState and initializes the new one
-   * from the current ending state of each VisualizationModel.
-   * 
-   * It also iterates through the VisualizationModels and detaches them from
-   * their source models. This effectively makes this ApplicationState
-   * immutable, telling the VisualizationModels to no longer listen to updates
-   * from its source model.
-   */
-  public void handOffToNewApplicationState(final String newUrl,
-      final ApplicationState newState) {
-    detachFromSourceModels();
-    // We do a separate iteration because we want to have completely detached
-    // all the previous visualization models first
-    visualizationModelMap.iterate(new IterationCallBack<VisualizationModel>() {
-
-      public void onIteration(String key, VisualizationModel vModel) {
-        vModel.transferEndingState(ApplicationState.this, newState, newUrl);
-      }
-
-    });
-
-    // The beginning of newState is either 0, or some value set by one of the
-    // Visualizations in the iteration above. We set the end to be some
-    // convenient window size. Either the default window size, or the last data
-    // point we saw in this old state
-    double end = Math.max(getLastDomainValue(), newState.getFirstDomainValue()
-        + Constants.DEFAULT_GRAPH_WINDOW_SIZE);
-    newState.setLastDomainValue(end);
-  }
-
   public void setFirstDomainValue(double firstDomainValue) {
     this.firstDomainValue = firstDomainValue;
   }
@@ -130,7 +99,7 @@ public class ApplicationState {
         new SluggishnessModel(sourceModel));
     visualizationModelMap.put(NetworkVisualization.TITLE,
         new NetworkTimeLineModel(sourceModel));
-    visualizationModelMap.put(HintletReport.TITLE,
-        new HintletReportModel(sourceModel.getHintletEngineHost()));
+    visualizationModelMap.put(HintletReport.TITLE, new HintletReportModel(
+        sourceModel.getHintletEngineHost()));
   }
 }

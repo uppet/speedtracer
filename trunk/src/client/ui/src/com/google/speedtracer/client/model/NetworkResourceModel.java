@@ -32,15 +32,13 @@ public class NetworkResourceModel implements EventCallbackProxyProvider {
    * Listener Interface for a NetworkResourceModel.
    */
   public interface Listener {
-    void onNetworkResourceRequestStarted(NetworkResourceStart resourceStart);
+    void onNetworkResourceRequestStarted(ResourceWillSendEvent resourceStart);
 
-    void onNetworkResourceResponseFailed(NetworkResourceError resourceError);
+    void onNetworkResourceResponseFinished(ResourceFinishEvent resourceFinish);
 
-    void onNetworkResourceResponseFinished(
-        NetworkResourceFinished resourceFinish);
+    void onNetworkResourceResponseStarted(ResourceResponseEvent resourceResponse);
 
-    void onNetworkResourceResponseStarted(
-        NetworkResourceResponse resourceResponse);
+    void onNetworkResourceUpdated(ResourceUpdateEvent resourceUpdate);
   }
 
   /**
@@ -51,42 +49,44 @@ public class NetworkResourceModel implements EventCallbackProxyProvider {
    * @param typeMap the {@link FastStringMap}
    */
   private static void setNetworkEventCallbacks(
-      final NetworkResourceModel proxy,
-      JsIntegerMap<EventCallbackProxy> typeMap) {
+      final NetworkResourceModel proxy, JsIntegerMap<EventCallbackProxy> typeMap) {
 
-    typeMap.put(EventRecordType.NETWORK_RESOURCE_START, new EventCallbackProxy() {
+    typeMap.put(EventRecordType.RESOURCE_SEND_REQUEST,
+        new EventCallbackProxy() {
+          public void onEventRecord(EventRecord data) {
+            proxy.onNetworkResourceStarted(data.<ResourceWillSendEvent> cast());
+          }
+        });
+
+    typeMap.put(EventRecordType.RESOURCE_RECEIVE_RESPONSE,
+        new EventCallbackProxy() {
+          public void onEventRecord(EventRecord data) {
+            proxy.onNetworkResourceResponse(data.<ResourceResponseEvent> cast());
+          }
+        });
+
+    typeMap.put(EventRecordType.RESOURCE_FINISH, new EventCallbackProxy() {
       public void onEventRecord(EventRecord data) {
-        proxy.onNetworkResourceStarted(data.<NetworkResourceStart>cast());
+        ResourceFinishEvent finish = data.cast();
+        proxy.onNetworkResourceFinished(finish);
       }
     });
 
-    typeMap.put(EventRecordType.NETWORK_RESOURCE_RESPONSE, new EventCallbackProxy() {
+    typeMap.put(EventRecordType.RESOURCE_UPDATED, new EventCallbackProxy() {
       public void onEventRecord(EventRecord data) {
-        proxy.onNetworkResourceResponse(data.<NetworkResourceResponse>cast());
-      }
-    });
-
-    typeMap.put(EventRecordType.NETWORK_RESOURCE_FINISH, new EventCallbackProxy() {
-      public void onEventRecord(EventRecord data) {
-        proxy.onNetworkResourceFinished(data.<NetworkResourceFinished>cast());
-      }
-    });
-
-    typeMap.put(EventRecordType.NETWORK_RESOURCE_ERROR, new EventCallbackProxy() {
-      public void onEventRecord(EventRecord data) {
-        proxy.onNetworkResourceFailed(data.<NetworkResourceError>cast());
+        proxy.onNetworkResourceUpdated(data.<ResourceUpdateEvent> cast());
       }
     });
   };
 
   private final List<Listener> listeners = new ArrayList<Listener>();
-  
+
   private final JsIntegerMap<EventCallbackProxy> typeMap = JsIntegerMap.create();
 
   NetworkResourceModel() {
     setNetworkEventCallbacks(this, typeMap);
   }
-  
+
   public void addListener(Listener listener) {
     listeners.add(listener);
   }
@@ -95,31 +95,31 @@ public class NetworkResourceModel implements EventCallbackProxyProvider {
     return typeMap.get(data.getType());
   }
 
-  public void onNetworkResourceFailed(NetworkResourceError resourceFail) {
-    for (int i = 0, n = listeners.size(); i < n; i++) {
-      Listener listener = listeners.get(i);
-      listener.onNetworkResourceResponseFailed(resourceFail);
-    }
-  }
-
-  public void onNetworkResourceFinished(NetworkResourceFinished resourceFinish) {
+  public void onNetworkResourceFinished(ResourceFinishEvent resourceFinish) {
     for (int i = 0, n = listeners.size(); i < n; i++) {
       Listener listener = listeners.get(i);
       listener.onNetworkResourceResponseFinished(resourceFinish);
     }
   }
 
-  public void onNetworkResourceResponse(NetworkResourceResponse resourceResponse) {
+  public void onNetworkResourceResponse(ResourceResponseEvent resourceResponse) {
     for (int i = 0, n = listeners.size(); i < n; i++) {
       Listener listener = listeners.get(i);
       listener.onNetworkResourceResponseStarted(resourceResponse);
     }
   }
 
-  public void onNetworkResourceStarted(NetworkResourceStart resourceStart) {
+  public void onNetworkResourceStarted(ResourceWillSendEvent resourceStart) {
     for (int i = 0, n = listeners.size(); i < n; i++) {
       Listener listener = listeners.get(i);
       listener.onNetworkResourceRequestStarted(resourceStart);
+    }
+  }
+
+  public void onNetworkResourceUpdated(ResourceUpdateEvent update) {
+    for (int i = 0, n = listeners.size(); i < n; i++) {
+      Listener listener = listeners.get(i);
+      listener.onNetworkResourceUpdated(update);
     }
   }
 

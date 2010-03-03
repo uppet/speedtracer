@@ -22,7 +22,7 @@ import com.google.gwt.chrome.crx.client.events.Event.ListenerHandle;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.speedtracer.client.model.EventVisitor.PostOrderVisitor;
 import com.google.speedtracer.client.model.EventVisitor.PreOrderVisitor;
-import com.google.speedtracer.client.model.InspectorResourceConverter.InspectorResourceConverterImpl;
+import com.google.speedtracer.client.model.ResourceUpdateEvent.UpdateResource;
 
 /**
  * This class is used in Chrome when we are getting data from the devtools API.
@@ -45,12 +45,6 @@ public class DevToolsDataInstance extends DataInstance {
         addRecordToTimeline: function(record) {
           delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onTimeLineRecord(Lcom/google/speedtracer/client/model/EventRecord;)(record[1]);
         },
-        // This becomes a dead code path as of webkit r52154, but we need it for
-        // older versions.
-        // TODO(jaimeyap): Follow up with a patch that nukes this legacy code path.
-        addResource: function(resource) {
-          delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onLegacyAddResource(ILcom/google/gwt/core/client/JavaScriptObject;)(resource[1], resource[2]);
-        },
         updateResource: function(update) {
           delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onUpdateResource(ILcom/google/gwt/core/client/JavaScriptObject;)(update[1], update[2]);
         }
@@ -58,6 +52,8 @@ public class DevToolsDataInstance extends DataInstance {
     }-*/;
 
     private double baseTime;
+
+    private ResourceWillSendEvent currentPage;
 
     private DevToolsDataInstance dataInstance;
 
@@ -70,13 +66,7 @@ public class DevToolsDataInstance extends DataInstance {
     private final PreOrderVisitor[] preOrderVisitors = {new TimeNormalizerVisitor(
         this)};
 
-    private InspectorResourceConverter resourceConverter;
-
     private final int tabId;
-
-    // TODO (jaimeyap): This and all legacy resource conversion code paths
-    // should be able to be removed now. Do it in a subsequent patch.
-    private boolean usingLegacyResourceConverter = false;
 
     public Proxy(int tabId) {
       this.baseTime = -1;
@@ -90,9 +80,6 @@ public class DevToolsDataInstance extends DataInstance {
 
     public void load(DataInstance dataInstance) {
       this.dataInstance = dataInstance.cast();
-      if (this.resourceConverter == null) {
-        this.resourceConverter = new InspectorResourceConverterImpl(this);
-      }
       connectToDataSource();
     }
 
@@ -132,7 +119,6 @@ public class DevToolsDataInstance extends DataInstance {
       // Connect to the devtools API as the data source.
       if (this.dataInstance == null) {
         this.dataInstance = dataInstance;
-        this.resourceConverter = new InspectorResourceConverterImpl(this);
       }
       connectToDataSource();
     }
@@ -154,46 +140,98 @@ public class DevToolsDataInstance extends DataInstance {
     }
 
     /**
-     * TODO (jaimeyap): Get rid of this once WebKit r52154 is pushed to Dev
-     * Channel.
+     * Normalizes the inputed time to be relative to the base time, and converts
+     * the units of the inputed time to milliseconds from seconds.
+     * 
+     * If baseTime is unset, this method will have the side effect of setting
+     * baseTime.
      */
-    @SuppressWarnings("unused")
-    private void onLegacyAddResource(int resourceId, JavaScriptObject resource) {
-      if (!usingLegacyResourceConverter) {
-        resourceConverter = new LegacyInspectorResourceConverter(this);
-        usingLegacyResourceConverter = true;
+    private double normalizeTime(double seconds) {
+      double millis = seconds * 1000;
+      if (getBaseTime() < 0) {
+        setBaseTime(millis);
       }
-      ((LegacyInspectorResourceConverter) resourceConverter).onAddResource(
-          resourceId, resource);
+      return millis - getBaseTime();
     }
 
     // Called from JavaScript.
     @SuppressWarnings("unused")
     private void onTimeLineRecord(EventRecord record) {
       assert (dataInstance != null) : "Someone called invoke that wasn't our connect call!";
+      // We run visitors to normalize the times for this tree and to do any
+      // other transformations we want.
+      EventVisitorTraverser.traverse(record.<UiEvent> cast(), preOrderVisitors,
+          postOrderVisitors);
 
-      // We currently want to drop the webkit style network resource
-      // timeline records since we synthesize our own.
-      // TODO(jaimeyap): figure out a good way to consume these guys.
       int type = record.getType();
+
       switch (type) {
-        case EventRecordType.RESOURCE_SEND_REQUEST:
-        case EventRecordType.RESOURCE_RECEIVE_RESPONSE:
-        case EventRecordType.RESOURCE_FINISH:
+        case ResourceWillSendEvent.TYPE:
+          // Maybe synthesize a page transition.
+          ResourceWillSendEvent start = record.cast();
+          // Dispatch a Page Transition if this is a main resource and we are
+          // not part of a redirect.
+          if (start.isMainResource()) {
+            // For redirects, IDs get recycled. We do not want to double page
+            // transition for a single main page redirect.
+            if ((currentPage == null)
+                || (currentPage.getIdentifier() != start.getIdentifier())) {
+              // We synthesize the page transition if currentPage is not set, or
+              // the IDs dont match.
+              currentPage = start;
+              onEventRecord(TabChange.create(start.getTime(), start.getUrl()));
+            } else if (currentPage.getIdentifier() == start.getIdentifier()) {
+              // IDs get recycled across pages. So remember to null out the
+              // current page after concluding that the redirect has completed
+              currentPage = null;
+            }
+          }
           break;
-        default:
-          // We run visitors to normalize the times for this tree and to do any
-          // other transformations we want.
-          EventVisitorTraverser.traverse(record.<UiEvent> cast(),
-              preOrderVisitors, postOrderVisitors);
-          // Forward to the dataInstance.
-          onEventRecord(record);
+        case ResourceResponseEvent.TYPE:
+          // For pages with no redirect, we want to ensure that the next page
+          // transition goes off.
+          currentPage = null;
+          break;
       }
+      // Forward to the dataInstance.
+      onEventRecord(record);
     }
 
     @SuppressWarnings("unused")
     private void onUpdateResource(int resourceId, JavaScriptObject resource) {
-      resourceConverter.onUpdateResource(resourceId, resource);
+      // We need to normalize times for the resource update since they are
+      // absolute times given in seconds.
+      UpdateResource update = resource.cast();
+
+      if (update.didTimingChange()) {
+        double domContentEventTime = update.getDomContentEventTime();
+        double loadTime = update.getLoadEventTime();
+        double startTime = update.getStartTime();
+        double responseTime = update.getResponseReceivedTime();
+        double endTime = update.getEndTime();
+
+        if (domContentEventTime > 0) {
+          update.setDomContentEventTime(normalizeTime(domContentEventTime));
+        }
+
+        if (loadTime > 0) {
+          update.setLoadEventTime(normalizeTime(loadTime));
+        }
+
+        if (startTime > 0) {
+          update.setStartTime(normalizeTime(startTime));
+        }
+
+        if (responseTime > 0) {
+          update.setResponseReceivedTime(normalizeTime(responseTime));
+        }
+
+        if (endTime > 0) {
+          update.setEndTime(normalizeTime(endTime));
+        }
+      }
+
+      onEventRecord(ResourceUpdateEvent.create(resourceId, update));
     }
   }
 
