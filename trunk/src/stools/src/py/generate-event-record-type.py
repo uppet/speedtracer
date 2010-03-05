@@ -121,15 +121,12 @@ webkitEvents = [
     'desc' : 'Resource Finish',
     'help_text' : 'A new request for a network resource completed.',
   },
-
-# THE FOLLOWING HAS NOT YET LANDED.
-  {
-    'value' : 15,
-    'constant' : 'PROFILE_DATA',
-    'desc' : 'JavaScript CPU profile data',
-    'help_text' : 'Contains raw data from the JavaScript engine profiler.',
+  { 
+    'value' : 15, 
+    'constant' : 'JAVASCRIPT_EXECUTION',
+    'desc' : 'JavaScript Callback',
+    'help_text' : 'JavaScript was run in an event dispatch.',
   }
-# END NOT YET LANDED.
 ]
 # END INSPECTOR TIMELINE RECORDS.
 
@@ -161,7 +158,15 @@ speedTracerEvents = [
     'constant' : 'RESOURCE_UPDATED',
     'desc' : 'Resource Updated',
     'help_text' : 'Details about a Network Resource were updated.',
+  },
+# THE FOLLOWING MIGHT CHANGE.
+  {
+    'value' : (maxInt - 3),
+    'constant' : 'PROFILE_DATA',
+    'desc' : 'JavaScript CPU profile data',
+    'help_text' : 'Contains raw data from the JavaScript engine profiler.',
   }
+# END EXPERIMENTAL TYPES.
 ]
 # END SPEEDTRACER RECORDS
 

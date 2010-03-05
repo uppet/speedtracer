@@ -44,12 +44,13 @@ public class EventRecordType {
   public static final int RESOURCE_SEND_REQUEST = 12;
   public static final int RESOURCE_RECEIVE_RESPONSE = 13;
   public static final int RESOURCE_FINISH = 14;
-  public static final int PROFILE_DATA = 15;
+  public static final int JAVASCRIPT_EXECUTION = 15;
 
   // Speed Tracer Types
   public static final int AGGREGATED_EVENTS = 0x7FFFFFFF;
   public static final int TAB_CHANGED = 0x7FFFFFFE;
   public static final int RESOURCE_UPDATED = 0x7FFFFFFD;
+  public static final int PROFILE_DATA = 0x7FFFFFFC;
 
   private static final String[] webkitTypeStrings = {
     "Dom Event",                        // 0 DOM_EVENT
@@ -67,13 +68,14 @@ public class EventRecordType {
     "Resource Request",                 // 12 RESOURCE_SEND_REQUEST
     "Resource Response",                // 13 RESOURCE_RECEIVE_RESPONSE
     "Resource Finish",                  // 14 RESOURCE_FINISH
-    "JavaScript CPU profile data",      // 15 PROFILE_DATA
+    "JavaScript Callback",              // 15 JAVASCRIPT_EXECUTION
   };
 
   private static final String[] speedTracerTypeStrings = {
     "AGGREGATED Events",                // 0x7FFFFFFF AGGREGATED_EVENTS
     "Tab Changed",                      // 0x7FFFFFFE TAB_CHANGED
     "Resource Updated",                 // 0x7FFFFFFD RESOURCE_UPDATED
+    "JavaScript CPU profile data",      // 0x7FFFFFFC PROFILE_DATA
   };
 
   private static final String[] webkitHelpStrings = {
@@ -107,8 +109,8 @@ public class EventRecordType {
     "A network resource load began to recieve data from the server.",
     // 14 RESOURCE_FINISH
     "A new request for a network resource completed.",
-    // 15 PROFILE_DATA
-    "Contains raw data from the JavaScript engine profiler.",
+    // 15 JAVASCRIPT_EXECUTION
+    "JavaScript was run in an event dispatch.",
   };
 
   private static final String[] speedTracerHelpStrings = {
@@ -118,6 +120,8 @@ public class EventRecordType {
     "Something about the Tab where the page viewed changed.  Usually this is the title string or the location of the page.",
     // 0x7FFFFFFD RESOURCE_UPDATED
     "Details about a Network Resource were updated.",
+    // 0x7FFFFFFC PROFILE_DATA
+    "Contains raw data from the JavaScript engine profiler.",
   };
 
   public static String typeToDetailedTypeString(UiEvent e) {

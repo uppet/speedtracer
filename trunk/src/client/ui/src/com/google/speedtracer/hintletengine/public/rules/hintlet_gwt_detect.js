@@ -21,15 +21,6 @@
 
 var HINTLET_NAME = "GWT Application Detection";
 
-// No hintlets for code splitting will be emitted if the size
-// is not at least past this threshold
-var CODE_SPLIT_SIZE_THRESHOLD = 100000;
-
-// Emit hintlets based on the time to load and parse the initial download
-var CODE_SPLIT_INFO_TIME_THRESHOLD = 1000;
-var CODE_SPLIT_WARNING_TIME_THRESHOLD = 3000;
-var CODE_SPLIT_CRITICAL_TIME_THRESHOLD = 5000;
-
 // Emit hintlets based on the size of the initial download
 var CODE_SPLIT_INFO_SIZE_THRESHOLD = 250000;
 var CODE_SPLIT_WARNING_SIZE_THRESHOLD = 500000;
@@ -39,9 +30,7 @@ function initHintletData() {
   var data = new Object();
   data.isGWT = false;
   data.noCacheRecord = undefined;
-  data.strongNameTime = undefined;
-  data.strongNameElapsed = undefined;
-  data.parseTimeAnalyzed = false;
+  data.resourceData = undefined;
   data.resourceId = undefined;
   data.analyzedNoCache = false;
   return data;
@@ -50,45 +39,18 @@ function initHintletData() {
 var hintletData = initHintletData();
 
 function analyzeNoCacheRecord() {
-  if (!cache_lib.isExplicitlyNonCacheable(hintletData.noCacheRecord)) {
-    hintlet.addHint(HINTLET_NAME, hintletData.noCacheRecord.time,
+  var resourceData = hintletData.resourceData;  
+  if (!cache_lib.isExplicitlyNonCacheable(resourceData.responseHeaders,
+		  resourceData.url, resourceData.statusCode)) {
+    hintlet.addHint(HINTLET_NAME, resourceData.responseReceivedTime,
       "GWT selection script '.nocache.js' file should be set as non-cacheable",
       hintletData.noCacheRecord.sequence, hintlet.SEVERITY_CRITICAL);
   }
 }
 
-function analyzeStrongNameFetchAndParseTime(parseHtmlRecord) {
-  if (hintletData.strongNameSize < CODE_SPLIT_SIZE_THRESHOLD) {
-    return;
-  }
-
-  var elapsed = (parseHtmlRecord.time + parseHtmlRecord.duration) 
-    - hintletData.strongNameTime;
-
-  var severity = null;
-  if (elapsed > CODE_SPLIT_CRITICAL_TIME_THRESHOLD) {
-    severity = hintlet.SEVERITY_CRITICAL;
-  } else if (elapsed > CODE_SPLIT_WARNING_TIME_THRESHOLD) {
-    severity = hintlet.SEVERITY_WARNING;
-  } else if (elapsed > CODE_SPLIT_INFO_TIME_THRESHOLD) {
-    severity = hintlet.SEVERITY_INFO;
-  }
-
-  if (severity !== null) {
-    hintlet.addHint(HINTLET_NAME, parseHtmlRecord.time,
-      "Initial GWT download (" + hintletData.strongNameUrl +") took " 
-      + hintlet.formatMilliseconds(elapsed) 
-      + " to load. (" + hintletData.strongNameSize + " bytes). "
-      + "Consider using GWT.runAsync() code splitting and the "
-      + "Compile Report to reduce the size of the initial download.",
-      parseHtmlRecord.sequence, severity);    
-  }
-}
-
-function analyzeDownloadSize(dataRecord) {
-  var size = dataRecord.data.contentLength;
-  size = size ? size : 0;
-  hintletData.strongNameSize = size;
+function analyzeDownloadSize(dataRecord, contentLength) {
+  var size = contentLength;
+  size = (size === undefined) ? 0 : size;
 
   var severity = null;
   if (size > CODE_SPLIT_CRITICAL_SIZE_THRESHOLD) {
@@ -100,7 +62,7 @@ function analyzeDownloadSize(dataRecord) {
   }
 
   if (severity !== null) {
-    hintlet.addHint(HINTLET_NAME, dataRecord.time,
+    hintlet.addHint(HINTLET_NAME, resourceData.responseReceivedTime,
       "The size of the initial GWT download (" + hintletData.strongNameUrl 
       + ") is " + size + " bytes.  Consider using GWT.runAsync() code splitting "
       + "and the Compile Report to reduce the size of the initial download.",
@@ -117,26 +79,30 @@ hintlet.register(HINTLET_NAME, function(dataRecord){
   if (dataRecord.type === hintlet.types.TAB_CHANGED) {
     // Reset state after a page transition
     hintletData = initHintletData();
-  } else if (!hintletData.parseTimeAnalyzed 
-      && dataRecord.type === hintlet.types.PARSE_HTML_EVENT) {
-    // This is just a heuristic - there is no actual data tying this event
-    // to the strong name file other than its proximity to the end of the
-    // resource load.
-    analyzeStrongNameFetchAndParseTime(dataRecord);
-    hintletData.parseTimeAnalyzed = true; 
-  }
-
-  if (dataRecord.type !== hintlet.types.NETWORK_RESOURCE_RESPONSE
-      && dataRecord.type !== hintlet.types.NETWORK_RESOURCE_FINISH) {
     return;
   }
 
-  var url = dataRecord.data.url;
+  // TODO(zundel): Take into account the time to download/parse the strong name
+  // to suggest code splitting opportunity. Be sure to omit Script Eval time.
+
+  if (dataRecord.type !== hintlet.types.RESOURCE_FINISH) {
+    return;
+  }
+
+  var resourceData = hintlet.getResourceData(dataRecord.data.identifier);
+  if (!resourceData) {
+    return;
+  }
+
+  hintletData.resourceData = resourceData;
+
+  var url = resourceData.url;
+  var headers = resourceData.responseHeaders;
+  var contentLength = resourceData.contentLength;
 
   // The first file loaded should be the .nocache.js file - the selection 
   // script
-  if (dataRecord.type === hintlet.types.NETWORK_RESOURCE_RESPONSE
-      && url.search("\\.nocache\\.js$") >= 0) {
+  if (url.search("\\.nocache\\.js$") >= 0) {
     hintletData.noCacheRecord = dataRecord;
     return;
   }
@@ -147,19 +113,16 @@ hintlet.register(HINTLET_NAME, function(dataRecord){
     return;
   }
 
-  if (dataRecord.type === hintlet.types.NETWORK_RESOURCE_RESPONSE 
-      && isStrongName(url) && !hintletData.analyzedNoCache) {
+  if (isStrongName(url) && !hintletData.analyzedNoCache) {
     // Keep track of the start of the initial strong name fetch.
-    hintletData.strongNameTime = dataRecord.time;
+    hintletData.strongNameTime = resourceData.responseReceivedTime;
     hintletData.strongNameUrl = url;
-    hintletData.resourceId = dataRecord.data.resourceId;
+    hintletData.resourceId = resourceData.identifier;
     analyzeNoCacheRecord();
     hintletData.analyzedNoCache = true;
-  } else if (dataRecord.type === hintlet.types.NETWORK_RESOURCE_FINISH 
-      && hintletData.resourceId === dataRecord.data.resourceId) {
-    // Keep the hintlet from firing again
+    // Keep the hintlet from firing again.
     hintletData.isGWT = true;
-    analyzeDownloadSize(dataRecord);
+    analyzeDownloadSize(dataRecord, resourceData.contentLength);
   }
 });
 

@@ -21,8 +21,6 @@
 // same problem. However, it could be impossible to figure out its hashing
 // algorithm.
 
-
-
 // Make a namespace for this rule
 (function() {  // Begin closure
 
@@ -98,22 +96,30 @@ hintlet.register(HINTLET_NAME, function(dataRecord) {
   if (dataRecord.type == hintlet.types.TAB_CHANGED 
         && PREVIOUS_URL != dataRecord.data.url) {
     HASHED_URLS = {};
-  } else if (dataRecord.type != hintlet.types.NETWORK_RESOURCE_RESPONSE) {
+    return;
+  } else if (dataRecord.type != hintlet.types.RESOURCE_FINISH) {
     return;
   }
 
-  PREVIOUS_URL=dataRecord.data.url;
-
-  var responseCode = dataRecord.data.responseCode;
-  if (!cache_lib.isCacheableResponseCode(responseCode)) {
-    return;
-  }
-  var resourceType = hintlet.getResourceType(dataRecord);
-  if (cache_lib.isNonCacheableResourceType(resourceType)) {
+  var resourceData = hintlet.getResourceData(dataRecord.data.identifier);
+  if (!resourceData) {
     return;
   }
   
-  var urlCacheCollisions = findCacheCollisions(dataRecord.data.url);
+  var url = resourceData.url;
+  PREVIOUS_URL = url;
+
+  var responseCode = resourceData.responseCode;
+  if (!cache_lib.isCacheableResponseCode(responseCode)) {
+    return;
+  }
+  var resourceType =
+      hintlet.getResourceType(url, resourceData.responseHeaders);
+  if (cache_lib.isNonCacheableResourceType(resourceType)) {
+    return;
+  }
+
+  var urlCacheCollisions = findCacheCollisions(url);
 
   if (urlCacheCollisions.length) {
     var kCacheCollisionWarning = [
@@ -123,7 +129,7 @@ hintlet.register(HINTLET_NAME, function(dataRecord) {
         'documentation for information on how to disambiguate these URLs.'
         ].join('');
 
-    hintlet.addHint(HINTLET_NAME, dataRecord.time,
+    hintlet.addHint(HINTLET_NAME, resourceData.responseReceivedTime,
       "The following URLs cause a conflict in the Firefox browser cache: "
       + urlCacheCollisions.join(" "), dataRecord.sequence, 
       hintlet.SEVERITY_CRITICAL);
