@@ -68,6 +68,7 @@ public class NetworkResource {
 
   private int expectedContentLength = -1;
 
+  // Kept around only because hintlets can be accumulated on it.
   private ResourceFinishEvent finishEvent;
 
   private final String httpMethod;
@@ -142,25 +143,32 @@ public class NetworkResource {
     return expectedContentLength;
   }
 
+  /**
+   * Accumulates and returns any hints that were associated with records for
+   * this network resource.
+   * 
+   * @return JSOArray of HintRecords.
+   */
   public JSOArray<HintRecord> getHintRecords() {
-    JSOArray<HintRecord> hintlets = JSOArray.createArray().cast();
+    JSOArray<HintRecord> hints = JSOArray.createArray().cast();
 
     if (startEvent.hasHintRecords()) {
-      hintlets.concat(startEvent.getHintRecords());
+      hints = hints.concat(startEvent.getHintRecords());
     }
 
     if (responseEvent != null && responseEvent.hasHintRecords()) {
-      hintlets.concat(responseEvent.getHintRecords());
+      hints = hints.concat(responseEvent.getHintRecords());
     }
 
     if (finishEvent != null && finishEvent.hasHintRecords()) {
-      hintlets.concat(finishEvent.getHintRecords());
+      hints = hints.concat(finishEvent.getHintRecords());
     }
 
-    if (hintlets.size() <= 0) {
+    if (hints.size() <= 0) {
       return null;
     }
-    return hintlets;
+
+    return hints;
   }
 
   public String getHttpMethod() {

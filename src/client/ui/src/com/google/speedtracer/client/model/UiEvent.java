@@ -74,6 +74,24 @@ public class UiEvent extends EventRecord {
     return (this.data && this.data.backTrace) ? this.data.backTrace : null;
   }-*/;
 
+  /**
+   * Returns the line number of the top JS call frame.
+   * 
+   * @return the line number
+   */
+  public final native int getCallerScriptLine() /*-{
+    return this.callerScriptLine;
+  }-*/;
+
+  /**
+   * Returns the script name for the JS code of the top JS call frame.
+   * 
+   * @return the script name
+   */
+  public final native String getCallerScriptName() /*-{
+    return this.callerScriptName;
+  }-*/;
+
   public final native JSOArray<UiEvent> getChildren() /*-{
     return this.children || [];
   }-*/;
@@ -129,6 +147,15 @@ public class UiEvent extends EventRecord {
    */
   public final native JsIntegerDoubleMap getTypeDurations() /*-{
     return this.durationMap;
+  }-*/;
+
+  /**
+   * Tests whether this UiEvent has a top stack frame from JS. That is, that it
+   * was called from JavaScript.
+   */
+  public final native boolean hasCallLocation() /*-{
+    return (this.callerScriptLine !== undefined) &&
+        (this.callerScriptName !== undefined);
   }-*/;
 
   /**

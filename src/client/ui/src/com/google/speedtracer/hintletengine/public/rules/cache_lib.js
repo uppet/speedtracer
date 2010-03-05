@@ -85,15 +85,14 @@ cache_lib.isNonCacheableResourceType = function(type) {
 }
 
 /**
+ * @param {object} map of the resource response headers.
  * @param {string} url The URL of the resource.
- * @param {Object} headers An object with a key for each header and a value
- *     containing the contents of that header.
+ * @param {int} HTTP status code.
  * @return {boolean} true iff the headers indicate that this resource may ever
  *     be publicly cacheable.
  */
-cache_lib.isPubliclyCacheable = function(dataRecord) {
-  var headers = dataRecord.data.headers;
-  if (cache_lib.isExplicitlyNonCacheable(dataRecord)) {
+cache_lib.isPubliclyCacheable = function(headers, url, statusCode) {
+  if (cache_lib.isExplicitlyNonCacheable(headers, url, statusCode)) {
     return false;
   }
 
@@ -103,7 +102,7 @@ cache_lib.isPubliclyCacheable = function(dataRecord) {
 
   // A response that isn't explicitly marked as private that does not
   // have a query string is cached by most proxies.
-  if (dataRecord.data.url.indexOf('?') == -1 &&
+  if (url.indexOf('?') == -1 &&
       !hintlet.headerContains(headers, 'Cache-Control', 'private')) {
     return true;
   }
@@ -112,16 +111,15 @@ cache_lib.isPubliclyCacheable = function(dataRecord) {
 }
 
 /**
+ * @param {object} map of the resource response headers.
  * @param {string} url The URL of the resource.
+ * @param {int} HTTP status code.
  * @return {boolean} whether the resource type is explicitly
  *     uncacheable.
  */
-cache_lib.isExplicitlyNonCacheable = function(dataRecord) {
+cache_lib.isExplicitlyNonCacheable = function(headers, url, responseCode) {
   // Don't run any rules on URLs that explicitly do not want to be cached
   // (e.g. beacons).
-  var headers = dataRecord.data.headers;
-  var url = dataRecord.data.url;
-  var responseCode = dataRecord.data.responseCode;
   var hasExplicitExp = cache_lib.hasExplicitExpiration(headers);
   return (hintlet.headerContains(headers, 'Cache-Control', 'no-cache') ||
           hintlet.headerContains(headers, 'Cache-Control', 'no-store') ||

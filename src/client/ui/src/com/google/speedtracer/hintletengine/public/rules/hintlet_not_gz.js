@@ -14,40 +14,25 @@
  * the License.
  */
 
-// Hintlet that flags network responses that are not gzip'ed
+// Hintlet that flags network resources that are not gzip'ed
 // Equivalent to gzipLint.js from Page Speed
 
-// We are looking for NetworkResourceResponse events that do NOT contain 
+// We are looking for resources that do NOT contain 
 // Content-Encoding:  that indicates compression (e.g. gzip)
+// and have contentLength > 150 bytes
 //{
-//   "data": {
-//      "headers": {
+//    "responseHeaders": {
 //         "Cache-Control": "private, max-age=0",
 //         "Content-Encoding": "gzip",
 //         "Content-Length": "2755",
 //         "Content-Type": "text/html; charset=UTF-8",
 //         "Date": "Fri, 30 Jan 2009 17:12:38 GMT",
 //         "Expires": "-1",
-//      },
-//      "resourceId": "1NetworkResourceEvent1",
-//      "responseCode": 200,
-//      "url": "http://www.example.com/foo.html",
-//   },
-//   "sequence" : 123,
-//   "time": 10549.0,
-//   "type": "24"
+//     },
+//
+//    "contentLength": 200
 //}
 //
-//  AND NetworkResourceFinish events that indicate contentLength > 150 bytes. 
-//{
-//   "data": {
-//      "resourceId": "1NetworkResourceEvent1",
-//      "contentLength": 200
-//   },
-//   "sequence": 1234,
-//   "time": 10549.0,
-//   "type": "22"
-//}
 
 // Make a namespace for this rule using a closure
 (function() {  // Begin closure
@@ -60,28 +45,25 @@ var SIZE_THRESHOLD = 150;
 var resourceResponses = {};
 
 hintlet.register(HINTLET_NAME, function(dataRecord){
-
-  if (dataRecord.type == hintlet.types.NETWORK_RESOURCE_RESPONSE) {
-    resourceResponses[dataRecord.data.resourceId] = dataRecord;
+  if (dataRecord.type != hintlet.types.RESOURCE_FINISH) {
+    return;
   }
-
-  if (dataRecord.type != hintlet.types.NETWORK_RESOURCE_FINISH) {
+  var resourceData = hintlet.getResourceData(dataRecord.data.identifier);
+  
+  if (!resourceData) {
     return;
   }
   
-  var response = resourceResponses[dataRecord.data.resourceId];
-
-  if (!response) {
-    return;
-  }
+  var url = resourceData.url;
+  var headers = resourceData.responseHeaders;
 
   // Don't suggest compressing very small components.
-  var size = dataRecord.data.contentLength;
+  var size = resourceData.contentLength;
   if (size < SIZE_THRESHOLD) {
     return;
   }
 
-  var resourceType = hintlet.getResourceType(response);
+  var resourceType = hintlet.getResourceType(url, headers);
   switch (resourceType) {
     case hintlet.RESOURCE_TYPE_DOCUMENT:
     case hintlet.RESOURCE_TYPE_STYLESHEET:
@@ -92,14 +74,11 @@ hintlet.register(HINTLET_NAME, function(dataRecord){
       return;
   }
 
-  if (!hintlet.isCompressed(response.data.headers)) {
-    hintlet.addHint(HINTLET_NAME, dataRecord.time,
-          "URL " + response.data.url + " was not compressed with gzip or bzip2",
+  if (!hintlet.isCompressed(headers)) {
+    hintlet.addHint(HINTLET_NAME, resourceData.responseReceivedTime,
+          "URL " + url + " was not compressed with gzip or bzip2",
           dataRecord.sequence, hintlet.SEVERITY_INFO);
   }
-  
-  // We can null the map entry after receiving a finish.
-  delete resourceResponses[dataRecord.data.resourceId];
     
 }); // End hintlet.register()
 

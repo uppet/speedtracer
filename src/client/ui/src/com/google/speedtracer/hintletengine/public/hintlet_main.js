@@ -86,9 +86,19 @@ hintlet.log("Loaded Hintlet API (hintlet_api.js)");
  */
 hintlet._addRecord = function (dataRecord) {
   // Calculate the time spent in each event/sub-event exclusive of children 
-  hintlet._addSelfDuration(dataRecord); 
-  for (var i = 0, j = hintlet.rules.length; i < j; i++) {
-    hintlet.rules[i].callback(dataRecord);
+  hintlet._addSelfDuration(dataRecord);
+
+  // Potentially keep state for a network resource.
+  if (dataRecord.type == hintlet.types.RESOURCE_UPDATED) {
+    hintlet._updateResource(dataRecord);
+    hintlet._maybeForgetResource(dataRecord);
+    
+    // TODO(jaimeyap): Is there a legit reason to deliver inspector 
+    // updateResource messages to hintlets rules?
+  } else {
+    for (var i = 0, j = hintlet.rules.length; i < j; i++) {
+      hintlet.rules[i].callback(dataRecord);
+    }
   }
 }
  

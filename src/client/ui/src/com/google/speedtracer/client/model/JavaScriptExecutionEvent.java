@@ -16,23 +16,20 @@
 package com.google.speedtracer.client.model;
 
 /**
- * Overlay for for NetworkResourceStart events.
+ * Overlay for webkit Call Function events that measure the time spent running a
+ * JS event handler.
  */
-public class ResourceWillSendEvent extends ResourceRecord {
-  public static final int TYPE = EventRecordType.RESOURCE_SEND_REQUEST;
+public class JavaScriptExecutionEvent extends UiEvent {
+  public static final int TYPE = EventRecordType.JAVASCRIPT_EXECUTION;
 
-  protected ResourceWillSendEvent() {
+  protected JavaScriptExecutionEvent() {
   }
 
-  public final String getHttpMethod() {
-    return getData().getStringProperty("requestMethod");
+  public final int getScriptLine() {
+    return getData().getIntProperty("scriptLine");
   }
 
-  public final String getUrl() {
-    return getData().getStringProperty("url");
-  }
-
-  public final boolean isMainResource() {
-    return getData().getBooleanProperty("isMainResource");
+  public final String getScriptName() {
+    return getData().getStringProperty("scriptName");
   }
 }

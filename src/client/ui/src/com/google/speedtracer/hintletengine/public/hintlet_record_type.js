@@ -35,10 +35,11 @@ hintlet.types = {
   'RESOURCE_SEND_REQUEST' : 12,
   'RESOURCE_RECEIVE_RESPONSE' : 13,
   'RESOURCE_FINISH' : 14,
-  'PROFILE_DATA' : 15,
+  'JAVASCRIPT_EXECUTION' : 15,
   'AGGREGATED_EVENTS' : 2147483647,
   'TAB_CHANGED' : 2147483646,
   'RESOURCE_UPDATED' : 2147483645,
+  'PROFILE_DATA' : 2147483644,
 };
 
 hintlet.webkitTypeList = [
@@ -57,11 +58,12 @@ hintlet.webkitTypeList = [
   'RESOURCE_SEND_REQUEST',             // 12
   'RESOURCE_RECEIVE_RESPONSE',         // 13
   'RESOURCE_FINISH',                   // 14
-  'PROFILE_DATA',                      // 15
+  'JAVASCRIPT_EXECUTION',              // 15
 ];
 
 hintlet.speedTracerTypeList = [
   'AGGREGATED_EVENTS',                 // 0x7FFFFFFF
   'TAB_CHANGED',                       // 0x7FFFFFFE
   'RESOURCE_UPDATED',                  // 0x7FFFFFFD
+  'PROFILE_DATA',                      // 0x7FFFFFFC
 ];

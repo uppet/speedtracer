@@ -1071,6 +1071,13 @@ public class SluggishnessDetailView extends DetailView {
       if (backTrace != null) {
         details.put(STACK_TRACE_KEY, backTrace);
       }
+      // TODO(jaimeyap): figure out what we want to do with our backTrace vs the
+      // stuff landed in WebKit. Can we get symbol names?
+      // TODO(jaimeyap): Connect the following to our source viewer.
+      if (e.hasCallLocation()) {
+        details.put("Called by", e.getCallerScriptName() + ": Line"
+            + e.getCallerScriptLine());
+      }
 
       switch (e.getType()) {
         case DomEvent.TYPE:

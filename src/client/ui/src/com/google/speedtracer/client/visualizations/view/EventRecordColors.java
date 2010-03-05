@@ -18,6 +18,7 @@ package com.google.speedtracer.client.visualizations.view;
 import com.google.gwt.graphics.client.Color;
 import com.google.speedtracer.client.model.DomEvent;
 import com.google.speedtracer.client.model.EvalScript;
+import com.google.speedtracer.client.model.JavaScriptExecutionEvent;
 import com.google.speedtracer.client.model.LayoutEvent;
 import com.google.speedtracer.client.model.LogEvent;
 import com.google.speedtracer.client.model.PaintEvent;
@@ -46,6 +47,7 @@ public class EventRecordColors {
     colorMap.put(XhrReadyStateChangeEvent.TYPE, Color.LIGHTGREEN);
     colorMap.put(RecalcStyleEvent.TYPE, Color.DARKGREEN);
     colorMap.put(EvalScript.TYPE, Color.PEACH);
+    colorMap.put(JavaScriptExecutionEvent.TYPE, Color.PINK);
 
     // TODO(jaimeyap): Make use of these colors later on.
     // colorMap.put(MouseHoverStyleEvent.TYPE, Color.LIMEGREEN);
@@ -53,7 +55,6 @@ public class EventRecordColors {
     // colorMap.put(MouseHoverStyleEvent.TYPE, Color.LIMEGREEN);
     // colorMap.put(DomEventDispatch.TYPE, Color.YELLOW);
     // colorMap.put(DomBindingEvent.TYPE, Color.PALE_GREEN);
-    // colorMap.put(JavaScriptExecution.TYPE, Color.PINK);
     // colorMap.put(JavaScriptCompileEvent.TYPE, Color.CYAN);
   }
 

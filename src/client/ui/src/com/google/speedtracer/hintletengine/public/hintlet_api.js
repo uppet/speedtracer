@@ -98,8 +98,8 @@ hintlet.addHint = function(hintletRule, timestamp, description,
   var value = hintlet._formatHint(hintletRule, timestamp, description,
       refRecord, severity);
   var hintMessage = {
-	type: 2,
-	payload: value
+    type: 2,
+    payload: value
   };
   // Encode the object as JSON and send it to the UI
   var jsonString = JSON.stringify(hintMessage);
@@ -143,13 +143,13 @@ hintlet.load = function(path) {
  */
 hintlet.typeToString = function(typeNumber) {
   if (typeNumber < 0 || typeNumber > hintlet.webkitTypeList.length) {
-	// Normalize by Java's Max Int which is 0x7fffffff, or 2147483647 in decimal
-	var maxInt = 2147483647;
-	var speedTracerTypeNumber = maxInt - typeNumber;
-	if (speedTracerTypeNumber < 0 ||
-	  speedTracerTypeNumber > hintlet.speedTracerTypeList.length) {
-	  return undefined;
-	}
+    // Normalize by Java's Max Int which is 0x7fffffff, or 2147483647 in decimal
+    var maxInt = 2147483647;
+    var speedTracerTypeNumber = maxInt - typeNumber;
+    if (speedTracerTypeNumber < 0 ||
+      speedTracerTypeNumber > hintlet.speedTracerTypeList.length) {
+      return undefined;
+    }
     return hintlet.speedTracerTypeList[speedTracerTypeNumber];
   }
   return hintlet.webkitTypeList[typeNumber];
@@ -165,7 +165,7 @@ hintlet.stringToType = function(typeString) {
 }
 
 /**
- * Given a NETWORK_RESOURCE_RESPONSE event, returns the type of resource
+ * Returns the type of resource, given the url and header map,
  * as one of the hintlet.RESOURCE_TYPE_XXX constants.
  *
  * Ripped from Page Speed
@@ -174,11 +174,11 @@ hintlet.stringToType = function(typeString) {
 hintlet.__mime_type_regexp = /^[^\/;]+\/[^\/;]+/;
 hintlet.__image_type_regexp = /^image\//;
 hintlet.__favicon_regexp = /\/favicon.ico$/;
-hintlet.getResourceType = function(dataRecord) {
+hintlet.getResourceType = function(url, headers) {
 
   // Looks in the specified dataRecords at the mime type embedded as the 
   // prefix of the Content-Type header and returns the appropriate resource type.
-  var contentTypeHeader = hintlet.hasHeader(dataRecord.data.headers, 'Content-Type');
+  var contentTypeHeader = hintlet.hasHeader(headers, 'Content-Type');
   if (contentTypeHeader === undefined) {
     return hintlet.RESOURCE_TYPE_OTHER;
   }
@@ -204,8 +204,8 @@ hintlet.getResourceType = function(dataRecord) {
   }
   // TODO(zundel): this test is less than complete.
   if (mimeType == "image/vnd.microsoft.icon" || 
-      (dataRecord.data.url &&
-       dataRecord.data.url.match(hintlet.__favicon_regexp))) {
+      (url &&
+       url.match(hintlet.__favicon_regexp))) {
     return hintlet.RESOURCE_TYPE_FAVICON;
   }
   if (mimeType.match(hintlet.__image_type_regexp)) {
@@ -260,7 +260,7 @@ hintlet.hasHeader = function(headers, targetHeader) {
  *     containing the contents of that header.
  * @param {string} targetHeader The header to match.
  * @param {string} targetString The string to search for in the header.
- * @return {boolean} true iff the headers contain the givenð header and it
+ * @return {boolean} true iff the headers contain the given header and it
  *     contains the target string.
  */
 hintlet.headerContains = function(headers, targetHeader, targetString) {
@@ -294,4 +294,84 @@ hintlet.isCompressed = function(headers) {
       return true;
   }  
   return false;
+}
+
+var resources = {};
+
+/**
+ * Updates our backing store of accumulated network resource information by
+ * merging in an inspector updateResource object.
+ * 
+ * NOTE: We do not use store the finished/completion update. We allow the
+ * RESOURCE_FINISH timeline record to deliver that information.
+ * 
+ * @param {Object} the inspector updateResource object used to update our
+ *     backing store.
+ */
+hintlet._updateResource = function(update) {
+  var updateData = update.data;
+  var resourceData = resources[updateData.identifier];
+  
+  if (!resourceData) {
+    if (updateData.url) {
+      resources[updateData.identifier] = updateData;
+    }
+    return;
+  }
+
+  if (updateData.didRequestChange) {
+    resourceData.domain = updateData.host;
+    resourceData.path = updateData.path;
+    resourceData.lastPathComponent = updateData.lastPathComponent;
+    resourceData.requestHeaders = updateData.requestHeaders;
+    resourceData.cached = updateData.cached;
+    resourceData.requestMethod = updateData.requestMethod;
+    resourceData.mainResource = updateData.mainResource;
+  }
+  
+  if (updateData.didResponseChange) {
+    resourceData.responseHeaders = updateData.responseHeaders;
+    resourceData.statusCode = updateData.statusCode;
+    resourceData.mimeType = updateData.mimeType;
+  }
+ 
+  if (updateData.didLengthChange) {
+    resourceData.contentLength = updateData.contentLength;
+  }
+
+  if (updateData.didTimingChange) {
+    if (updateData.startTime) {
+      resourceData.startTime = updateData.startTime;
+    }
+
+    if (updateData.responseReceivedTime) {
+      resourceData.responseReceivedTime = updateData.responseReceivedTime;
+    }
+  }
+}
+
+/**
+ * For the purposes of not leaking memory, we assume hintlets will have used
+ * the record by the time an update comes in that signals the resource is 
+ * completed. So we can safely remove the associate accumulated state from out
+ * backing store.
+ * @param {Object} the updateResource object
+ */
+hintlet._maybeForgetResource = function(update) {
+  var updateData = update.data;
+  // By now all hintlets should have had a crack at this. The finish checkpoint
+  // record gets fired before this completion change record goes out, except in
+  // the case of redirects. But arguably, hintlets dont need to see redirects,
+  // only the the request that results from the redirect.
+  if (updateData.didCompletionChange &&
+      (updateData.failed || updateData.finished)) {
+    delete resources[updateData.identifier];
+  }
+}
+
+/**
+ * Getter for the accumulated information about a resource.
+ */
+hintlet.getResourceData = function(identifier) {
+  return resources[identifier];
 }

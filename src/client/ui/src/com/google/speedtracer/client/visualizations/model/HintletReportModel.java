@@ -15,7 +15,6 @@
  */
 package com.google.speedtracer.client.visualizations.model;
 
-import com.google.speedtracer.client.model.ApplicationState;
 import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.HintletEngineHost;
 import com.google.speedtracer.client.timeline.GraphModel;
@@ -194,16 +193,5 @@ public class HintletReportModel implements VisualizationModel {
       }
     };
     Collections.sort(hintList, comparator);
-  }
-
-  // TODO(zundel): There is a problem not just of getting data from previous
-  // application states to the new one, but finding the right older application
-  // state when a hint comes in very late.
-  public void transferEndingState(ApplicationState oldState,
-      ApplicationState newState, String newUrl) {
-    // TODO(zundel): We need to do something similar here as we do with
-    // NetworkTimeLineModel, but it isn't obvious how to do it. Probably we'll
-    // need a reference to the DataModel so we can find hints associated w/
-    // NetworkResources.
   }
 }
