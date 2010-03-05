@@ -54,6 +54,7 @@ import com.google.speedtracer.client.model.DevToolsDataInstance;
 import com.google.speedtracer.client.model.ExternalExtensionDataInstance;
 import com.google.speedtracer.client.model.LoadFileDataInstance;
 import com.google.speedtracer.client.model.TabDescription;
+import com.google.speedtracer.client.model.VersionedRecordConverter;
 import com.google.speedtracer.client.model.DevToolsDataInstance.Proxy;
 import com.google.speedtracer.client.model.ExternalExtensionDataInstance.ConnectRequest;
 import com.google.speedtracer.client.util.dom.WindowExt;
@@ -63,7 +64,7 @@ import java.util.HashMap;
 /**
  * The Chrome extension background page script.
  */
-@Extension.ManifestInfo(name = "Speed Tracer (by Google)", description = "Get insight into the performance of your web applications.", version = "0.8", permissions = {
+@Extension.ManifestInfo(name = "Speed Tracer (by Google)", description = "Get insight into the performance of your web applications.", version = "0.8.1", permissions = {
     "tabs", "http://*/*", "https://*/*"}, icons = {
     "resources/icon16.png", "resources/icon32.png", "resources/icon48.png",
     "resources/icon128.png"})
@@ -238,11 +239,16 @@ public abstract class BackgroundPage extends Extension {
 
       // Connect the datainstance to receive data from the data_loader.
       port.getOnMessageEvent().addListener(new MessageEvent.Listener() {
+        VersionedRecordConverter converter;
+
         public void onMessage(MessageEvent.Message message) {
           EventRecordMessage eventRecordMessage = message.cast();
           if (getVersion() != eventRecordMessage.getVersion()) {
-            // TODO(jaimeyap): Need to convert this record to the current
-            // version. For now, just bail.
+            if (converter == null) {
+              converter = VersionedRecordConverter.create(eventRecordMessage.getVersion());              
+            }
+            converter.convert(dataInstance,
+                eventRecordMessage.getEventRecord());
             return;
           }
           dataInstance.onEventRecord(eventRecordMessage.getEventRecord());
@@ -263,11 +269,10 @@ public abstract class BackgroundPage extends Extension {
       port.getOnMessageEvent().addListener(new MessageEvent.Listener() {
         public void onMessage(MessageEvent.Message message) {
           PageEventMessage pageEventMessage = message.cast();
-          if (getVersion() != pageEventMessage.getVersion()) {
-            // TODO(jaimeyap): Need to convert this record to the current
-            // version. For now, just bail.
-            return;
-          }
+          // We don't support versioning for RAW data since it would mean
+          // maintaining support for multiple Chrome versions. We assume
+          // that RAW data should always be the same format as the current
+          // Chrome build.
           proxy.dispatchPageEvent(pageEventMessage.getPageEvent());
         }
       });

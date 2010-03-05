@@ -26,6 +26,6 @@ import com.google.gwt.chrome.crx.client.ContentScript.ManifestInfo;
     "http://*/*", "https://*/*", "file:///*"}, runAt = ContentScript.DOCUMENT_END)
 public class DataLoader extends ContentScript {
   public static final String DATA_LOAD = "DATA_LOAD";
-  
+
   public static final String RAW_DATA_LOAD = "RAW_DATA_LOAD";
 }

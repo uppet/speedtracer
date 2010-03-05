@@ -77,7 +77,7 @@ public class NetworkResource {
 
   private final boolean isMainResource;
 
-  private String lastPathComponent = "/";
+  private String lastPathComponent;
 
   private String mimeType;
 
@@ -180,7 +180,8 @@ public class NetworkResource {
   }
 
   public String getLastPathComponent() {
-    return lastPathComponent;
+    return (lastPathComponent == null) ? computeLastPathComponent()
+        : lastPathComponent;
   }
 
   public String getMimeType() {
@@ -295,5 +296,18 @@ public class NetworkResource {
         this.otherStartTime = update.getStartTime();
       }
     }
+  }
+
+  private String computeLastPathComponent() {
+    int lastSlash = url.lastIndexOf('/');
+    if (lastSlash < 0) {
+      // Might be something like about:blank.
+      return url;
+    }
+    int afterSlash = lastSlash + 1;
+    if (afterSlash == url.length()) {
+      return "/";
+    }
+    return url.substring(afterSlash, url.length());
   }
 }
