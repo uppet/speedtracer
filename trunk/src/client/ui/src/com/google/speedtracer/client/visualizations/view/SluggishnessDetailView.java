@@ -52,6 +52,7 @@ import com.google.speedtracer.client.model.EvalScript;
 import com.google.speedtracer.client.model.EventRecordType;
 import com.google.speedtracer.client.model.EventVisitorTraverser;
 import com.google.speedtracer.client.model.HintRecord;
+import com.google.speedtracer.client.model.JavaScriptExecutionEvent;
 import com.google.speedtracer.client.model.JavaScriptProfile;
 import com.google.speedtracer.client.model.LogEvent;
 import com.google.speedtracer.client.model.LotsOfLittleEvents;
@@ -1075,7 +1076,7 @@ public class SluggishnessDetailView extends DetailView {
       // stuff landed in WebKit. Can we get symbol names?
       // TODO(jaimeyap): Connect the following to our source viewer.
       if (e.hasCallLocation()) {
-        details.put("Called by", e.getCallerScriptName() + ": Line"
+        details.put("Caused by", e.getCallerScriptName() + ": Line "
             + e.getCallerScriptLine());
       }
 
@@ -1144,6 +1145,11 @@ public class SluggishnessDetailView extends DetailView {
         case LogEvent.TYPE:
           LogEvent logEvent = e.cast();
           details.put("Message", logEvent.getMessage());
+          break;
+        case JavaScriptExecutionEvent.TYPE:
+          JavaScriptExecutionEvent jsExecEvent = e.cast();
+          details.put("Function Call", jsExecEvent.getScriptName() + ": Line "
+              + jsExecEvent.getScriptLine());
           break;
         default:
           break;

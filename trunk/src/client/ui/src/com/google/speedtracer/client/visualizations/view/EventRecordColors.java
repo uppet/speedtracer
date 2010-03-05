@@ -47,7 +47,7 @@ public class EventRecordColors {
     colorMap.put(XhrReadyStateChangeEvent.TYPE, Color.LIGHTGREEN);
     colorMap.put(RecalcStyleEvent.TYPE, Color.DARKGREEN);
     colorMap.put(EvalScript.TYPE, Color.PEACH);
-    colorMap.put(JavaScriptExecutionEvent.TYPE, Color.PINK);
+    colorMap.put(JavaScriptExecutionEvent.TYPE, Color.YELLOW);
 
     // TODO(jaimeyap): Make use of these colors later on.
     // colorMap.put(MouseHoverStyleEvent.TYPE, Color.LIMEGREEN);
