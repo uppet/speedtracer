@@ -256,7 +256,10 @@ public abstract class VersionedRecordConverter {
   private static class UnknownRecordConverter extends VersionedRecordConverter {
     @Override
     public void convert(DataInstance dataInstance, EventRecord record) {
-      // Do nothing.
+      // It is a versioned file that is not current, but does not have a known
+      // record converter. We assume then that the version change does not
+      // contain a change in the record format.
+      dataInstance.onEventRecord(record);
     }
   }
 
