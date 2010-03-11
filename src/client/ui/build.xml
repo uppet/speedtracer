@@ -161,6 +161,13 @@
   <property name="speedtracer.junit.out" value="${speedtracer.destdir}/test" />
   <property name="speedtracer.junit.reports" value="${speedtracer.junit.out}/reports" />
 
+  <target name="tests.report-failures" if="speedtracer.tests.did-fail">
+    <concat>
+      <fileset dir="${speedtracer.junit.reports}" includes="TEST-*.txt" />
+    </concat>
+    <fail message="OMG! The tests failed!" />
+  </target>
+
   <!-- Set the value "remote.browser" to enable JUnit.  You'll need  -->
   <!-- to setup an instance of BrowserManagerServer running Chrome.      -->
   <!-- Syntax is -Dremote.browser="rmi://{hostname}/{browser name}   -->
@@ -189,7 +196,8 @@
     <mkdir dir="${speedtracer.junit.reports}" />
 
     <junit dir="${speedtracer.junit.out}" fork="yes" printsummary="yes"
-        haltonfailure="true" tempdir="${speedtracer.junit.out}">
+        haltonfailure="no" tempdir="${speedtracer.junit.out}"
+        failureproperty="speedtracer.tests.did-fail">
       <jvmarg line="${junit.platform.args}" />
       <jvmarg line="-Xmx768m" />
 
@@ -204,12 +212,12 @@
       </classpath>
 
       <formatter type="plain" />
-      <formatter type="xml" />
 
       <batchtest todir="${speedtracer.junit.reports}">
         <fileset refid="speedtracer.remoteweb.tests" />
       </batchtest>
     </junit>
+    <antcall target="tests.report-failures" />
   </target>
 
   <!-- Public targets -->
