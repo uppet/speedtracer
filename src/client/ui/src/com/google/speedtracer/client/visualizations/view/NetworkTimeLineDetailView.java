@@ -22,11 +22,11 @@ import com.google.gwt.resources.client.ImageResource.ImageOptions;
 import com.google.gwt.resources.client.ImageResource.RepeatStyle;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
+import com.google.gwt.topspin.ui.client.Window;
 import com.google.speedtracer.client.model.NetworkResource;
 import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.util.dom.DocumentExt;
 import com.google.speedtracer.client.view.DetailView;
-import com.google.speedtracer.client.view.DetailViews;
 import com.google.speedtracer.client.view.MainTimeLine;
 import com.google.speedtracer.client.view.fx.CssTransitionFloat;
 import com.google.speedtracer.client.view.fx.CssTransitionFloat.CallBack;
@@ -190,6 +190,7 @@ public class NetworkTimeLineDetailView extends DetailView {
     // We do a naive linear search until the kinks can be ironed
     // out of more sophisticated search.
     List<NetworkResource> networkResources = model.getSortedResources();
+    int currentPixelWidth = Window.getInnerWidth();
     for (int i = 0; i < networkResources.size(); i++) {
       NetworkResource resource = networkResources.get(i);
       double startTime = resource.getStartTime();
@@ -214,7 +215,7 @@ public class NetworkTimeLineDetailView extends DetailView {
 
         final ResourceRow row = new ResourceRow(getContainer(), startTime,
             endTime, resource, fileExtension,
-            (DetailViews.currentPixelWidth - Constants.GRAPH_PIXEL_OFFSET),
+            (currentPixelWidth - Constants.GRAPH_PIXEL_OFFSET),
             left, right, this, resources);
 
         displayed.add(row);
