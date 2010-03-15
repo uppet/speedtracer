@@ -103,9 +103,6 @@ public abstract class LazilyCreateableElement implements HasRemovers {
 
   /**
    * Will construct underlying DOM element if it is not already constructed.
-   * 
-   * @param additionalClassNames
-   * @return
    */
   public Element getElement() {
     if (element == null) {

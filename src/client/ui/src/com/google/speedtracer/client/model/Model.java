@@ -16,7 +16,6 @@
 
 package com.google.speedtracer.client.model;
 
-
 /**
  * The root class in the Monitor's data model. This provides communication with the
  * underlying plumbing and ultimately provides access to the data streaming to

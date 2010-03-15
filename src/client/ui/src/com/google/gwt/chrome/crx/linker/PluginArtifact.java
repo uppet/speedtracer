@@ -18,7 +18,7 @@ package com.google.gwt.chrome.crx.linker;
 import com.google.gwt.core.ext.linker.Artifact;
 
 /**
- * Artifact for {@link Plugin}s.
+ * Artifact for {@link com.google.gwt.chrome.crx.client.Plugin}s.
  */
 public class PluginArtifact extends Artifact<PluginArtifact> {
   private static final long serialVersionUID = -2913839495155156112L;

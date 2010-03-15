@@ -15,7 +15,6 @@
  */
 package com.google.speedtracer.client.model;
 
-import com.google.speedtracer.client.model.NetworkResource.HeaderMap;
 import com.google.speedtracer.client.util.IterableFastStringMap;
 
 /**
@@ -44,11 +43,8 @@ public abstract class VersionedRecordConverter {
     }
 
     static class OldResponse extends OldNetworkResource {
+      @SuppressWarnings("all")
       protected OldResponse() {
-      }
-
-      final HeaderMap getHeaders() {
-        return getData().getJSObjectProperty("headers").cast();
       }
 
       final String getMimeType() {
@@ -58,17 +54,10 @@ public abstract class VersionedRecordConverter {
       final int getResponseCode() {
         return getData().getIntProperty("responseCode");
       }
-
-      final String getResponseUrl() {
-        return getData().getStringProperty("url");
-      }
-
-      final boolean isCached() {
-        return getData().getBooleanProperty("isCached");
-      }
     }
 
     static class OldStart extends OldNetworkResource {
+      @SuppressWarnings("all")
       protected OldStart() {
       }
 

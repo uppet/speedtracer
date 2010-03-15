@@ -39,8 +39,8 @@ public class WindowChannel {
      * Creates and connects a new channel.
      * 
      * connect is asynchronous and it is not safe to call
-     * {@link #sendMessage(int, JavaScriptObject)} or {@link #close()} before
-     * {@link Listener#onChannelConnected(WindowChannel)} has been invoked.
+     * {@link #sendMessage(int, Message)} or {@link #close()} before
+     * {@link Listener#onChannelConnected(Client)} has been invoked.
      * 
      * @param window a shared window
      * @param name a shared name for the channel
@@ -93,8 +93,8 @@ public class WindowChannel {
      * Closes the channel.
      * 
      * It is safe to call this method on a closed channel. However, it is not
-     * safe to call before {@link Listener#onChannelConnected(WindowChannel)}
-     * has been invoked.
+     * safe to call before {@link Listener#onChannelConnected(Client)} has been
+     * invoked.
      */
     public void close() {
       if (socket != null) {
@@ -109,7 +109,7 @@ public class WindowChannel {
      * Sends a message to the channel peer.
      * 
      * It is an error to call this method before
-     * {@link Listener#onChannelConnected(WindowChannel)} is invoked.
+     * {@link Listener#onChannelConnected(Client)} is invoked.
      * 
      * @param type a type id to use to dispatch the message
      * @param message the message payload
@@ -265,7 +265,7 @@ public class WindowChannel {
       };
     }-*/;
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings("all")
     protected Connector() {
     }
 
@@ -286,7 +286,7 @@ public class WindowChannel {
       };
     }-*/;
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings("all")
     protected SetSocketCallback() {
     }
 
@@ -313,7 +313,7 @@ public class WindowChannel {
         }];
     }-*/;
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings("all")
     protected Socket() {
     }
 

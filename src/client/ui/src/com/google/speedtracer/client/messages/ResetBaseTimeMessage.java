@@ -28,7 +28,8 @@ public class ResetBaseTimeMessage extends WindowChannel.Message {
    * Create an instance of this message.
    * 
    * @param tabId the associate tab id;
-   * @return a message that can be sent with {@link WindowChannel#sendMessage}
+   * @return a message that can be sent with
+   *         {@link WindowChannel.Client#sendMessage(int, WindowChannel.Message)}
    */
   public static native ResetBaseTimeMessage create(int tabId, int browserId) /*-{
     return {tabId: tabId,  browserId: browserId};

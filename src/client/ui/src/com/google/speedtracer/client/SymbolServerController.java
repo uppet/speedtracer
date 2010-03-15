@@ -93,7 +93,6 @@ public class SymbolServerController {
    * resource URL.
    * 
    * @param resource The resource we want the symbol mapping for.
-   * @return The symbol map.
    */
   static void put(String resource, JsSymbolMap symbols) {
     resourceSymbols.put(resource, symbols);

@@ -94,7 +94,7 @@ public class UiThreadUtilization {
    * Constructor for UiThreadUtilization.
    * 
    * @param graphModel the model that will be populated with data points
-   * @param baseTime the base time to calibrate against
+   * @param maxUtilization
    */
   public UiThreadUtilization(GraphModel graphModel, double maxUtilization) {
     this.graphModel = graphModel;

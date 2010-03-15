@@ -239,7 +239,7 @@ public class DevToolsDataInstance extends DataInstance {
    * Overlay type for our dispatcher used by {@link Proxy}.
    */
   private static class Dispatcher extends JavaScriptObject {
-    @SuppressWarnings("unused")
+    @SuppressWarnings("all")
     protected Dispatcher() {
     }
 
@@ -249,7 +249,7 @@ public class DevToolsDataInstance extends DataInstance {
   }
 
   /**
-   * Constructs and returns a {@link DevToolsDataIstance} after wiring it up to
+   * Constructs and returns a {@link DevToolsDataInstance} after wiring it up to
    * receive events over the extensions-devtools API.
    * 
    * @param tabId the tab that we want to connec to.
@@ -260,7 +260,7 @@ public class DevToolsDataInstance extends DataInstance {
   }
 
   /**
-   * Constructs and returns a {@link DevToolsDataIstance} after wiring it up to
+   * Constructs and returns a {@link DevToolsDataInstance} after wiring it up to
    * receive events over the extensions-devtools API.
    * 
    * @param proxy an externally supplied proxy to act as the record

@@ -93,7 +93,7 @@ public class Tree extends Widget {
    * 
    * @see <a
    *      href="http://code.google.com/p/google-web-toolkit/issues/detail?id=3408"
-   *      > see issue 3408< /a>
+   *      > see issue 3408</a>
    */
   public static class Item extends Widget implements EventListener {
 
@@ -125,7 +125,6 @@ public class Tree extends Widget {
      * @param parentContainer An alternative container to use for holding this
      *          Item (it will be attached to the parent element.)
      * @param resources Static resources
-     * @param resources CSS resources for the tree
      */
     public Item(Item parent, Container parentContainer, Tree.Resources resources) {
       this(parentContainer, resources, parent.backRef);

@@ -32,7 +32,7 @@ public class UiThreadUtilizationTests extends GWTTestCase {
   private static class MockUiThreadUtilization extends UiThreadUtilization {
     /**
      * A static factory method for creating instances of a testable version of
-     * {@link UiThreadUtiliation}.
+     * {@link UiThreadUtilization} .
      * 
      * @return a testable version of {@link UiThreadUtilization}
      */

@@ -24,7 +24,7 @@ import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.client.model.EventVisitor.PostOrderVisitor;
 
 /**
- * Tests for {@link EventFilter).
+ * Tests for {@link EventFilter}.
  */
 public class EventFilterTests extends GWTTestCase {
 

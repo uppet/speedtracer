@@ -181,8 +181,9 @@ public interface PostMessageChannel {
   }
 
   /**
-   * A {@link Channel} implementation that is lighter weight (does not create an
-   * iframe) but only allows for receiving and responding to messages.
+   * A {@link PostMessageChannel} implementation that is lighter weight (does
+   * not create an iframe) but only allows for receiving and responding to
+   * messages.
    */
   public class Responder implements PostMessageChannel {
 

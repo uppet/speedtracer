@@ -39,7 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Generator for extension {@link Component}s.
+ * Generator for extension {@link com.google.gwt.chrome.crx.client.Component}s.
  */
 public class ComponentGenerator extends Generator {
   private static final String BROWSERACTION_USER_TYPE = "com.google.gwt.chrome.crx.client.BrowserAction";

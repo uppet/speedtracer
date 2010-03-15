@@ -18,7 +18,7 @@ package com.google.gwt.chrome.crx.linker;
 import com.google.gwt.core.ext.linker.Artifact;
 
 /**
- * Artifact for {@link ToolStrip}s.
+ * Artifact for {@link com.google.gwt.chrome.crx.client.ToolStrip}s.
  */
 public class ToolStripArtifact extends Artifact<ToolStripArtifact> {
   private static final long serialVersionUID = -486331903367200384L;

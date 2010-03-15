@@ -40,7 +40,7 @@ public class PluginModel implements Model {
   }
 
   private static class ControlInstance extends JavaScriptObject {
-    @SuppressWarnings("unused")
+    @SuppressWarnings("all")
     protected ControlInstance() {
     }
 

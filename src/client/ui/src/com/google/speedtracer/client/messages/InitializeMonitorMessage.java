@@ -35,7 +35,7 @@ public class InitializeMonitorMessage extends WindowChannel.Message {
    * @param handle an opaque handle to a
    *          {@link com.google.speedtracer.client.model.DataModel}
    * @return a message that can be sent with
-   *         {@link WindowChannel#sendMessage(int, com.google.gwt.core.client.JavaScriptObject)}
+   *         {@link WindowChannel.Client#sendMessage(int, WindowChannel.Message)}
    */
   public static native InitializeMonitorMessage create(
       TabDescription tabDescription, DataInstance handle, String version) /*-{

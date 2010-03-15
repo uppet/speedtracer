@@ -52,7 +52,6 @@ public class DevTools {
    * particular tab.
    * 
    * @param tabId the tab's id
-   * @return
    */
   public static TabEvents getTabEvents(int tabId) {
     // Clients should check isEnabled() before invoking this.
