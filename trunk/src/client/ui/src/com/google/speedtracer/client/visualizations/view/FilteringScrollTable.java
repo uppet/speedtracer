@@ -190,7 +190,7 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
       updateLabel();
 
       // hook a click listener to open 10 rows above
-      trackRemover(ClickEvent.addClickListener(this, showAbove,
+      FilteringScrollTable.this.trackRemover(ClickEvent.addClickListener(this, showAbove,
           new ClickListener() {
             public void onClick(ClickEvent event) {
               expandAbove();
@@ -198,7 +198,7 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
           }));
 
       // hook a click listener to open 10 rows below
-      trackRemover(ClickEvent.addClickListener(this, showBelow,
+      FilteringScrollTable.this.trackRemover(ClickEvent.addClickListener(this, showBelow,
           new ClickListener() {
             public void onClick(ClickEvent event) {
               expandBelow();
@@ -352,7 +352,7 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
       parent.getElement().appendChild(elem);
 
       // Make sure clicking around the detail view doesn't bubble up
-      trackRemover(ClickEvent.addClickListener(this, elem,
+      FilteringScrollTable.this.trackRemover(ClickEvent.addClickListener(this, elem,
           new ClickListener() {
 
             public void onClick(ClickEvent event) {
