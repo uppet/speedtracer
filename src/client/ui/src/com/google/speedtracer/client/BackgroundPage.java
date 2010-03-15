@@ -243,7 +243,7 @@ public abstract class BackgroundPage extends Extension {
 
         public void onMessage(MessageEvent.Message message) {
           EventRecordMessage eventRecordMessage = message.cast();
-          if (getVersion() != eventRecordMessage.getVersion()) {
+          if (!getVersion().equals(eventRecordMessage.getVersion())) {
             if (converter == null) {
               converter = VersionedRecordConverter.create(eventRecordMessage.getVersion());              
             }
@@ -471,7 +471,6 @@ public abstract class BackgroundPage extends Extension {
                 // If this is the first opened connection for this browser type,
                 // then we provision an entry for it in the browser map.
                 exListener.onBrowserConnected(browserId);
-                connection = browserConnectionMap.get(browserId);
               }
 
               final int tabId = connectRequest.getTabId();
