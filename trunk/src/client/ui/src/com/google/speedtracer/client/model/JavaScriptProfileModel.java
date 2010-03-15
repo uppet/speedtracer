@@ -164,11 +164,7 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
 
     WorkQueue.Node worker = new VisitProfileWorker(visitor, eventsWithProfiles,
         currentEventSequence);
-    if (workQueue == null) {
-      workQueue.append(worker);
-    } else {
-      worker.execute();
-    }
+    workQueue.append(worker);
   }
 
   private void doVisitEventsWithProfiles(EventVisitor visitor,
@@ -179,7 +175,7 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
       if (event.hasJavaScriptProfile()) {
         visitor.visitUiEvent(event);
       }
-      if (workQueue != null && workQueue.isTimeSliceExpired()) {
+      if (workQueue.isTimeSliceExpired()) {
         workQueue.append(new VisitProfileWorker(visitor, eventsWithProfiles,
             i + 1));
         return;
