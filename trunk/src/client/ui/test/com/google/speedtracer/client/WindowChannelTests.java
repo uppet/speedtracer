@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Tests {@link WindowChannelServer}.
+ * Tests {@link WindowChannel}.
  */
 public class WindowChannelTests extends GWTTestCase {
   private static final String PROPERTY_NAME = "$WindowChannel$";
@@ -86,7 +86,7 @@ public class WindowChannelTests extends GWTTestCase {
       return { type: type };
     }-*/;
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings("all")
     protected TestMessage() {
     }
 
@@ -213,7 +213,7 @@ public class WindowChannelTests extends GWTTestCase {
 
   /**
    * Tests that
-   * {@link WindowChannel#sendMessage(int, com.google.gwt.core.client.JavaScriptObject)}
+   * {@link WindowChannel.Client#sendMessage(int, WindowChannel.Message)}
    * properly delivers messages.
    */
   public void testSend() {

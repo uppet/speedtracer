@@ -21,7 +21,7 @@ import com.google.speedtracer.client.util.JSON;
 
 /**
  * Message sent back over PostMessage from
- * {@link com.google.speedtracer.client.model.HintletEngine} to
+ * {@link com.google.speedtracer.hintletengine.client.HintletEngine} to
  * {@link com.google.speedtracer.client.model.HintletEngineHost}.
  */
 public class HintMessage extends JavaScriptObject {

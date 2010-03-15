@@ -329,8 +329,6 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
    * Create a new blank application state for this URL. Pull related
    * NetworkResources from the previous NetworkModel, add them to the new
    * Application State. The Swap it in.
-   * 
-   * @param message
    */
   public void onTabChanged(TabChange nav) {
     // We should never get a page transition before initialize!!

@@ -19,8 +19,8 @@ import com.google.speedtracer.client.WindowChannel;
 import com.google.speedtracer.client.util.dom.WindowExt;
 
 /**
- * Message sent by the {@link Monitor} when it comes online to request that
- * it be initialized.
+ * Message sent by the {@link com.google.speedtracer.client.Monitor} when it
+ * comes online to request that it be initialized.
  */
 public class RequestInitializationMessage extends WindowChannel.Message {
   public static final int TYPE = MessageType.WC_REQUEST_INITIALIZATION_TYPE;
@@ -30,7 +30,7 @@ public class RequestInitializationMessage extends WindowChannel.Message {
    * 
    * @param tabId the associate tab id;
    * @return a message that can be sent with
-   *         {@link WindowChannel#sendMessage(int, JavaScriptObject)}
+   *         {@link WindowChannel.Client#sendMessage(int, WindowChannel.Message)}
    */
   public static native RequestInitializationMessage create(int tabId,
       int browserId, WindowExt wind) /*-{

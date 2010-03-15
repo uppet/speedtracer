@@ -19,8 +19,8 @@ import java.util.Date;
 
 /**
  * Contains information about the current build. To get a concrete instance, use
- * {@link GWT#createFromPayload(Class)}. A generator will include information supplied
- * during the build process.
+ * {@link com.google.gwt.core.client.GWT#create(Class)}. A generator will
+ * include information supplied during the build process.
  */
 public interface BuildInfo {
 

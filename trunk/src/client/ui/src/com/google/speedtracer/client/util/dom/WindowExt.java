@@ -89,7 +89,7 @@ public class WindowExt extends Window {
   /**
    * Opens a new child window.
    * 
-   * @see http://developer.mozilla.org/en/docs/DOM:window.open
+   * @see "http://developer.mozilla.org/en/docs/DOM/window.open"
    * @param url the URL to load in the new window
    * @param name the window name
    * @param features specifications for the child window, see MDC article for

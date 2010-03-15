@@ -316,7 +316,7 @@ public class SluggishnessDetailView extends DetailView {
        * Attaches our aggregate stats widget to a Cell Element. We can only have
        * this attached to a single Cell element.
        * 
-       * @param cellElem the {@link Element} for the {@link Cell} we are
+       * @param cellElem the {@link Element} for the cell we are
        *          attaching to.
        */
       public void attachAggregateStatsWidget(Element cellElem) {
@@ -886,7 +886,8 @@ public class SluggishnessDetailView extends DetailView {
 
     /**
      * This method handles type conversion and calls corresponding
-     * {@link #fillRow} method for the specific event type.
+     * {@link #fillRowForUiEvent(UiEvent, String, UiEventDetails, TableRow)}
+     * method for the specific event type.
      * 
      * @param e the event
      * @param append to append or not to append
@@ -1263,7 +1264,7 @@ public class SluggishnessDetailView extends DetailView {
    * Doing a full binary search to rebuild the table on each event would be bad.
    * We can get away with an append to the table.
    * 
-   * @param searchableEvent
+   * @param event
    */
   public void shortCircuitAddEvent(UiEvent event) {
     contentTable.addRowForUiEvent(event, true);

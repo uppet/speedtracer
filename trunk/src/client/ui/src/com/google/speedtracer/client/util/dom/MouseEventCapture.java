@@ -79,9 +79,6 @@ public class MouseEventCapture {
    * CaptureListener on the top of the capture stack and then provide a handle
    * to an object that can be used to
    * 
-   * 
-   * @param source
-   * @param nativeSource
    * @param listener
    */
   public static void capture(final MouseCaptureListener listener) {

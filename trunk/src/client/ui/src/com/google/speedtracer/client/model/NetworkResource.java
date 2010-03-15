@@ -257,7 +257,7 @@ public class NetworkResource {
    * checkpoint records to establish all timing information. We therefore ignore
    * the timing information present in these updates.
    * 
-   * @param update
+   * @param updateEvent
    */
   public void update(ResourceUpdateEvent updateEvent) {
     UpdateResource update = updateEvent.getUpdate();

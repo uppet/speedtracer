@@ -579,7 +579,7 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
    * 
    * @param rowDuration the value this row has when taking part in the filtering
    *          process.
-   * @return {@link TableRow} or {@link CoalescedRow} that was inserted into the
+   * @return {@link TableRow} or {@link CoallescedRow} that was inserted into the
    *         Table. It may or may not be the top level row that will be appended
    *         to the DOM.
    */
@@ -689,7 +689,7 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
    * displayed depending on the filter setting.
    * 
    * @param filterValue
-   * @return {@link TableRow} or {@link CoalescedRow} that was inserted into the
+   * @return {@link TableRow} or {@link CoallescedRow} that was inserted into the
    *         Table.
    */
   public TableRow prependRow(double filterValue) {

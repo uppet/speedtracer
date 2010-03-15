@@ -160,7 +160,7 @@ public class HotKey {
 
   /**
    * Removes all handlers registered with the
-   * {@link #register(int, com.google.speedtracer.client.HotKey.Handler, String)
+   * {@link #register(int, com.google.speedtracer.client.HotKey.Handler, String)}
    * method.
    */
   public static void unregisterAll() {

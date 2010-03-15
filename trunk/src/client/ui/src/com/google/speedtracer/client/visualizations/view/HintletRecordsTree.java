@@ -126,7 +126,7 @@ public class HintletRecordsTree extends Tree {
    * Constructor.
    * 
    * @param container the parent Container
-   * @param hintlets the hintlets to display
+   * @param hintletRecords the hintlets to display
    * @param resources our ImmutableResourceBundle resources
    */
   public HintletRecordsTree(Container container,

@@ -22,10 +22,11 @@ import com.google.gwt.core.client.JavaScriptObject;
  * A overlay type around a tab's description object. This contains all overview
  * information about a monitored tab.
  * 
- * TODO(jaimeyap): This could be a subclass of {@link Tabs.Tab} from the
- * chromium extensions lib. But since we only use a subset of the fields on that
- * object, it would be misleading to give a reference to one of these and have
- * half the fields be undefined.
+ * TODO(jaimeyap): This could be a subclass of
+ * {@link com.google.gwt.chrome.crx.client.Tabs.Tab} from the Chromium
+ * extensions lib. But since we only use a subset of the fields on that object,
+ * it would be misleading to give a reference to one of these and have half the
+ * fields be undefined.
  */
 public class TabDescription extends JavaScriptObject {
   public static final native TabDescription create(int id, String title,
