@@ -21,9 +21,6 @@ import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.gwt.topspin.ui.client.Div;
-import com.google.gwt.topspin.ui.client.ResizeEvent;
-import com.google.gwt.topspin.ui.client.ResizeListener;
-import com.google.gwt.topspin.ui.client.Window;
 import com.google.speedtracer.client.model.Visualization;
 import com.google.speedtracer.client.util.IterableFastStringMap;
 
@@ -32,7 +29,7 @@ import com.google.speedtracer.client.util.IterableFastStringMap;
  * 
  * TODO (jaimeyap): Rename this to VisualizationViewsPanel.
  */
-public class DetailViews extends Div implements ResizeListener {
+public class DetailViews extends Div {
 
   /**
    * CSS.
@@ -51,7 +48,6 @@ public class DetailViews extends Div implements ResizeListener {
     DetailViews.Css detailViewsCss();
   }
   
-  public static int currentPixelWidth = 0;
   private final DefaultContainerImpl container;
   private DetailView currentView = null;
   private final IterableFastStringMap<DetailView> views = new IterableFastStringMap<DetailView>();
@@ -65,9 +61,6 @@ public class DetailViews extends Div implements ResizeListener {
 
     getElement();
     elem.getStyle().setPropertyPx("top", resources.detailViewsCss().offsetTop());
-    currentPixelWidth = Window.getInnerWidth();
-    
-    ResizeEvent.addResizeListener(Window.get(), Window.get(), this);
   }
 
   public void addViewForVisualization(Visualization<?, ?> visualization) {
@@ -78,13 +71,8 @@ public class DetailViews extends Div implements ResizeListener {
     return container;
   }
 
-  public void onResize(ResizeEvent event) {
-    currentPixelWidth = Window.getInnerWidth();
-  }
-
   public void removeViewForVisualization(Visualization<?, ?> visualization) {
     views.remove(visualization.getTitle());
-    onResize(null);
   }
 
   public void setCurrentView(Visualization<?, ?> visualization) {
