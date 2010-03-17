@@ -96,6 +96,11 @@ public class ExternalExtensionDataInstance extends DataInstance {
       this.port = port;
     }
 
+    public double getBaseTime() {
+      // TODO (zundel) return the baseTime used for normalizing timestamps. 
+      return 0;
+    }
+
     public void load(final DataInstance dataInstance) {
       // Connect the data coming in the port to the DataInstance.
       port.getOnMessageEvent().addListener(new MessageEvent.Listener() {

@@ -13,6 +13,7 @@
   <!-- Convert client.pem to a location so it will be relative to this
        directory. -->
   <property name="speedtracer.client.pem.path" location="${client.pem}" />
+  <property name="speedtracer.headless.pem.path" location="${headless.pem}" />
 
   <property name="speedtracer.stools.destdir" location="${speedtracer.destdir}/obj/stools" />
 

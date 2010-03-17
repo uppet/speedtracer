@@ -32,8 +32,16 @@ public class Xhr {
     void onSuccess(XMLHttpRequest xhr);
   }
 
+  /**
+   * Replacement for XMHttpRequest.create() to allow using this method in a
+   * Chrome Extensions background page.
+   */
+  public static native XMLHttpRequest create() /*-{
+    return new XMLHttpRequest();
+  }-*/;
+
   public static void get(String url, final XhrCallback callback) {
-    XMLHttpRequest xhr = XMLHttpRequest.create();
+    XMLHttpRequest xhr = Xhr.create();
     xhr.setOnReadyStateChange(new ReadyStateChangeHandler() {
       public void onReadyStateChange(XMLHttpRequest xhr) {
         if (xhr.getReadyState() == XMLHttpRequest.DONE) {
@@ -47,5 +55,24 @@ public class Xhr {
     });
     xhr.open("GET", url);
     xhr.send();
+  }
+
+  public static void post(String url, String requestData, String contentType,
+      final XhrCallback callback) {
+    XMLHttpRequest xhr = Xhr.create();
+    xhr.setOnReadyStateChange(new ReadyStateChangeHandler() {
+      public void onReadyStateChange(XMLHttpRequest xhr) {
+        if (xhr.getReadyState() == XMLHttpRequest.DONE) {
+          if (xhr.getStatus() == 200) {
+            callback.onSuccess(xhr);
+            return;
+          }
+          callback.onFail(xhr);
+        }
+      }
+    });
+    xhr.open("POST", url);
+    xhr.setRequestHeader("Content-type", contentType);
+    xhr.send(requestData);
   }
 }

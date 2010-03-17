@@ -37,6 +37,14 @@ class MessageType {
    */
   static final int PORT_EVENT_RECORD_TYPE = 100;
   static final int PORT_PAGE_EVENT_TYPE = 101;
+  /* 102 is currently unused and available for future message types */
+  static final int PORT_HEADLESS_CLEAR_DATA = 103;  
+  static final int PORT_HEADLESS_MONITORING_ON = 104;
+  static final int PORT_HEADLESS_MONITORING_OFF = 105;
+  static final int PORT_HEADLESS_GET_DUMP = 106;
+  static final int PORT_HEADLESS_GET_DUMP_ACK = 107;
+  static final int PORT_HEADLESS_SEND_DUMP = 108;
+  static final int PORT_HEADLESS_SEND_DUMP_ACK = 109;
   
   private MessageType() {
   }

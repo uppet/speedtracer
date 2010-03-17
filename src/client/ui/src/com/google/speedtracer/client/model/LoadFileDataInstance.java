@@ -31,6 +31,10 @@ public class LoadFileDataInstance extends DataInstance {
       this.port = port;
     }
 
+    public double getBaseTime() {
+      return 0.0;
+    }
+
     public void load(DataInstance dataInstance) {
       port.postMessage(createAck());
     }

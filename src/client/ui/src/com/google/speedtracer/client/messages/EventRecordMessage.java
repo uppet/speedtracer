@@ -28,14 +28,9 @@ public class EventRecordMessage extends Message {
   public static final int TYPE = MessageType.PORT_EVENT_RECORD_TYPE;
 
   public static EventRecordMessage create(String recordStr) {
-    return setFields(Message.create(TYPE), recordStr);
+    Message message = Message.create(TYPE);
+    return message.setProperty("record", recordStr).cast();
   }
-
-  private static native EventRecordMessage setFields(Message msg,
-      String recordStr) /*-{
-    msg["record"] = recordStr;
-    return msg;
-  }-*/;
 
   protected EventRecordMessage() {
   }
@@ -43,7 +38,7 @@ public class EventRecordMessage extends Message {
   public final EventRecord getEventRecord() {
     return JSON.parse(getRecordString()).cast();
   }
-  
+
   public final native String getRecordString() /*-{
     return this.record;
   }-*/;

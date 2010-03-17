@@ -1,12 +1,18 @@
 <project name="speedtracer-client" default="build">
   <!-- Default values are overridden by ../build.xml -->
   <property name="config" value="Release" />
-  <!-- client.pem - can be set to a location for a key. -->
+  <!-- client.pem - can be set to a location for a key for the 
+         graphical extension.  -->
+  <!-- headless.pem - can be set to a location for a key for the 
+         headless extension. -->
   <property name="speedtracer.destdir" location="../${config}" />
   <property name="speedtracer.revision" value="0" />
   <property name="moniker" value="speedtracer" />
+  <property name="headless.moniker" value="speedtracerheadless" />
 
   <property name="speedtracer.ui.destdir" location="${speedtracer.destdir}/${moniker}" />
+  <property name="speedtracer.headless.destdir" 
+      location="../${config}/${headless.moniker}" />
 
   <!-- TODO(knorton): Perform search for Chrome. -->
   <property environment="env" />
@@ -33,7 +39,6 @@
   </condition>
 
   <target name="speedtracer.client.build">
-    <!--inherits: config, revision, client.pem, speedtracer.destdir, speedtracer.ui.destdir -->
     <ant dir="ui" target="build" />
 
     <!-- Chrome does not have good error checking for missing pem
@@ -47,14 +52,14 @@
         </not>
       </or>
     </condition>
-    <fail message="Pem file is invalid: ${speedtracer.client.pem.path}"
+    <fail message="Extension Pem file is invalid: ${speedtracer.client.pem.path}"
         unless="speedtracer.client.pem.valid" />
 
     <condition property="speedtracer.client.pem.options"
         value="--pack-extension-key=${speedtracer.client.pem.path}"
         else="">
       <isset property="client.pem" />
-    </condition>
+    </condition>  
 
     <exec executable="${chrome.path}">
       <!-- user-data-dir is required to make sure an existing
@@ -76,9 +81,53 @@
     <!-- Also produce a zip file that can be used to update the gallery. -->
     <zip basedir="${speedtracer.ui.destdir}"
         destfile="${speedtracer.destdir}/${moniker}.zip" /> 
+    </target>
+
+    <target name="speedtracer.headless.build">
+    <!-- TODO(zundel): I'd like to not copy code around, but I am not 
+         sure how to macro-ize the logic below so it can be shared with
+         the graphical extension.  -->
+    <condition property="speedtracer.headless.pem.valid">
+      <or>
+        <available file="${speedtracer.headless.pem.path}" />
+        <not>
+          <isset property="headless.pem" />
+        </not>
+      </or>
+    </condition>
+    <fail message="Extension Pem file is invalid: ${speedtracer.headless.pem.path}"
+        unless="speedtracer.headless.pem.valid" />
+
+    <condition property="speedtracer.headless.pem.options"
+        value="--pack-extension-key=${speedtracer.headless.pem.path}"
+        else="">
+      <isset property="headless.pem" />
+    </condition>
+    
+    <exec executable="${chrome.path}">
+      <!-- user-data-dir is required to make sure an existing
+           chrome instance does not interfere.  -->
+      <arg line="--pack-extension=${speedtracer.headless.destdir}
+                 --no-message-box
+                 --user-data-dir=${speedtracer.destdir}/obj/user-data-dir
+                 --no-first-run
+                 ${speedtracer.headless.pem.options}" />
+    </exec>
+
+    <!-- Check to ensure that a crx was actually produced. -->
+    <condition property="speedtracer.headless.success">
+      <available file="${speedtracer.destdir}/${headless.moniker}.crx" />
+    </condition>
+    <fail message="${headless.moniker}.crx was not produced."
+        unless="speedtracer.headless.success" />
+
+    <!-- Also produce a zip file that can be used to update the gallery. -->
+    <zip basedir="${speedtracer.headless.destdir}"
+        destfile="${speedtracer.destdir}/${headless.moniker}.zip" /> 
   </target>
 
-  <target name="build" depends="speedtracer.client.build" />
+  <target name="build" 
+          depends="speedtracer.client.build, speedtracer.headless.build" />
 
   <target name="test">
     <ant dir="ui" target="test" />

@@ -78,6 +78,10 @@ public class DevToolsDataInstance extends DataInstance {
       dispatcher.invoke(event.getMethod(), event);
     }
 
+    public double getBaseTime() {
+      return baseTime;
+    }
+
     public void load(DataInstance dataInstance) {
       this.dataInstance = dataInstance.cast();
       connectToDataSource();
@@ -121,10 +125,6 @@ public class DevToolsDataInstance extends DataInstance {
         this.dataInstance = dataInstance;
       }
       connectToDataSource();
-    }
-
-    double getBaseTime() {
-      return baseTime;
     }
 
     void onEventRecord(EventRecord record) {
@@ -252,7 +252,7 @@ public class DevToolsDataInstance extends DataInstance {
    * Constructs and returns a {@link DevToolsDataInstance} after wiring it up to
    * receive events over the extensions-devtools API.
    * 
-   * @param tabId the tab that we want to connec to.
+   * @param tabId the tab that we want to connect to.
    * @return a newly wired up {@link DevToolsDataInstance}.
    */
   public static DevToolsDataInstance create(int tabId) {

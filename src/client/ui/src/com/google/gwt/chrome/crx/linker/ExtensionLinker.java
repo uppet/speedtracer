@@ -25,6 +25,7 @@ import com.google.gwt.core.ext.linker.Artifact;
 import com.google.gwt.core.ext.linker.ArtifactSet;
 import com.google.gwt.core.ext.linker.CompilationResult;
 import com.google.gwt.core.ext.linker.LinkerOrder;
+import com.google.gwt.core.ext.linker.SelectionProperty;
 import com.google.gwt.core.ext.linker.LinkerOrder.Order;
 import com.google.json.serialization.JsonArray;
 import com.google.json.serialization.JsonObject;
@@ -32,8 +33,11 @@ import com.google.json.serialization.JsonValue;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Collection;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -132,9 +136,11 @@ public class ExtensionLinker extends AbstractLinker {
       ArtifactSet artifacts) throws UnableToCompleteException {
     final SortedSet<CompilationResult> compilations = artifacts.find(CompilationResult.class);
     if (compilations.size() > 1) {
-      logger.log(
-          TreeLogger.ERROR,
-          "One permutation per module, please. Seriously, you changed something you weren't supposed to.");
+      logger.log(TreeLogger.ERROR,
+          "Found more than one permutation compiled in "
+              + ExtensionLinker.class.getSimpleName()
+              + ".  Use only a single permutation per module with this linker.");
+      logPermutations(logger, compilations);
       throw new UnableToCompleteException();
     }
     return compilations.first();
@@ -145,7 +151,10 @@ public class ExtensionLinker extends AbstractLinker {
     final SortedSet<ExtensionArtifact> extensions = artifacts.find(ExtensionArtifact.class);
     if (extensions.size() > 1) {
       // TODO(knorton): Improve error message.
-      logger.log(TreeLogger.ERROR, "One extension per module, please.");
+      logger.log(
+          TreeLogger.ERROR,
+          ExtensionLinker.class.getSimpleName()
+              + ": can only accept a single instance of one the Extension entry point per module.");
       throw new UnableToCompleteException();
     }
 
@@ -175,6 +184,29 @@ public class ExtensionLinker extends AbstractLinker {
 
   private static String getHtmlFilename(LinkerContext context) {
     return context.getModuleName() + ".html";
+  }
+
+  private static void logPermutations(TreeLogger logger,
+      Collection<CompilationResult> compilations) {
+    int count = 0;
+    for (CompilationResult compilationResult : compilations) {
+      SortedSet<SortedMap<SelectionProperty, String>> propertyMap = compilationResult.getPropertyMap();
+      StringBuilder builder = new StringBuilder();
+      for (SortedMap<SelectionProperty, String> propertySubMap : propertyMap) {
+        builder.append("{");
+        for (Entry<SelectionProperty, String> entry : propertySubMap.entrySet()) {
+          
+          SelectionProperty selectionProperty = entry.getKey();
+          if (!selectionProperty.isDerived()) {
+            builder.append(selectionProperty.getName() + ":" + entry.getValue() + " ");
+          }
+        }
+        builder.append("}");        
+      }
+      logger.log(TreeLogger.ERROR, "Permutation " + count + ": "
+          + builder.toString());
+      count++;
+    }
   }
 
   @Override

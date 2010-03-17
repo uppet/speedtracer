@@ -64,11 +64,13 @@ import java.util.HashMap;
 /**
  * The Chrome extension background page script.
  */
-@Extension.ManifestInfo(name = "Speed Tracer (by Google)", description = "Get insight into the performance of your web applications.", version = "0.9", permissions = {
+@Extension.ManifestInfo(name = "Speed Tracer (by Google)", 
+    description = "Get insight into the performance of your web applications.", version = ClientConfig.VERSION, permissions = {
     "tabs", "http://*/*", "https://*/*"}, icons = {
     "resources/icon16.png", "resources/icon32.png", "resources/icon48.png",
     "resources/icon128.png"})
 public abstract class BackgroundPage extends Extension {
+
   /**
    * Listener that does the bidding of external extensions driving Speed Tracer.
    */
@@ -145,7 +147,7 @@ public abstract class BackgroundPage extends Extension {
         } else {
           // If this is the case then restart monitoring instead of starting
           // over.
-          tabModel.dataInstance.<DataInstance> cast().resumeMonitoring();
+          tabModel.dataInstance.resumeMonitoring();
           setBrowserActionIcon(tabId, browserAction.mtIconActive(), tabModel);
           tabModel.channel.sendMessage(RecordingDataMessage.TYPE,
               RecordingDataMessage.create(true));
@@ -161,7 +163,7 @@ public abstract class BackgroundPage extends Extension {
       // If the icon is the record button, then we should already have an open
       // monitor, and we should start monitoring.
       if (tabModel.currentIcon == browserAction.mtIconActive()) {
-        tabModel.dataInstance.<DataInstance> cast().stopMonitoring();
+        tabModel.dataInstance.stopMonitoring();
         setBrowserActionIcon(tabId, browserAction.mtIcon(), tabModel);
         tabModel.channel.sendMessage(RecordingDataMessage.TYPE,
             RecordingDataMessage.create(false));
@@ -245,10 +247,9 @@ public abstract class BackgroundPage extends Extension {
           EventRecordMessage eventRecordMessage = message.cast();
           if (!getVersion().equals(eventRecordMessage.getVersion())) {
             if (converter == null) {
-              converter = VersionedRecordConverter.create(eventRecordMessage.getVersion());              
+              converter = VersionedRecordConverter.create(eventRecordMessage.getVersion());
             }
-            converter.convert(dataInstance,
-                eventRecordMessage.getEventRecord());
+            converter.convert(dataInstance, eventRecordMessage.getEventRecord());
             return;
           }
           dataInstance.onEventRecord(eventRecordMessage.getEventRecord());
@@ -351,14 +352,14 @@ public abstract class BackgroundPage extends Extension {
             TabModel tabModel = browserConnectionMap.get(browserId).tabMap.get(tabId);
             Icon pageActionIcon;
             if (recordingDataMessage.isRecording()) {
-              tabModel.dataInstance.<DataInstance> cast().resumeMonitoring();
+              tabModel.dataInstance.resumeMonitoring();
               pageActionIcon = browserAction.mtIconActive();
               // We need to ensure that the profiling options are in synch in
               // the browser with the current state reflected in the UI.
               channel.sendMessage(ResendProfilingOptions.TYPE,
                   ResendProfilingOptions.create());
             } else {
-              tabModel.dataInstance.<DataInstance> cast().stopMonitoring();
+              tabModel.dataInstance.stopMonitoring();
               pageActionIcon = browserAction.mtIcon();
             }
             if (browserId == CHROME_BROWSER_ID) {
@@ -414,7 +415,7 @@ public abstract class BackgroundPage extends Extension {
                 channel.close();
                 tabModel.channel = null;
                 tabModel.monitorClosed = true;
-                tabModel.dataInstance.<DataInstance> cast().unload();
+                tabModel.dataInstance.unload();
                 tabModel.dataInstance = null;
                 setBrowserActionIcon(tabId, browserAction.mtIcon(), tabModel);
                 browserConnection.tabMap.remove(tabModel);
@@ -428,7 +429,7 @@ public abstract class BackgroundPage extends Extension {
             final int browserId = request.getBrowserId();
             final BrowserConnectionState browserConnection = browserConnectionMap.get(browserId);
             final TabModel tabModel = browserConnection.tabMap.get(tabId);
-            DataInstance dataInstance = tabModel.dataInstance.<DataInstance> cast();
+            DataInstance dataInstance = tabModel.dataInstance;
             dataInstance.setBaseTime(-1);
           }
 
@@ -506,8 +507,7 @@ public abstract class BackgroundPage extends Extension {
   }
 
   private void listenForTabEvents() {
-    // We need to keep the browser action icon consistent, as well as retransmit
-    // profiling options.
+    // We need to keep the browser action icon consistent.
     Tabs.getOnUpdatedEvent().addListener(new TabUpdatedEvent.Listener() {
       public void onTabUpdated(int tabId, ChangeInfo changeInfo, Tab tab) {
         if (changeInfo.getStatus().equals(ChangeInfo.STATUS_LOADING)) {
