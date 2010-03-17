@@ -10,7 +10,10 @@
   <!-- TODO(knorton): Might be possible to get rid of this -->
   <property name="speedtracer.destdir" location="../../${config}" />
   <property name="moniker" value="speedtracer" />
+  <property name="headless.moniker" value="speedtracerheadless" />
   <property name="destdir" location="${speedtracer.destdir}/${moniker}" />
+  <property name="headless.destdir" 
+            location="../../${config}/${headless.moniker}" />
   <property name="speedtracer.revision" value="0" />
 
   <!-- Platform identifier -->
@@ -122,6 +125,14 @@
     <antcall target="extension.build.run" />
   </target>
 
+  <target name="headless.extension.build">
+    <uptodate property="headless.extension.updated"
+        targetfile="${headless.destdir}/speedtracerheadless.html">
+      <srcfiles dir="src" includes="**/**" />
+    </uptodate>
+    <antcall target="headless.extension.build.run" />
+  </target>
+
   <!-- A conditional sub-target to be called from extension.build -->
   <target name="extension.build.run"
       depends="init, classes.build"
@@ -132,6 +143,17 @@
       <fileset dir="${wardir}" includes="*" />
     </copy>
   </target>
+
+  <!-- A conditional sub-target to be called from headless.extension.build -->
+  <target name="headless.extension.build.run"
+      depends="init, classes.build"
+      unless="headless.extension.updated">
+    <gwtc module="com.google.speedtracer.HeadlessExtension${config}" />
+    <copy todir="${headless.destdir}" includeEmptyDirs="false">
+      <fileset dir="${wardir}/${headless.moniker}" />
+    </copy>
+  </target>
+
 
   <target name="hintletengine.build">
     <uptodate property="speedtracer.hintletengine.updated"
@@ -224,6 +246,7 @@
   <target name="test" depends="tests" />
 
   <target name="build" depends="extension.build,
+                                headless.extension.build,
                                 monitor.build,
                                 hintletengine.build" />
 

@@ -46,6 +46,26 @@ public class Port extends JavaScriptObject {
     public final native int getType() /*-{
       return this.type;
     }-*/;
+
+    public final native Message setProperty(String field, boolean value) /*-{
+      this[field] = value;
+      return this;
+    }-*/;
+
+    public final native Message setProperty(String field, int value) /*-{
+      this[field] = value;
+      return this;
+    }-*/;
+
+    public final native Message setProperty(String field, JavaScriptObject value) /*-{
+      this[field] = value;
+      return this;
+    }-*/;
+
+    public final native Message setProperty(String field, String value) /*-{
+      this[field] = value;
+      return this;
+    }-*/;
   }
 
   protected Port() {

@@ -29,6 +29,8 @@ public class DataInstance extends JavaScriptObject {
    * constructor.
    */
   public interface DataProxy {
+    double getBaseTime();
+
     void load(DataInstance dataInstance);
 
     void resumeMonitoring();
@@ -77,6 +79,10 @@ public class DataInstance extends JavaScriptObject {
         proxy.@com.google.speedtracer.client.model.DataInstance.DataProxy::setBaseTime(D)(baseTime);
       },
 
+      GetBaseTime: function() {
+        return proxy.@com.google.speedtracer.client.model.DataInstance.DataProxy::getBaseTime()();
+      },      
+
       SetOptions: function(enableStackTraces, enableCpuProfiling) {
         proxy.@com.google.speedtracer.client.model.DataInstance.DataProxy::setProfilingOptions(ZZ)(enableStackTraces, enableCpuProfiling);
       }
@@ -88,6 +94,13 @@ public class DataInstance extends JavaScriptObject {
 
   protected DataInstance() {
   }
+
+  /**
+   * Retrieve the base time used in normalizing this data.
+   */
+  public final native double getBaseTime() /*-{
+    return this.GetBaseTime();
+  }-*/;
 
   /**
    * Binds an {@link DataModel} to this DataInstance. Data will be sent to the
