@@ -35,23 +35,8 @@ public class MockModelGenerator {
     @Source("resources/digg.com")
     TextResource diggDotCom();
 
-    @Source("resources/maps-stacktraces")
-    TextResource mapsDotGoogleDotComWithStackTraces();
-
     @Source("resources/marktimeline")
     TextResource markTimeline();
-
-    @Source("resources/profiler-test1-compressed")
-    TextResource profilerTest1Compressed();
-
-    @Source("resources/profiler-test1-uncompressed")
-    TextResource profilerTest1Uncompressed();
-
-    @Source("resources/profiler-test2-logs")
-    TextResource profilerTest2Logs();
-
-    @Source("resources/reddit.com-profiling")
-    TextResource redditDotComWithProfiling();
   }
 
   private static class DataSet {
