@@ -1,6 +1,5 @@
 /* Annotated CSS for EventWaterfallRow.java */
 @def calloutPadding 5px;
-@def rightBorder "1px solid #999";
 
 @sprite .logMessageAnnotation {
   gwt-image: "infoBubble";
