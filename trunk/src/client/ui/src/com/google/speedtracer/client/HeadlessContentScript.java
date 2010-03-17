@@ -28,7 +28,7 @@ import com.google.gwt.chrome.crx.client.ContentScript.ManifestInfo;
  * 
  * The API communicates with the content script through an event fired on a pair
  * of DIVs. The content script then communicates with the
- * {@link HeadlessBackgroundPage} using a Chrome extension {@link Port}.
+ * {@link HeadlessBackgroundPage} using a Chrome extension {@link com.google.gwt.chrome.crx.client.Port}.
  */
 @ManifestInfo(path = "headless_content_script.js", whiteList = {
     "http://*/*", "https://*/*", "file:///*"}, runAt = ContentScript.DOCUMENT_START)
