@@ -16,7 +16,6 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.junit.client.GWTTestCase;
-import com.google.speedtracer.client.model.DataModel.EventCallbackProxy;
 import com.google.speedtracer.client.util.Command;
 import com.google.speedtracer.client.util.JsIntegerMap;
 
@@ -60,9 +59,7 @@ public class JavaScriptProfileModelTests extends GWTTestCase {
     final UiEvent testEvent = makeUiEvent(1);
     lookup.put(1, testEvent);
     JavaScriptProfileEvent profileEvent = makeV8ProfileEvent(mockProfileData, 2);
-    EventCallbackProxy cb = profileModel.getEventCallback(profileEvent);
-    assert cb != null;
-    cb.onEventRecord(profileEvent);
+    profileModel.onEventRecord(profileEvent);
     final JavaScriptProfile profile = profileModel.getProfileForEvent(1);
     assert profile != null;
 
@@ -88,22 +85,16 @@ public class JavaScriptProfileModelTests extends GWTTestCase {
 
     UiEvent testEvent;
     JavaScriptProfileEvent profileEvent;
-    EventCallbackProxy cb;
 
     testEvent = makeUiEvent(1);
     lookup.put(1, testEvent);
     profileEvent = makeV8ProfileEvent(mockProfileData, 2);
-
-    cb = profileModel.getEventCallback(profileEvent);
-    assert cb != null;
-    cb.onEventRecord(profileEvent);
+    profileModel.onEventRecord(profileEvent);
 
     testEvent = makeUiEvent(3);
     lookup.put(3, testEvent);
     profileEvent = makeV8ProfileEvent(mockProfileData, 4);
-    cb = profileModel.getEventCallback(profileEvent);
-    assert cb != null;
-    cb.onEventRecord(profileEvent);
+    profileModel.onEventRecord(profileEvent);
 
     // Wait until processing is done, then run some more checks
     Command.defer(new Command.Method() {

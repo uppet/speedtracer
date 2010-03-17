@@ -36,15 +36,8 @@ public abstract class DataModel implements HintletEngineHost.HintListener,
   /**
    * Wrapper objects to proxy callbacks to correct handler.
    */
-  public interface EventCallbackProxy {
+  public interface EventRecordHandler {
     void onEventRecord(EventRecord data);
-  }
-
-  /**
-   * Wrapper interface for a class that provides callbacks for an event.
-   */
-  public interface EventCallbackProxyProvider {
-    EventCallbackProxy getEventCallback(EventRecord data);
   }
 
   /**
@@ -77,7 +70,7 @@ public abstract class DataModel implements HintletEngineHost.HintListener,
 
   private DataInstance dataInstance;
 
-  private final List<EventCallbackProxyProvider> eventModels = new ArrayList<EventCallbackProxyProvider>();
+  private final List<EventRecordHandler> eventModels = new ArrayList<EventRecordHandler>();
 
   private JsIntegerMap<EventRecord> eventRecordMap = JsIntegerMap.create();
 
@@ -252,13 +245,8 @@ public abstract class DataModel implements HintletEngineHost.HintListener,
       hintletEngineHost.addRecord(data);
     }
 
-    EventCallbackProxy callback = null;
     for (int i = 0, n = eventModels.size(); i < n; i++) {
-      callback = eventModels.get(i).getEventCallback(data);
-      if (callback != null) {
-        // Multiple model types can subscribe to a given record type.
-        callback.onEventRecord(data);
-      }
+      eventModels.get(i).onEventRecord(data);
     }
   }
 
