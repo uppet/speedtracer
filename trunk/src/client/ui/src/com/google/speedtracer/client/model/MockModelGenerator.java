@@ -32,25 +32,25 @@ public class MockModelGenerator {
    * Pull in the simulated data from external text files.
    */
   public interface MockResources extends ClientBundle {
-    @Source("../../tools/data/digg.com")
+    @Source("resources/digg.com")
     TextResource diggDotCom();
 
-    @Source("../../tools/data/maps-stacktraces")
+    @Source("resources/maps-stacktraces")
     TextResource mapsDotGoogleDotComWithStackTraces();
 
-    @Source("../../tools/data/marktimeline")
+    @Source("resources/marktimeline")
     TextResource markTimeline();
 
-    @Source("../../tools/data/profiler-test1-compressed")
+    @Source("resources/profiler-test1-compressed")
     TextResource profilerTest1Compressed();
 
-    @Source("../../tools/data/profiler-test1-uncompressed")
+    @Source("resources/profiler-test1-uncompressed")
     TextResource profilerTest1Uncompressed();
 
-    @Source("../../tools/data/profiler-test2-logs")
+    @Source("resources/profiler-test2-logs")
     TextResource profilerTest2Logs();
 
-    @Source("../../tools/data/reddit.com-profiling")
+    @Source("resources/reddit.com-profiling")
     TextResource redditDotComWithProfiling();
   }
 
@@ -108,15 +108,6 @@ public class MockModelGenerator {
       mockResources = GWT.create(MockResources.class);
       dataSets.add(new DataSet("digg.com", mockResources.diggDotCom()));
       dataSets.add(new DataSet("markTimeline", mockResources.markTimeline()));
-      // TODO(knorton): These need to be regenerated.
-      // dataSets.add(new DataSet("maps.google.com (stacktraces)",
-      // mockResources.mapsDotGoogleDotComWithStackTraces()));
-      // dataSets.add(new DataSet("Profiler Test 1 (compressed)",
-      // mockResources.profilerTest1Compressed()));
-      // dataSets.add(new DataSet("Profiler Test 1 (uncompressed)",
-      // mockResources.profilerTest1Uncompressed()));
-      // dataSets.add(new DataSet("Profiler Test 2 (logs)",
-      // mockResources.profilerTest2Logs()));
     }
   }
 }
