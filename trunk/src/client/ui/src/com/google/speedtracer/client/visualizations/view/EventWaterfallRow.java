@@ -63,8 +63,6 @@ public class EventWaterfallRow extends TableRow {
     String iconContainer();
 
     String logMessageAnnotation();
-
-    String rightBorder();
   }
 
   /**
@@ -163,7 +161,7 @@ public class EventWaterfallRow extends TableRow {
       EventWaterfallRow.Css css = resources.eventWaterfallRowCss();
       // Create the element that backs this Cell.
       Element elem = super.createElement();
-      elem.getStyle().setProperty("borderRight", css.rightBorder());
+      elem.getStyle().setProperty("borderRight", "1px solid #999");
       // Create the Event's color box and the title.
       addTitle(elem);
       // Create a container for the hint and log message icons.
@@ -217,7 +215,7 @@ public class EventWaterfallRow extends TableRow {
       // We know that if this already exists, visitors have already run
       if (!aggregateTimeVisitor.alreadyApplied()
           || !event.hasBeenCheckedForLogs()) {
-        LogMessageVisitor whiteListVisitor = new LogMessageVisitor();
+        LogMessageVisitor whiteListVisitor = new LogMessageVisitor(event);
         PreOrderVisitor[] preOrderVisitors = {whiteListVisitor};
         PostOrderVisitor[] postOrderVisitors = {aggregateTimeVisitor};
         EventVisitorTraverser.traverse(event, preOrderVisitors,

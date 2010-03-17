@@ -25,6 +25,9 @@ import com.google.speedtracer.client.util.JSOArray;
  * contain log messages to make them exempt from hiding of collapsing.
  */
 public class LogMessageVisitor implements PreOrderVisitor {
+  private static native void installBackRef(UiEvent parent, UiEvent child) /*-{
+    child.parent = parent;
+  }-*/;
 
   private static native void markAncestors(UiEvent e) /*-{
     // Stopgap fix for the situation where console logs cause us to render very 
@@ -48,16 +51,22 @@ public class LogMessageVisitor implements PreOrderVisitor {
     }
   }-*/;
 
-  private static native void installBackRef(UiEvent parent, UiEvent child) /*-{
-    child.parent = parent;
-  }-*/;
+  private final UiEvent rootEvent;
+
+  public LogMessageVisitor(UiEvent rootEvent) {
+    this.rootEvent = rootEvent;
+  }
 
   public void postProcess() {
-    // We do not have a post processing step
+    // hasUserLogs will be undefined at the end of this if the visitor found
+    // nothing. Explicitly set it to false so that we don't visit in the future.
+    if (!rootEvent.hasBeenCheckedForLogs()) {
+      rootEvent.setHasUserLogs(false);
+    }
   }
 
   public void visitUiEvent(UiEvent e) {
-    if (e.hasBeenCheckedForLogs() || e.hasUserLogs()) {
+    if (e.hasBeenCheckedForLogs()) {
       // all done.
       return;
     }
@@ -72,7 +81,5 @@ public class LogMessageVisitor implements PreOrderVisitor {
       // Walk the parent backref back up to whitelist
       markAncestors(e);
     }
-    
-    e.setHasBeenCheckedForLogs();
   }
 }

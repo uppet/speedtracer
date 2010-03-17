@@ -157,7 +157,7 @@ public class UiEvent extends EventRecord {
    *         messages.
    */
   public final native boolean hasBeenCheckedForLogs() /*-{
-    return !(this.hasUserLogs === undefined);
+    return this.hasUserLogs !== undefined;
   }-*/;
 
   /**
@@ -199,15 +199,6 @@ public class UiEvent extends EventRecord {
   }-*/;
 
   /**
-   * Marks this event as having been inspected for log messages. We reuse the
-   * hasUserLogs property. It is normally unset, or true. Setting it to false
-   * allows us to explicitly state that this has at least been inspected.
-   */
-  public final native void setHasBeenCheckedForLogs() /*-{
-    this.hasUserLogs = false;
-  }-*/;
-
-  /**
    * Sets whether or not a profile record is associated with this event.
    */
   public final native void setHasJavaScriptProfile(boolean value) /*-{
@@ -216,6 +207,14 @@ public class UiEvent extends EventRecord {
     } else {
       delete this.javaScriptProfileState;
     }
+  }-*/;
+
+  /**
+   * Setter for whether or not this event has a log message somewhere in the
+   * tree.
+   */
+  public final native void setHasUserLogs(boolean hasUserLogs) /*-{
+    this.hasUserLogs = hasUserLogs;
   }-*/;
 
   /**
