@@ -18,7 +18,7 @@
     values="please, nope" />
 
   <property-provider name="speedtracer.use_mock_mode"><![CDATA[
-    return ($wnd.location.search.indexOf('?mock') >= 0)
+    return ($wnd.location.search.indexOf('mock=true') >= 0)
         ? 'please' : 'nope';
   ]]></property-provider>
 

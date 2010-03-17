@@ -25,9 +25,9 @@ import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.util.JSOArray;
 
 /**
- * An indicator for a table row that indicates there are hints on this
- * entity. Represented by a colored bubble with a number inside indicating the
- * number of hint records.
+ * An indicator for a table row that indicates there are hints on this entity.
+ * Represented by a colored bubble with a number inside indicating the number of
+ * hint records.
  * 
  */
 public class HintletIndicator extends Div {
@@ -73,18 +73,34 @@ public class HintletIndicator extends Div {
     return Color.BLACK.toString();
   }
 
+  private final HintletIndicator.Resources resources;
+
   private String tooltipText;
 
   public HintletIndicator(Container container, int severity, int numHints,
       String tooltip, HintletIndicator.Resources resources) {
     super(container);
-    init(severity, numHints, tooltip, resources);
+    this.resources = resources;
+    setIndicator(severity, numHints, tooltip);
   }
 
   public HintletIndicator(Container container,
-      JSOArray<HintRecord> hintRecords,
-      HintletIndicator.Resources resources) {
+      JSOArray<HintRecord> hintRecords, HintletIndicator.Resources resources) {
     super(container);
+    this.resources = resources;
+    update(hintRecords);
+  }
+
+  public String getTooltipText() {
+    return tooltipText;
+  }
+
+  /**
+   * Updates the indicator in place.
+   * 
+   * @param hintRecords The HintRecords associated with this indicator.
+   */
+  public void update(JSOArray<HintRecord> hintRecords) {
     // Look through hint records and tally severity.
     int criticalCount = 0;
     int warningCount = 0;
@@ -133,15 +149,10 @@ public class HintletIndicator extends Div {
       maxSeverity = HintRecord.SEVERITY_CRITICAL;
     }
 
-    init(maxSeverity, numHints, tooltip, resources);
+    setIndicator(maxSeverity, numHints, tooltip);
   }
 
-  public String getTooltipText() {
-    return tooltipText;
-  }
-
-  private void init(int severity, int numHints, String tooltip,
-      HintletIndicator.Resources resources) {
+  private void setIndicator(int severity, int numHints, String tooltip) {
     String className = "";
     Css css = resources.hintletIndicatorCss();
     switch (severity) {

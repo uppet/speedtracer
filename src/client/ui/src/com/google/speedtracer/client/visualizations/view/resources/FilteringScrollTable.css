@@ -4,9 +4,7 @@
  @def rowHeight 20px;
  @def rowHeightMinusPad 17px;
  @def rowPadTop 3px;
- @def headerCellPadding 14px;
  @def rowCellPadding 5px;
- @def headerHeight 24px;
  @def filterPanelHeight 30px;
 
 .filteringScrollTable {
@@ -42,7 +40,6 @@
 
 .cell {
   position: absolute;
-  border-left: 1px solid #aaa;
   height: rowHeightMinusPad;
   padding-top: rowPadTop;
   padding-left: rowCellPadding;
@@ -71,28 +68,9 @@
   height: 10px;
 }
 
-.header {
-  left: 0;
-  right: 0;
-  height: headerHeight;
-  border-bottom: 1px solid #444;
-  background-color: #ccc;  
-}
-
-.headerCell {
-  position: absolute;
-  padding-left: headerCellPadding;
-  padding-top: 5px;
-  font-weight: bold;
-  text-align: left;
-  border-left: 1px solid #aaa;
-  height: 19px;
-}
-
 .tableContent {
   position: absolute;
-  /* headerHeight + 1*/
-  top: 25px;
+  top: 0;
   left: 0;
   right: 0;
   bottom: 0;

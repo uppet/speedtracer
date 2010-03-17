@@ -18,6 +18,9 @@ package com.google.speedtracer.client.visualizations.view;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.events.client.EventListenerRemover;
+import com.google.gwt.resources.client.ClientBundle;
+import com.google.gwt.resources.client.CssResource;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.topspin.ui.client.ChangeEvent;
 import com.google.gwt.topspin.ui.client.ChangeListener;
 import com.google.gwt.topspin.ui.client.CheckBox;
@@ -33,50 +36,55 @@ import com.google.gwt.topspin.ui.client.Select;
 import com.google.speedtracer.client.util.JsIntegerMap;
 import com.google.speedtracer.client.util.JsIntegerMap.IterationCallBack;
 import com.google.speedtracer.client.visualizations.model.SluggishnessModel;
-import com.google.speedtracer.client.visualizations.view.SluggishnessDetailView.EventTable;
 
 /**
  * The panel that allows you to filter out events in the slugishness detail
  * view.
  */
 public class SluggishnessEventFilterPanel extends Div {
+  /**
+   * Styles.
+   */
+  public interface Css extends CssResource {
+    String filterPanelIcon();
+    
+    String filterPanelMinInput();
+    
+    String filterPanelMinLabel();
+  }
+
+  /**
+   * Externalized Resources.
+   */
+  public interface Resources extends ClientBundle {
+    @Source("resources/magnify-16px.png")
+    ImageResource filterPanelIcon();
+
+    @Source("resources/SluggishnessEventFilterPanel.css")
+    Css sluggishnessFiletPanelCss();
+  }
+
+  private final SluggishnessEventFilterPanel.Css css;
   private EventFilter eventFilter;
   private EventListenerRemover eventFilterTypeRemover;
+  private final EventWaterfall eventTable;
   private Select filterPanelEventTypeSelect;
   private InputText minInput;
-  private final SluggishnessDetailView.EventTable eventTable;
-  private final SluggishnessDetailView.Css css;
 
-  public SluggishnessEventFilterPanel(Container parent, EventTable eventTable,
-      EventFilter eventFilter, SluggishnessDetailView.Css css,
-      SluggishnessModel model) {
+  public SluggishnessEventFilterPanel(Container parent,
+      EventWaterfall eventTable, EventFilter eventFilter,
+      SluggishnessEventFilterPanel.Resources resources, SluggishnessModel model) {
     super(parent);
     this.eventTable = eventTable;
     this.eventFilter = eventFilter;
-    this.css = css;
+    this.css = resources.sluggishnessFiletPanelCss();
     buildFilterPanel(parent, model);
   }
 
   // Refresh the filter panel editable values
-  private void refresh(SluggishnessModel model) {
+  public void refresh(SluggishnessModel model) {
     minInput.setText(Integer.toString((int) eventFilter.getMinDuration()));
     refreshEventTypeSelect(model);
-  }
-
-  public void toggleFilterPanelVisible(SluggishnessModel model) {
-    // There is a problem when the filter panel is displayed after data has
-    // been dynamically added to the table, but before the table range
-    // has been updated by the user dragging the selection around. This is
-    // always the case if you bring up the filter panel after starting the
-    // monitor without adjusting the current range.
-    //
-    // Going back to the model for the left and right index and setting it
-    // in the table corrects the problem.
-    int[] indexes = model.getIndexesOfEventsInRange(model.getCurrentLeft(),
-        model.getCurrentRight(), true);
-    eventTable.updateTotalTableRange(indexes[0], indexes[1]);
-    refresh(model);
-    eventTable.toggleFilterPanelVisible();
   }
 
   private void buildFilterPanel(Container parent, SluggishnessModel model) {
@@ -188,7 +196,7 @@ public class SluggishnessEventFilterPanel extends Div {
   }
 
   // Creates/refreshes the sparse list of events - only those that have been
-  // pulled in by the {@link Slugishness Model}
+  // pulled in by the {@link SlugishnessModel}
   private void refreshEventTypeSelect(SluggishnessModel model) {
     // Remove existing options, save the first one (ALL)
     int count = filterPanelEventTypeSelect.getOptionCount();

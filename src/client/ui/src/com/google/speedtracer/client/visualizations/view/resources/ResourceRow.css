@@ -43,3 +43,9 @@
   color: #777;
   font-size: 7pt;
 }
+
+.resourceHintIndicator {
+  position: absolute;
+  top: hintletIndicatorTopPad;
+  right: headerTextRightPad;
+}

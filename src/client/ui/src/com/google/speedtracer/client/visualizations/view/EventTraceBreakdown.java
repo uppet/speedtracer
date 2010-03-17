@@ -51,6 +51,8 @@ public class EventTraceBreakdown {
 
     int masterHeight();
 
+    String masterRender();
+
     int sideMargins();
 
     int widgetWidth();
@@ -461,6 +463,7 @@ public class EventTraceBreakdown {
   private final double masterDomainToCoords;
 
   private final Resources resources;
+
   private final UiEvent rootEvent;
 
   /**
@@ -507,7 +510,7 @@ public class EventTraceBreakdown {
     // the guides are attached as a child of the <ul> element. So we have
     // to also account for the border and margin for the list that contains us.
     leftOffset -= (css.listMargin() + css.borderThickness());
-    int width = getWidth(event.getDuration());
+    int width = getPixelWidth(event.getDuration());
     // Set positioning information.
     barGuides.getStyle().setPropertyPx("left", leftOffset);
     barGuides.getStyle().setPropertyPx("width", width);
@@ -533,32 +536,33 @@ public class EventTraceBreakdown {
       masterGraph = new MasterEventTraceGraph(frameBuffer);
     }
 
-    int width = (int) (rootEvent.getDuration() * domainToPixels);
-    Css css = resources.eventTraceBreakdownCss();
-    masterGraph.getElement().getStyle().setPropertyPx("marginLeft",
-        css.listMargin());
-    masterGraph.getElement().getStyle().setPropertyPx("marginBottom",
-        css.listMargin());
-
-    // Set positioning information.
-    masterGraph.getElement().getStyle().setPropertyPx("height",
-        css.masterHeight());
-    masterGraph.getElement().getStyle().setPropertyPx("width", width);
-
     return masterGraph;
+  }
+
+  /**
+   * Creates a {@link SubEventTraceGraph} that is simply a copy of the bar graph
+   * for the root node.
+   */
+  public SubEventTraceGraph createMasterRenderCopy(MasterEventTraceGraph master) {
+    int width = (int) (rootEvent.getDuration() * domainToPixels);
+    SubEventTraceGraph masterRender = new SubEventTraceGraph(master, rootEvent,
+        width);
+    Css css = resources.eventTraceBreakdownCss();
+    masterRender.getElement().setClassName(css.masterRender());
+    masterRender.getElement().getStyle().setPropertyPx("width", width);
+    return masterRender;
   }
 
   /**
    * Creates a {@link SubEventTraceGraph}, renders it and sets its position.
    * 
-   * @param parentElement the {@link Element} that this new bar will attach to.
    * @param master the {@link MasterEventTraceGraph} that this bar will sample
    *          its colors from.
    * @param event
    * @param nodeDepth
    * @return
    */
-  public SubEventTraceGraph createSubEventTraceGraph(Element parentElement,
+  public SubEventTraceGraph createSubEventTraceGraph(
       MasterEventTraceGraph master, UiEvent event, int nodeDepth) {
     int leftOffset = getLeftOffset(event, nodeDepth);
     int width = (int) (event.getDuration() * domainToPixels);
@@ -579,7 +583,6 @@ public class EventTraceBreakdown {
     // Set positioning information.
     subBar.getElement().getStyle().setPropertyPx("left", leftOffset);
     subBar.getElement().getStyle().setPropertyPx("width", width);
-    parentElement.appendChild(subBar.getElement());
     return subBar;
   }
 
@@ -604,8 +607,7 @@ public class EventTraceBreakdown {
     return -offsetPixels;
   }
 
-  private int getWidth(double duration) {
-    double width = Math.max(1, domainToPixels * duration);
-    return (int) width;
+  private int getPixelWidth(double duration) {
+    return (int) Math.max(1, domainToPixels * duration);
   }
 }

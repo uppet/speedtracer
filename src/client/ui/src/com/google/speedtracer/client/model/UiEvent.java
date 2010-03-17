@@ -150,6 +150,17 @@ public class UiEvent extends EventRecord {
   }-*/;
 
   /**
+   * This method checks whether or not the this event has been visited and
+   * checked for log messages.
+   * 
+   * @return Whether or not the this event has been visited and checked for log
+   *         messages.
+   */
+  public final native boolean hasBeenCheckedForLogs() /*-{
+    return !(this.hasUserLogs === undefined);
+  }-*/;
+
+  /**
    * Tests whether this UiEvent has a top stack frame from JS. That is, that it
    * was called from JavaScript.
    */
@@ -185,6 +196,15 @@ public class UiEvent extends EventRecord {
    */
   public final native boolean processingJavaScriptProfile() /*-{
     return this.javaScriptProfileState == "Processing";
+  }-*/;
+
+  /**
+   * Marks this event as having been inspected for log messages. We reuse the
+   * hasUserLogs property. It is normally unset, or true. Setting it to false
+   * allows us to explicitly state that this has at least been inspected.
+   */
+  public final native void setHasBeenCheckedForLogs() /*-{
+    this.hasUserLogs = false;
   }-*/;
 
   /**

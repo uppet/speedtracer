@@ -55,6 +55,8 @@ public class ResourceRow extends Div {
 
     int hintletIndicatorTopPad();
 
+    String resourceHintIndicator();
+
     String rowEven();
 
     String rowOdd();
@@ -201,8 +203,7 @@ public class ResourceRow extends Div {
     Element indicatorElem = hintletIndicator.getElement();
     indicatorElem.setId(idCounter++ + "");
     ResourceRow.Css css = resources.resourceRowCss();
-    indicatorElem.getStyle().setPropertyPx("right", css.headerTextRightPad());
-    indicatorElem.getStyle().setPropertyPx("top", css.hintletIndicatorTopPad());
+    indicatorElem.addClassName(css.resourceHintIndicator());
 
     // Make room for the HintletIndicator
     textElem.getStyle().setPropertyPx("right",

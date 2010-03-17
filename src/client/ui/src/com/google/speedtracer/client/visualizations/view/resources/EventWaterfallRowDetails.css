@@ -1,0 +1,70 @@
+/* Annotated CSS for EventWaterfallRowDetails.java */
+@def uiPadding 10px;
+
+.pieChartContainer {
+  /* We want the width 50% to include padding, margins and border */
+  \-webkit-box-sizing: border-box;
+  position: absolute;
+  /* 50% of the total width of the details view */
+  width: 50%;
+  padding-bottom: 5px;
+  /* Push it up a bit to sit on top of the border line */
+  margin-top: -4px;
+  background-color: #e6e6ff;
+  border-left: 1px solid #888;
+  border-right: 1px solid #888;
+  border-bottom: 1px solid #888;
+  text-align: center;
+  \-webkit-border-bottom-left-radius: 15px;
+  \-webkit-border-bottom-right-radius: 15px;
+  \-webkit-box-shadow: -4px 4px 4px #ddd;
+  z-index: 20;
+}
+
+.hintletList {
+  margin-top: 15px;
+  padding-left: uiPadding;
+  padding-right: uiPadding;
+  display: inline-block;
+}
+
+.eventBreakdownHeader {
+  font-size: 14px;
+  margin-top: 15px;
+  margin-bottom: 5px;
+  padding-left: uiPadding;
+}
+
+.detailsTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.detailsTable th {
+  font-size: 1.3em;
+}
+
+.detailsTable td {
+  padding: 0.5em;
+  border: 1px solid #aaa;
+  word-wrap: break-word;
+}
+
+.detailsKeyColumn {
+  width: 100px;
+}
+
+.detailsTableKey {
+  background-color: rgb(228,228,255);
+  font-weight: bold; 
+}
+
+.detailsLayout {
+  width: 100%;
+}
+
+.detailsLayout td {
+  vertical-align: top;
+}
+
