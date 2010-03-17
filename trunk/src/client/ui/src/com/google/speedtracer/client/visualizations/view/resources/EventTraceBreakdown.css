@@ -22,3 +22,10 @@
   border-left: borderThickness solid #ccc;
   border-right: borderThickness solid #ccc;
 }
+
+.masterRender {
+  margin-left: listMargin;
+  margin-bottom: listMargin;
+  height: masterHeight;
+  border: 1px solid #eee;
+}

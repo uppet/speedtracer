@@ -17,6 +17,7 @@ package com.google.speedtracer.client;
 
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
@@ -82,6 +83,8 @@ public class MonitorVisualizationsPanel extends Div {
     String timelineContainer();
 
     int timelineHeight();
+
+    int topPadding();
 
     String visualizationPanel();
   }
@@ -220,6 +223,13 @@ public class MonitorVisualizationsPanel extends Div {
         final DivElement entry = doc.createDivWithClassName(resources.monitorVisualizationsPanelCss().tabListEntry());
         entry.setInnerText(tabTitle);
 
+        // The very first one should be flush with the top scale. So we push it
+        // down a little.
+        if (0 == i) {
+          entry.getStyle().setMarginTop(
+              resources.monitorVisualizationsPanelCss().topPadding(), Unit.PX);
+        }
+
         attachTransientMarkers(viz);
 
         ClickEvent.addClickListener(entry, entry, new ClickListener() {
@@ -281,8 +291,9 @@ public class MonitorVisualizationsPanel extends Div {
     // Create a little wrapper div to wrap the main and overview timelines.
     DivElement graphContainerElem = getElement().getOwnerDocument().createDivElement();
     graphContainerElem.setClassName(css.graphContainer());
+    // The left header + 1px border.
     graphContainerElem.getStyle().setPropertyPx("left",
-        Constants.GRAPH_PIXEL_OFFSET);
+        Constants.GRAPH_PIXEL_OFFSET + 1);
     timeLineContainerElem.appendChild(graphContainerElem);
     Container graphContainer = new DefaultContainerImpl(graphContainerElem);
 

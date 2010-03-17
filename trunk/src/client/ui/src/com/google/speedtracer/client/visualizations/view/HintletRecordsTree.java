@@ -92,7 +92,6 @@ public class HintletRecordsTree extends Tree {
 
       // Make a placeholder element for the label text.
       SpanElement labelText = Document.get().createSpanElement();
-      labelText.getStyle().setPropertyPx("marginLeft", 20);
       getItemLabelElement().appendChild(labelText);
 
       switch (severity) {

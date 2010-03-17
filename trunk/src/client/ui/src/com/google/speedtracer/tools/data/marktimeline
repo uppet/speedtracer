@@ -19,4 +19,4 @@
 {"data":{"timerId":5},"children":[{"data":{"message":"SHE SET OUT ONE DAY"},"type":11,"time":1884.77001953125},{"data":{"timerId":6,"timeout":500,"singleShot":true},"type":5,"time":1884.800048828125}],"type":7,"duration":0.287841796875,"time":1884.528076171875,"sequence":18}
 {"data":{"timerId":6},"children":[{"data":{"message":"IN A RELATIVE WAY"},"type":11,"time":2385.59716796875},{"data":{"timerId":7,"timeout":500,"singleShot":true},"type":5,"time":2385.633056640625}],"type":7,"duration":0.297119140625,"time":2385.35107421875,"sequence":19}
 {"data":{"x":0,"y":0,"width":1440,"height":696},"children":[],"type":3,"duration":0.02734375,"time":2737.31689453125,"sequence":20}
-{"data":{"timerId":7},"children":[{"data":{"message":"AND RETURNED ON THE PREVIOUS NIGHT"},"type":11,"time":2886.276123046875}],"type":7,"duration":0.178955078125,"time":2886.114013671875,"sequence":21}
+{"data":{"timerId":7},"children":[{"data":{"message":"AND RETURNED ON THE PREVIOUS NIGHT"},"type":11,"time":2886.276123046875}],"type":7,"duration":106.178955078125,"time":2886.114013671875,"sequence":21}

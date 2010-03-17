@@ -7,7 +7,6 @@
  @def hintletSeverityColorWarning #f89326;
  
 .hintletIndicator {
-  position: absolute;
   font-size: 10px;
   padding-left: 5px;
   padding-right: 5px;

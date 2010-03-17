@@ -57,7 +57,7 @@ public class LogMessageVisitor implements PreOrderVisitor {
   }
 
   public void visitUiEvent(UiEvent e) {
-    if (e.hasUserLogs()) {
+    if (e.hasBeenCheckedForLogs() || e.hasUserLogs()) {
       // all done.
       return;
     }
@@ -72,6 +72,7 @@ public class LogMessageVisitor implements PreOrderVisitor {
       // Walk the parent backref back up to whitelist
       markAncestors(e);
     }
+    
+    e.setHasBeenCheckedForLogs();
   }
-
 }

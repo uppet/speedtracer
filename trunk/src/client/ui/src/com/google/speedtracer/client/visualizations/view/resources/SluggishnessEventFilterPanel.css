@@ -1,0 +1,22 @@
+/* Annotated CSS for SluggishnessEventFilterPanel.java */
+
+.filterPanelMinLabel {
+  display: inline-block;
+  margin-left: 10px;    
+}
+
+.filterPanelMinInput {
+  display: inline-block;
+  margin-left: 10px;
+  width: 60px;
+}
+
+@sprite .filterPanelIcon {
+  gwt-image: "filterPanelIcon";
+  position: absolute;
+  display: inline-block;
+  top: 4px;
+  left: 4px;
+  width: 16px;
+  height: 16px;
+}

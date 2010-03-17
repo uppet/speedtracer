@@ -17,11 +17,14 @@ package com.google.speedtracer.client.visualizations.model;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.topspin.ui.client.Container;
+import com.google.speedtracer.client.SymbolServerController;
+import com.google.speedtracer.client.SymbolServerService;
 import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.client.model.UiEventModel;
 import com.google.speedtracer.client.model.Visualization;
 import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.timeline.GraphUiProps;
+import com.google.speedtracer.client.util.Url;
 import com.google.speedtracer.client.view.MainTimeLine;
 import com.google.speedtracer.client.visualizations.view.CurrentSelectionMarker;
 import com.google.speedtracer.client.visualizations.view.SluggishnessDetailView;
@@ -56,17 +59,23 @@ public class SluggishnessVisualization extends
 
   private final SluggishnessVisualization.Resources resources;
 
+  private final MainTimeLine timeline;
+
   /**
    * Constructor.
    * 
-   * @param parent
-   * @param sourceModel event.
+   * @param timeline The parent {@link MainTimeLine} for this Visualization.
+   * @param sluggishnessModel the backing {@link VisualizationModel} for this
+   *          Visualization.
+   * @param sourceModel the {@link UiEventModel} that this Visualization is a
+   *          subscribed to.
    */
-  public SluggishnessVisualization(MainTimeLine parent,
+  public SluggishnessVisualization(MainTimeLine timeline,
       SluggishnessModel sluggishnessModel, UiEventModel sourceModel,
       Container detailsContainer, SluggishnessVisualization.Resources resources) {
     super(TITLE, SUBTITLE, sluggishnessModel, createGraphUiProps());
     this.resources = resources;
+    this.timeline = timeline;
 
     // Add the Transient Markers for page boundaries and current event
     // selection.
@@ -84,7 +93,7 @@ public class SluggishnessVisualization extends
     // The visualization may choose to update the view outside the model in
     // append only update cases where our right bound is in the future
     sourceModel.addListener(this);
-    setDetailsView(createDetailsView(detailsContainer, parent));
+    setDetailsView(createDetailsView(detailsContainer, timeline));
     setModel(sluggishnessModel);
   }
 
@@ -96,6 +105,16 @@ public class SluggishnessVisualization extends
       MainTimeLine timeLine) {
     return new SluggishnessDetailView(container, this,
         getModel().getSourceModel(), resources);
+  }
+
+  public SymbolServerController getCurrentSymbolServerController() {
+    SluggishnessModel sModel = (SluggishnessModel) getModel();
+    String resourceUrl = sModel.getCurrentUrl();
+    return SymbolServerService.getSymbolServerController(new Url(resourceUrl));
+  }
+
+  public MainTimeLine getTimeline() {
+    return timeline;
   }
 
   public void onEventRefresh(UiEvent event) {

@@ -33,6 +33,8 @@ import com.google.gwt.topspin.ui.client.CssTransitionEvent;
 import com.google.gwt.topspin.ui.client.CssTransitionListener;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.gwt.topspin.ui.client.Div;
+import com.google.gwt.topspin.ui.client.ResizeEvent;
+import com.google.gwt.topspin.ui.client.ResizeListener;
 import com.google.speedtracer.client.MonitorResources.CommonCss;
 import com.google.speedtracer.client.MonitorResources.CommonResources;
 import com.google.speedtracer.client.util.Command;
@@ -40,6 +42,7 @@ import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.util.dom.DocumentExt;
 import com.google.speedtracer.client.util.dom.EventCleanup;
 import com.google.speedtracer.client.util.dom.LazilyCreateableElement;
+import com.google.speedtracer.client.util.dom.WindowExt;
 import com.google.speedtracer.client.util.dom.EventCleanup.HasRemovers;
 
 import java.util.ArrayList;
@@ -51,7 +54,8 @@ import java.util.List;
  * "uninteresing" rows. Also has an expandable placeholder for each row to
  * "expand" a row when you click on it.
  */
-public abstract class FilteringScrollTable extends Div implements HasRemovers {
+public abstract class FilteringScrollTable extends Div implements HasRemovers,
+    ResizeListener {
   /**
    * Cell in the table.
    */
@@ -82,7 +86,8 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
     public int addToElement(Element elem, int leftOffset) {
       Element cellElem = getElement();
       if (width > 0) {
-        cellElem.getStyle().setPropertyPx("width", width + rowPaddingAdjustment);
+        // We simulate the border-box box model.
+        cellElem.getStyle().setPropertyPx("width", width - css.rowCellPadding());
       } else {
         cellElem.getStyle().setPropertyPx("right", 0);
       }
@@ -118,7 +123,7 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
    * A row in the table that groups a bunch of uninteresting {@link TableRow}
    * instances together.
    */
-  public class CoallescedRow extends Row {
+  public class CoalescedRow extends Row {
 
     private static final int pageSize = 10;
     private double aggregateTime = 0;
@@ -133,7 +138,7 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
     private int visibleRowsAbove = 0;
     private int visibleRowsBelow = 0;
 
-    public CoallescedRow() {
+    public CoalescedRow() {
       super(true, css.coalescedRow());
     }
 
@@ -190,16 +195,16 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
       updateLabel();
 
       // hook a click listener to open 10 rows above
-      FilteringScrollTable.this.trackRemover(ClickEvent.addClickListener(this, showAbove,
-          new ClickListener() {
+      FilteringScrollTable.this.trackRemover(ClickEvent.addClickListener(this,
+          showAbove, new ClickListener() {
             public void onClick(ClickEvent event) {
               expandAbove();
             }
           }));
 
       // hook a click listener to open 10 rows below
-      FilteringScrollTable.this.trackRemover(ClickEvent.addClickListener(this, showBelow,
-          new ClickListener() {
+      FilteringScrollTable.this.trackRemover(ClickEvent.addClickListener(this,
+          showBelow, new ClickListener() {
             public void onClick(ClickEvent event) {
               expandBelow();
             }
@@ -288,14 +293,6 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
 
     int filterPanelHeight();
 
-    String header();
-
-    String headerCell();
-
-    int headerCellPadding();
-
-    int headerHeight();
-
     String row();
 
     int rowCellPadding();
@@ -304,7 +301,7 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
 
     String tableContent();
   }
-  
+
   /**
    * To be implemented by a concrete subclass to specify a Filter to be applied
    * to all Rows.
@@ -352,8 +349,8 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
       parent.getElement().appendChild(elem);
 
       // Make sure clicking around the detail view doesn't bubble up
-      FilteringScrollTable.this.trackRemover(ClickEvent.addClickListener(this, elem,
-          new ClickListener() {
+      FilteringScrollTable.this.trackRemover(ClickEvent.addClickListener(this,
+          elem, new ClickListener() {
 
             public void onClick(ClickEvent event) {
               event.getNativeEvent().cancelBubble(true);
@@ -442,8 +439,7 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
       DivElement elem = Document.get().createDivElement();
       DivElement cellWrapper = Document.get().createDivElement();
       for (int i = 0, n = cells.size(); i < n; i++) {
-        internalOffset = cells.get(i).addToElement(cellWrapper, internalOffset)
-            + css.headerCellPadding();
+        internalOffset = cells.get(i).addToElement(cellWrapper, internalOffset);
       }
 
       elem.appendChild(cellWrapper);
@@ -476,23 +472,6 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
   }
 
   /**
-   * The Header at the top of the DOM/UI EventTable.
-   */
-  private class Header extends Div {
-    private int leftOffset = 0;
-
-    public Header(Container parent) {
-      super(parent);
-      setStyleName(css.header());
-    }
-
-    public void addHeaderCell(Cell cell) {
-      leftOffset = cell.addToElement(getElement(), leftOffset)
-          + css.headerCellPadding();
-    }
-  }
-
-  /**
    * Rows are things that can be added to this table. The corresponding DOM
    * elements are lazily constructible.
    */
@@ -506,6 +485,12 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
 
     public boolean isCoalesceable() {
       return isCoalesceable;
+    }
+
+    /**
+     * Empty default impl. Subclasses may choose to override to handle this.
+     */
+    public void onResize() {
     }
   }
 
@@ -522,19 +507,9 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
 
   private final FilterPanel filterPanel;
 
-  private final Header header;
-
-  private final int minimumContentTop;
-
   private final Container myContainer;
 
   private final ArrayList<Row> rowList = new ArrayList<Row>();
-
-  /**
-   * This is the difference in padding between the header cell and the regular
-   * row cell. It is needed to get the widths of the regular row cells correct.
-   */
-  private final int rowPaddingAdjustment;
 
   private final Element tableContents;
 
@@ -544,11 +519,8 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
     Element elem = getElement();
     this.filter = filter;
     this.css = resources.filteringScrollTableCss();
-    this.minimumContentTop = css.headerHeight() + 1;
     this.commonCss = resources.commonCss();
-    rowPaddingAdjustment = css.headerCellPadding() - css.rowCellPadding();
     myContainer = new DefaultContainerImpl(elem);
-    header = new Header(getContainer());
     filterPanel = new FilterPanel(getContainer());
     tableContents = DocumentExt.get().createDivWithClassName(css.tableContent());
     elem.appendChild(tableContents);
@@ -556,37 +528,14 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
         new CssTransitionListener() {
           public void onTransitionEnd(CssTransitionEvent event) {
             int tableContentTop = tableContents.getOffsetTop();
-            if (tableContentTop <= minimumContentTop) {
+            if (tableContentTop == 0) {
               filterPanel.setVisible(false);
             }
           }
         });
-  }
 
-  /**
-   * Adds a column to the header.
-   * 
-   * @param text
-   * @param width
-   */
-  public void addColumn(String text, int width) {
-    header.addHeaderCell(new Cell(text, width, css.headerCell()));
-  }
-
-  /**
-   * Adds a row to the end of the table. The row may or may not be displayed
-   * depending on the filter setting.
-   * 
-   * @param rowDuration the value this row has when taking part in the filtering
-   *          process.
-   * @return {@link TableRow} or {@link CoallescedRow} that was inserted into the
-   *         Table. It may or may not be the top level row that will be appended
-   *         to the DOM.
-   */
-  public TableRow appendRow(double rowDuration) {
-    TableRow row = new TableRow(rowDuration);
-    insertRow(row, true);
-    return row;
+    WindowExt window = WindowExt.get();
+    ResizeEvent.addResizeListener(window, window, this);
   }
 
   public void cleanupRemovers() {
@@ -648,11 +597,11 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
         if (rowList.size() > 0
             && (targetRow = rowList.get(rowList.size() - 1)).isCoalesceable()) {
           // The we add it to this group of TableRows that have been coalesced.
-          ((CoallescedRow) targetRow).coalesceRow(true, row);
+          ((CoalescedRow) targetRow).coalesceRow(true, row);
           return targetRow;
         } else {
           // We should create a new coalesceable group.
-          CoallescedRow newRow = new CoallescedRow();
+          CoalescedRow newRow = new CoalescedRow();
           newRow.coalesceRow(true, row);
           toAdd = newRow;
         }
@@ -667,11 +616,11 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
         Row targetRow;
         if (rowList.size() > 0 && (targetRow = rowList.get(0)).isCoalesceable()) {
           // The we add it to this group of TableRows that have been coalesced.
-          ((CoallescedRow) targetRow).coalesceRow(false, row);
+          ((CoalescedRow) targetRow).coalesceRow(false, row);
           return targetRow;
         } else {
           // We should create a new coalesceable group.
-          CoallescedRow newRow = new CoallescedRow();
+          CoalescedRow newRow = new CoalescedRow();
           newRow.coalesceRow(true, row);
           toAdd = newRow;
         }
@@ -685,17 +634,13 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
   }
 
   /**
-   * Inserts a row into the table at the front. The row may or may not be
-   * displayed depending on the filter setting.
-   * 
-   * @param filterValue
-   * @return {@link TableRow} or {@link CoallescedRow} that was inserted into the
-   *         Table.
+   * Resize handler that gives all rows in the table a chance to resize
+   * themselves.
    */
-  public TableRow prependRow(double filterValue) {
-    TableRow row = new TableRow(filterValue);
-    insertRow(row, false);
-    return row;
+  public void onResize(ResizeEvent event) {
+    for (int i = 0, n = rowList.size(); i < n; i++) {
+      rowList.get(i).onResize();
+    }
   }
 
   /**
@@ -705,12 +650,12 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
    */
   public void renderRow(Row row) {
     if (row.isCoalesceable()) {
-      CoallescedRow cRow = (CoallescedRow) row;
+      CoalescedRow cRow = (CoalescedRow) row;
       if (cRow.isAttached()) {
         // Early out if this row is already attached.
         return;
       }
-      ((CoallescedRow) row).setAttached(true);
+      ((CoalescedRow) row).setAttached(true);
     } else {
       // We want to have all main rows to be white with hover since they
       // mostly will be separated by coalesced rows which are grey
@@ -730,13 +675,12 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers {
 
   public void toggleFilterPanelVisible() {
     int tableContentTop = tableContents.getOffsetTop();
-    if (tableContentTop <= minimumContentTop) {
+    if (tableContentTop == 0) {
       filterPanel.setVisible(true);
       filterPanel.getElement().getStyle().setProperty("display", "inline-block");
-      tableContents.getStyle().setPropertyPx("top",
-          css.filterPanelHeight() + minimumContentTop + 3);
+      tableContents.getStyle().setPropertyPx("top", css.filterPanelHeight() + 3);
     } else {
-      tableContents.getStyle().setPropertyPx("top", minimumContentTop);
+      tableContents.getStyle().setPropertyPx("top", 0);
     }
   }
 

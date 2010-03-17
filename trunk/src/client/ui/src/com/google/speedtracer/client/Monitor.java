@@ -318,7 +318,10 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
         + resources.monitorCss().getText()
         + resources.sourceViewerCss().getText()
         + resources.stackFrameRendererCss().getText()
-        + resources.javaScriptProfileRendererCss().getText(), true);
+        + resources.javaScriptProfileRendererCss().getText()
+        + resources.eventWaterfallRowCss().getText()
+        + resources.eventWaterfallRowDetailsCss().getText()
+        + resources.sluggishnessFiletPanelCss().getText(), true);
 
     final WindowExt window = getBackgroundView();
     channel = Client.connect(window, CHANNEL_NAME, this);
@@ -537,8 +540,8 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     }
   }
 
-  private void setApplicationState(ApplicationState state) {    
-    monitorVisualizationsPanel.setApplicationState(state);    
-    hintletReportDialog.setHintletReportModel((HintletReportModel) state.getVisualizationModel(HintletReport.TITLE));    
+  private void setApplicationState(ApplicationState state) {
+    monitorVisualizationsPanel.setApplicationState(state);
+    hintletReportDialog.setHintletReportModel((HintletReportModel) state.getVisualizationModel(HintletReport.TITLE));
   }
 }

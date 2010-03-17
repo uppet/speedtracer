@@ -20,18 +20,15 @@ package com.google.speedtracer.client.model;
  */
 public class ParseHtmlEvent extends UiEvent {
   public static final int TYPE = EventRecordType.PARSE_HTML_EVENT;
-  
+
   protected ParseHtmlEvent() {
   }
-  
-  // TODO(jaimeyap): re-instrument the following.
-  /*
-  public final int getLineNumber() {
-    return getData().getIntProperty("lineNumber");
+
+  public final int getLength() {
+    return getData().getIntProperty("length");
   }
 
-  public final String getURL() {
-    return getData().getStringProperty("url");
+  public final int getStartLine() {
+    return getData().getIntProperty("startLine");
   }
-  */
 }

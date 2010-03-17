@@ -3,7 +3,8 @@
  */
  @def timelineHeight 131px;
  @def borderWidth 1px;
- 
+ @def topPadding 16px;
+
 .visualizationPanel {
   position: absolute;
   /* Controller is 39px */
@@ -35,8 +36,6 @@
 .tabList {
   position: absolute;
   overflow: visible;
-  \-webkit-box-sizing: border-box;
-  padding-top: 16px;
   top: 0;
   left: 0;
   height: 131px;
