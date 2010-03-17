@@ -15,8 +15,7 @@
  */
 package com.google.speedtracer.client.model;
 
-import com.google.speedtracer.client.model.DataModel.EventCallbackProxy;
-import com.google.speedtracer.client.model.DataModel.EventCallbackProxyProvider;
+import com.google.speedtracer.client.model.DataModel.EventRecordHandler;
 import com.google.speedtracer.client.model.EventVisitor.PostOrderVisitor;
 import com.google.speedtracer.client.util.JsIntegerMap;
 
@@ -26,7 +25,14 @@ import java.util.List;
 /**
  * Model that dispatches UiEvents to the UI.
  */
-public class UiEventModel implements EventCallbackProxyProvider {
+public class UiEventModel implements EventRecordHandler {
+  /**
+   * Listener interface for handling UiEventModel events.
+   */
+  public interface Listener {
+    void onUiEventFinished(UiEvent event);
+  }
+
   /**
    * Visitor that synthesizes top level timer installs if it detects a timer
    * installation in a trace tree.
@@ -43,29 +49,21 @@ public class UiEventModel implements EventCallbackProxyProvider {
   }
 
   /**
-   * Listener interface for handling UiEventModel events.
-   */
-  public interface Listener {
-    void onUiEventFinished(UiEvent event);
-  }
-
-  /**
    * This sets up the function routing for EventRecord TYPES corresponding to
    * top level events that we want to special case.
    * 
    * @param proxy
    * @param typeMap
    */
-  private static void setSpecialCasedEventCallbacks(final UiEventModel proxy,
-      JsIntegerMap<EventCallbackProxy> typeMap) {
+  private static void setSpecialCasedEventCallbacks(final UiEventModel proxy, JsIntegerMap<EventRecordHandler> typeMap) {
 
-    typeMap.put(EventRecordType.TIMER_CLEARED, new EventCallbackProxy() {
+    typeMap.put(EventRecordType.TIMER_CLEARED, new EventRecordHandler() {
       public void onEventRecord(EventRecord data) {
         proxy.onTimerCleared(data.<TimerCleared> cast());
       }
     });
 
-    typeMap.put(EventRecordType.TIMER_INSTALLED, new EventCallbackProxy() {
+    typeMap.put(EventRecordType.TIMER_INSTALLED, new EventRecordHandler() {
       public void onEventRecord(EventRecord data) {
         proxy.onTimerInstalled(data.<TimerInstalled> cast());
       }
@@ -74,27 +72,25 @@ public class UiEventModel implements EventCallbackProxyProvider {
     // TODO(jaimeyap): We should eventually make InspectorResourceConverter use
     // these types instead of our own record types. For now we simply ignore
     // these webkit style network resource checkpoints.
-    typeMap.put(EventRecordType.RESOURCE_SEND_REQUEST,
-        new EventCallbackProxy() {
-          public void onEventRecord(EventRecord data) {
-            // Special cased to do nothing for now.
-          }
-        });
-
-    typeMap.put(EventRecordType.RESOURCE_RECEIVE_RESPONSE,
-        new EventCallbackProxy() {
-          public void onEventRecord(EventRecord data) {
-            // Special cased to do nothing for now.
-          }
-        });
-
-    typeMap.put(EventRecordType.RESOURCE_FINISH, new EventCallbackProxy() {
+    typeMap.put(EventRecordType.RESOURCE_SEND_REQUEST, new EventRecordHandler() {
       public void onEventRecord(EventRecord data) {
         // Special cased to do nothing for now.
       }
     });
 
-    typeMap.put(EventRecordType.RESOURCE_UPDATED, new EventCallbackProxy() {
+    typeMap.put(EventRecordType.RESOURCE_RECEIVE_RESPONSE, new EventRecordHandler() {
+      public void onEventRecord(EventRecord data) {
+        // Special cased to do nothing for now.
+      }
+    });
+
+    typeMap.put(EventRecordType.RESOURCE_FINISH, new EventRecordHandler() {
+      public void onEventRecord(EventRecord data) {
+        // Special cased to do nothing for now.
+      }
+    });
+
+    typeMap.put(EventRecordType.RESOURCE_UPDATED, new EventRecordHandler() {
       public void onEventRecord(EventRecord data) {
         // Special cased to do nothing for now.
       }
@@ -105,23 +101,20 @@ public class UiEventModel implements EventCallbackProxyProvider {
 
   private final JsIntegerMap<TimerInstalled> timerMetaData = JsIntegerMap.create();
 
-  private final JsIntegerMap<EventCallbackProxy> specialCasedTypeMap = JsIntegerMap.create();
-
-  private final EventCallbackProxy uiEventProxy;
+  private final JsIntegerMap<EventRecordHandler> specialCasedTypeMap = JsIntegerMap.create();
 
   private final PostOrderVisitor[] postOrderVisitors = {new TimerInstallationVisitor()};
 
   UiEventModel() {
     setSpecialCasedEventCallbacks(this, specialCasedTypeMap);
-    uiEventProxy = new EventCallbackProxy() {
-      public void onEventRecord(EventRecord data) {
-        onUiEventFinished(data.<UiEvent> cast());
-      }
-    };
   }
 
   public void addListener(Listener listener) {
     listeners.add(listener);
+  }
+
+  public TimerInstalled getTimerMetaData(int timerId) {
+    return timerMetaData.get(timerId);
   }
 
   /**
@@ -129,16 +122,13 @@ public class UiEventModel implements EventCallbackProxyProvider {
    * return a proxy object to handle those types. Otherwise, we use the default
    * UiEvent dispatch proxy.
    */
-  public EventCallbackProxy getEventCallback(EventRecord data) {
-    EventCallbackProxy ret = specialCasedTypeMap.get(data.getType());
-    if (ret == null && UiEvent.isUiEvent(data)) {
-      return uiEventProxy;
+  public void onEventRecord(EventRecord data) {
+    final EventRecordHandler specialHandler = specialCasedTypeMap.get(data.getType());
+    if (specialHandler != null) {
+      specialHandler.onEventRecord(data);
+    } else if (UiEvent.isUiEvent(data)) {
+      onUiEventFinished(data.<UiEvent> cast());
     }
-    return ret;
-  }
-
-  public TimerInstalled getTimerMetaData(int timerId) {
-    return timerMetaData.get(timerId);
   }
 
   public void onTimerCleared(TimerCleared event) {

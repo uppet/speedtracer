@@ -15,8 +15,7 @@
  */
 package com.google.speedtracer.client.model;
 
-import com.google.speedtracer.client.model.DataModel.EventCallbackProxy;
-import com.google.speedtracer.client.model.DataModel.EventCallbackProxyProvider;
+import com.google.speedtracer.client.model.DataModel.EventRecordHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +24,7 @@ import java.util.List;
  * Provides a data model for tab navigation events. Logically these are separate
  * from UI and network events although they have a very similar format.
  */
-public class TabChangeModel implements EventCallbackProxyProvider {
+public class TabChangeModel implements EventRecordHandler {
 
   /**
    * Listener interface for handling TabNavigationModel events.
@@ -34,31 +33,17 @@ public class TabChangeModel implements EventCallbackProxyProvider {
     void onTabChanged(TabChange change);
   }
 
-  // Proxy object that forwards calls to our dispatch here.
-  private final EventCallbackProxy tabChangedProxy;
-
   private final List<Listener> listeners = new ArrayList<Listener>();
-
-  TabChangeModel() {
-    tabChangedProxy = new EventCallbackProxy() {
-      public void onEventRecord(EventRecord data) {
-        onTabChanged(data.<TabChange> cast());
-      }
-    };
-  }
 
   public void addListener(Listener listener) {
     listeners.add(listener);
   }
 
-  public EventCallbackProxy getEventCallback(EventRecord data) {
-    return (TabChange.TYPE == data.getType()) ? tabChangedProxy : null;
-  }
-
-  public void onTabChanged(TabChange change) {
-    for (int i = 0, n = listeners.size(); i < n; i++) {
-      Listener listener = listeners.get(i);
-      listener.onTabChanged(change);
+  public void onEventRecord(EventRecord data) {
+    if (TabChange.TYPE == data.getType()) {
+      for (int i = 0, n = listeners.size(); i < n; i++) {
+        listeners.get(i).onTabChanged(data.<TabChange> cast());
+      }
     }
   }
 

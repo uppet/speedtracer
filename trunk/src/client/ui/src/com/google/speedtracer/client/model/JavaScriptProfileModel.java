@@ -18,8 +18,7 @@ package com.google.speedtracer.client.model;
 import com.google.gwt.core.client.JsArrayNumber;
 import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.Logging;
-import com.google.speedtracer.client.model.DataModel.EventCallbackProxy;
-import com.google.speedtracer.client.model.DataModel.EventCallbackProxyProvider;
+import com.google.speedtracer.client.model.DataModel.EventRecordHandler;
 import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.JsIntegerMap;
 import com.google.speedtracer.client.util.TimeStampFormatter;
@@ -32,7 +31,7 @@ import java.util.List;
 /**
  * Handles profile data records and stores parsed profiles for later retrieval.
  */
-public class JavaScriptProfileModel implements EventCallbackProxyProvider {
+public class JavaScriptProfileModel implements EventRecordHandler {
   private class VisitProfileWorker implements WorkQueue.Node {
     private final EventVisitor visitor;
     private JsArrayNumber eventsWithProfiles;
@@ -76,37 +75,15 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
   };
   private final EventRecordLookup eventRecordLookup;
   private JavaScriptProfileModelImpl impl;
-  private final EventCallbackProxy profileProxy;
   private final JsIntegerMap<JavaScriptProfile> profileMap = JsIntegerMap.createObject().cast();
   private final WorkQueue workQueue = new WorkQueue();
 
   JavaScriptProfileModel(final EventRecordLookup eventRecordLookup) {
     this.eventRecordLookup = eventRecordLookup;
-    profileProxy = new EventCallbackProxy() {
-      public void onEventRecord(EventRecord data) {
-
-        final JavaScriptProfileEvent profileData = data.cast();
-        // Add a reference to this record from the preceding event, unless this
-        // profile is marked as not belonging to a timeline event (log entries
-        // that were created between events).
-        UiEvent rec = null;
-        if (!profileData.isOrphaned()) {
-          rec = eventRecordLookup.findEventRecord(profileData.getSequence() - 1).cast();
-        }
-        processProfileData(rec, profileData);
-      }
-    };
   }
 
   public String getDebugDumpHtml() {
     return impl.getDebugDumpHtml();
-  }
-
-  public EventCallbackProxy getEventCallback(EventRecord data) {
-    if (JavaScriptProfileEvent.isProfileEvent(data)) {
-      return profileProxy;
-    }
-    return null;
   }
 
   public JavaScriptProfile getProfileForEvent(int sequence) {
@@ -153,6 +130,20 @@ public class JavaScriptProfileModel implements EventCallbackProxyProvider {
     // Some additional debugging info
     // result.append(impl.getDebugDumpHtml());
     return result.toString();
+  }
+
+  public void onEventRecord(EventRecord data) {
+    if (JavaScriptProfileEvent.isProfileEvent(data)) {
+      final JavaScriptProfileEvent profileData = data.cast();
+      // Add a reference to this record from the preceding event, unless this
+      // profile is marked as not belonging to a timeline event (log entries
+      // that were created between events).
+      UiEvent rec = null;
+      if (!profileData.isOrphaned()) {
+        rec = eventRecordLookup.findEventRecord(profileData.getSequence() - 1).cast();
+      }
+      processProfileData(rec, profileData);      
+    }    
   }
 
   /**
