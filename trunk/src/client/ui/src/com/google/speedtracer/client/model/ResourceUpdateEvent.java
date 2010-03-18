@@ -61,8 +61,11 @@ public class ResourceUpdateEvent extends ResourceRecord {
       return !!this.didTimingChange;
     }-*/;
 
+    // TODO (jaimeyap): Follow up to ensure that we display both the transfer
+    // size and the uncompressed resource size. The following is just a
+    // temporary fix.
     public final native int getContentLength() /*-{
-      return this.contentLength;
+      return this.contentLength || this.resourceSize || 0;
     }-*/;
 
     public final native double getDomContentEventTime() /*-{
@@ -114,7 +117,7 @@ public class ResourceUpdateEvent extends ResourceRecord {
     }-*/;
 
     public final native int getStatusCode() /*-{
-      return this.statusCode;
+      return this.statusCode || -1;
     }-*/;
 
     public final native String getUrl() /*-{

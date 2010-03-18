@@ -28,8 +28,8 @@ public class TimeNormalizerVisitor implements PreOrderVisitor {
   /**
    * An EventRecord that has not yet been time normalized.
    */
-  public static class RawEvent extends JavaScriptObject {
-    protected RawEvent() {
+  public static class UnNormalizedEvent extends JavaScriptObject {
+    protected UnNormalizedEvent() {
     }
 
     public final native double getStartTime() /*-{
@@ -40,7 +40,7 @@ public class TimeNormalizerVisitor implements PreOrderVisitor {
       if (this.hasOwnProperty("endTime")) {
         this.duration = this.endTime - this.startTime;  
       }
-      
+
       this.time = this.startTime - baseTime;
 
       delete this.startTime;
@@ -60,14 +60,8 @@ public class TimeNormalizerVisitor implements PreOrderVisitor {
   }
 
   public void visitUiEvent(UiEvent e) {
-    convertRawEvent(e.<RawEvent> cast());
-  }
+    assert (proxy.getBaseTime() >= 0);
 
-  private void convertRawEvent(RawEvent rawEvent) {
-    if (proxy.getBaseTime() < 0) {
-      proxy.setBaseTime(rawEvent.getStartTime());
-    }
-
-    rawEvent.convertToEventRecord(proxy.getBaseTime());
+    e.<UnNormalizedEvent> cast().convertToEventRecord(proxy.getBaseTime());
   }
 }

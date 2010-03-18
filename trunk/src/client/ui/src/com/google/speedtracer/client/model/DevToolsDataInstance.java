@@ -23,6 +23,8 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.speedtracer.client.model.EventVisitor.PostOrderVisitor;
 import com.google.speedtracer.client.model.EventVisitor.PreOrderVisitor;
 import com.google.speedtracer.client.model.ResourceUpdateEvent.UpdateResource;
+import com.google.speedtracer.client.model.TimeNormalizerVisitor.UnNormalizedEvent;
+import com.google.speedtracer.client.util.JSOArray;
 
 /**
  * This class is used in Chrome when we are getting data from the devtools API.
@@ -60,6 +62,8 @@ public class DevToolsDataInstance extends DataInstance {
     private final Dispatcher dispatcher;
 
     private ListenerHandle listenerHandle;
+
+    private JSOArray<EventRecord> pendingRecords = JSOArray.create();
 
     private final PostOrderVisitor[] postOrderVisitors = {};
 
@@ -127,10 +131,6 @@ public class DevToolsDataInstance extends DataInstance {
       connectToDataSource();
     }
 
-    void onEventRecord(EventRecord record) {
-      dataInstance.onEventRecord(record);
-    }
-
     private void disconnect() {
       if (listenerHandle != null) {
         listenerHandle.removeListener();
@@ -154,19 +154,41 @@ public class DevToolsDataInstance extends DataInstance {
       return millis - getBaseTime();
     }
 
-    // Called from JavaScript.
-    @SuppressWarnings("unused")
-    private void onTimeLineRecord(EventRecord record) {
-      assert (dataInstance != null) : "Someone called invoke that wasn't our connect call!";
+    private void onEventRecord(EventRecord record) {
+      if (getBaseTime() < 0) {
+        sendPendingRecordsAndSetBaseTime(record.<UnNormalizedEvent> cast());
+      }
+
+      assert (getBaseTime() >= 0) : "Base Time is still not set";
+      assert (pendingRecords == null) : "pendingRecords is not null!";
+
       // We run visitors to normalize the times for this tree and to do any
       // other transformations we want.
       EventVisitorTraverser.traverse(record.<UiEvent> cast(), preOrderVisitors,
           postOrderVisitors);
 
+      dataInstance.onEventRecord(record);
+    }
+
+    private void onTimeLineRecord(EventRecord record) {
+      assert (dataInstance != null) : "Someone called invoke that wasn't our connect call!";
+
       int type = record.getType();
 
       switch (type) {
         case ResourceWillSendEvent.TYPE:
+          // We do not want to immediately assume that a resource start is
+          // eligible to establish the base time.
+          // If the start actually happened as a child of some event trace, then
+          // using this to establish base time could lead to negative times for
+          // events since all network resource events are short circuited.
+          // We buffer it for now and wait for an event that is not a Resource
+          // Start to make the decision as to what should be the base time.
+          if (getBaseTime() < 0) {
+            pendingRecords.push(record);
+            return;
+          }
+
           // Maybe synthesize a page transition.
           ResourceWillSendEvent start = record.cast();
           // Dispatch a Page Transition if this is a main resource and we are
@@ -192,6 +214,9 @@ public class DevToolsDataInstance extends DataInstance {
           // transition goes off.
           currentPage = null;
           break;
+        case ResourceDataReceivedEvent.TYPE:
+          // Ignore this record.
+          return;
       }
       // Forward to the dataInstance.
       onEventRecord(record);
@@ -232,6 +257,37 @@ public class DevToolsDataInstance extends DataInstance {
       }
 
       onEventRecord(ResourceUpdateEvent.create(resourceId, update));
+    }
+
+    /**
+     * Clears the record buffer and establishes a baseTime.
+     * 
+     * @param triggerRecord the first record that is not a Resource Start.
+     */
+    private void sendPendingRecordsAndSetBaseTime(
+        UnNormalizedEvent triggerRecord) {
+      assert (getBaseTime() < 0) : "Emptying record buffer after establishing a base time.";
+
+      if (pendingRecords.size() == 0) {
+        setBaseTime(triggerRecord.getStartTime());
+        return;
+      }
+
+      // Normalize base time using either the event that triggered the check, or
+      // the first event that we buffered.
+      UnNormalizedEvent firstStart = pendingRecords.get(0).cast();
+      double baseTimeStamp = (firstStart.getStartTime() < triggerRecord.getStartTime())
+          ? firstStart.getStartTime() : triggerRecord.getStartTime();
+      setBaseTime(baseTimeStamp);
+
+      // Now that we have set the base time, we can replay the buffered Record
+      // Starts since they did come in first, and they in fact still need to go
+      // through normalization and through the page transition logic.
+      for (int i = 0, n = pendingRecords.size(); i < n; i++) {
+        onTimeLineRecord(pendingRecords.get(i));
+      }
+      // Nuke the pending records.
+      pendingRecords = null;
     }
   }
 
