@@ -234,7 +234,7 @@ public class MonitorVisualizationsPanel extends Div {
 
         ClickEvent.addClickListener(entry, entry, new ClickListener() {
           public void onClick(ClickEvent event) {
-            highlightEntry(entry, viz);
+            selectTab(entry, viz);
           }
         });
 
@@ -242,7 +242,7 @@ public class MonitorVisualizationsPanel extends Div {
       }
     }
 
-    private void highlightEntry(Element entry, Visualization<?, ?> viz) {
+    private void selectTab(Element entry, Visualization<?, ?> viz) {
       previouslySelected.setClassName(resources.monitorVisualizationsPanelCss().tabListEntry());
       previouslySelected = entry;
       previouslySelected.setClassName(resources.monitorVisualizationsPanelCss().tabListEntry()

@@ -126,6 +126,12 @@ webkitEvents = [
     'constant' : 'JAVASCRIPT_EXECUTION',
     'desc' : 'JavaScript Callback',
     'help_text' : 'JavaScript was run in an event dispatch.',
+  },
+  { 
+    'value' : 16, 
+    'constant' : 'RESOURCE_DATA_RECEIVED',
+    'desc' : 'Resource Data Recived',
+    'help_text' : 'Data was received from the resource loader.',
   }
 ]
 # END INSPECTOR TIMELINE RECORDS.
