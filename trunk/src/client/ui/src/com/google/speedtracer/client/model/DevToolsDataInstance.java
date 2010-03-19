@@ -15,10 +15,12 @@
  */
 package com.google.speedtracer.client.model;
 
+import com.google.gwt.chrome.crx.client.Chrome;
 import com.google.gwt.chrome.crx.client.DevTools;
 import com.google.gwt.chrome.crx.client.events.DevToolsPageEvent.Listener;
 import com.google.gwt.chrome.crx.client.events.DevToolsPageEvent.PageEvent;
 import com.google.gwt.chrome.crx.client.events.Event.ListenerHandle;
+import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.speedtracer.client.model.EventVisitor.PostOrderVisitor;
 import com.google.speedtracer.client.model.EventVisitor.PreOrderVisitor;
@@ -115,12 +117,23 @@ public class DevToolsDataInstance extends DataInstance {
     }
 
     protected void connectToDataSource() {
-      this.listenerHandle = DevTools.getTabEvents(tabId).getPageEvent().addListener(
-          new Listener() {
-            public void onPageEvent(PageEvent event) {
-              dispatchPageEvent(event);
-            }
-          });
+      if (this.listenerHandle != null) {
+        // DevTools doesn't like the event being connected to more than once.
+        return;
+      }
+
+      try {
+        this.listenerHandle = DevTools.getTabEvents(tabId).getPageEvent().addListener(
+            new Listener() {
+              public void onPageEvent(PageEvent event) {
+                dispatchPageEvent(event);
+              }
+            });
+      } catch (JavaScriptException ex) {
+        Chrome.getExtension().getBackgroundPage().getConsole().log(
+            "Error attaching to DevTools page event: " + ex);
+        // ignore
+      }
     }
 
     void connectToDevTools(final DevToolsDataInstance dataInstance) {

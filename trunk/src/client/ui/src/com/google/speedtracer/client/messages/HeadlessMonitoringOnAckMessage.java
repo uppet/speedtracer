@@ -19,18 +19,22 @@ import com.google.gwt.chrome.crx.client.Port;
 import com.google.gwt.chrome.crx.client.Port.Message;
 
 /**
- * Message sent from the Background page all the way through to the API. This
- * message contains the SpeedTrace data as the payload.
-  */
-public class HeadlessDumpDataAckMessage extends Message {
-  public static final int TYPE = MessageType.PORT_HEADLESS_GET_DUMP_ACK;
+ * Message sent from the Background page to the API to acknowledge turning on
+ * monitoring. This message doesn't have any payload, its just used to flush out
+ * the message channels.
+ */
+public class HeadlessMonitoringOnAckMessage extends Message {
+  public static final int TYPE = MessageType.PORT_HEADLESS_MONITORING_ON_ACK;
 
-  public static HeadlessDumpDataAckMessage create(String data) {
+  public static HeadlessMonitoringOnAckMessage create() {
     Port.Message message = Message.create(TYPE).cast();
-    message.setProperty("data", data);
     return message.cast();
   }
 
-  protected HeadlessDumpDataAckMessage() {
+  protected HeadlessMonitoringOnAckMessage() {
   }
+
+  public final native void setReloadUrl(String reloadUrl) /*-{
+    this.reload = reloadUrl;
+  }-*/;
 }

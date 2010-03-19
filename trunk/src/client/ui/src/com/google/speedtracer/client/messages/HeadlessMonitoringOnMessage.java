@@ -30,17 +30,22 @@ public class HeadlessMonitoringOnMessage extends Message {
     protected Options() {
     }
 
-    public final native boolean isProfilingOn() /*-{
-      return !!this.profiling;
+    public final native boolean clearData() /*-{
+      return !!this.clearData;
     }-*/;
 
-    public final native boolean isStackTraceOn() /*-{
-      return !!this.stackTrace;
+    /**
+     * If the content script sends down a URL, it indicates that the API
+     * requesting that the current page be reloaded with a new URL after
+     * monitoring is enabled.
+     */
+    public final native String getReloadUrl() /*-{
+      return this.reload;
     }-*/;
   }
 
   public static final int TYPE = MessageType.PORT_HEADLESS_MONITORING_ON;
-  
+
   protected HeadlessMonitoringOnMessage() {
   }
 

@@ -181,7 +181,8 @@
   </condition>
   <property name="speedtracer.junit.testcases" value="**/*Suite.class"/>
   <property name="speedtracer.junit.out" value="${speedtracer.destdir}/test" />
-  <property name="speedtracer.junit.reports" value="${speedtracer.junit.out}/reports" />
+  <property name="speedtracer.junit.reports" 
+            value="${speedtracer.junit.out}/reports" />
 
   <target name="tests.report-failures" if="speedtracer.tests.did-fail">
     <concat>
@@ -206,7 +207,8 @@
 
     <fileset id="speedtracer.remoteweb.tests" dir="${classdir}" includes="${speedtracer.junit.testcases}" />
 
-    <taskdef name="junit" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask">
+    <taskdef name="junit" 
+         classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask">
       <classpath>
         <pathelement location="${junit.jar}" />
         <pathelement location="${antlib.jar}" />
