@@ -9,8 +9,8 @@
   <property name="speedtracer.revision" value="0" />
   <property name="moniker" value="speedtracer" />
   <property name="headless.moniker" value="speedtracerheadless" />
-
-  <property name="speedtracer.ui.destdir" location="${speedtracer.destdir}/${moniker}" />
+  <property name="speedtracer.ui.destdir" 
+      location="${speedtracer.destdir}/${moniker}" />
   <property name="speedtracer.headless.destdir" 
       location="../${config}/${headless.moniker}" />
 
@@ -38,9 +38,7 @@
     <available file="${chrome.global.2}" />
   </condition>
 
-  <target name="speedtracer.client.build">
-    <ant dir="ui" target="build" />
-
+  <target name="extension.package">
     <!-- Chrome does not have good error checking for missing pem
       files, so we make sure we fail if you specify a key file that
       isn't available -->
@@ -82,8 +80,16 @@
     <zip basedir="${speedtracer.ui.destdir}"
         destfile="${speedtracer.destdir}/${moniker}.zip" /> 
     </target>
+  
 
-    <target name="speedtracer.headless.build">
+    <target name="speedtracer.headless.build" depends="headless.extension.build,headless.extension.package">
+    </target>
+
+  <target name="headless.extension.build">
+    <ant dir="ui" target="headless.extension.build" />
+  </target>
+
+    <target name="headless.extension.package">
     <!-- TODO(zundel): I'd like to not copy code around, but I am not 
          sure how to macro-ize the logic below so it can be shared with
          the graphical extension.  -->
@@ -95,7 +101,7 @@
         </not>
       </or>
     </condition>
-    <fail message="Extension Pem file is invalid: ${speedtracer.headless.pem.path}"
+    <fail message="Headless Extension Pem file is invalid: ${speedtracer.headless.pem.path}"
         unless="speedtracer.headless.pem.valid" />
 
     <condition property="speedtracer.headless.pem.options"
@@ -126,8 +132,12 @@
         destfile="${speedtracer.destdir}/${headless.moniker}.zip" /> 
   </target>
 
+  <target name="ui.build">
+    <ant dir="ui" target="build" />
+  </target>
+
   <target name="build" 
-          depends="speedtracer.client.build, speedtracer.headless.build" />
+          depends="ui.build,extension.package,headless.extension.package" />
 
   <target name="test">
     <ant dir="ui" target="test" />

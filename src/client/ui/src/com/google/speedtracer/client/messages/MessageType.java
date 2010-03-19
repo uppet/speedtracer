@@ -33,18 +33,21 @@ class MessageType {
   static final int WC_RESET_BASE_TIME_TYPE = 7;
   
   /**
-   * {@link com.google.gwt.chrome.crx.client.Port.Message} message types. 
+   * {@link com.google.gwt.chrome.crx.client.Port.Message} message types.
+   * The PORT_HEADLESS_XXX values must be kept in sync with the values
+   * used in headless_api.js and headless_content_type.js. 
    */
   static final int PORT_EVENT_RECORD_TYPE = 100;
   static final int PORT_PAGE_EVENT_TYPE = 101;
-  /* 102 is currently unused and available for future message types */
-  static final int PORT_HEADLESS_CLEAR_DATA = 103;  
-  static final int PORT_HEADLESS_MONITORING_ON = 104;
-  static final int PORT_HEADLESS_MONITORING_OFF = 105;
-  static final int PORT_HEADLESS_GET_DUMP = 106;
-  static final int PORT_HEADLESS_GET_DUMP_ACK = 107;
-  static final int PORT_HEADLESS_SEND_DUMP = 108;
-  static final int PORT_HEADLESS_SEND_DUMP_ACK = 109;
+  static final int PORT_HEADLESS_CLEAR_DATA = 102;  
+  static final int PORT_HEADLESS_MONITORING_ON = 103;
+  static final int PORT_HEADLESS_MONITORING_OFF = 104;
+  static final int PORT_HEADLESS_GET_DUMP = 105;
+  static final int PORT_HEADLESS_GET_DUMP_ACK = 106;
+  static final int PORT_HEADLESS_SEND_DUMP = 107;
+  static final int PORT_HEADLESS_SEND_DUMP_ACK = 108;
+  static final int PORT_HEADLESS_MONITORING_ON_ACK = 109;
+  static final int PORT_HEADLESS_MONITORING_OFF_ACK = 110;
   
   private MessageType() {
   }

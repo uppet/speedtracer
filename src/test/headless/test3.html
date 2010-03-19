@@ -1,0 +1,42 @@
+<!-- Manual test for the speedTracer.sendDump() command to transmit the
+     trace data to a Java servlet running at localhost:9030
+  -->
+<html>
+  <head>
+    <title>HeadlessExtension test3</title>
+    <script language="javascript" src="chrome-extension://jolleknjmmglebfldiogepklbacoohni/headless_api.js"></script>
+    <script>
+if (!window.speedtracer) { 
+  alert("SpeedTracer API not found");
+} else {
+  speedtracer.clearData();
+  speedtracer.startMonitoring();
+}
+    </script>
+  </head>
+  <body>
+    <h1>HeadlessExtension test3</h1>
+    Div affected by a timer.
+    <div id='hello'></div>
+    After 3 seconds, results will be posted via XHR to a server running at localhost:9030 (see run-trace-server.py) and XHR status reported in the DIV below:
+    <div id='output'></div>
+    <script>
+var timerInterval = window.setInterval(function() {
+   var helloDiv = document.getElementById('hello'); 
+   var content = helloDiv.innerText;
+   helloDiv.innerText = content + " hello";
+}, 450);
+
+window.setTimeout(function() {
+   window.clearInterval(timerInterval);
+   speedtracer.stopMonitoring();
+   speedtracer.sendDump("http://localhost:9030/headlessspeedtracerdemo/speedtracereceiver", 
+      {'name':'test3', 'revision':'r1'},
+      function(result) {
+        var outputDiv = document.getElementById('output');
+        outputDiv.innerText = "Callback has result: " + result;
+      });
+}, 3000);
+    </script>
+  </body>
+</html>

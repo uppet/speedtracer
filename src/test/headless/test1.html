@@ -1,0 +1,42 @@
+<!-- Manual test to turn on monitoring and retrieve data with 
+     speedtracer.getDump()
+  -->
+<html>
+  <head>
+    <title>HeadlessExtension test1</title>
+    <script language="javascript" src="chrome-extension://jolleknjmmglebfldiogepklbacoohni/headless_api.js"></script>
+    <script>
+
+if (!window.speedtracer) { 
+  alert("SpeedTracer API not found");
+} else {
+  speedtracer.clearData();
+  speedtracer.startMonitoring();
+}
+
+var timerInterval = window.setInterval(function() {
+  var helloDiv = document.getElementById('hello'); 
+  var content = helloDiv.innerText;
+  helloDiv.innerText = content + " hello";
+}, 450);
+
+window.setTimeout(function() {
+   window.clearInterval(timerInterval);
+   speedtracer.stopMonitoring();
+   speedtracer.getDump(function(data) {
+      var outputDiv = document.getElementById('output');
+      outputDiv.innerText = data;
+   });
+}, 3000);   
+
+    </script>
+  </head>
+  <body>
+    <h1>HeadlessExtension test1</h1>
+    The div below is affected by a timer.  After a few intervals, a second div will
+    be populated with timeline records pulled from the headless extension.
+    <div id='hello'></div>
+    Output:
+    <div id='output'></div>
+  </body>
+</html>

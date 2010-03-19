@@ -16,6 +16,7 @@
 package com.google.speedtracer.client;
 
 import com.google.gwt.chrome.crx.client.Chrome;
+import com.google.gwt.chrome.crx.client.Console;
 import com.google.gwt.chrome.crx.client.Extension;
 import com.google.gwt.chrome.crx.client.Port;
 import com.google.gwt.chrome.crx.client.events.ConnectEvent;
@@ -25,11 +26,14 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 import com.google.speedtracer.client.messages.HeadlessClearDataMessage;
 import com.google.speedtracer.client.messages.HeadlessDumpDataAckMessage;
 import com.google.speedtracer.client.messages.HeadlessDumpDataMessage;
+import com.google.speedtracer.client.messages.HeadlessMonitoringOffAckMessage;
 import com.google.speedtracer.client.messages.HeadlessMonitoringOffMessage;
+import com.google.speedtracer.client.messages.HeadlessMonitoringOnAckMessage;
 import com.google.speedtracer.client.messages.HeadlessMonitoringOnMessage;
 import com.google.speedtracer.client.messages.HeadlessSendDataAckMessage;
 import com.google.speedtracer.client.messages.HeadlessSendDataMessage;
@@ -42,8 +46,7 @@ import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.JSON;
 import com.google.speedtracer.client.util.Xhr;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 
 /**
  * A Chrome extension background page script for running a headless version of
@@ -66,7 +69,7 @@ public class HeadlessBackgroundPage extends Extension implements
       public void fireOnEventRecord(EventRecord data) {
         // Send this message over to the content script
         String dataString = JSON.stringify(data);
-        eventRecordData.add(dataString);
+        eventRecordData.push(dataString);
       }
 
       @Override
@@ -88,7 +91,6 @@ public class HeadlessBackgroundPage extends Extension implements
     }
 
     private final Port port;
-    private DataInstance dataInstance;
 
     public MessageHandler(Port port) {
       this.port = port;
@@ -121,40 +123,51 @@ public class HeadlessBackgroundPage extends Extension implements
     }
 
     private void doHeadlessClearData(HeadlessClearDataMessage message) {
-      eventRecordData.clear();
+      eventRecordData.setLength(0);
     }
 
     private void doHeadlessDumpData(HeadlessDumpDataMessage message) {
       // Pack up the data we've been saving in our list and send it back
       // to the API.
-      HeadlessDumpDataAckMessage dumpMessage = HeadlessDumpDataAckMessage.create(getEventRecordDataAsString());
+      HeadlessDumpDataAckMessage dumpMessage = HeadlessDumpDataAckMessage.create(eventRecordData.join("\n"));
       sendToContentScript(port, dumpMessage);
     }
 
     private void doHeadlessMonitoringOff(HeadlessMonitoringOffMessage message) {
       // The API is telling us to turn off monitoring.
-      initDataInstance();
+      DataInstance dataInstance = getDataInstance();
       dataInstance.stopMonitoring();
+      HeadlessMonitoringOffAckMessage ackMessage = HeadlessMonitoringOffAckMessage.create();
+      sendToContentScript(port, ackMessage);
     }
 
     private void doHeadlessMonitoringOn(HeadlessMonitoringOnMessage message) {
       // The API is telling us to turn on monitoring.
-      initDataInstance();
+      DataInstance dataInstance = getDataInstance();
       dataInstance.resumeMonitoring();
       HeadlessMonitoringOnMessage.Options options = message.getOptions();
+      HeadlessMonitoringOnAckMessage ackMessage = HeadlessMonitoringOnAckMessage.create();
       if (options != null) {
-        dataInstance.setProfilingOptions(options.isStackTraceOn(),
-            options.isProfilingOn());
+        if (options.clearData()) {
+          eventRecordData.setLength(0);
+        }
+        ackMessage.setReloadUrl(options.getReloadUrl());
       }
+      sendToContentScript(port, ackMessage);
     }
 
     private void doHeadlessSendData(HeadlessSendDataMessage message) {
+      DataInstance dataInstance = getDataInstance();
       // Pack up the data we've been saving in our list and send it out
       // via XHR.
       JsArray<JavaScriptObject> data = getEventRecordData();
+      String payload = createXhrPayload(dataInstance.getBaseTime(), message,
+          data);
+      if (ClientConfig.isDebugMode()) {
+        console.log("Sending payload of " + payload.length() + " bytes ("
+            + data.length() + " trace records) to " + message.getUrl());
+      }
       try {
-        String payload = createXhrPayload(dataInstance.getBaseTime(), message,
-            data);
         Xhr.post(message.getUrl(), payload, "application/json",
             new Xhr.XhrCallback() {
               public void onFail(XMLHttpRequest xhr) {
@@ -168,38 +181,36 @@ public class HeadlessBackgroundPage extends Extension implements
               }
             });
       } catch (JavaScriptException ex) {
+        console.log("XHR failed: " + ex);
         HeadlessSendDataAckMessage sendMessage = HeadlessSendDataAckMessage.create(false);
         sendToContentScript(port, sendMessage);
+        throw ex;
       }
+    }
+
+    /**
+     * Find the currently active DataInstance associated with this tab, or
+     * create a new one.
+     */
+    private DataInstance getDataInstance() {
+      int id = port.getTab().getId();
+      DataInstance dataInstance = dataInstances.get(id);
+      if (dataInstance == null) {
+        dataInstance = DevToolsDataInstance.create(id);
+        dataInstances.put(id, dataInstance);
+        DataModel dataModel = new HeadlessDataModel();
+        dataInstance.load(dataModel);
+      }
+      return dataInstance;
     }
 
     private JsArray<JavaScriptObject> getEventRecordData() {
       JsArray<JavaScriptObject> result = JsArray.createArray().cast();
-
-      for (int i = 0, length = eventRecordData.size(); i < length; ++i) {
+      for (int i = 0, length = eventRecordData.length(); i < length; ++i) {
         JavaScriptObject row = JSON.parse(eventRecordData.get(i));
         result.push(row);
       }
       return result;
-    }
-
-    private String getEventRecordDataAsString() {
-      StringBuilder builder = new StringBuilder();
-      for (int i = 0, length = eventRecordData.size(); i < length; ++i) {
-        builder.append(eventRecordData.get(i));
-        builder.append("\n");
-      }
-      return builder.toString();
-    }
-
-    private void initDataInstance() {
-      if (dataInstance != null) {
-        return;
-      }
-
-      dataInstance = DevToolsDataInstance.create(port.getTab().getId());
-      DataModel dataModel = new HeadlessDataModel();
-      dataInstance.load(dataModel);
     }
   }
 
@@ -219,7 +230,11 @@ public class HeadlessBackgroundPage extends Extension implements
     port.postMessage(message);
   }
 
-  private final List<String> eventRecordData = new ArrayList<String>();
+  private HashMap<Integer, DataInstance> dataInstances = new HashMap<Integer, DataInstance>();
+
+  private final JsArrayString eventRecordData = JsArrayString.createArray().cast();
+
+  private Console console;
 
   @Override
   public String getVersion() {
@@ -245,5 +260,6 @@ public class HeadlessBackgroundPage extends Extension implements
   private void initialize() {
     // Listen for messages from the content script
     Chrome.getExtension().getOnConnectEvent().addListener(this);
+    console = Chrome.getExtension().getBackgroundPage().getConsole();
   }
 }

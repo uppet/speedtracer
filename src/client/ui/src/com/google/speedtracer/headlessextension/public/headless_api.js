@@ -27,18 +27,51 @@
  */
 (function() { // begin anonymous closure
 
+// Handshake message sent to content script.
+var API_READY_MSG = 1;
+// Constant values defined in MessageType.java and headless_content_script.js
+// TODO(zundel): Create a way to automatically sync these definitions
+var PORT_HEADLESS_CLEAR_DATA = 102;  
+var PORT_HEADLESS_MONITORING_ON = 103;
+var PORT_HEADLESS_MONITORING_OFF = 104;
+var PORT_HEADLESS_GET_DUMP = 105;
+var PORT_HEADLESS_GET_DUMP_ACK = 106;
+var PORT_HEADLESS_SEND_DUMP = 107;
+var PORT_HEADLESS_SEND_DUMP_ACK = 108;
+var PORT_HEADLESS_MONITORING_ON_ACK = 109;
+var PORT_HEADLESS_MONITORING_OFF_ACK = 110;
+
 var TO_API_DIV_ID = '__speedtracerToApiElement';
 var FROM_API_DIV_ID = '__speedtracerFromApiElement';
 var EVENT_NAME = 'SpeedTracer Headless Event';
 var fromApiDiv;
 var toApiDiv;
-var logDiv;
 var getDumpCallbacks = [];
 var sendDumpCallbacks = [];
+var monitoringOnCallbacks = [];
+var monitoringOffCallbacks = [];
 var contentScriptEvent = document.createEvent('Event');
 contentScriptEvent.initEvent(EVENT_NAME, true, true);
 var toDispatch = [];
 var onDOMContentLoadedDelayed = false;
+
+// Optional debug loggging
+var loggingEnabled = false;
+var logDiv;
+var toLog = [];
+
+// Hook into GWT's lightweight metrics.
+if (!window.__gwtStatsEvent) {
+  window.__gwtStatsEvent = function(event) {
+   console.markTimeline("__gwtStatsEvent: " + JSON.stringify(event)); 
+  }
+} else {
+  var origStatsFunc = window.__gwtStatsEvent;
+  window.__gwtStatsEvent = function(event) {
+   origStatsFunc(event);
+   console.markTimeline("__gwtStatsEvent: " + JSON.stringify(event)); 
+  }
+}
 
 function onDOMContentLoaded() {
   fromApiDiv = document.getElementById(FROM_API_DIV_ID);
@@ -51,13 +84,16 @@ function onDOMContentLoaded() {
   toApiDiv = document.getElementById(TO_API_DIV_ID);
   toApiDiv.addEventListener(EVENT_NAME, handleMessagesToApi);
 
-  // Uncomment the following two lines to enable debugging
-  // logDiv = document.createElement('div');
-  // document.body.appendChild(logDiv);
+  if (loggingEnabled) {
+    logDiv = document.createElement('div');
+    document.body.appendChild(logDiv);
+    while (toLog.length > 0) {
+      log(toLog.shift());
+    }
+  }
 
   // Send any queued messages waiting for DOMContentLoaded
   while (toDispatch.length > 0) {
-    log("Sending deferred message");
     sendMsg(toDispatch.shift());
   }
 }
@@ -75,20 +111,37 @@ function handleMessagesToApi() {
   var tmpRec = JSON.parse(toApiDiv.innerText);
   log("Received message from Content Script: " + tmpRec.type);
   toApiDiv.innerText = "";
-
   switch (tmpRec.type) {
-  case 107: // PORT_HEADLESS_GET_DUMP_ACK 
-    var callback = getDumpCallbacks.pop();
+  case PORT_HEADLESS_GET_DUMP_ACK:
+    var callback = getDumpCallbacks.shift();
     if (callback) { 
-      log("Calling getDumpCallback");
       callback(tmpRec.data);
     }
     break;
-  case 109: // PORT_HEADLESS_SEND_DUMP_ACK 
-    var callback = sendDumpCallbacks.pop();
+  case PORT_HEADLESS_SEND_DUMP_ACK:
+    var callback = sendDumpCallbacks.shift();
     if (callback) { 
-      log("Calling sendDumpCallback");
       callback(tmpRec.success);
+    }
+    break;
+  case PORT_HEADLESS_MONITORING_ON_ACK:
+    var monitoringOnCallback = monitoringOnCallbacks.shift();
+    if (tmpRec.reload) {
+      window.location.href = tmpRec.reload;
+    } else {
+      if (monitoringOnCallback) {
+        monitoringOnCallback();
+      } else {
+        log("Expected monitoringOnCallback and got null instead.")
+      }
+    }
+    break;
+  case PORT_HEADLESS_MONITORING_OFF_ACK:
+    var monitoringOffCallback = monitoringOffCallbacks.shift();
+    if (monitoringOffCallback) {
+      monitoringOffCallback();
+    } else {
+      log("Expected monitoringOffCallback and got null instead.")
     }
     break;
   default:
@@ -100,32 +153,42 @@ function handleMessagesToApi() {
 // defined with all its functions and properties, and then assigned to 
 // window.speedtracer
 
-
 // This function clears any previously stored speed trace data.
 // Useful if you are performing multiple runs on the same URL.
 window.speedtracer.clearData = function() {
-     log("Calling clearData");
-  sendMsg({'type':103}); // PORT_HEADLESS_CLEAR_DATA
+  sendMsg({'type':PORT_HEADLESS_CLEAR_DATA}); // 
 }
 
 // Turn on the SpeedTracer monitoring function
 // Valid properties for options:
-//   profiling - enable CPU profiling if set to true
-//   stackTrace = enable Stack Traces if set to true
-window.speedtracer.startMonitoring = function(options) {
-  sendMsg({'type':104, 'options':options}); // PORT_HEADLESS_MONITORING_ON
+//   clearData - clears any previously recorded timeline data if true
+//   reload - a url to load in this tab after turning monitoring on
+// cb - optional function to be called after monitoring has been enabled
+window.speedtracer.startMonitoring = function(options, cb) {
+  sendMsg({'type':PORT_HEADLESS_MONITORING_ON, 'options':options}); 
+  monitoringOnCallbacks.push(function() { 
+    if (cb) {
+      cb();
+    }
+  });
 }
 
 // Stop the SpeedTracer monitoring function
-window.speedtracer.stopMonitoring = function() {
-  sendMsg({'type':105}); // PORT_HEADLESS_MONITORING_OFF
+// cb - optional function to be called after monitoring has been disabled
+window.speedtracer.stopMonitoring = function(cb) {
+  sendMsg({'type':PORT_HEADLESS_MONITORING_OFF});
+  monitoringOffCallbacks.push(function() { 
+    if (cb) {
+      cb();
+    }
+  });
 }
 
 // Retrieve the dump.
 //    callback will be invoked when the data is ready.
 //       callback (String data)
 window.speedtracer.getDump = function(callback) {
-  sendMsg({'type':106}); // PORT_HEADLESS_GET_DUMP
+  sendMsg({'type':PORT_HEADLESS_GET_DUMP});
   getDumpCallbacks.push(callback);
 }
 
@@ -133,7 +196,7 @@ window.speedtracer.getDump = function(callback) {
 //    the callback will be invoked when the transmission is completed.
 //       callback (number responseCode)
 window.speedtracer.sendDump = function(url, header, callback) {
-  sendMsg({'type':108, 'header': header, 'url':url}); // PORT_HEADLESS_SEND_DUMP
+  sendMsg({'type':PORT_HEADLESS_SEND_DUMP, 'header': header, 'url':url});
   sendDumpCallbacks.push(callback);
 }
 
@@ -145,15 +208,21 @@ function sendMsg(message) {
     toDispatch.push(message);
   } else {
     fromApiDiv.innerText = JSON.stringify(message);
-    log("Sending message to Content Script: " + message.type);
     fromApiDiv.dispatchEvent(contentScriptEvent);
   }
 }
 
 function log(message) {
-  if (logDiv) {
-   logDiv.innerHTML = logDiv.innerHTML + "<br/>\nAPI: " + message;
+  if (loggingEnabled) {
+    if (logDiv) {
+     logDiv.innerHTML = logDiv.innerHTML + "<br/>\nAPI: " + message;
+    } else {
+      toLog.push(message);
+    }
   }
 }
+
+// Notify the content script that the API is ready to play.
+sendMsg({'type':API_READY_MSG});
 
 })(); // end anonymous closure
