@@ -18,6 +18,7 @@ package com.google.speedtracer.client.model;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.timeline.GraphUiProps;
+import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.view.DetailView;
 import com.google.speedtracer.client.view.MainTimeLine;
 import com.google.speedtracer.client.visualizations.model.TransientMarkerModel;
@@ -32,6 +33,8 @@ import com.google.speedtracer.client.visualizations.model.VisualizationModel;
  *          VisualizationModel for this Visualization.
  */
 public abstract class Visualization<V extends DetailView, M extends VisualizationModel> {
+
+  private final JSOArray<ButtonDescription> buttons = JSOArray.create();
 
   /**
    * Optional field for placing transient overlays on the graph.
@@ -52,8 +55,9 @@ public abstract class Visualization<V extends DetailView, M extends Visualizatio
    * The model underlying this visualization.
    */
   private VisualizationModel model;
-  
+
   private final String subTitle;
+
   private final String title;
 
   public Visualization(String title, String subTitle, M model,
@@ -64,9 +68,17 @@ public abstract class Visualization<V extends DetailView, M extends Visualizatio
     this.model = model;
   }
 
+  public void addButton(ButtonDescription buttonDescription) {
+    buttons.push(buttonDescription);
+  }
+
   public void clearData() {
     model.clearData();
     detailView.updateView(0, Constants.DEFAULT_GRAPH_WINDOW_SIZE, true);
+  }
+
+  public JSOArray<ButtonDescription> getButtons() {
+    return buttons;
   }
 
   public TransientMarkerModel getCurrentEventMarkerModel() {
@@ -93,7 +105,7 @@ public abstract class Visualization<V extends DetailView, M extends Visualizatio
   public String getTitle() {
     return title;
   }
-  
+
   /**
    * Sets the underlying {@link VisualizationModel} and updates the
    * corresponding detailView.
@@ -104,7 +116,7 @@ public abstract class Visualization<V extends DetailView, M extends Visualizatio
     this.model = model;
     detailView.updateView(0, Constants.DEFAULT_GRAPH_WINDOW_SIZE, true);
   }
-  
+
   /**
    * Creates the {@link DetailView} panel for this Visualization.
    * 

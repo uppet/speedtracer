@@ -46,10 +46,10 @@ public class SluggishnessEventFilterPanel extends Div {
    * Styles.
    */
   public interface Css extends CssResource {
-    String filterPanelIcon();
-    
+    String filterPanelButton();
+
     String filterPanelMinInput();
-    
+
     String filterPanelMinLabel();
   }
 
@@ -57,8 +57,14 @@ public class SluggishnessEventFilterPanel extends Div {
    * Externalized Resources.
    */
   public interface Resources extends ClientBundle {
-    @Source("resources/magnify-16px.png")
-    ImageResource filterPanelIcon();
+    @Source("resources/filter-panel-button.png")
+    ImageResource filterPanelButton();
+
+    @Source("resources/filter-panel-button-h.png")
+    ImageResource filterPanelButtonHover();
+
+    @Source("resources/filter-panel-button-p.png")
+    ImageResource filterPanelButtonPress();
 
     @Source("resources/SluggishnessEventFilterPanel.css")
     Css sluggishnessFiletPanelCss();
@@ -123,8 +129,8 @@ public class SluggishnessEventFilterPanel extends Div {
     eventTypeLabel.getStyle().setPropertyPx("marginLeft", 10);
     eventTypeLabel.setInnerText("Event Type: ");
 
-    createEventTypePercentSelect(row1Container);
     createEventTypeSelect(row1Container, model);
+    createEventTypePercentSelect(row1Container);
 
     // Always show events with: o logs o hintlets
     Element alwaysShowLabel = doc.createSpanElement();

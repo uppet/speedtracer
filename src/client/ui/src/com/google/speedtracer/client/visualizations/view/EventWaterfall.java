@@ -21,6 +21,7 @@ import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.MouseOverEvent;
 import com.google.gwt.topspin.ui.client.MouseOverListener;
 import com.google.speedtracer.client.SymbolServerController;
+import com.google.speedtracer.client.model.ButtonDescription;
 import com.google.speedtracer.client.model.EventRecordType;
 import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.client.model.UiEventModel;
@@ -52,9 +53,7 @@ public class EventWaterfall extends FilteringScrollTable {
   // The index of the last event in the table model.
   private int endIndex = 0;
 
-  // TODO (jaimeyap): Readd the filter panel once we figure out a place for the
-  // UI.
-  // private SluggishnessEventFilterPanel eventFilterPanel;
+  private SluggishnessEventFilterPanel eventFilterPanel;
 
   // A map of all rows in the table keyed by the record sequence number
   private JsIntegerMap<EventWaterfallRow> recordMap = JsIntegerMap.createObject().cast();
@@ -68,7 +67,7 @@ public class EventWaterfall extends FilteringScrollTable {
   private final SluggishnessVisualization visualization;
 
   public EventWaterfall(Container container, EventWaterfallFilter filter,
-      SluggishnessVisualization visualization, UiEventModel sourceModel,
+      final SluggishnessVisualization visualization, UiEventModel sourceModel,
       EventWaterfall.Resources resources) {
     super(container, filter, resources);
 
@@ -96,25 +95,21 @@ public class EventWaterfall extends FilteringScrollTable {
       }
     };
 
-    // TODO (jaimeyap): Re-add the UI for toggling the filter panel somewhere.
-    // Magnifying glass shaped icon that is used to expose the filter
-    // settings.
+    // Create the EventFilterPanel UI.
+    eventFilterPanel = new SluggishnessEventFilterPanel(
+        getFilterPanelContainer(), this, filter.eventFilter, resources,
+        visualization.getModel());
 
-    // eventFilterPanel = new SluggishnessEventFilterPanel(
-    // getFilterPanelContainer(), this, filter.eventFilter, resources,
-    // visualization.getModel());
-
-    // Div filterPanelIcon = new Div(getContainer());
-    // filterPanelIcon.setStyleName(resources.sluggishnessFiletPanelCss().
-    // filterPanelIcon());
-    // filterPanelIcon.getElement().setAttribute("title",
-    // "Hide/Show Filter Panel");
-    // filterPanelIcon.addClickListener(new ClickListener() {
-    // public void onClick(ClickEvent event) {
-    // eventFilterPanel.refresh();
-    // toggleFilterPanelVisible();
-    // }
-    // });
+    // Add a ButtonDescription entry for the control that will open/close the
+    // EventFilterPanel.
+    visualization.addButton(new ButtonDescription("Open/Close Filter Panel",
+        resources.sluggishnessFiletPanelCss().filterPanelButton(),
+        new ClickListener() {
+          public void onClick(ClickEvent event) {
+            eventFilterPanel.refresh(visualization.getModel());
+            toggleFilterPanelVisible();
+          }
+        }));
   }
 
   /**

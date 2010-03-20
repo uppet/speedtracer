@@ -57,3 +57,10 @@
   background-color: #fff;
   \-webkit-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
 }
+
+.buttonBar {
+  position: absolute;
+  bottom: 0;
+  padding-left: 5px;
+  padding-bottom: 1px;
+}

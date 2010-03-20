@@ -11,12 +11,18 @@
   width: 60px;
 }
 
-@sprite .filterPanelIcon {
-  gwt-image: "filterPanelIcon";
-  position: absolute;
+/* Toggle FilterPanel button */
+@sprite .filterPanelButton {
+  gwt-image: "filterPanelButton";
+  border: none;
+  position: relative;
   display: inline-block;
-  top: 4px;
-  left: 4px;
-  width: 16px;
-  height: 16px;
+}
+
+@sprite .filterPanelButton:hover {
+  gwt-image: "filterPanelButtonHover";
+}
+
+@sprite .filterPanelButton:active {
+  gwt-image: "filterPanelButtonPress";
 }

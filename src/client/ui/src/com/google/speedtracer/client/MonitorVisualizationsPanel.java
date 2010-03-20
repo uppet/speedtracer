@@ -34,6 +34,7 @@ import com.google.gwt.topspin.ui.client.ResizeListener;
 import com.google.gwt.topspin.ui.client.Window;
 import com.google.gwt.user.client.Timer;
 import com.google.speedtracer.client.model.ApplicationState;
+import com.google.speedtracer.client.model.ButtonDescription;
 import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.HintletEngineHost;
 import com.google.speedtracer.client.model.Visualization;
@@ -42,7 +43,9 @@ import com.google.speedtracer.client.timeline.GraphModel;
 import com.google.speedtracer.client.timeline.TimeLineModel;
 import com.google.speedtracer.client.timeline.fx.Zoom;
 import com.google.speedtracer.client.timeline.fx.Zoom.CallBack;
+import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.dom.DocumentExt;
+import com.google.speedtracer.client.util.dom.EventCleanup;
 import com.google.speedtracer.client.view.Controller;
 import com.google.speedtracer.client.view.DetailViews;
 import com.google.speedtracer.client.view.MainTimeLine;
@@ -71,6 +74,8 @@ public class MonitorVisualizationsPanel extends Div {
    */
   public interface Css extends CssResource {
     int borderWidth();
+
+    String buttonBar();
 
     String graphContainer();
 
@@ -193,29 +198,55 @@ public class MonitorVisualizationsPanel extends Div {
    * The list of Tabs on the left.
    */
   private class TabList extends Div {
+    // Container Element for Visualization specific buttons.
+    private final Element buttonBar;
+
+    private final EventCleanup eventCleanup = new EventCleanup();
+
     private Element previouslySelected;
 
     public TabList(Container container) {
       super(container);
-      getElement().setClassName(
-          resources.monitorVisualizationsPanelCss().tabList());
-      getElement().getStyle().setPropertyPx("width",
-          Constants.GRAPH_PIXEL_OFFSET);
+      Element elem = getElement();
+      Css css = resources.monitorVisualizationsPanelCss();
+      elem.setClassName(css.tabList());
+      elem.getStyle().setPropertyPx("width", Constants.GRAPH_PIXEL_OFFSET);
+      buttonBar = elem.getOwnerDocument().createDivElement();
+      buttonBar.setClassName(css.buttonBar());
+      elem.appendChild(buttonBar);
 
-      createTabs();
+      // Initialize previouslySelected to the default tablist entry.
+      previouslySelected = createTabs();
+      if (previouslySelected != null) {
+        previouslySelected.setClassName(css.tabListEntry() + " "
+            + css.tabListEntrySelected());
+        selectVisualization(visualizations.get(0));
+      }
+    }
 
-      // Make the first entry be the selected one.
-      previouslySelected = getElement().getFirstChildElement();
-      previouslySelected.setClassName(resources.monitorVisualizationsPanelCss().tabListEntry()
-          + " "
-          + resources.monitorVisualizationsPanelCss().tabListEntrySelected());
-      selectVisualization(visualizations.get(0));
+    /**
+     * Adds visualization specific
+     * {@link com.google.gwt.topspin.ui.client.Button}s to the buttonBar.
+     */
+    private void addButtonBarButtons(Visualization<?, ?> viz) {
+      eventCleanup.cleanupRemovers();
+      buttonBar.setInnerHTML("");
+
+      Container buttonBarContainer = new DefaultContainerImpl(buttonBar);
+      JSOArray<ButtonDescription> buttons = viz.getButtons();
+      for (int i = 0, n = buttons.size(); i < n; i++) {
+        buttons.get(i).createButton(buttonBarContainer, eventCleanup);
+      }
     }
 
     /**
      * Creates the tablist entries.
+     * 
+     * @retutn returns the TabList entry Element that should be used as the
+     *         default selection.
      */
-    private void createTabs() {
+    private Element createTabs() {
+      Element defaultSelection = null;
       for (int i = 0, n = visualizations.size(); i < n; i++) {
         final Visualization<?, ?> viz = visualizations.get(i);
         String tabTitle = viz.getTitle() + " (" + viz.getSubtitle() + ")";
@@ -224,8 +255,10 @@ public class MonitorVisualizationsPanel extends Div {
         entry.setInnerText(tabTitle);
 
         // The very first one should be flush with the top scale. So we push it
-        // down a little.
+        // down a little. Also, we make the first visualization tablist entry be
+        // the default selection.
         if (0 == i) {
+          defaultSelection = entry;
           entry.getStyle().setMarginTop(
               resources.monitorVisualizationsPanelCss().topPadding(), Unit.PX);
         }
@@ -240,6 +273,7 @@ public class MonitorVisualizationsPanel extends Div {
 
         getElement().appendChild(entry);
       }
+      return defaultSelection;
     }
 
     private void selectTab(Element entry, Visualization<?, ?> viz) {
@@ -249,6 +283,15 @@ public class MonitorVisualizationsPanel extends Div {
           + " "
           + resources.monitorVisualizationsPanelCss().tabListEntrySelected());
       selectVisualization(viz);
+    }
+
+    private void selectVisualization(Visualization<?, ?> viz) {
+      reOrderVisualizations(viz);
+      detailsViewPanel.setCurrentView(viz);
+      refresh();
+      selectedVisualization = viz;
+      fixYAxisLabel();
+      addButtonBarButtons(viz);
     }
   }
 
@@ -496,14 +539,6 @@ public class MonitorVisualizationsPanel extends Div {
   private void reOrderVisualizations(Visualization<?, ?> moveToTop) {
     visualizations.remove(moveToTop);
     visualizations.add(moveToTop);
-  }
-
-  private void selectVisualization(Visualization<?, ?> viz) {
-    reOrderVisualizations(viz);
-    detailsViewPanel.setCurrentView(viz);
-    refresh();
-    selectedVisualization = viz;
-    fixYAxisLabel();
   }
 
   private void sinkEvents() {
