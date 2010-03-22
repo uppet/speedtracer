@@ -280,26 +280,27 @@ public class DevToolsDataInstance extends DataInstance {
     private void sendPendingRecordsAndSetBaseTime(
         UnNormalizedEvent triggerRecord) {
       assert (getBaseTime() < 0) : "Emptying record buffer after establishing a base time.";
-
-      if (pendingRecords.size() == 0) {
-        setBaseTime(triggerRecord.getStartTime());
-        return;
+      
+      double baseTimeStamp = triggerRecord.getStartTime();
+      if (pendingRecords.size() > 0) {
+        // Normalize base time using either the event that triggered the check,
+        // or the first event that we buffered.
+        UnNormalizedEvent firstStart = pendingRecords.get(0).cast();
+        if (firstStart.getStartTime() < baseTimeStamp) {
+          baseTimeStamp = firstStart.getStartTime();
+        }
       }
 
-      // Normalize base time using either the event that triggered the check, or
-      // the first event that we buffered.
-      UnNormalizedEvent firstStart = pendingRecords.get(0).cast();
-      double baseTimeStamp = (firstStart.getStartTime() < triggerRecord.getStartTime())
-          ? firstStart.getStartTime() : triggerRecord.getStartTime();
       setBaseTime(baseTimeStamp);
 
       // Now that we have set the base time, we can replay the buffered Record
-      // Starts since they did come in first, and they in fact still need to go
-      // through normalization and through the page transition logic.
+      // Starts since they did come in first, and they in fact still need to
+      // go through normalization and through the page transition logic.
       for (int i = 0, n = pendingRecords.size(); i < n; i++) {
         onTimeLineRecord(pendingRecords.get(i));
       }
-      // Nuke the pending records.
+
+      // Nuke the pending records list.
       pendingRecords = null;
     }
   }
