@@ -135,9 +135,9 @@ public class ExtensionLinker extends AbstractLinker {
   private static CompilationResult findCompilation(TreeLogger logger,
       ArtifactSet artifacts) throws UnableToCompleteException {
     final SortedSet<CompilationResult> compilations = artifacts.find(CompilationResult.class);
-    if (compilations.size() > 1) {
+    if (compilations.size() != 1) {
       logger.log(TreeLogger.ERROR,
-          "Found more than one permutation compiled in "
+          "Found " + compilations.size() + " permutations compiled in "
               + ExtensionLinker.class.getSimpleName()
               + ".  Use only a single permutation per module with this linker.");
       logPermutations(logger, compilations);
@@ -149,12 +149,12 @@ public class ExtensionLinker extends AbstractLinker {
   private static ExtensionArtifact findExtensionArtifact(TreeLogger logger,
       ArtifactSet artifacts) throws UnableToCompleteException {
     final SortedSet<ExtensionArtifact> extensions = artifacts.find(ExtensionArtifact.class);
-    if (extensions.size() > 1) {
+    if (extensions.size() != 1) {
       // TODO(knorton): Improve error message.
       logger.log(
           TreeLogger.ERROR,
           ExtensionLinker.class.getSimpleName()
-              + ": can only accept a single instance of one the Extension entry point per module.");
+              + ": got " + extensions.size() + " entry points, but there must be one per module.");
       throw new UnableToCompleteException();
     }
 
