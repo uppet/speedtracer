@@ -16,7 +16,6 @@
 package com.google.speedtracer.client.visualizations.view;
 
 import com.google.gwt.dom.client.DivElement;
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.Style.Unit;
@@ -25,13 +24,13 @@ import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
-import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.gwt.topspin.ui.client.Div;
 import com.google.gwt.topspin.ui.client.MouseOutEvent;
 import com.google.gwt.topspin.ui.client.MouseOutListener;
 import com.google.gwt.topspin.ui.client.MouseOverEvent;
 import com.google.gwt.topspin.ui.client.MouseOverListener;
+import com.google.gwt.topspin.ui.client.Window;
 import com.google.speedtracer.client.model.NetworkResource;
 import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.util.TimeStampFormatter;
@@ -92,9 +91,8 @@ public class NetworkPillBox extends Div implements ManagesRemovers {
    * The left time overlay.
    */
   private class LeftOverlay extends TimeOverlay {
-
-    protected LeftOverlay(Element parent, String value) {
-      super(parent, value);
+    protected LeftOverlay(Element parent) {
+      super(parent);
     }
 
     public void moveAbove() {
@@ -129,8 +127,8 @@ public class NetworkPillBox extends Div implements ManagesRemovers {
    * The right time overlay.
    */
   private class RightOverlay extends TimeOverlay {
-    protected RightOverlay(Element parent, String value) {
-      super(parent, value);
+    protected RightOverlay(Element parent) {
+      super(parent);
     }
 
     @Override
@@ -159,15 +157,16 @@ public class NetworkPillBox extends Div implements ManagesRemovers {
    */
   private abstract class TimeOverlay extends LazilyCreateableElement {
     protected static final int overHang = 4;
+
     private SpanElement iconElem;
+
     private final Element parent;
 
-    private final String value;
+    private Element timeTextElem;
 
-    protected TimeOverlay(Element parent, String value) {
+    protected TimeOverlay(Element parent) {
       super(resources.networkPillBoxCss().timeOverlay());
       this.parent = parent;
-      this.value = value;
     }
 
     public boolean fitsInParent() {
@@ -204,15 +203,24 @@ public class NetworkPillBox extends Div implements ManagesRemovers {
     protected Element createElement() {
       Element elem = DocumentExt.get().createDivWithClassName(getClassName());
       parent.appendChild(elem);
-      Element b = Document.get().createElement("b");
-      b.setInnerText(value);
-      elem.appendChild(b);
       return elem;
     }
 
     protected void ensureIconElem() {
       if (iconElem == null) {
         iconElem = DocumentExt.get().createSpanElement();
+      }
+    }
+
+    protected void setTime(double time) {
+      ensureTimeTextElem();
+      timeTextElem.setInnerText(TimeStampFormatter.formatMilliseconds(time));
+    }
+
+    private void ensureTimeTextElem() {
+      if (timeTextElem == null) {
+        timeTextElem = getElement().getOwnerDocument().createElement("b");
+        getElement().appendChild(timeTextElem);
       }
     }
   }
@@ -222,12 +230,13 @@ public class NetworkPillBox extends Div implements ManagesRemovers {
    */
   private class TimeOverlayController {
     private final LeftOverlay leftOverlay;
+
     private final RightOverlay rightOverlay;
 
-    public TimeOverlayController(Element leftPb, String leftValue,
-        Element rightPb, String rightValue) {
-      leftOverlay = new LeftOverlay(leftPb, leftValue);
-      rightOverlay = new RightOverlay(rightPb, rightValue);
+    public TimeOverlayController(Element leftPb, Element rightPb,
+        NetworkResource networkResource) {
+      leftOverlay = new LeftOverlay(leftPb);
+      rightOverlay = new RightOverlay(rightPb);
     }
 
     public void hide() {
@@ -236,6 +245,12 @@ public class NetworkPillBox extends Div implements ManagesRemovers {
     }
 
     public void show() {
+      double[] resourceTimes = capResourceTimes(networkResource);
+      double leftTime = resourceTimes[MIDDLE] - resourceTimes[START];
+      double rightTime = resourceTimes[END] - resourceTimes[MIDDLE];
+      leftOverlay.setTime(leftTime);
+      rightOverlay.setTime(rightTime);
+
       if (!leftOverlay.fitsInParent()) {
         leftOverlay.moveOut();
       } else {
@@ -265,51 +280,85 @@ public class NetworkPillBox extends Div implements ManagesRemovers {
     }
   }
 
-  private final DefaultContainerImpl container;
+  private static final int END = 2;
+
+  private static final int MIDDLE = 1;
+
+  private static final int START = 0;
 
   private RequestDetails details;
 
+  private final double domainLeft;
+
+  private final double domainRight;
+
   private final EventCleanup eventCleanup = new EventCleanup();
 
-  private int leftOffset;
+  private final NetworkResource networkResource;
 
-  private final ResourceRow parentRow;
+  private final Element parentRowElement;
+
+  private Element pbLeft;
+
+  private Element pbRight;
+
+  private final DivElement pillBoxContainer;
 
   private final NetworkPillBox.Resources resources;
 
-  public NetworkPillBox(Container container, ResourceRow parentRow,
-      NetworkPillBox.Resources resources) {
-    super(container);
-    this.parentRow = parentRow;
+  public NetworkPillBox(Element parentRowElement,
+      NetworkResource networkResource, double windowDomainLeft,
+      double windowDomainRight, Resources resources) {
+    super(new DefaultContainerImpl(parentRowElement));
+    this.parentRowElement = parentRowElement;
+    this.networkResource = networkResource;
     this.resources = resources;
+    this.domainLeft = windowDomainLeft;
+    this.domainRight = windowDomainRight;
+
     Element elem = getElement();
     elem.setClassName(resources.networkPillBoxCss().pillBoxTimeLine());
     elem.getStyle().setMarginLeft(Constants.GRAPH_HEADER_WIDTH, Unit.PX);
-    this.container = new DefaultContainerImpl(elem);
+
+    NetworkPillBox.Css css = resources.networkPillBoxCss();
+    this.pillBoxContainer = elem.getOwnerDocument().createDivElement();
+    this.pillBoxContainer.setClassName(css.pillBoxWrapper());
+    elem.appendChild(this.pillBoxContainer);
+
+    createPillBox(css);
   }
 
   public void cleanupRemovers() {
     eventCleanup.cleanupRemovers();
   }
 
-  public void createPillBox(NetworkResource resource, double start,
-      double middle, double end, int pixelWidth, double domainLeft,
-      double domainRight) {
+  public EventListenerRemover getRemover() {
+    return eventCleanup.getRemover();
+  }
 
-    double domainWidth = domainRight - domainLeft;
-    double screenConversion = (double) pixelWidth / domainWidth;
+  public void onResize(int panelWidth) {
+    sizePillBox(networkResource, panelWidth);
+  }
 
-    Element elem = getElement();
-    NetworkPillBox.Css css = resources.networkPillBoxCss();
-    DivElement pillBoxContainer = DocumentExt.get().createDivWithClassName(
-        css.pillBoxWrapper());
+  public void refresh() {
+    if (details != null) {
+      details.refresh();
+    }
+  }
 
-    Element pbLeft = DocumentExt.get().createDivWithClassName(css.pillBoxLeft());
-    Element pbRight = DocumentExt.get().createDivWithClassName(
-        css.pillBoxRight());
+  public void trackRemover(EventListenerRemover remover) {
+    eventCleanup.trackRemover(remover);
+  }
 
-    leftOffset = (int) ((start - domainLeft) * screenConversion);
-    pillBoxContainer.getStyle().setPropertyPx("left", leftOffset);
+  /**
+   * NetworkResources may have NaN times for responses and ends. This method
+   * simply returns reasonable a start, middle, and end. Resonable is defined as
+   * "if it is NaN extend to the right edge of the screen".
+   */
+  private double[] capResourceTimes(NetworkResource networkResource) {
+    double start = networkResource.getStartTime();
+    double middle = networkResource.getResponseReceivedTime();
+    double end = networkResource.getEndTime();
 
     double cappedMiddle = middle;
     double cappedEnd = end;
@@ -324,79 +373,77 @@ public class NetworkPillBox extends Div implements ManagesRemovers {
       cappedMiddle = cappedEnd;
     }
 
-    double leftTime = cappedMiddle - start;
-    double rightTime = cappedEnd - cappedMiddle;
-    int leftWidth = (int) (leftTime * screenConversion);
-    int rightWidth = (int) (rightTime * screenConversion);
-    leftWidth = Math.max(leftWidth, 2);
-    rightWidth = Math.max(rightWidth, 2);
-    pbLeft.getStyle().setPropertyPx("width", leftWidth);
-    pbRight.getStyle().setPropertyPx("width", rightWidth);
-    pbRight.getStyle().setPropertyPx("left", leftWidth);
-    pillBoxContainer.getStyle().setPropertyPx("width", leftWidth + rightWidth);
+    double[] rtn = new double[3];
+    rtn[0] = start;
+    rtn[1] = cappedMiddle;
+    rtn[2] = cappedEnd;
+    return rtn;
+  }
+
+  private void createPillBox(NetworkPillBox.Css css) {
+    pbLeft = DocumentExt.get().createDivWithClassName(css.pillBoxLeft());
+    pbRight = DocumentExt.get().createDivWithClassName(css.pillBoxRight());
 
     pillBoxContainer.appendChild(pbLeft);
     pillBoxContainer.appendChild(pbRight);
-    elem.appendChild(pillBoxContainer);
 
-    details = new RequestDetails(getContainer(), pillBoxContainer, resource,
-        this, resources);
+    // Create the RequestDetails for this resource. The DOM should be lazily
+    // created.
+    details = new RequestDetails(getElement(), pillBoxContainer,
+        networkResource, this, resources);
 
-    trackRemover(ClickEvent.addClickListener(parentRow, parentRow.getElement(),
-        new ClickListener() {
+    // Add the ClickListener to toggle the visibility
+    trackRemover(ClickEvent.addClickListener(parentRowElement,
+        parentRowElement, new ClickListener() {
           public void onClick(ClickEvent event) {
             details.toggleVisibility();
           }
         }));
 
-    // We want to stop the annoying issue of clicking inside the details view
-    // collapsing the expansion.
-    trackRemover(ClickEvent.addClickListener(details, details.getElement(),
-        new ClickListener() {
-          public void onClick(ClickEvent event) {
-            event.getNativeEvent().cancelBubble(true);
-          }
-        }));
-
     // Setup the overlay hover
     final TimeOverlayController timeOverlayController = new TimeOverlayController(
-        pbLeft, TimeStampFormatter.formatMilliseconds(leftTime), pbRight,
-        TimeStampFormatter.formatMilliseconds(rightTime));
+        pbLeft, pbRight, networkResource);
 
     trackRemover(MouseOverEvent.addMouseOverListener(pillBoxContainer,
-        parentRow.getElement(), new MouseOverListener() {
-
+        parentRowElement, new MouseOverListener() {
           public void onMouseOver(MouseOverEvent event) {
             timeOverlayController.show();
           }
-
         }));
 
     trackRemover(MouseOutEvent.addMouseOutListener(pillBoxContainer,
-        parentRow.getElement(), new MouseOutListener() {
-
+        parentRowElement, new MouseOutListener() {
           public void onMouseOut(MouseOutEvent event) {
             timeOverlayController.hide();
           }
-
         }));
+
+    sizePillBox(networkResource, Window.getInnerWidth()
+        - Constants.GRAPH_HEADER_WIDTH);
   }
 
-  public DefaultContainerImpl getContainer() {
-    return container;
-  }
+  private void sizePillBox(NetworkResource networkResource, int panelWidth) {
+    double domainWidth = domainRight - domainLeft;
+    double domainToPixels = (double) panelWidth / domainWidth;
 
-  public int getLeftOffset() {
-    return leftOffset;
-  }
+    double[] resourceTimes = capResourceTimes(networkResource);
+    double start = resourceTimes[START];
+    double middle = resourceTimes[MIDDLE];
+    double end = resourceTimes[END];
 
-  public void refresh() {
-    if (details != null) {
-      details.refresh();
-    }
-  }
+    int leftOffset = (int) ((start - domainLeft) * domainToPixels);
+    pillBoxContainer.getStyle().setPropertyPx("left", leftOffset);
 
-  public void trackRemover(EventListenerRemover remover) {
-    eventCleanup.trackRemover(remover);
+    double leftTime = middle - start;
+    double rightTime = end - middle;
+    int leftWidth = (int) (leftTime * domainToPixels);
+    int rightWidth = (int) (rightTime * domainToPixels);
+    leftWidth = Math.max(leftWidth, 2);
+    rightWidth = Math.max(rightWidth, 2);
+
+    pbLeft.getStyle().setPropertyPx("width", leftWidth);
+    pbRight.getStyle().setPropertyPx("width", rightWidth);
+    pbRight.getStyle().setPropertyPx("left", leftWidth);
+    pillBoxContainer.getStyle().setPropertyPx("width", leftWidth + rightWidth);
   }
 }

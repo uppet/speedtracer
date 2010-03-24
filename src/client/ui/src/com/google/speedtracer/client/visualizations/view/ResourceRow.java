@@ -107,9 +107,8 @@ public class ResourceRow extends Div {
 
   private final Element textElem;
 
-  public ResourceRow(Container container, double startTime, double endTime,
-      NetworkResource resource, String fileType, int panelPixelWidth,
-      double windowDomainLeft, double windowDomainRight,
+  public ResourceRow(Container container, NetworkResource resource,
+      String fileType, double windowDomainLeft, double windowDomainRight,
       NetworkTimeLineDetailView networkDetailView,
       ResourceRow.Resources resources) {
     super(container);
@@ -153,13 +152,8 @@ public class ResourceRow extends Div {
     // Adds a hintlet indicator if the record has associated hintlets.
     addHintletIndicator(resource.getHintRecords());
 
-    pillBox = new NetworkPillBox(new DefaultContainerImpl(elem), this,
-        resources);
-
-    double responseTime = resource.getResponseReceivedTime();
-
-    pillBox.createPillBox(resource, startTime, responseTime, endTime,
-        panelPixelWidth, windowDomainLeft, windowDomainRight);
+    pillBox = new NetworkPillBox(elem, resource, windowDomainLeft,
+        windowDomainRight, resources);
   }
 
   @Override
@@ -190,6 +184,10 @@ public class ResourceRow extends Div {
 
   public NetworkResource getResource() {
     return resource;
+  }
+
+  public void onResize(int panelWidth) {
+    pillBox.onResize(panelWidth);
   }
 
   public void refresh() {

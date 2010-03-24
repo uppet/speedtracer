@@ -108,9 +108,6 @@ public class MonitorVisualizationsPanel extends Div {
    * Single object to handle keyboard events and window resizes.
    */
   private class EventListener implements ResizeListener, HotKey.Handler {
-    // Guard against re-entrant onresize event dispatches.
-    private boolean inOnResize = false;
-
     public void onKeyDown(KeyDownEvent event) {
       int keyCode = event.getKeyCode();
       if (keyCode == HotKey.LEFT_ARROW || keyCode == HotKey.RIGHT_ARROW) {
@@ -122,24 +119,15 @@ public class MonitorVisualizationsPanel extends Div {
       int keyCode = event.getKeyCode();
       if (keyCode == HotKey.LEFT_ARROW || keyCode == HotKey.RIGHT_ARROW) {
         detailsViewPanel.updateCurrentView(mainTimeLineModel.getLeftBound(),
-            mainTimeLineModel.getRightBound(), false);
+            mainTimeLineModel.getRightBound());
       }
     }
 
     /**
-     * We need to guard against re-entrant resize events.
-     * http://code.google.com/p/chromium/issues/detail?id=27653
+     * Cache the graph dimensions.
      */
     public void onResize(ResizeEvent event) {
-      if (inOnResize) {
-        return;
-      }
-      inOnResize = true;
       mainTimeLine.recomputeGraphDimensions();
-      mainTimeLineModel.refresh();
-      detailsViewPanel.updateCurrentView(mainTimeLineModel.getLeftBound(),
-          mainTimeLineModel.getRightBound(), false);
-      inOnResize = false;
     }
 
     private void jog(int direction) {
@@ -178,7 +166,7 @@ public class MonitorVisualizationsPanel extends Div {
       double left = getLeftBound();
       double right = getRightBound();
       if (now < right) {
-        detailsViewPanel.updateCurrentView(left, right, false);
+        detailsViewPanel.updateCurrentView(left, right);
         fixYAxisLabel();
       }
 
@@ -348,7 +336,7 @@ public class MonitorVisualizationsPanel extends Div {
       public void onAnimationComplete() {
         fixYAxisLabel();
         detailsViewPanel.updateCurrentView(mainTimeLineModel.getLeftBound(),
-            mainTimeLineModel.getRightBound(), true);
+            mainTimeLineModel.getRightBound());
       }
     };
 
@@ -527,7 +515,7 @@ public class MonitorVisualizationsPanel extends Div {
     mainTimeLineModel.refresh();
     overViewTimeLine.refresh();
     detailsViewPanel.updateCurrentView(mainTimeLineModel.getLeftBound(),
-        mainTimeLineModel.getRightBound(), true);
+        mainTimeLineModel.getRightBound());
   }
 
   /**

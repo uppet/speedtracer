@@ -44,12 +44,10 @@ public abstract class DetailView extends Div {
   /**
    * Updates the view to show model state within left and right bounds.
    * 
-   * @param left
-   * @param right
-   * @param doTransitions
+   * @param left the left bound time value for the current window
+   * @param right the right bound time value for the current window
    */
-  public abstract void updateView(double left, double right,
-      boolean doTransitions);
+  public abstract void updateView(double left, double right);
 
   protected Visualization<?, ?> getVisualization() {
     return visualization;

@@ -74,7 +74,7 @@ public abstract class Visualization<V extends DetailView, M extends Visualizatio
 
   public void clearData() {
     model.clearData();
-    detailView.updateView(0, Constants.DEFAULT_GRAPH_WINDOW_SIZE, true);
+    detailView.updateView(0, Constants.DEFAULT_GRAPH_WINDOW_SIZE);
   }
 
   public JSOArray<ButtonDescription> getButtons() {
@@ -114,7 +114,7 @@ public abstract class Visualization<V extends DetailView, M extends Visualizatio
    */
   public void setModel(VisualizationModel model) {
     this.model = model;
-    detailView.updateView(0, Constants.DEFAULT_GRAPH_WINDOW_SIZE, true);
+    detailView.updateView(0, Constants.DEFAULT_GRAPH_WINDOW_SIZE);
   }
 
   /**
