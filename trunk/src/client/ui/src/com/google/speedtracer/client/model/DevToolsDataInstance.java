@@ -25,7 +25,6 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.speedtracer.client.model.EventVisitor.PostOrderVisitor;
 import com.google.speedtracer.client.model.EventVisitor.PreOrderVisitor;
 import com.google.speedtracer.client.model.ResourceUpdateEvent.UpdateResource;
-import com.google.speedtracer.client.model.TimeNormalizerVisitor.UnNormalizedEvent;
 import com.google.speedtracer.client.util.JSOArray;
 
 /**
@@ -46,12 +45,12 @@ public class DevToolsDataInstance extends DataInstance {
      */
     static native Dispatcher createDispatcher(Proxy delegate) /*-{
       return {
-        addRecordToTimeline: function(record) {
-          delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onTimeLineRecord(Lcom/google/speedtracer/client/model/EventRecord;)(record[1]);
-        },
-        updateResource: function(update) {
-          delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onUpdateResource(ILcom/google/gwt/core/client/JavaScriptObject;)(update[1], update[2]);
-        }
+      addRecordToTimeline: function(record) {
+      delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onTimeLineRecord(Lcom/google/speedtracer/client/model/UnNormalizedEventRecord;)(record[1]);
+      },
+      updateResource: function(update) {
+      delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onUpdateResource(ILcom/google/gwt/core/client/JavaScriptObject;)(update[1], update[2]);
+      }
       };
     }-*/;
 
@@ -65,7 +64,7 @@ public class DevToolsDataInstance extends DataInstance {
 
     private ListenerHandle listenerHandle;
 
-    private JSOArray<EventRecord> pendingRecords = JSOArray.create();
+    private JSOArray<UnNormalizedEventRecord> pendingRecords = JSOArray.create();
 
     private final PostOrderVisitor[] postOrderVisitors = {};
 
@@ -155,35 +154,49 @@ public class DevToolsDataInstance extends DataInstance {
     /**
      * Normalizes the inputed time to be relative to the base time, and converts
      * the units of the inputed time to milliseconds from seconds.
-     * 
-     * If baseTime is unset, this method will have the side effect of setting
-     * baseTime.
      */
     private double normalizeTime(double seconds) {
+      assert getBaseTime() >= 0 : "NormalizeTime called before a base time was established.";
+
       double millis = seconds * 1000;
-      if (getBaseTime() < 0) {
-        setBaseTime(millis);
-      }
       return millis - getBaseTime();
     }
 
-    private void onEventRecord(EventRecord record) {
+    /**
+     * Establishes a base time if it has not been set and dispatches the event
+     * to the {@link DataInstance}.
+     * 
+     * @param record the already normalized record to dispatch
+     */
+    private void forwardToDataInstance(EventRecord record) {
+      assert (!Double.isNaN(record.getTime())) : "Time was not normalized!";
+      dataInstance.onEventRecord(record);
+    }
+
+    /**
+     * Establishes a base time if it has not been set and dispatches the event
+     * to the {@link DataInstance}.
+     * 
+     * This method will normalizes times for any record passed in.
+     * 
+     * @param record the record to dispatch
+     */
+    private void normalizeAndDispatchEventRecord(UnNormalizedEventRecord record) {
       if (getBaseTime() < 0) {
-        sendPendingRecordsAndSetBaseTime(record.<UnNormalizedEvent> cast());
+        sendPendingRecordsAndSetBaseTime(record);
       }
 
       assert (getBaseTime() >= 0) : "Base Time is still not set";
-      assert (pendingRecords == null) : "pendingRecords is not null!";
 
       // We run visitors to normalize the times for this tree and to do any
       // other transformations we want.
       EventVisitorTraverser.traverse(record.<UiEvent> cast(), preOrderVisitors,
           postOrderVisitors);
 
-      dataInstance.onEventRecord(record);
+      forwardToDataInstance(record);
     }
 
-    private void onTimeLineRecord(EventRecord record) {
+    private void onTimeLineRecord(UnNormalizedEventRecord record) {
       assert (dataInstance != null) : "Someone called invoke that wasn't our connect call!";
 
       int type = record.getType();
@@ -214,7 +227,8 @@ public class DevToolsDataInstance extends DataInstance {
               // We synthesize the page transition if currentPage is not set, or
               // the IDs dont match.
               currentPage = start;
-              onEventRecord(TabChange.create(start.getTime(), start.getUrl()));
+              normalizeAndDispatchEventRecord(TabChange.createUnNormalized(
+                  record.getStartTime(), start.getUrl()));
             } else if (currentPage.getIdentifier() == start.getIdentifier()) {
               // IDs get recycled across pages. So remember to null out the
               // current page after concluding that the redirect has completed
@@ -231,45 +245,67 @@ public class DevToolsDataInstance extends DataInstance {
           // Ignore this record.
           return;
       }
-      // Forward to the dataInstance.
-      onEventRecord(record);
+      // Normalize and send to the dataInstance.
+      normalizeAndDispatchEventRecord(record);
     }
 
     @SuppressWarnings("unused")
     private void onUpdateResource(int resourceId, JavaScriptObject resource) {
-      // We need to normalize times for the resource update since they are
-      // absolute times given in seconds.
+      if (getBaseTime() < 0) {
+        // We do not allow an updateResource message to set our baseTime. If we
+        // get a resource update first, it means that we missed the
+        // corresponding start event. That is, the user started monitoring late,
+        // and it is OK to ignore this resource.
+        // Also, Resource Updates don't have associate timestamp to use as a
+        // baseline.
+        return;
+      }
+
       UpdateResource update = resource.cast();
+      ResourceUpdateEvent updateEvent = ResourceUpdateEvent.create(resourceId,
+          update);
 
       if (update.didTimingChange()) {
-        double domContentEventTime = update.getDomContentEventTime();
-        double loadTime = update.getLoadEventTime();
-        double startTime = update.getStartTime();
-        double responseTime = update.getResponseReceivedTime();
-        double endTime = update.getEndTime();
-
-        if (domContentEventTime > 0) {
-          update.setDomContentEventTime(normalizeTime(domContentEventTime));
-        }
-
-        if (loadTime > 0) {
-          update.setLoadEventTime(normalizeTime(loadTime));
-        }
+        // We need to normalize times for the resource update since they are
+        // absolute times given in seconds.
+        double domContentEventTime = normalizeTime(update.getDomContentEventTime());
+        double loadTime = normalizeTime(update.getLoadEventTime());
+        double startTime = normalizeTime(update.getStartTime());
+        double responseTime = normalizeTime(update.getResponseReceivedTime());
+        double endTime = normalizeTime(update.getEndTime());
 
         if (startTime > 0) {
-          update.setStartTime(normalizeTime(startTime));
+          update.setStartTime(startTime);
+
+          // ResourceUpdateEvents should have a "time" field to be consistent
+          // with the other timeline records and to match our EventRecord
+          // schema. We use fall through to give it a time associated with the
+          // "last potentially occurring time that it knows about".
+          updateEvent.setTime(startTime);
         }
 
         if (responseTime > 0) {
-          update.setResponseReceivedTime(normalizeTime(responseTime));
+          update.setResponseReceivedTime(responseTime);
+          updateEvent.setTime(responseTime);
+        }
+
+        if (loadTime > 0) {
+          update.setLoadEventTime(loadTime);
+          updateEvent.setTime(loadTime);
+        }
+
+        if (domContentEventTime > 0) {
+          update.setDomContentEventTime(domContentEventTime);
+          updateEvent.setTime(domContentEventTime);
         }
 
         if (endTime > 0) {
-          update.setEndTime(normalizeTime(endTime));
+          update.setEndTime(endTime);
+          updateEvent.setTime(endTime);
         }
       }
 
-      onEventRecord(ResourceUpdateEvent.create(resourceId, update));
+      forwardToDataInstance(updateEvent);
     }
 
     /**
@@ -278,14 +314,14 @@ public class DevToolsDataInstance extends DataInstance {
      * @param triggerRecord the first record that is not a Resource Start.
      */
     private void sendPendingRecordsAndSetBaseTime(
-        UnNormalizedEvent triggerRecord) {
+        UnNormalizedEventRecord triggerRecord) {
       assert (getBaseTime() < 0) : "Emptying record buffer after establishing a base time.";
-      
+
       double baseTimeStamp = triggerRecord.getStartTime();
       if (pendingRecords.size() > 0) {
         // Normalize base time using either the event that triggered the check,
         // or the first event that we buffered.
-        UnNormalizedEvent firstStart = pendingRecords.get(0).cast();
+        UnNormalizedEventRecord firstStart = pendingRecords.get(0).cast();
         if (firstStart.getStartTime() < baseTimeStamp) {
           baseTimeStamp = firstStart.getStartTime();
         }

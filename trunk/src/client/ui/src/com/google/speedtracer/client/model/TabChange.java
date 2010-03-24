@@ -21,20 +21,26 @@ package com.google.speedtracer.client.model;
 public class TabChange extends EventRecord {
   public static final int TYPE = EventRecordType.TAB_CHANGED;
 
-  public static TabChange create(double time, String newUrl) {
-    return createImpl(TYPE, time, newUrl);
-  }
-  
-  private static native TabChange createImpl(int type, double time, String newUrl) /*-{
+  public static native TabChange create(double time, String newUrl) /*-{
     return {
       time: time,
-      type: type,
+      type: @com.google.speedtracer.client.model.TabChange::TYPE,
       data: {
         url: newUrl
       }
     };
   }-*/;
-
+  
+  public static native UnNormalizedEventRecord createUnNormalized(double startTime, String newUrl) /*-{
+    return {
+      startTime: startTime,
+      type: @com.google.speedtracer.client.model.TabChange::TYPE,
+      data: {
+        url: newUrl
+      }
+    };
+  }-*/;
+  
   protected TabChange() {
   }
 

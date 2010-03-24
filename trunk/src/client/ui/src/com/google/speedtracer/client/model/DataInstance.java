@@ -46,6 +46,14 @@ public class DataInstance extends JavaScriptObject {
   }
 
   /**
+   * Interface type for things that subscribe to a DataInstance to receive
+   * {@link EventRecord}s.
+   */
+  public interface DataListener {
+    void onEventRecord(EventRecord event);
+  }
+
+  /**
    * Static Factory method for obtaining an instance of DataInstance that
    * delegates to the specified DataProxy.
    * 
@@ -103,16 +111,16 @@ public class DataInstance extends JavaScriptObject {
   }-*/;
 
   /**
-   * Binds an {@link DataModel} to this DataInstance. Data will be sent to the
-   * specified {@link DataModel}.
+   * Binds an {@link DataListener} to this DataInstance. Data will be sent to the
+   * specified {@link DataListener}.
    * 
    * @param model
    */
-  public final native void load(DataModel model) /*-{
+  public final native void load(DataListener model) /*-{
     var callback = {
       // This gets called by everyone else (file loader and devtools data instances).
       onEventRecord: function(record) {
-        model.@com.google.speedtracer.client.model.DataModel::onEventRecord(Lcom/google/speedtracer/client/model/EventRecord;)(record);
+        model.@com.google.speedtracer.client.model.DataInstance$DataListener::onEventRecord(Lcom/google/speedtracer/client/model/EventRecord;)(record);
       },
 
       // This gets called from the plugin.
@@ -121,7 +129,7 @@ public class DataInstance extends JavaScriptObject {
         // Populate the sequence field in the record so that we don't have
         // to keep passing it out of band along with the record.
         data.sequence = sequence;
-        model.@com.google.speedtracer.client.model.DataModel::onEventRecord(Lcom/google/speedtracer/client/model/EventRecord;)(data);
+        model.@com.google.speedtracer.client.model.DataInstance$DataListener::onEventRecord(Lcom/google/speedtracer/client/model/EventRecord;)(data);
       }
     };
     this.Load(callback);
