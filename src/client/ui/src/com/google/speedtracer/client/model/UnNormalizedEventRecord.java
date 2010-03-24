@@ -26,10 +26,6 @@ public class UnNormalizedEventRecord extends EventRecord {
   protected UnNormalizedEventRecord() {
   }
 
-  public final native double getStartTime() /*-{
-    return this.startTime;
-  }-*/;
-
   public final native EventRecord convertToEventRecord(double baseTime) /*-{
     if (this.hasOwnProperty("endTime")) {
       this.duration = this.endTime - this.startTime;  
@@ -41,5 +37,9 @@ public class UnNormalizedEventRecord extends EventRecord {
     delete this.endTime;
 
     return this;
+  }-*/;
+
+  public final native double getStartTime() /*-{
+    return this.startTime;
   }-*/;
 }

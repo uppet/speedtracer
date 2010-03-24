@@ -152,17 +152,6 @@ public class DevToolsDataInstance extends DataInstance {
     }
 
     /**
-     * Normalizes the inputed time to be relative to the base time, and converts
-     * the units of the inputed time to milliseconds from seconds.
-     */
-    private double normalizeTime(double seconds) {
-      assert getBaseTime() >= 0 : "NormalizeTime called before a base time was established.";
-
-      double millis = seconds * 1000;
-      return millis - getBaseTime();
-    }
-
-    /**
      * Establishes a base time if it has not been set and dispatches the event
      * to the {@link DataInstance}.
      * 
@@ -194,6 +183,17 @@ public class DevToolsDataInstance extends DataInstance {
           postOrderVisitors);
 
       forwardToDataInstance(record);
+    }
+
+    /**
+     * Normalizes the inputed time to be relative to the base time, and converts
+     * the units of the inputed time to milliseconds from seconds.
+     */
+    private double normalizeTime(double seconds) {
+      assert getBaseTime() >= 0 : "NormalizeTime called before a base time was established.";
+
+      double millis = seconds * 1000;
+      return millis - getBaseTime();
     }
 
     private void onTimeLineRecord(UnNormalizedEventRecord record) {

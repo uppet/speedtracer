@@ -18,7 +18,6 @@ package com.google.speedtracer.client.model;
 import com.google.gwt.chrome.crx.client.events.DevToolsPageEvent.PageEvent;
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.speedtracer.client.model.DataInstance.DataListener;
-import com.google.speedtracer.client.model.DataInstance.DataProxy;
 import com.google.speedtracer.client.model.DevToolsDataInstance.Proxy;
 import com.google.speedtracer.client.util.JSON;
 
@@ -31,7 +30,8 @@ import java.util.List;
 public class DevToolsDataInstanceTests extends GWTTestCase {
   /**
    * Testable mock class used to test the record conversion done in
-   * {@link DevToolsDataInstance} by its {@link DataProxy}.
+   * {@link DevToolsDataInstance} by its
+   * {@link com.google.speedtracer.client.model.DataInstance.DataProxy}.
    */
   static class MockDataListener implements DataListener {
     private int currentExpectedRecord = 0;
