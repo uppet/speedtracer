@@ -36,16 +36,15 @@ import com.google.speedtracer.client.model.NetworkResource;
 import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.util.dom.DocumentExt;
+import com.google.speedtracer.client.util.dom.EventCleanup;
 import com.google.speedtracer.client.util.dom.LazilyCreateableElement;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.google.speedtracer.client.util.dom.EventCleanup.ManagesRemovers;
 
 /**
  * The portion of a ResourceRow corresponding to the pillbox aligned on the
  * TimeLine.
  */
-public class NetworkPillBox extends Div {
+public class NetworkPillBox extends Div implements ManagesRemovers {
   /**
    * CSS.
    */
@@ -268,15 +267,15 @@ public class NetworkPillBox extends Div {
 
   private final DefaultContainerImpl container;
 
+  private RequestDetails details;
+
+  private final EventCleanup eventCleanup = new EventCleanup();
+
   private int leftOffset;
 
   private final ResourceRow parentRow;
 
-  private final List<EventListenerRemover> removers;
-
   private final NetworkPillBox.Resources resources;
-
-  private RequestDetails details;
 
   public NetworkPillBox(Container container, ResourceRow parentRow,
       NetworkPillBox.Resources resources) {
@@ -287,7 +286,10 @@ public class NetworkPillBox extends Div {
     elem.setClassName(resources.networkPillBoxCss().pillBoxTimeLine());
     elem.getStyle().setMarginLeft(Constants.GRAPH_HEADER_WIDTH, Unit.PX);
     this.container = new DefaultContainerImpl(elem);
-    removers = new ArrayList<EventListenerRemover>();
+  }
+
+  public void cleanupRemovers() {
+    eventCleanup.cleanupRemovers();
   }
 
   public void createPillBox(NetworkResource resource, double start,
@@ -338,9 +340,9 @@ public class NetworkPillBox extends Div {
     elem.appendChild(pillBoxContainer);
 
     details = new RequestDetails(getContainer(), pillBoxContainer, resource,
-        resources, removers);
+        this, resources);
 
-    removers.add(ClickEvent.addClickListener(parentRow, parentRow.getElement(),
+    trackRemover(ClickEvent.addClickListener(parentRow, parentRow.getElement(),
         new ClickListener() {
           public void onClick(ClickEvent event) {
             details.toggleVisibility();
@@ -349,7 +351,7 @@ public class NetworkPillBox extends Div {
 
     // We want to stop the annoying issue of clicking inside the details view
     // collapsing the expansion.
-    removers.add(ClickEvent.addClickListener(details, details.getElement(),
+    trackRemover(ClickEvent.addClickListener(details, details.getElement(),
         new ClickListener() {
           public void onClick(ClickEvent event) {
             event.getNativeEvent().cancelBubble(true);
@@ -361,7 +363,7 @@ public class NetworkPillBox extends Div {
         pbLeft, TimeStampFormatter.formatMilliseconds(leftTime), pbRight,
         TimeStampFormatter.formatMilliseconds(rightTime));
 
-    removers.add(MouseOverEvent.addMouseOverListener(pillBoxContainer,
+    trackRemover(MouseOverEvent.addMouseOverListener(pillBoxContainer,
         parentRow.getElement(), new MouseOverListener() {
 
           public void onMouseOver(MouseOverEvent event) {
@@ -370,7 +372,7 @@ public class NetworkPillBox extends Div {
 
         }));
 
-    removers.add(MouseOutEvent.addMouseOutListener(pillBoxContainer,
+    trackRemover(MouseOutEvent.addMouseOutListener(pillBoxContainer,
         parentRow.getElement(), new MouseOutListener() {
 
           public void onMouseOut(MouseOutEvent event) {
@@ -378,13 +380,6 @@ public class NetworkPillBox extends Div {
           }
 
         }));
-  }
-
-  public void detachEventListeners() {
-    for (int i = 0, n = removers.size(); i < n; i++) {
-      removers.get(i).remove();
-    }
-    removers.clear();
   }
 
   public DefaultContainerImpl getContainer() {
@@ -401,4 +396,7 @@ public class NetworkPillBox extends Div {
     }
   }
 
+  public void trackRemover(EventListenerRemover remover) {
+    eventCleanup.trackRemover(remover);
+  }
 }

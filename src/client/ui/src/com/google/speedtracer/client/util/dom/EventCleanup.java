@@ -31,7 +31,8 @@ public class EventCleanup {
    * Extending this class imbues a class with the ability to track and cleanup
    * hooked up event handlers.
    */
-  public abstract static class EventCleanupTrait implements HasRemovers {
+  public abstract static class EventCleanupTrait implements ManagesRemovers,
+      HasRemover {
     private final EventCleanup eventCleanup;
 
     protected EventCleanupTrait() {
@@ -59,12 +60,18 @@ public class EventCleanup {
    * In the absence of traits, the next best thing is for implementors just to
    * delegate to their EventCleanup instance.
    */
-  public interface HasRemovers {
+  public interface ManagesRemovers {
     void cleanupRemovers();
 
-    EventListenerRemover getRemover();
-
     void trackRemover(EventListenerRemover remover);
+  }
+
+  /**
+   * Classes that are able to expose a single {@link EventListenerRemover} to
+   * cleanup itself should implement this interface.
+   */
+  public interface HasRemover {
+    EventListenerRemover getRemover();
   }
 
   protected final List<EventListenerRemover> removerHandles = new ArrayList<EventListenerRemover>();

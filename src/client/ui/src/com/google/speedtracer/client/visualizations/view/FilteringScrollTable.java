@@ -43,7 +43,7 @@ import com.google.speedtracer.client.util.dom.DocumentExt;
 import com.google.speedtracer.client.util.dom.EventCleanup;
 import com.google.speedtracer.client.util.dom.LazilyCreateableElement;
 import com.google.speedtracer.client.util.dom.WindowExt;
-import com.google.speedtracer.client.util.dom.EventCleanup.HasRemovers;
+import com.google.speedtracer.client.util.dom.EventCleanup.ManagesRemovers;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -54,7 +54,7 @@ import java.util.List;
  * "uninteresing" rows. Also has an expandable placeholder for each row to
  * "expand" a row when you click on it.
  */
-public abstract class FilteringScrollTable extends Div implements HasRemovers,
+public abstract class FilteringScrollTable extends Div implements ManagesRemovers,
     ResizeListener {
   /**
    * Cell in the table.
@@ -568,10 +568,6 @@ public abstract class FilteringScrollTable extends Div implements HasRemovers,
    */
   public Row getLastRow() {
     return rowList.get(rowList.size() - 1);
-  }
-
-  public EventListenerRemover getRemover() {
-    return this.eventCleanup.getRemover();
   }
 
   public Element getTableContents() {

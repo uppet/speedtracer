@@ -90,13 +90,21 @@ public class ResourceRow extends Div {
   }
 
   private HintletIndicator hintletIndicator;
+
   private final DefaultContainerImpl hintletIndicatorContainer;
+
   private int idCounter = 0;
+
   private final IterableFastStringMap<ImageResource> mimeTypeMap = new IterableFastStringMap<ImageResource>();
+
   private final NetworkPillBox pillBox;
+
   private final List<EventListenerRemover> removers = new ArrayList<EventListenerRemover>();
+
   private final NetworkResource resource;
+
   private final ResourceRow.Resources resources;
+
   private final Element textElem;
 
   public ResourceRow(Container container, double startTime, double endTime,
@@ -173,7 +181,7 @@ public class ResourceRow extends Div {
       removers.get(i).remove();
     }
     removers.clear();
-    pillBox.detachEventListeners();
+    pillBox.cleanupRemovers();
   }
 
   public NetworkPillBox getPillBox() {
