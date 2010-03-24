@@ -20,10 +20,12 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
-import com.google.gwt.events.client.EventListenerRemover;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.ContainerImpl;
+import com.google.gwt.topspin.ui.client.CssTransitionEvent;
+import com.google.gwt.topspin.ui.client.CssTransitionListener;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.gwt.topspin.ui.client.Div;
 import com.google.gwt.topspin.ui.client.Table;
@@ -32,12 +34,9 @@ import com.google.speedtracer.client.model.NetworkResource.HeaderMap;
 import com.google.speedtracer.client.model.NetworkResource.HeaderMap.IterationCallBack;
 import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.util.dom.DocumentExt;
-import com.google.speedtracer.client.view.fx.CssTransitionPx;
-import com.google.speedtracer.client.view.fx.CssTransitionPx.CallBack;
+import com.google.speedtracer.client.util.dom.EventCleanup.ManagesRemovers;
 import com.google.speedtracer.client.visualizations.view.Tree.ExpansionChangeListener;
 import com.google.speedtracer.client.visualizations.view.Tree.Item;
-
-import java.util.List;
 
 /**
  * The panel of details that displays the details of the network request and
@@ -145,22 +144,15 @@ public class RequestDetails extends Div {
         + TimeStampFormatter.formatMilliseconds(endTime - startTime);
   }
 
-  private final CallBack closeCallBack;
-
   private Element contentElem;
 
   private HintletRecordsTree hintletTree;
+
   private DivElement hintletTreeWrapper;
+
   private NetworkResource info;
 
   private boolean isVisible = false;
-
-  /**
-   * The parent manages cleaning up this list, we just tack some things on to
-   * it.
-   */
-  // TODO(zundel): topspin should provide better affordances for event cleanup
-  private final List<EventListenerRemover> parentRemovers;
 
   /**
    * We need a reference to the styles for our parent Widget because we have
@@ -171,9 +163,13 @@ public class RequestDetails extends Div {
 
   private final Element pillBoxContainer;
 
-  private final Resources resources;
+  /**
+   * The parent manages cleaning up this list, we just tack some things on to
+   * it.
+   */
+  private final ManagesRemovers removerManager;
 
-  private int targetHeight = 0;
+  private final Resources resources;
 
   /**
    * ctor.
@@ -181,27 +177,31 @@ public class RequestDetails extends Div {
    * @param container what we attach to
    * @param pb the container element for the pillBox
    * @param info the information about this network request/response
-   * @param resources the Resources for our parent widget which magically is
-   *          also the resources for us
+   * @param removerManager the {@link ManagesRemovers} for our parent widget
+   *          which manages unhooking event listeners for us.
+   * @param resources {@link NetworkPillBox.Resources} that contains relevant
+   *          images and Css.
    */
   public RequestDetails(Container container, Element pb, NetworkResource info,
-      NetworkPillBox.Resources resources,
-      List<EventListenerRemover> parentRemovers) {
+      ManagesRemovers removerManager, NetworkPillBox.Resources resources) {
     super(container);
-    this.parentRemovers = parentRemovers;
     this.resources = resources;
+    this.removerManager = removerManager;
     this.pbCss = resources.networkPillBoxCss();
     pillBoxContainer = pb;
     setStyleName(resources.requestDetailsCss().details());
     this.info = info;
 
     // CallBack invoked after collapsing RequestDetails
-    closeCallBack = new CallBack() {
-      public void onTransitionEnd() {
-        getElement().getStyle().setProperty("display", "none");
-        pillBoxContainer.setClassName(RequestDetails.this.pbCss.pillBoxWrapper());
-      }
-    };
+    removerManager.trackRemover(CssTransitionEvent.addTransitionListener(this,
+        getElement(), new CssTransitionListener() {
+          public void onTransitionEnd(CssTransitionEvent event) {
+            if (!isVisible) {
+              getElement().getStyle().setProperty("display", "none");
+              pillBoxContainer.setClassName(RequestDetails.this.pbCss.pillBoxWrapper());
+            }
+          }
+        }));
   }
 
   public void refresh() {
@@ -219,42 +219,28 @@ public class RequestDetails extends Div {
   /**
    * Toggles the Visibility of the RequestDetails.
    * 
-   * TODO (jaimeyap): put some logic in here to detect when the user is
-   * highlighting text (ie. mouseDown + mouseMove before mouseUp) so it doesn't
-   * close.
-   * 
    * @return whether or not we closed or opened the details
    */
   public boolean toggleVisibility() {
     if (isVisible) {
-      CssTransitionPx.get().setCallBack(closeCallBack);
-      CssTransitionPx.get().transition(getElement(), "height", targetHeight, 0,
-          200);
+      getElement().getStyle().setHeight(0, Unit.PX);
       isVisible = false;
-      return false;
+    } else {
+      if (contentElem == null) {
+        // Lazily initialize contentElem
+        contentElem = Document.get().createDivElement();
+        // Fill the contentElem
+        populateContent();
+        getElement().appendChild(contentElem);
+      }
+
+      // Make the element renderable
+      getElement().getStyle().setProperty("display", "block");
+      fixHeightOfParentRow();
+      pillBoxContainer.setClassName(pbCss.pillBoxWrapperSelected());
+      isVisible = true;
     }
-
-    if (contentElem == null) {
-      // Lazily initialize contentElem
-      contentElem = Document.get().createDivElement();
-      // Fill the contentElem
-      populateContent();
-      getElement().appendChild(contentElem);
-    }
-
-    // Make the element renderable
-    getElement().getStyle().setProperty("display", "block");
-
-    // Sniff the height of the contentElem
-    targetHeight = contentElem.getOffsetHeight();
-
-    // Animate the expansion
-    CssTransitionPx.get().transition(getElement(), "height", 0, targetHeight,
-        200);
-
-    pillBoxContainer.setClassName(pbCss.pillBoxWrapperSelected());
-    isVisible = true;
-    return true;
+    return isVisible;
   }
 
   /**
@@ -280,7 +266,7 @@ public class RequestDetails extends Div {
     });
 
     // We make sure to have the tree cleaned up when we clean up ourselves.
-    parentRemovers.add(hintletTree.getRemover());
+    removerManager.trackRemover(hintletTree.getRemover());
   }
 
   /**
@@ -330,8 +316,8 @@ public class RequestDetails extends Div {
    * or shrinking.
    */
   private void fixHeightOfParentRow() {
-    targetHeight = contentElem.getOffsetHeight();
-    getElement().getStyle().setPropertyPx("height", targetHeight);
+    getElement().getStyle().setPropertyPx("height",
+        contentElem.getOffsetHeight());
   }
 
   /**

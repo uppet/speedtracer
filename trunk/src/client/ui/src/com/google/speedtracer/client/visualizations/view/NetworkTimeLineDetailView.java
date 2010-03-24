@@ -67,10 +67,15 @@ public class NetworkTimeLineDetailView extends DetailView {
   private final Container container;
 
   private final Element contentPanel;
+
   private final List<ResourceRow> displayed;
+
   private boolean isBlocked = false;
+
   private boolean isDirty = false;
+
   private double oldLeft = 0;
+
   private double oldRight = 0;
 
   private final NetworkTimeLineDetailView.Resources resources;
@@ -215,8 +220,8 @@ public class NetworkTimeLineDetailView extends DetailView {
 
         final ResourceRow row = new ResourceRow(getContainer(), startTime,
             endTime, resource, fileExtension,
-            (currentPixelWidth - Constants.GRAPH_PIXEL_OFFSET),
-            left, right, this, resources);
+            (currentPixelWidth - Constants.GRAPH_PIXEL_OFFSET), left, right,
+            this, resources);
 
         displayed.add(row);
       }

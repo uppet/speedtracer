@@ -22,7 +22,8 @@ import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
 import com.google.gwt.topspin.ui.client.MouseOverEvent;
 import com.google.gwt.topspin.ui.client.MouseOverListener;
-import com.google.speedtracer.client.util.dom.EventCleanup.HasRemovers;
+import com.google.speedtracer.client.util.dom.EventCleanup.HasRemover;
+import com.google.speedtracer.client.util.dom.EventCleanup.ManagesRemovers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,8 @@ import java.util.List;
  * Need to be able to lazily construct DOM elements and lazily hook event
  * listeners. Currently only supports MouseOver and Click Events.
  */
-public abstract class LazilyCreateableElement implements HasRemovers {
+public abstract class LazilyCreateableElement implements ManagesRemovers,
+    HasRemover {
   protected final EventCleanup eventCleanup;
   private String cssClassName;
   private Element element;
@@ -141,7 +143,7 @@ public abstract class LazilyCreateableElement implements HasRemovers {
   public void setClassName(String cssClassName) {
     this.cssClassName = cssClassName;
   }
-  
+
   public void trackRemover(EventListenerRemover remover) {
     eventCleanup.trackRemover(remover);
   }
