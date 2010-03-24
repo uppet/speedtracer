@@ -103,7 +103,11 @@ function onDOMContentLoaded() {
 // bomb out and print an error.
 if (!window.speedtracer) {
   window.speedtracer = {};
-  document.addEventListener("DOMContentLoaded", onDOMContentLoaded, false);
+  if (document.readyState != 'complete' && document.readyState != 'loaded'){ 
+    document.addEventListener("DOMContentLoaded", onDOMContentLoaded, false);
+  } else {
+    onDOMContentLoaded();
+  }
 }
 
 // A DOM event listener on the toApiDiv
