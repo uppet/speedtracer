@@ -170,4 +170,13 @@ public class ResourceUpdateEvent extends ResourceRecord {
   public final UpdateResource getUpdate() {
     return getData().cast();
   }
+
+  /**
+   * These events are always synthesized to wrap inspector updateResource
+   * messages. As such we need to give it a "time" to make it consistent with
+   * the Timeline record format.
+   */
+  public final native void setTime(double time) /*-{
+    this.time = time;
+  }-*/;
 }

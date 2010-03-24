@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,7 +15,6 @@
  */
 package com.google.speedtracer.client.model;
 
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.speedtracer.client.model.DevToolsDataInstance.Proxy;
 import com.google.speedtracer.client.model.EventVisitor.PreOrderVisitor;
 
@@ -25,31 +24,6 @@ import com.google.speedtracer.client.model.EventVisitor.PreOrderVisitor;
  * event records into proper {@link UiEvent}s.
  */
 public class TimeNormalizerVisitor implements PreOrderVisitor {
-  /**
-   * An EventRecord that has not yet been time normalized.
-   */
-  public static class UnNormalizedEvent extends JavaScriptObject {
-    protected UnNormalizedEvent() {
-    }
-
-    public final native double getStartTime() /*-{
-      return this.startTime;
-    }-*/;
-
-    private native EventRecord convertToEventRecord(double baseTime) /*-{
-      if (this.hasOwnProperty("endTime")) {
-        this.duration = this.endTime - this.startTime;  
-      }
-
-      this.time = this.startTime - baseTime;
-
-      delete this.startTime;
-      delete this.endTime;
-
-      return this;
-    }-*/;
-  }
-
   private final Proxy proxy;
 
   TimeNormalizerVisitor(Proxy proxy) {
@@ -61,7 +35,6 @@ public class TimeNormalizerVisitor implements PreOrderVisitor {
 
   public void visitUiEvent(UiEvent e) {
     assert (proxy.getBaseTime() >= 0);
-
-    e.<UnNormalizedEvent> cast().convertToEventRecord(proxy.getBaseTime());
+    e.<UnNormalizedEventRecord> cast().convertToEventRecord(proxy.getBaseTime());
   }
 }

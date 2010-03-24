@@ -32,7 +32,7 @@ import java.util.List;
  * Also defines Universal base time, which can be calibrated by subclasses only.
  */
 public abstract class DataModel implements HintletEngineHost.HintListener,
-    EventRecordLookup {
+    EventRecordLookup, DataInstance.DataListener {
   /**
    * Wrapper objects to proxy callbacks to correct handler.
    */
