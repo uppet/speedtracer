@@ -123,7 +123,7 @@ function addHiddenDivsImpl() {
 
 function addHiddenDivs() {
   // The DOM might not be ready when this function is called
-  if (document.readyState == 'loading') {
+  if (document.readyState != 'complete') {
     window.addEventListener("DOMContentLoaded", addHiddenDivsImpl, false);
   } else {
     addHiddenDivsImpl();
