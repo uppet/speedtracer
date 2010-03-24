@@ -83,9 +83,9 @@ public class DetailViews extends Div {
     currentView.show();
   }
 
-  public void updateCurrentView(double left, double right, boolean context) {
+  public void updateCurrentView(double left, double right) {
     if (currentView != null) {
-      currentView.updateView(left, right, context);
+      currentView.updateView(left, right);
     }
   }
 }

@@ -22,12 +22,13 @@ import com.google.gwt.resources.client.ImageResource.ImageOptions;
 import com.google.gwt.resources.client.ImageResource.RepeatStyle;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
+import com.google.gwt.topspin.ui.client.ResizeEvent;
+import com.google.gwt.topspin.ui.client.ResizeListener;
 import com.google.gwt.topspin.ui.client.Window;
 import com.google.speedtracer.client.model.NetworkResource;
 import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.util.dom.DocumentExt;
 import com.google.speedtracer.client.view.DetailView;
-import com.google.speedtracer.client.view.MainTimeLine;
 import com.google.speedtracer.client.view.fx.CssTransitionFloat;
 import com.google.speedtracer.client.view.fx.CssTransitionFloat.CallBack;
 import com.google.speedtracer.client.visualizations.model.NetworkTimeLineModel;
@@ -39,7 +40,8 @@ import java.util.List;
 /**
  * Shows each requested resource.
  */
-public class NetworkTimeLineDetailView extends DetailView {
+public class NetworkTimeLineDetailView extends DetailView implements
+    ResizeListener {
 
   /**
    * CSS.
@@ -83,7 +85,7 @@ public class NetworkTimeLineDetailView extends DetailView {
   private boolean shouldFlash = false;
 
   public NetworkTimeLineDetailView(Container parent, NetworkVisualization viz,
-      MainTimeLine timeLine, NetworkTimeLineDetailView.Resources resources) {
+      NetworkTimeLineDetailView.Resources resources) {
     super(parent, viz);
     this.resources = resources;
     NetworkTimeLineDetailView.Css css = resources.networkTimeLineDetailViewCss();
@@ -102,6 +104,8 @@ public class NetworkTimeLineDetailView extends DetailView {
 
     elem.appendChild(filler);
     elem.appendChild(contentPanel);
+
+    ResizeEvent.addResizeListener(this, Window.get(), this);
   }
 
   public void flash() {
@@ -131,6 +135,13 @@ public class NetworkTimeLineDetailView extends DetailView {
     return isDirty;
   }
 
+  public void onResize(ResizeEvent event) {
+    for (int i = 0, n = displayed.size(); i < n; i++) {
+      displayed.get(i).onResize(
+          Window.getInnerWidth() - Constants.GRAPH_HEADER_WIDTH);
+    }
+  }
+
   public void refreshResource(NetworkResource resource) {
     if (displayed == null) {
       return;
@@ -152,22 +163,17 @@ public class NetworkTimeLineDetailView extends DetailView {
     isBlocked = b;
   }
 
-  public void updateView(double left, double right, boolean doSpecialAction) {
-    if (doSpecialAction) {
-      flash();
-    }
-
+  public void updateView(double left, double right) {
+    flash();
     // When we are not flashing, we want to force a redisplay
-    displayResourcesInWindow(left, right, doSpecialAction);
+    displayResourcesInWindow(left, right);
   }
 
-  protected void displayResourcesInWindow(double left, double right,
-      boolean noForceReDisplay) {
+  protected void displayResourcesInWindow(double left, double right) {
     NetworkTimeLineModel model = getModel();
     // We dont need to update if we
     // have not shifted bounds.
-    if (noForceReDisplay && (displayed.size() > 0) && (left == oldLeft)
-        && (right == oldRight)) {
+    if ((displayed.size() > 0) && (left == oldLeft) && (right == oldRight)) {
       return;
     } else {
       // If we are reading the details of a pillBox, we want to stop smooshing
@@ -195,7 +201,6 @@ public class NetworkTimeLineDetailView extends DetailView {
     // We do a naive linear search until the kinks can be ironed
     // out of more sophisticated search.
     List<NetworkResource> networkResources = model.getSortedResources();
-    int currentPixelWidth = Window.getInnerWidth();
     for (int i = 0; i < networkResources.size(); i++) {
       NetworkResource resource = networkResources.get(i);
       double startTime = resource.getStartTime();
@@ -218,10 +223,8 @@ public class NetworkTimeLineDetailView extends DetailView {
         String fileExtension = (dotIndex < 0) ? ".html"
             : lastPathComponent.substring(dotIndex);
 
-        final ResourceRow row = new ResourceRow(getContainer(), startTime,
-            endTime, resource, fileExtension,
-            (currentPixelWidth - Constants.GRAPH_PIXEL_OFFSET), left, right,
-            this, resources);
+        final ResourceRow row = new ResourceRow(getContainer(), resource,
+            fileExtension, left, right, this, resources);
 
         displayed.add(row);
       }

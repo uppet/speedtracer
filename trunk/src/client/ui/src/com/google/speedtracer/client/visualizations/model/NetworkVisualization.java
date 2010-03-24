@@ -73,7 +73,7 @@ public class NetworkVisualization extends
   @Override
   public NetworkTimeLineDetailView createDetailsView(Container container,
       MainTimeLine timeLine) {
-    return new NetworkTimeLineDetailView(container, this, timeLine, resources);
+    return new NetworkTimeLineDetailView(container, this, resources);
   }
 
   public void onResourceRefresh(NetworkResource resource) {

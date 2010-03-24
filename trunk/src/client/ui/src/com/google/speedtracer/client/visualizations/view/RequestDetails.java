@@ -22,18 +22,20 @@ import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.resources.client.CssResource;
+import com.google.gwt.topspin.ui.client.ClickEvent;
+import com.google.gwt.topspin.ui.client.ClickListener;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.ContainerImpl;
 import com.google.gwt.topspin.ui.client.CssTransitionEvent;
 import com.google.gwt.topspin.ui.client.CssTransitionListener;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
-import com.google.gwt.topspin.ui.client.Div;
 import com.google.gwt.topspin.ui.client.Table;
 import com.google.speedtracer.client.model.NetworkResource;
 import com.google.speedtracer.client.model.NetworkResource.HeaderMap;
 import com.google.speedtracer.client.model.NetworkResource.HeaderMap.IterationCallBack;
 import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.util.dom.DocumentExt;
+import com.google.speedtracer.client.util.dom.LazilyCreateableElement;
 import com.google.speedtracer.client.util.dom.EventCleanup.ManagesRemovers;
 import com.google.speedtracer.client.visualizations.view.Tree.ExpansionChangeListener;
 import com.google.speedtracer.client.visualizations.view.Tree.Item;
@@ -42,7 +44,7 @@ import com.google.speedtracer.client.visualizations.view.Tree.Item;
  * The panel of details that displays the details of the network request and
  * conditionally, the hintlet records associated with this resource.
  */
-public class RequestDetails extends Div {
+public class RequestDetails extends LazilyCreateableElement {
   /**
    * CSS.
    */
@@ -171,37 +173,29 @@ public class RequestDetails extends Div {
 
   private final Resources resources;
 
+  private final Element parentElem;
+
   /**
    * ctor.
    * 
-   * @param container what we attach to
+   * @param parentElem what we attach to
    * @param pb the container element for the pillBox
-   * @param info the information about this network request/response
+   * @param networkResource the information about this network request/response
    * @param removerManager the {@link ManagesRemovers} for our parent widget
    *          which manages unhooking event listeners for us.
    * @param resources {@link NetworkPillBox.Resources} that contains relevant
    *          images and Css.
    */
-  public RequestDetails(Container container, Element pb, NetworkResource info,
-      ManagesRemovers removerManager, NetworkPillBox.Resources resources) {
-    super(container);
+  public RequestDetails(Element parentElem, Element pb,
+      NetworkResource networkResource, ManagesRemovers removerManager,
+      NetworkPillBox.Resources resources) {
+    super(resources.requestDetailsCss().details());
+    this.parentElem = parentElem;
     this.resources = resources;
     this.removerManager = removerManager;
     this.pbCss = resources.networkPillBoxCss();
-    pillBoxContainer = pb;
-    setStyleName(resources.requestDetailsCss().details());
-    this.info = info;
-
-    // CallBack invoked after collapsing RequestDetails
-    removerManager.trackRemover(CssTransitionEvent.addTransitionListener(this,
-        getElement(), new CssTransitionListener() {
-          public void onTransitionEnd(CssTransitionEvent event) {
-            if (!isVisible) {
-              getElement().getStyle().setProperty("display", "none");
-              pillBoxContainer.setClassName(RequestDetails.this.pbCss.pillBoxWrapper());
-            }
-          }
-        }));
+    this.pillBoxContainer = pb;
+    this.info = networkResource;
   }
 
   public void refresh() {
@@ -252,6 +246,33 @@ public class RequestDetails extends Div {
   public void updateInfo(NetworkResource info) {
     this.info = info;
     populateContent();
+  }
+
+  @Override
+  protected Element createElement() {
+    final Element elem = Document.get().createDivElement();
+    // CallBack invoked after collapsing RequestDetails
+    eventCleanup.trackRemover(CssTransitionEvent.addTransitionListener(this,
+        elem, new CssTransitionListener() {
+          public void onTransitionEnd(CssTransitionEvent event) {
+            if (!isVisible) {
+              elem.getStyle().setProperty("display", "none");
+              pillBoxContainer.setClassName(RequestDetails.this.pbCss.pillBoxWrapper());
+            }
+          }
+        }));
+
+    // We want to stop the annoying issue of clicking inside the details view
+    // collapsing the expansion.
+    eventCleanup.trackRemover(ClickEvent.addClickListener(this, elem,
+        new ClickListener() {
+          public void onClick(ClickEvent event) {
+            event.getNativeEvent().cancelBubble(true);
+          }
+        }));
+
+    parentElem.appendChild(elem);
+    return elem;
   }
 
   private void createHintletTree() {

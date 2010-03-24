@@ -124,7 +124,7 @@ public class SluggishnessDetailView extends DetailView {
    * to find the last element that falls within the window. Linear walk
    * backwards to the start of the window.
    */
-  public void updateView(double left, double right, boolean noForceReDisplay) {
+  public void updateView(double left, double right) {
     int[] indices = getModel().getIndexesOfEventsInRange(left, right, false);
 
     if (indices != null) {
