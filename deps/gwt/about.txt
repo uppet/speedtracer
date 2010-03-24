@@ -1,5 +1,5 @@
 Google Web Toolkit 0.0.0
-(svn revision trunk@7729M)
+(svn revision trunk@7775M)
 Copyright (c) Google, Inc. 2009.  All rights reserved.
 Visit Google Code (http://code.google.com/webtoolkit/).
 
