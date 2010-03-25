@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -38,12 +38,11 @@ public class HintletRecordsTree extends Tree {
      * Add an item under an existing tree node.
      * 
      * @param parent Parent node of the new node.
-     * @param resources Static resources.
      * @param hintletRecord Data to display within this node.
      */
-    private HintletRecordItem(Item parent, Tree.Resources resources,
-        HintRecord hintletRecord, Tree backRef) {
-      super(parent, resources);
+    private HintletRecordItem(Item parent, HintRecord hintletRecord,
+        Tree tree) {
+      super(parent);
       this.hintletRecord = hintletRecord;
       setItemTarget(hintletRecord);
       setText(getTreeItemLabel());
@@ -70,7 +69,7 @@ public class HintletRecordsTree extends Tree {
     /**
      * Adds a top level node presenting the severity of all nodes beneath.
      * 
-     * @param backRef The tree to add this node to
+     * @param tree The tree to add this node to
      * @param severity The severity constant (HintletRecord.SEVERITY_XXX) that
      *          this node represents
      * @param count The number of records in hintletRecords of the specified
@@ -78,16 +77,14 @@ public class HintletRecordsTree extends Tree {
      *          so its passed in to keep from calculating it twice.
      * @param hintletRecords List of records to extract records of severity
      *          level 'severity'.
-     * @param resources Static resources.
      */
-    private SeverityItem(Tree backRef, int severity, int count,
-        JSOArray<HintRecord> hintletRecords,
-        HintletRecordsTree.Resources resources) {
-      super(resources, backRef);
+    private SeverityItem(Tree tree, int severity, int count,
+        JSOArray<HintRecord> hintletRecords) {
+      super(tree);
       Container severityContainer = new DefaultContainerImpl(getElement());
       // Make the colored Icon with the count of the number of hintlets
       HintletIndicator indicator = new HintletIndicator(severityContainer,
-          severity, count, "", resources);
+          severity, count, "", getOwningTree().getResources());
       getItemLabelElement().appendChild(indicator.getElement());
 
       // Make a placeholder element for the label text.
@@ -113,9 +110,14 @@ public class HintletRecordsTree extends Tree {
       for (int i = 0; i < hintletRecords.size(); i++) {
         HintRecord rec = hintletRecords.get(i);
         if (rec.getSeverity() == severity) {
-          new HintletRecordItem(this, getResources(), rec, backRef);
+          new HintletRecordItem(this, rec, tree);
         }
       }
+    }
+
+    @Override
+    public HintletRecordsTree getOwningTree() {
+      return (HintletRecordsTree) super.getOwningTree();
     }
   }
 
@@ -137,10 +139,6 @@ public class HintletRecordsTree extends Tree {
     buildTree();
   }
 
-  public HintletRecordsTree.Resources getResources() {
-    return (HintletRecordsTree.Resources) super.getResources();
-  }
-
   /**
    * This call is made to ask the tree to re-examine the list of hintlets and
    * update the tree.
@@ -150,6 +148,10 @@ public class HintletRecordsTree extends Tree {
     // Drop the current nodes and rebuild it.
     clear();
     buildTree();
+  }
+
+  protected HintletRecordsTree.Resources getResources() {
+    return (HintletRecordsTree.Resources) super.getResources();
   }
 
   /**
@@ -179,15 +181,15 @@ public class HintletRecordsTree extends Tree {
 
     if (hasCritical) {
       new SeverityItem(this, HintRecord.SEVERITY_CRITICAL, criticalCount,
-          hintletRecords, getResources());
+          hintletRecords);
     }
     if (hasWarning) {
       new SeverityItem(this, HintRecord.SEVERITY_WARNING, warningCount,
-          hintletRecords, getResources());
+          hintletRecords);
     }
     if (hasInfo) {
       new SeverityItem(this, HintRecord.SEVERITY_INFO, infoCount,
-          hintletRecords, getResources());
+          hintletRecords);
     }
   }
 }

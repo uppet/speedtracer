@@ -143,9 +143,8 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
       /**
        * New child item.
        */
-      public ProfileItem(ProfileItem parent, Resources resources,
-          JavaScriptProfileNode profileNode) {
-        super(parent, resources);
+      public ProfileItem(ProfileItem parent, JavaScriptProfileNode profileNode) {
+        super(parent);
         setItemTarget(profileNode);
         initItem(profileNode);
       }
@@ -153,9 +152,8 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
       /**
        * New root item.
        */
-      public ProfileItem(Resources resources, Tree backRef,
-          JavaScriptProfileNode profileNode) {
-        super(resources, backRef);
+      public ProfileItem(Tree tree, JavaScriptProfileNode profileNode) {
+        super(tree);
         setItemTarget(profileNode);
         initItem(profileNode);
       }
@@ -222,8 +220,8 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
       private boolean dirtyChildren;
 
       public UnexpandedProfileItem(final ProfileItem parent,
-          final Resources resources, final JavaScriptProfileNode profileNode) {
-        super(parent, resources, profileNode);
+          final JavaScriptProfileNode profileNode) {
+        super(parent, profileNode);
         List<JavaScriptProfileNode> children = profileNode.getChildren();
         if (children == null || children.size() == 0) {
           dirtyChildren = false;
@@ -266,7 +264,7 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
       for (int i = 0, length = children.size(); i < length; ++i) {
         final JavaScriptProfileNode profileChild = children.get(i);
         // add root nodes
-        final ProfileItem item = new ProfileItem(resources, this, profileChild);
+        final ProfileItem item = new ProfileItem(this, profileChild);
         // Add resymbolized data to frame/profile if it is available.
         Command.defer(new Command.Method() {
           public void execute() {
@@ -294,8 +292,7 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
       for (int i = 0, length = children.size(); i < length; ++i) {
         final JavaScriptProfileNode profileChild = children.get(i);
         if (depth < 4 || profileChild.hasTwoOrMoreChildren() == false) {
-          final ProfileItem childItem = new ProfileItem(item, resources,
-              profileChild);
+          final ProfileItem childItem = new ProfileItem(item, profileChild);
           // Add resymbolized data to frame/profile if it is available.
           Command.defer(new Command.Method() {
             public void execute() {
@@ -310,7 +307,7 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
           });
           addChildrenRecursive(childItem, resources, children.get(i), depth + 1);
         } else {
-          new UnexpandedProfileItem(item, resources, profileChild);
+          new UnexpandedProfileItem(item, profileChild);
         }
       }
     }

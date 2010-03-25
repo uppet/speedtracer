@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -88,17 +88,15 @@ public class Tree extends Widget {
    * handle widgets. Having these two things conflated in the original GWT Tree
    * is an unnecessary source of complexity.
    * 
-   * TODO(jaimeyap): This class wants to be non static inner. But GWT compiler
-   * has bug with parent backref :(.
-   * 
-   * @see <a
-   *      href="http://code.google.com/p/google-web-toolkit/issues/detail?id=3408"
-   *      > see issue 3408</a>
+   * TODO(jaimeyap): This class used to be a member class but due to a GWT
+   * compiler bug (@see
+   * "http://code.google.com/p/google-web-toolkit/issues/detail?id=3408") we've
+   * changed it to a static member class where we explicitly pass the reference
+   * to the enclosing Tree instance in the constructor.
    */
   public static class Item extends Widget implements EventListener {
 
-    // TODO(jaimeyap): remove this when the GWT compiler is fixed.
-    protected final Tree backRef;
+    private final Tree owner;
     private DivElement annotationIcon;
     private List<Item> childList = new ArrayList<Item>();
     private UListElement childListElement;
@@ -115,8 +113,6 @@ public class Tree extends Widget {
     private int nodeDepth;
     private Item parent;
 
-    private final Tree.Resources resources;
-
     /**
      * Creates a new Item as a child of an existing item, providing a Container
      * for the item.
@@ -124,10 +120,9 @@ public class Tree extends Widget {
      * @param parent existing item in the tree
      * @param parentContainer An alternative container to use for holding this
      *          Item (it will be attached to the parent element.)
-     * @param resources Static resources
      */
-    public Item(Item parent, Container parentContainer, Tree.Resources resources) {
-      this(parentContainer, resources, parent.backRef);
+    protected Item(Item parent, Container parentContainer) {
+      this(parent.owner, parentContainer);
       this.parent = parent;
       parent.childList.add(this);
       // Indicate that the parent has children
@@ -141,44 +136,40 @@ public class Tree extends Widget {
      * Creates a new Item as a child of an existing item.
      * 
      * @param parent existing item in the tree
-     * @param resources CSS resources for the tree
      */
-    public Item(Item parent, Tree.Resources resources) {
-      this(parent, parent.ensureContainer(), resources);
+    protected Item(Item parent) {
+      this(parent, parent.ensureContainer());
     }
 
     /**
      * Creates a new Item at the root of a {@link Tree}.
      * 
-     * @param resources CSS resources for the tree
-     * @param backRef the item's tree
+     * @param tree the item's tree
      */
-    public Item(Tree.Resources resources, Tree backRef) {
-      this(backRef.defaultContainer, resources, backRef);
-      backRef.setSelection(this);
-      this.backRef.childList.add(this);
+    protected Item(Tree tree) {
+      this(tree, tree.defaultContainer);
+      tree.setSelection(this);
+      this.owner.childList.add(this);
       this.nodeDepth = 0;
     }
 
     /**
      * Common constructor used to create a new Item in a {@link Tree}.
      * 
+     * @param tree the item's tree
      * @param container
-     * @param resources CSS resources for the tree
-     * @param backRef the item's tree
      */
-    private Item(Container container, Tree.Resources resources, Tree backRef) {
+    private Item(Tree tree, Container container) {
       super(container.getDocument().createLIElement(), container);
-      this.backRef = backRef;
-      this.resources = resources;
-      getElement().setClassName(resources.treeCss().treeItem());
+      this.owner = tree;
+      final Tree.Css css = tree.getResources().treeCss();
+      getElement().setClassName(css.treeItem());
       contentElem = container.getDocument().createDivElement();
-      contentElem.setClassName(resources.treeCss().treeItemContent());
+      contentElem.setClassName(css.treeItemContent());
       itemLabel = container.getDocument().createSpanElement();
-      itemLabel.setClassName(resources.treeCss().treeItemLabel());
+      itemLabel.setClassName(css.treeItemLabel());
       expandIcon = container.getDocument().createDivElement();
-      expandIcon.setClassName(resources.treeCss().expansionControl() + " "
-          + resources.treeCss().leaf());
+      expandIcon.setClassName(css.expansionControl() + " " + css.leaf());
       contentElem.appendChild(expandIcon);
       contentElem.appendChild(itemLabel);
       getElement().appendChild(contentElem);
@@ -218,6 +209,10 @@ public class Tree extends Widget {
       return nodeDepth;
     }
 
+    public Tree getOwningTree() {
+      return owner;
+    }
+
     /**
      * Gets this item's parent item.
      * 
@@ -241,10 +236,10 @@ public class Tree extends Widget {
           if (event.getCtrlKey() || event.getMetaKey()) {
             // It is a crtl selection which means we add one more node to the
             // selection list.
-            backRef.addSelection(Item.this);
+            owner.addSelection(Item.this);
           } else {
             // it is a single select
-            backRef.setSelection(Item.this);
+            owner.setSelection(Item.this);
           }
         }
       } else {
@@ -300,7 +295,7 @@ public class Tree extends Widget {
           childListElement.getStyle().setProperty("display", "none");
         }
 
-        backRef.fireExpansionChangeEvent(this);
+        owner.fireExpansionChangeEvent(this);
       }
     }
 
@@ -316,7 +311,7 @@ public class Tree extends Widget {
     protected void annotate() {
       if (annotationIcon == null) {
         annotationIcon = DocumentExt.get().createDivWithClassName(
-            backRef.getResources().treeCss().nodeAnnotation());
+            owner.getResources().treeCss().nodeAnnotation());
         contentElem.appendChild(annotationIcon);
       }
     }
@@ -340,19 +335,18 @@ public class Tree extends Widget {
      * @param open
      */
     protected void setExpansionIcon(boolean open) {
+      final Css css = getOwningTree().getResources().treeCss();
       if (open) {
-        expandIcon.setClassName(resources.treeCss().expansionControl() + " "
-            + resources.treeCss().minus());
+        expandIcon.setClassName(css.expansionControl() + " " + css.minus());
       } else {
-        expandIcon.setClassName(resources.treeCss().expansionControl() + " "
-            + resources.treeCss().plus());
+        expandIcon.setClassName(css.expansionControl() + " " + css.plus());
       }
     }
 
     private void ensureChildList() {
       if (childListElement == null) {
         childListElement = getElement().getOwnerDocument().createULElement();
-        childListElement.setClassName(resources.treeCss().itemList());
+        childListElement.setClassName(getOwningTree().getResources().treeCss().itemList());
         childListElement.getStyle().setProperty("display", "none");
         getElement().appendChild(childListElement);
       }
@@ -367,16 +361,14 @@ public class Tree extends Widget {
     }
 
     private void setSelection(boolean selected) {
-      contentElem.setClassName(selected
-          ? resources.treeCss().treeItemContentSelected()
-          : resources.treeCss().treeItemContent());
+      final Css css = getOwningTree().getResources().treeCss();
+      contentElem.setClassName(selected ? css.treeItemContentSelected()
+          : css.treeItemContent());
     }
 
     private void sinkEvents() {
-      backRef.addRemover(Event.addEventListener(ClickEvent.NAME, expandIcon,
-          this));
-      backRef.addRemover(Event.addEventListener(ClickEvent.NAME, itemLabel,
-          this));
+      owner.addRemover(Event.addEventListener(ClickEvent.NAME, expandIcon, this));
+      owner.addRemover(Event.addEventListener(ClickEvent.NAME, itemLabel, this));
     }
   }
 
@@ -486,7 +478,7 @@ public class Tree extends Widget {
    * @return a new Item instance.
    */
   public Item createItem() {
-    return new Item(resources, this);
+    return new Item(this);
   }
 
   /**
@@ -496,7 +488,7 @@ public class Tree extends Widget {
    * @return a new Item instance.
    */
   public Item createItem(Item item) {
-    return new Item(item, resources);
+    return new Item(item);
   }
 
   public void disableSelection(boolean disable) {
@@ -546,6 +538,7 @@ public class Tree extends Widget {
     }
   }
 
+  // TODO(knorton): Replace with common utility class, EventCleanup.
   protected void addRemover(EventListenerRemover remover) {
     removeHandles.add(remover);
   }

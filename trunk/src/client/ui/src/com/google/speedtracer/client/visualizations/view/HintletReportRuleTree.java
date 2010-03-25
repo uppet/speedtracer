@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -39,10 +39,10 @@ public class HintletReportRuleTree extends HintletReportTree {
      * @param hintletRecords list of records to display.
      */
     public RuleRow(String ruleName, List<HintRecord> hintletRecords) {
-      super(resources, tree);
+      super(tree);
       Container rowContainer = new DefaultContainerImpl(getItemLabelElement());
       populateRowSummary(rowContainer, ruleName, hintletRecords);
-      details = new RuleRowDetails(this, hintletRecords, resources, reportModel);
+      details = new RuleRowDetails(this, hintletRecords, reportModel);
     }
 
     public void detachEventListeners() {
@@ -60,6 +60,7 @@ public class HintletReportRuleTree extends HintletReportTree {
     private void populateRowSummary(Container rowContainer, String ruleName,
         List<HintRecord> hintletRecords) {
 
+      final HintletReport.Css css = resources.hintletReportCss();
       // Hintlet Indicator(s)
       int severityCount[] = new int[4];
       for (int i = 0, j = hintletRecords.size(); i < j; i++) {
@@ -91,8 +92,8 @@ public class HintletReportRuleTree extends HintletReportTree {
   private class RuleRowDetails extends ReportDetails {
 
     public RuleRowDetails(Tree.Item parent, List<HintRecord> hintletRecords,
-        HintletReport.Resources resources, HintletReportModel reportModel) {
-      super(parent, hintletRecords, resources, reportModel);
+        HintletReportModel reportModel) {
+      super(parent, hintletRecords, reportModel);
 
       addColumn(COL_SEVERITY);
       addColumn(COL_TIME);
