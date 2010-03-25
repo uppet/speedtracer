@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -53,7 +53,7 @@ public class LazyEventTree extends Tree {
    * meaning it has not constructed the DOM structure for its children yet. It
    * also has the facility for filling itself in.
    */
-  public static class LazyItem extends Tree.Item {
+  private static class LazyItem extends Tree.Item {
     private static void addLabelForEvent(Element itemElem, UiEvent event) {
       itemElem.setInnerText(EventRecordType.typeToDetailedTypeString(event));
       final SpanElement timesElem = itemElem.appendChild(itemElem.getOwnerDocument().createSpanElement());
@@ -89,15 +89,14 @@ public class LazyEventTree extends Tree {
      * @param resources Static resources
      * @param uiEvent Event to display in this node
      */
-    private LazyItem(LazyItem parent, Container parentContainer,
-        Tree.Resources resources, UiEvent uiEvent) {
-      super(parent, parentContainer, resources);
+    private LazyItem(LazyItem parent, Container parentContainer, UiEvent uiEvent) {
+      super(parent, parentContainer);
       this.uiEvent = uiEvent;
       setItemTarget(uiEvent);
-      LazyEventTree backRef = (LazyEventTree) parent.backRef;
+      final LazyEventTree tree = parent.getOwningTree();
       addLabelForEvent(getItemLabelElement(), uiEvent);
-      barGraph = backRef.breakdownGraph.createSubEventTraceGraph(
-          backRef.masterBarGraph, uiEvent, getNodeDepth());
+      barGraph = tree.breakdownGraph.createSubEventTraceGraph(
+          tree.masterBarGraph, uiEvent, getNodeDepth());
       getContentElement().appendChild(barGraph.getElement());
     }
 
@@ -108,14 +107,14 @@ public class LazyEventTree extends Tree {
      * @param resources Static resources
      * @param uiEvent Event to display in this node
      */
-    private LazyItem(LazyItem parent, Tree.Resources resources, UiEvent uiEvent) {
-      super(parent, resources);
+    private LazyItem(LazyItem parent, UiEvent uiEvent) {
+      super(parent);
       this.uiEvent = uiEvent;
       setItemTarget(uiEvent);
-      LazyEventTree backRef = (LazyEventTree) parent.backRef;
+      final LazyEventTree tree = parent.getOwningTree();
       addLabelForEvent(getItemLabelElement(), uiEvent);
-      barGraph = backRef.breakdownGraph.createSubEventTraceGraph(
-          backRef.masterBarGraph, uiEvent, getNodeDepth());
+      barGraph = tree.breakdownGraph.createSubEventTraceGraph(
+          tree.masterBarGraph, uiEvent, getNodeDepth());
       getContentElement().appendChild(barGraph.getElement());
     }
 
@@ -126,9 +125,8 @@ public class LazyEventTree extends Tree {
      * @param uiEvent Event to display in this node.
      * @param backRef Reference to the tree object.
      */
-    private LazyItem(Tree.Resources resources, UiEvent uiEvent,
-        LazyEventTree backRef) {
-      super(resources, backRef);
+    private LazyItem(UiEvent uiEvent, LazyEventTree backRef) {
+      super(backRef);
       this.uiEvent = uiEvent;
       setItemTarget(uiEvent);
       addLabelForEvent(getItemLabelElement(), uiEvent);
@@ -139,6 +137,10 @@ public class LazyEventTree extends Tree {
 
     public void expand() {
       maybeExpandNode(this, true);
+    }
+
+    public LazyEventTree getOwningTree() {
+      return (LazyEventTree) super.getOwningTree();
     }
 
     public UiEvent getUiEvent() {
@@ -189,7 +191,7 @@ public class LazyEventTree extends Tree {
     private final Container parentContainer;
 
     public SiblingCoalescer(LazyItem parent) {
-      super(parent, getResources());
+      super(parent);
       setText("Hiding short events.");
       this.parent = parent;
 
@@ -219,8 +221,7 @@ public class LazyEventTree extends Tree {
         UiEvent event = coalescedItems.get(0);
         // This is the magic constructor that inserts the LazyItem before the
         // placeholder.
-        LazyItem formerlyHidden = new LazyItem(parent, parentContainer,
-            getResources(), event);
+        LazyItem formerlyHidden = new LazyItem(parent, parentContainer, event);
 
         deemphasizeNodeIfParentIsNotDeemphasized(parent, formerlyHidden);
 
@@ -303,7 +304,7 @@ public class LazyEventTree extends Tree {
       }
       return;
     } else {
-      LazyEventTree tree = (LazyEventTree) node.backRef;
+      final LazyEventTree tree = node.getOwningTree();
       SiblingCoalescer coalescer = null;
       for (int i = 0, n = children.size(); i < n; i++) {
         UiEvent childUiEvent = children.get(i);
@@ -368,7 +369,7 @@ public class LazyEventTree extends Tree {
   private static LazyItem createNodeAndAddToTree(LazyItem parent,
       UiEvent childUiEvent, LazyEventTree tree) {
     // Add a new node and maybe expand it
-    LazyItem child = new LazyItem(parent, tree.getResources(), childUiEvent);
+    LazyItem child = new LazyItem(parent, childUiEvent);
 
     if (childUiEvent.getType() == LogEvent.TYPE) {
       // annotate if we are a log message
@@ -389,7 +390,7 @@ public class LazyEventTree extends Tree {
     // that it is not hidden. Also if the parent is the Tree Root node (checking
     // via object identity), then we can assume that no matter what the parent
     // node is not hidden.
-    LazyEventTree ownerTree = (LazyEventTree) parent.backRef;
+    final LazyEventTree ownerTree = parent.getOwningTree();
     if (parent.getUiEvent().getDuration() > TREE_ITEM_COALESCING_THRESHOLD
         || parent == ownerTree.rootNode) {
       nodeToDeemphasize.getElement().getStyle().setProperty("opacity", "0.3");
@@ -457,7 +458,7 @@ public class LazyEventTree extends Tree {
     masterBarGraphRender.render();
 
     // Builds up the tree with treeRoot as the root UiEvent.
-    rootNode = new LazyItem(getResources(), treeRoot, this);
+    rootNode = new LazyItem(treeRoot, this);
     // Kick start things by maybe expanding it
     maybeExpandNode(rootNode, false);
   }

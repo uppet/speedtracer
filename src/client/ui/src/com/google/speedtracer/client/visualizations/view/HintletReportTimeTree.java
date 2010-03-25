@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -36,11 +36,10 @@ public class HintletReportTimeTree extends HintletReportTree {
     private final HintletReportRowDetails details;
 
     public RuleRow(List<HintRecord> hintletRecords) {
-      super(resources, tree);
+      super(tree);
       Container rowContainer = new DefaultContainerImpl(getItemLabelElement());
       populateRowSummary(rowContainer, hintletRecords);
-      details = new HintletReportRowDetails(this, hintletRecords, resources,
-          reportModel);
+      details = new HintletReportRowDetails(this, hintletRecords, reportModel);
     }
 
     public void detachEventListeners() {
@@ -50,6 +49,7 @@ public class HintletReportTimeTree extends HintletReportTree {
     private void populateRowSummary(Container rowContainer,
         List<HintRecord> hintletRecords) {
 
+      final HintletReport.Css css = resources.hintletReportCss();
       // Hintlet Indicator(s)
       int severityCount[] = new int[4];
       for (int i = 0, j = hintletRecords.size(); i < j; i++) {

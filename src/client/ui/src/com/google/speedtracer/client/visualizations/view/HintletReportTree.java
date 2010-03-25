@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -76,22 +76,18 @@ public abstract class HintletReportTree extends Widget {
     }
 
     protected final List<Integer> columns = new ArrayList<Integer>();
-    protected final HintletReport.Css css;
     protected final List<HintRecord> hintletRecords;
     protected final HintletReportModel reportModel;
-    protected final HintletReport.Resources resources;
     protected final TableRowElement headerRowElem;
     protected final Table subTable;
     private List<SortableTableHeader> columnHeaders = new ArrayList<SortableTableHeader>();
     private final SortableTableHeaderGroup headerGroup = new SortableTableHeaderGroup();
 
-    protected ReportDetails(Tree.Item parent,
-        List<HintRecord> hintletRecords, HintletReport.Resources resources,
+    protected ReportDetails(Tree.Item parent, List<HintRecord> hintletRecords,
         HintletReportModel reportModel) {
-      super(parent, resources);
-      this.css = resources.hintletReportCss();
+      super(parent);
+      final HintletReport.Css css = getResources().hintletReportCss();
       this.hintletRecords = hintletRecords;
-      this.resources = resources;
       this.reportModel = reportModel;
       this.setExpandIconVisible(false);
       subTable = new Table(new DefaultContainerImpl(this.getItemLabelElement()));
@@ -115,6 +111,8 @@ public abstract class HintletReportTree extends Widget {
       int index = columns.size();
       columns.add(columnType);
 
+      final HintletReport.Resources resources = getResources();
+      final HintletReport.Css css = resources.hintletReportCss();
       TableCellElement cell = headerRowElem.insertCell(index);
       Container cellContainer = new DefaultContainerImpl(cell);
       SortableTableHeader header;
@@ -188,10 +186,15 @@ public abstract class HintletReportTree extends Widget {
       }
     }
 
+    private HintletReport.Resources getResources() {
+      return (HintletReport.Resources) getOwningTree().getResources();
+    }
+
     /**
      * Adds the rows to the table. Assumes there are no data rows in the table.
      */
     private void populateSubTable() {
+      final HintletReport.Css css = getResources().hintletReportCss();
       for (int i = 0, j = hintletRecords.size(); i < j; ++i) {
         HintRecord record = hintletRecords.get(i);
         TableRowElement rowElem = subTable.appendRow();
@@ -234,11 +237,11 @@ public abstract class HintletReportTree extends Widget {
   }
 
   /**
-   * Represents a major heading in the report that is collapsable.
+   * Represents a major heading in the report that is collapsible.
    */
   protected abstract static class ReportRow extends Tree.Item {
-    protected ReportRow(HintletReport.Resources resources, Tree tree) {
-      super(resources, tree);
+    protected ReportRow(Tree tree) {
+      super(tree);
     }
 
     public abstract void detachEventListeners();
@@ -249,7 +252,7 @@ public abstract class HintletReportTree extends Widget {
   static final int COL_SEVERITY = 1;
   static final int COL_TIME = 2;
 
-  protected final HintletReport.Css css;
+  // TODO(knorton): Let's make this private.
   protected HintletReportModel reportModel;
   protected final HintletReport.Resources resources;
   protected final List<ReportRow> rows = new ArrayList<ReportRow>();
@@ -261,10 +264,9 @@ public abstract class HintletReportTree extends Widget {
     tree = new Tree(new DefaultContainerImpl(getElement()), resources);
     tree.disableSelection(true);
     this.resources = resources;
-    this.css = resources.hintletReportCss();
     this.reportModel = reportModel;
     String treeClass = tree.getElement().getClassName() + " "
-        + css.reportTree();
+        + resources.hintletReportCss().reportTree();
     tree.getElement().setClassName(treeClass);
     populateTable();
   }
