@@ -16,8 +16,10 @@
 
 package com.google.speedtracer.client.model;
 
+import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.CompactGwtSymbolMapParser;
 import com.google.speedtracer.client.GwtSymbolMapParser;
+import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.util.IterableFastStringMap;
 
 /**
@@ -59,6 +61,12 @@ public class JsSymbolMap {
       parser = new GwtSymbolMapParser(symbolMap);
     } else if (COMPACT_GWT_SYMBOL_MAP.equals(type)) {
       parser = new CompactGwtSymbolMapParser(symbolMap);
+    } else {
+      if (ClientConfig.isDebugMode()) {
+        Logging.getLogger().logText(
+            "Ignoring unknown symbol map type: " + type + " for symbol map "
+                + symbolMapStr + ".");
+      }
     }
 
     if (parser != null) {
