@@ -45,7 +45,7 @@ import com.google.speedtracer.client.timeline.fx.Zoom;
 import com.google.speedtracer.client.timeline.fx.Zoom.CallBack;
 import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.dom.DocumentExt;
-import com.google.speedtracer.client.util.dom.EventCleanup;
+import com.google.speedtracer.client.util.dom.EventListenerOwner;
 import com.google.speedtracer.client.view.Controller;
 import com.google.speedtracer.client.view.DetailViews;
 import com.google.speedtracer.client.view.MainTimeLine;
@@ -189,7 +189,7 @@ public class MonitorVisualizationsPanel extends Div {
     // Container Element for Visualization specific buttons.
     private final Element buttonBar;
 
-    private final EventCleanup eventCleanup = new EventCleanup();
+    private final EventListenerOwner listenerOwner = new EventListenerOwner();
 
     private Element previouslySelected;
 
@@ -217,13 +217,13 @@ public class MonitorVisualizationsPanel extends Div {
      * {@link com.google.gwt.topspin.ui.client.Button}s to the buttonBar.
      */
     private void addButtonBarButtons(Visualization<?, ?> viz) {
-      eventCleanup.cleanupRemovers();
+      listenerOwner.removeAllEventListeners();
       buttonBar.setInnerHTML("");
 
       Container buttonBarContainer = new DefaultContainerImpl(buttonBar);
       JSOArray<ButtonDescription> buttons = viz.getButtons();
       for (int i = 0, n = buttons.size(); i < n; i++) {
-        buttons.get(i).createButton(buttonBarContainer, eventCleanup);
+        buttons.get(i).createButton(buttonBarContainer, listenerOwner);
       }
     }
 

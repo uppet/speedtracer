@@ -289,7 +289,7 @@ public class EventWaterfallRowDetails extends RowDetails implements
 
     // Ensure that window resizes don't mess up our row size due to text
     // reflow. Things may need to grow or shrink.
-    trackRemover(ResizeEvent.addResizeListener(WindowExt.get(),
+    manageEventListener(ResizeEvent.addResizeListener(WindowExt.get(),
         WindowExt.get(), new ResizeListener() {
           public void onResize(ResizeEvent event) {
             if (heightFixer == null && getParentRow().isExpanded()) {
@@ -334,6 +334,7 @@ public class EventWaterfallRowDetails extends RowDetails implements
     jsProfileRenderer = new JavaScriptProfileRenderer(
         container,
         resources,
+        this,
         eventWaterfall.getVisualization().getCurrentSymbolServerController(),
         this,
         eventWaterfall.getVisualization().getModel().getJavaScriptProfileForEvent(
@@ -347,7 +348,6 @@ public class EventWaterfallRowDetails extends RowDetails implements
           }
         });
 
-    trackRemover(jsProfileRenderer.getRemover());
     Element flatProfile = bar.add("Flat", new ProfileClickListener(
         JavaScriptProfile.PROFILE_TYPE_FLAT));
     bar.add("Top Down", new ProfileClickListener(
@@ -506,7 +506,7 @@ public class EventWaterfallRowDetails extends RowDetails implements
     });
 
     // We make sure to have the tree cleaned up when we clean up ourselves.
-    trackRemover(tree.getRemover());
+    manageEventListener(tree.getRemover());
 
     return tree;
   }
@@ -532,7 +532,7 @@ public class EventWaterfallRowDetails extends RowDetails implements
     });
 
     // We make sure to have the tree cleaned up when we clean up ourselves.
-    trackRemover(tree.getRemover());
+    manageEventListener(tree.getRemover());
 
     return tree;
   }
@@ -644,8 +644,7 @@ public class EventWaterfallRowDetails extends RowDetails implements
     for (int i = 0, n = frames.size(); i < n; i++) {
       final JsStackFrame frame = frames.get(i);
       final StackFrameRenderer frameRenderer = new StackFrameRenderer(cell,
-          frame, resources);
-      trackRemover(frameRenderer.getRemover());
+          frame, resources, this);
       renderStackFrame(frame, frameRenderer);
     }
   }

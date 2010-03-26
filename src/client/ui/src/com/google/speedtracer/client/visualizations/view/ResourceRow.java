@@ -175,7 +175,7 @@ public class ResourceRow extends Div {
       removers.get(i).remove();
     }
     removers.clear();
-    pillBox.cleanupRemovers();
+    pillBox.removeAllEventListeners();
   }
 
   public NetworkPillBox getPillBox() {

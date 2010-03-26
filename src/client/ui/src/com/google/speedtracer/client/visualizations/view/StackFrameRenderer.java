@@ -26,7 +26,7 @@ import com.google.gwt.topspin.ui.client.ClickListener;
 import com.google.speedtracer.client.SourceViewer.SourcePresenter;
 import com.google.speedtracer.client.SymbolServerController.Resymbolizeable;
 import com.google.speedtracer.client.model.JsSymbol;
-import com.google.speedtracer.client.util.dom.EventCleanup.EventCleanupTrait;
+import com.google.speedtracer.client.util.dom.ManagesEventListeners;
 import com.google.speedtracer.client.visualizations.model.JsStackTrace.JsStackFrame;
 
 /**
@@ -36,8 +36,7 @@ import com.google.speedtracer.client.visualizations.model.JsStackTrace.JsStackFr
  * 
  * Supports showing both an obfuscated and a re-symbolized stack trace.
  */
-public class StackFrameRenderer extends EventCleanupTrait implements
-    Resymbolizeable {
+public class StackFrameRenderer implements Resymbolizeable {
 
   /**
    * Styles.
@@ -62,11 +61,14 @@ public class StackFrameRenderer extends EventCleanupTrait implements
 
   private final JsStackFrame stackFrame;
 
+  private final ManagesEventListeners listenerManager;
+
   public StackFrameRenderer(Element parent, JsStackFrame stackFrame,
-      Resources resources) {
+      Resources resources, ManagesEventListeners listenerManager) {
     this.myElem = parent.getOwnerDocument().createDivElement();
     this.stackFrame = stackFrame;
     this.css = resources.stackFrameRendererCss();
+    this.listenerManager = listenerManager;
     this.myElem.setClassName(css.stackFrame());
     parent.appendChild(myElem);
   }
@@ -99,8 +101,8 @@ public class StackFrameRenderer extends EventCleanupTrait implements
     lineLink.setHref("javascript:;");
     myElem.appendChild(lineLink);
     myElem.appendChild(document.createBRElement());
-    trackRemover(ClickEvent.addClickListener(lineLink, lineLink,
-        symbolClickHandler));
+    listenerManager.manageEventListener(ClickEvent.addClickListener(lineLink,
+        lineLink, symbolClickHandler));
   }
 
   /**
@@ -124,8 +126,8 @@ public class StackFrameRenderer extends EventCleanupTrait implements
     symbolLink.setClassName(css.resymbolizedSymbol());
     myElem.appendChild(symbolLink);
     myElem.appendChild(document.createBRElement());
-    trackRemover(ClickEvent.addClickListener(symbolLink, symbolLink,
-        new ClickListener() {
+    listenerManager.manageEventListener(ClickEvent.addClickListener(symbolLink,
+        symbolLink, new ClickListener() {
           public void onClick(ClickEvent event) {
             sourcePresenter.showSource(sourceServer
                 + sourceSymbol.getResourceBase()

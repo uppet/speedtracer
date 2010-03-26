@@ -35,15 +35,15 @@ import com.google.speedtracer.client.model.NetworkResource;
 import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.util.dom.DocumentExt;
-import com.google.speedtracer.client.util.dom.EventCleanup;
+import com.google.speedtracer.client.util.dom.EventListenerOwner;
 import com.google.speedtracer.client.util.dom.LazilyCreateableElement;
-import com.google.speedtracer.client.util.dom.EventCleanup.ManagesRemovers;
+import com.google.speedtracer.client.util.dom.OwnsEventListeners;
 
 /**
  * The portion of a ResourceRow corresponding to the pillbox aligned on the
  * TimeLine.
  */
-public class NetworkPillBox extends Div implements ManagesRemovers {
+public class NetworkPillBox extends Div implements OwnsEventListeners {
   /**
    * CSS.
    */
@@ -165,7 +165,7 @@ public class NetworkPillBox extends Div implements ManagesRemovers {
     private Element timeTextElem;
 
     protected TimeOverlay(Element parent) {
-      super(resources.networkPillBoxCss().timeOverlay());
+      super(listenerOwner, resources.networkPillBoxCss().timeOverlay());
       this.parent = parent;
     }
 
@@ -292,7 +292,7 @@ public class NetworkPillBox extends Div implements ManagesRemovers {
 
   private final double domainRight;
 
-  private final EventCleanup eventCleanup = new EventCleanup();
+  private final EventListenerOwner listenerOwner = new EventListenerOwner();
 
   private final NetworkResource networkResource;
 
@@ -328,12 +328,8 @@ public class NetworkPillBox extends Div implements ManagesRemovers {
     createPillBox(css);
   }
 
-  public void cleanupRemovers() {
-    eventCleanup.cleanupRemovers();
-  }
-
-  public EventListenerRemover getRemover() {
-    return eventCleanup.getRemover();
+  public void manageEventListener(EventListenerRemover remover) {
+    listenerOwner.manageEventListener(remover);
   }
 
   public void onResize(int panelWidth) {
@@ -346,8 +342,8 @@ public class NetworkPillBox extends Div implements ManagesRemovers {
     }
   }
 
-  public void trackRemover(EventListenerRemover remover) {
-    eventCleanup.trackRemover(remover);
+  public void removeAllEventListeners() {
+    listenerOwner.removeAllEventListeners();
   }
 
   /**
@@ -390,10 +386,10 @@ public class NetworkPillBox extends Div implements ManagesRemovers {
     // Create the RequestDetails for this resource. The DOM should be lazily
     // created.
     details = new RequestDetails(getElement(), pillBoxContainer,
-        networkResource, this, resources);
+        networkResource, listenerOwner, resources);
 
     // Add the ClickListener to toggle the visibility
-    trackRemover(ClickEvent.addClickListener(parentRowElement,
+    manageEventListener(ClickEvent.addClickListener(parentRowElement,
         parentRowElement, new ClickListener() {
           public void onClick(ClickEvent event) {
             details.toggleVisibility();
@@ -404,14 +400,14 @@ public class NetworkPillBox extends Div implements ManagesRemovers {
     final TimeOverlayController timeOverlayController = new TimeOverlayController(
         pbLeft, pbRight, networkResource);
 
-    trackRemover(MouseOverEvent.addMouseOverListener(pillBoxContainer,
+    manageEventListener(MouseOverEvent.addMouseOverListener(pillBoxContainer,
         parentRowElement, new MouseOverListener() {
           public void onMouseOver(MouseOverEvent event) {
             timeOverlayController.show();
           }
         }));
 
-    trackRemover(MouseOutEvent.addMouseOutListener(pillBoxContainer,
+    manageEventListener(MouseOutEvent.addMouseOutListener(pillBoxContainer,
         parentRowElement, new MouseOutListener() {
           public void onMouseOut(MouseOutEvent event) {
             timeOverlayController.hide();

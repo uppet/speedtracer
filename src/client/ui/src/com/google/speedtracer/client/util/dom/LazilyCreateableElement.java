@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,8 +22,6 @@ import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
 import com.google.gwt.topspin.ui.client.MouseOverEvent;
 import com.google.gwt.topspin.ui.client.MouseOverListener;
-import com.google.speedtracer.client.util.dom.EventCleanup.HasRemover;
-import com.google.speedtracer.client.util.dom.EventCleanup.ManagesRemovers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,16 +33,16 @@ import java.util.List;
  * Need to be able to lazily construct DOM elements and lazily hook event
  * listeners. Currently only supports MouseOver and Click Events.
  */
-public abstract class LazilyCreateableElement implements ManagesRemovers,
-    HasRemover {
-  protected final EventCleanup eventCleanup;
+public abstract class LazilyCreateableElement implements ManagesEventListeners {
+  private final ManagesEventListeners listenerManager;
   private String cssClassName;
   private Element element;
   private final List<LazyEventListenerAttacher<?>> listenerAttachers = new ArrayList<LazyEventListenerAttacher<?>>();
 
-  protected LazilyCreateableElement(String cssClassName) {
+  protected LazilyCreateableElement(ManagesEventListeners listenerManager,
+      String cssClassName) {
     this.cssClassName = cssClassName;
-    this.eventCleanup = new EventCleanup();
+    this.listenerManager = listenerManager;
   }
 
   /**
@@ -69,8 +67,8 @@ public abstract class LazilyCreateableElement implements ManagesRemovers,
         eventSource, clickListener) {
       @Override
       public void attach(JavaScriptObject eventTarget) {
-        eventCleanup.trackRemover(ClickEvent.addClickListener(getEventSource(),
-            eventTarget, getListener()));
+        listenerManager.manageEventListener(ClickEvent.addClickListener(
+            getEventSource(), eventTarget, getListener()));
       }
     });
   }
@@ -89,14 +87,10 @@ public abstract class LazilyCreateableElement implements ManagesRemovers,
         eventSource, mouseOverListener) {
       @Override
       public void attach(JavaScriptObject eventTarget) {
-        eventCleanup.trackRemover(MouseOverEvent.addMouseOverListener(
+        listenerManager.manageEventListener(MouseOverEvent.addMouseOverListener(
             getEventSource(), eventTarget, getListener()));
       }
     });
-  }
-
-  public void cleanupRemovers() {
-    eventCleanup.cleanupRemovers();
   }
 
   public String getClassName() {
@@ -116,22 +110,16 @@ public abstract class LazilyCreateableElement implements ManagesRemovers,
   }
 
   /**
-   * Gets a remover object that goes through and unhooks all the event listeners
-   * attached to us, if there are any.
-   * 
-   * @return the {@link EventListenerRemover} that cleans up our listeners
-   */
-  public EventListenerRemover getRemover() {
-    return eventCleanup.getRemover();
-  }
-
-  /**
    * Returns <code>true</code> if the element has already been created.
    * 
    * @return <code>true</code> if the element has already been created.
    */
   public boolean isCreated() {
     return element != null;
+  }
+
+  public void manageEventListener(EventListenerRemover remover) {
+    listenerManager.manageEventListener(remover);
   }
 
   /**
@@ -142,10 +130,6 @@ public abstract class LazilyCreateableElement implements ManagesRemovers,
    */
   public void setClassName(String cssClassName) {
     this.cssClassName = cssClassName;
-  }
-
-  public void trackRemover(EventListenerRemover remover) {
-    eventCleanup.trackRemover(remover);
   }
 
   /**

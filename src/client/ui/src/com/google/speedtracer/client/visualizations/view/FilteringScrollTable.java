@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -40,10 +40,10 @@ import com.google.speedtracer.client.MonitorResources.CommonResources;
 import com.google.speedtracer.client.util.Command;
 import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.util.dom.DocumentExt;
-import com.google.speedtracer.client.util.dom.EventCleanup;
+import com.google.speedtracer.client.util.dom.EventListenerOwner;
 import com.google.speedtracer.client.util.dom.LazilyCreateableElement;
+import com.google.speedtracer.client.util.dom.ManagesEventListeners;
 import com.google.speedtracer.client.util.dom.WindowExt;
-import com.google.speedtracer.client.util.dom.EventCleanup.ManagesRemovers;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -54,8 +54,8 @@ import java.util.List;
  * "uninteresing" rows. Also has an expandable placeholder for each row to
  * "expand" a row when you click on it.
  */
-public abstract class FilteringScrollTable extends Div implements ManagesRemovers,
-    ResizeListener {
+public abstract class FilteringScrollTable extends Div implements
+    ManagesEventListeners, ResizeListener {
   /**
    * Cell in the table.
    */
@@ -69,7 +69,7 @@ public abstract class FilteringScrollTable extends Div implements ManagesRemover
     }
 
     protected Cell(String contents, int width, String cssClassName) {
-      super(cssClassName);
+      super(FilteringScrollTable.this, cssClassName);
       this.contents = contents;
       this.width = width;
     }
@@ -195,16 +195,16 @@ public abstract class FilteringScrollTable extends Div implements ManagesRemover
       updateLabel();
 
       // hook a click listener to open 10 rows above
-      FilteringScrollTable.this.trackRemover(ClickEvent.addClickListener(this,
-          showAbove, new ClickListener() {
+      manageEventListener(ClickEvent.addClickListener(this, showAbove,
+          new ClickListener() {
             public void onClick(ClickEvent event) {
               expandAbove();
             }
           }));
 
       // hook a click listener to open 10 rows below
-      FilteringScrollTable.this.trackRemover(ClickEvent.addClickListener(this,
-          showBelow, new ClickListener() {
+      manageEventListener(ClickEvent.addClickListener(this, showBelow,
+          new ClickListener() {
             public void onClick(ClickEvent event) {
               expandBelow();
             }
@@ -336,7 +336,7 @@ public abstract class FilteringScrollTable extends Div implements ManagesRemover
     private final TableRow parent;
 
     protected RowDetails(TableRow parent) {
-      super(css.details());
+      super(FilteringScrollTable.this, css.details());
       this.parent = parent;
       parent.setDetails(this);
     }
@@ -349,8 +349,8 @@ public abstract class FilteringScrollTable extends Div implements ManagesRemover
       parent.getElement().appendChild(elem);
 
       // Make sure clicking around the detail view doesn't bubble up
-      FilteringScrollTable.this.trackRemover(ClickEvent.addClickListener(this,
-          elem, new ClickListener() {
+      manageEventListener(ClickEvent.addClickListener(this, elem,
+          new ClickListener() {
 
             public void onClick(ClickEvent event) {
               event.getNativeEvent().cancelBubble(true);
@@ -358,9 +358,6 @@ public abstract class FilteringScrollTable extends Div implements ManagesRemover
 
           }));
 
-      // We need to ensure that our RowDetails gets cleaned up whenever we clear
-      // the table
-      FilteringScrollTable.this.trackRemover(super.getRemover());
       return elem;
     }
 
@@ -479,7 +476,7 @@ public abstract class FilteringScrollTable extends Div implements ManagesRemover
     private final boolean isCoalesceable;
 
     public Row(boolean isCoalesceable, String cssClassName) {
-      super(cssClassName);
+      super(listenerOwner, cssClassName);
       this.isCoalesceable = isCoalesceable;
     }
 
@@ -498,10 +495,7 @@ public abstract class FilteringScrollTable extends Div implements ManagesRemover
 
   private final FilteringScrollTable.Css css;
 
-  /**
-   * Keeps track of listeners to remove for each row when a page changes.
-   */
-  private final EventCleanup eventCleanup = new EventCleanup();
+  private final EventListenerOwner listenerOwner = new EventListenerOwner();
 
   private final Filter filter;
 
@@ -538,13 +532,9 @@ public abstract class FilteringScrollTable extends Div implements ManagesRemover
     ResizeEvent.addResizeListener(window, window, this);
   }
 
-  public void cleanupRemovers() {
-    this.eventCleanup.cleanupRemovers();
-  }
-
   public void clearTable() {
     // Remove the existing event handlers for the row.
-    cleanupRemovers();
+    listenerOwner.removeAllEventListeners();
     rowList.clear();
     getTableContents().setInnerHTML("");
   }
@@ -629,6 +619,10 @@ public abstract class FilteringScrollTable extends Div implements ManagesRemover
     return toAdd;
   }
 
+  public void manageEventListener(EventListenerRemover remover) {
+    listenerOwner.manageEventListener(remover);
+  }
+
   /**
    * Resize handler that gives all rows in the table a chance to resize
    * themselves.
@@ -678,9 +672,5 @@ public abstract class FilteringScrollTable extends Div implements ManagesRemover
     } else {
       tableContents.getStyle().setPropertyPx("top", 0);
     }
-  }
-
-  public void trackRemover(EventListenerRemover remover) {
-    this.eventCleanup.trackRemover(remover);
   }
 }
