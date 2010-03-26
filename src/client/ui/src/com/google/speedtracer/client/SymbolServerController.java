@@ -192,6 +192,10 @@ public class SymbolServerController {
           request.callback.onSymbolsFetchFailed(ERROR_MANIFEST_NOT_LOADED);
         }
         cancelPendingRequests();
+        if (ClientConfig.isDebugMode()) {
+          Logging.getLogger().logText(
+              "Fetching manifest " + symbolManifestUrl.getUrl() + " failed.");
+        }
       }
 
       public void onSuccess(XMLHttpRequest xhr) {
@@ -204,6 +208,10 @@ public class SymbolServerController {
         while (!pendingRequests.isEmpty()) {
           serviceRequest(pendingRequests.remove(0));
         }
+        if (ClientConfig.isDebugMode()) {
+          Logging.getLogger().logText(
+              "Manifest " + symbolManifestUrl.getUrl() + " loaded.");
+        }
       }
     });
   }
@@ -213,18 +221,26 @@ public class SymbolServerController {
 
     // If the resourceUrl begins with a '/' then we assume it is relative to the
     // origin.
+    String relativeUrl = "";
     if (resourceUrl.charAt(0) == '/') {
-      resourceSymbolInfo = symbolServerManifest.getResourceSymbolInfo(Url.convertToRelativeUrl(
-          mainResourceUrl.getOrigin(), resourceUrl));
+      relativeUrl = Url.convertToRelativeUrl(mainResourceUrl.getOrigin(),
+          resourceUrl);
+      resourceSymbolInfo = symbolServerManifest.getResourceSymbolInfo(relativeUrl);
+
     } else {
       // First try looking for the resource using the full URL.
       resourceSymbolInfo = symbolServerManifest.getResourceSymbolInfo(resourceUrl);
       // If the lookup was null, then attempt a relative url lookup.
       if (resourceSymbolInfo == null) {
-        String relativeUrl = Url.convertToRelativeUrl(
+        relativeUrl = Url.convertToRelativeUrl(
             mainResourceUrl.getResourceBase(), resourceUrl);
-        return symbolServerManifest.getResourceSymbolInfo(relativeUrl);
+        resourceSymbolInfo = symbolServerManifest.getResourceSymbolInfo(relativeUrl);
       }
+    }
+    if (ClientConfig.isDebugMode() && resourceSymbolInfo == null) {
+      Logging.getLogger().logText(
+          "Failed to find url " + resourceUrl + " relative to " + relativeUrl
+              + " base: " + mainResourceUrl.getResourceBase());
     }
     return resourceSymbolInfo;
   }
@@ -235,6 +251,10 @@ public class SymbolServerController {
     final ResourceSymbolInfo resourceSymbolInfo = lookupEntryInManifest(request.resourceUrl);
     final Callback callback = request.callback;
     if (resourceSymbolInfo == null) {
+      if (ClientConfig.isDebugMode()) {
+        Logging.getLogger().logText(
+            "Resymbolization failed: No symbol info for " + request.resourceUrl);
+      }
       callback.onSymbolsFetchFailed(ERROR_SYMBOL_FETCH_FAIL);
       return;
     }
@@ -250,6 +270,10 @@ public class SymbolServerController {
         public void onFail(XMLHttpRequest xhr) {
           callback.onSymbolsFetchFailed(ERROR_SYMBOL_FETCH_FAIL);
           dequeuePendingXhrs(symbolMapUrl, xhr, false);
+          if (ClientConfig.isDebugMode()) {
+            Logging.getLogger().logText(
+                "Fetching symbol map: " + symbolMapUrl + " failed.");
+          }
         }
 
         public void onSuccess(XMLHttpRequest xhr) {
@@ -263,6 +287,9 @@ public class SymbolServerController {
           }
           callback.onSymbolsReady(fetchedSymbolMap);
           dequeuePendingXhrs(symbolMapUrl, xhr, true);
+          if (ClientConfig.isDebugMode()) {
+            Logging.getLogger().logText("Fetched symbol map: " + symbolMapUrl);
+          }
         }
 
         private void dequeuePendingXhrs(String symbolMapUrl,
@@ -286,6 +313,11 @@ public class SymbolServerController {
       if (requestCallbacks == null) {
         // Make an entry indicating a request is in flight.
         queuedSymbolMapRequests.put(symbolMapUrl, new ArrayList<XhrCallback>());
+        if (ClientConfig.isDebugMode()) {
+          Logging.getLogger().logText(
+              "Fetching symbol map URL: " + symbolManifestUrl.getResourceBase()
+                  + symbolMapUrl);
+        }
         Xhr.get(symbolManifestUrl.getResourceBase() + symbolMapUrl, xhrCallback);
       } else {
         // There are pending XHRs out. Which means that we should just queue
