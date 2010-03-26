@@ -22,7 +22,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.events.client.EventListenerRemover;
 import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
 import com.google.gwt.topspin.ui.client.Container;
@@ -46,6 +45,7 @@ import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.client.model.EventVisitor.PostOrderVisitor;
 import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.Url;
+import com.google.speedtracer.client.util.dom.EventListenerOwner;
 import com.google.speedtracer.client.view.AutoHideDiv;
 import com.google.speedtracer.client.view.HotKeyPanel;
 import com.google.speedtracer.client.visualizations.view.JavaScriptProfileRenderer.SourceClickCallback;
@@ -166,11 +166,17 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
 
   @UiField
   DivElement resultsDiv;
+
   private final MonitorResources.Resources resources;
+
   private final DataModel dataModel;
+
   private final Element elem;
+
   private boolean inSearch = false;
-  private EventListenerRemover rendererRemover;
+
+  private final EventListenerOwner listenerOwner = new EventListenerOwner();
+
   private JSOArray<JavaScriptProfile> matchingProfiles;
 
   private ErrorDiv errorDiv;
@@ -236,8 +242,9 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
     Container resultsContainer = new DefaultContainerImpl(resultsDiv);
     ScopeBar bar = new ScopeBar(resultsContainer, resources);
 
+    listenerOwner.removeAllEventListeners();
     JavaScriptProfileRenderer renderer = new JavaScriptProfileRenderer(
-        resultsContainer, resources, getSymbolServerController(), this,
+        resultsContainer, resources, listenerOwner, getSymbolServerController(), this,
         profile, new SourceClickCallback() {
 
           public void onSourceClick(final String resourceUrl,
@@ -247,10 +254,6 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
           }
         }, null);
 
-    if (rendererRemover != null) {
-      rendererRemover.remove();
-    }
-    rendererRemover = renderer.getRemover();
     Element flatProfile = bar.add("Flat", new ProfileClickListener(renderer,
         JavaScriptProfile.PROFILE_TYPE_FLAT));
     bar.add("Top Down", new ProfileClickListener(renderer,

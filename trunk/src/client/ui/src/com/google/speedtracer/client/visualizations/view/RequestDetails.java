@@ -36,7 +36,7 @@ import com.google.speedtracer.client.model.NetworkResource.HeaderMap.IterationCa
 import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.util.dom.DocumentExt;
 import com.google.speedtracer.client.util.dom.LazilyCreateableElement;
-import com.google.speedtracer.client.util.dom.EventCleanup.ManagesRemovers;
+import com.google.speedtracer.client.util.dom.ManagesEventListeners;
 import com.google.speedtracer.client.visualizations.view.Tree.ExpansionChangeListener;
 import com.google.speedtracer.client.visualizations.view.Tree.Item;
 
@@ -165,12 +165,6 @@ public class RequestDetails extends LazilyCreateableElement {
 
   private final Element pillBoxContainer;
 
-  /**
-   * The parent manages cleaning up this list, we just tack some things on to
-   * it.
-   */
-  private final ManagesRemovers removerManager;
-
   private final Resources resources;
 
   private final Element parentElem;
@@ -181,18 +175,16 @@ public class RequestDetails extends LazilyCreateableElement {
    * @param parentElem what we attach to
    * @param pb the container element for the pillBox
    * @param networkResource the information about this network request/response
-   * @param removerManager the {@link ManagesRemovers} for our parent widget
-   *          which manages unhooking event listeners for us.
+   * @param listenerManager a manager for our event listeners
    * @param resources {@link NetworkPillBox.Resources} that contains relevant
    *          images and Css.
    */
   public RequestDetails(Element parentElem, Element pb,
-      NetworkResource networkResource, ManagesRemovers removerManager,
+      NetworkResource networkResource, ManagesEventListeners listenerManager,
       NetworkPillBox.Resources resources) {
-    super(resources.requestDetailsCss().details());
+    super(listenerManager, resources.requestDetailsCss().details());
     this.parentElem = parentElem;
     this.resources = resources;
-    this.removerManager = removerManager;
     this.pbCss = resources.networkPillBoxCss();
     this.pillBoxContainer = pb;
     this.info = networkResource;
@@ -252,8 +244,8 @@ public class RequestDetails extends LazilyCreateableElement {
   protected Element createElement() {
     final Element elem = Document.get().createDivElement();
     // CallBack invoked after collapsing RequestDetails
-    eventCleanup.trackRemover(CssTransitionEvent.addTransitionListener(this,
-        elem, new CssTransitionListener() {
+    manageEventListener(CssTransitionEvent.addTransitionListener(this, elem,
+        new CssTransitionListener() {
           public void onTransitionEnd(CssTransitionEvent event) {
             if (!isVisible) {
               elem.getStyle().setProperty("display", "none");
@@ -264,7 +256,7 @@ public class RequestDetails extends LazilyCreateableElement {
 
     // We want to stop the annoying issue of clicking inside the details view
     // collapsing the expansion.
-    eventCleanup.trackRemover(ClickEvent.addClickListener(this, elem,
+    manageEventListener(ClickEvent.addClickListener(this, elem,
         new ClickListener() {
           public void onClick(ClickEvent event) {
             event.getNativeEvent().cancelBubble(true);
@@ -287,7 +279,7 @@ public class RequestDetails extends LazilyCreateableElement {
     });
 
     // We make sure to have the tree cleaned up when we clean up ourselves.
-    removerManager.trackRemover(hintletTree.getRemover());
+    manageEventListener(hintletTree.getRemover());
   }
 
   /**

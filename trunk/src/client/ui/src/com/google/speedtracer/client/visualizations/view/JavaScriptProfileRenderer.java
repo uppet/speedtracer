@@ -42,7 +42,7 @@ import com.google.speedtracer.client.model.JavaScriptProfileNode;
 import com.google.speedtracer.client.model.JsSymbol;
 import com.google.speedtracer.client.util.Command;
 import com.google.speedtracer.client.util.TimeStampFormatter;
-import com.google.speedtracer.client.util.dom.EventCleanup.EventCleanupTrait;
+import com.google.speedtracer.client.util.dom.ManagesEventListeners;
 
 import java.util.Collections;
 import java.util.List;
@@ -50,7 +50,7 @@ import java.util.List;
 /**
  * Presents a UI for a JavaScript profile.
  */
-public class JavaScriptProfileRenderer extends EventCleanupTrait {
+public class JavaScriptProfileRenderer {
   /**
    * Css.
    */
@@ -103,8 +103,8 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
       resymbolizedSymbol.setHref("javascript:;");
 
       symbolNameCell.appendChild(resymbolizedSymbol);
-      trackRemover(ClickEvent.addClickListener(resymbolizedSymbol,
-          resymbolizedSymbol, new ClickListener() {
+      listenerManager.manageEventListener(ClickEvent.addClickListener(
+          resymbolizedSymbol, resymbolizedSymbol, new ClickListener() {
             public void onClick(ClickEvent event) {
               sourcePresenter.showSource(sourceServer
                   + sourceSymbol.getResourceBase()
@@ -174,8 +174,8 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
         resymbolizedSymbol.setHref("javascript:;");
 
         bottomDiv.appendChild(resymbolizedSymbol);
-        trackRemover(ClickEvent.addClickListener(resymbolizedSymbol,
-            resymbolizedSymbol, new ClickListener() {
+        listenerManager.manageEventListener(ClickEvent.addClickListener(
+            resymbolizedSymbol, resymbolizedSymbol, new ClickListener() {
               public void onClick(ClickEvent event) {
                 sourcePresenter.showSource(sourceServer
                     + sourceSymbol.getResourceBase()
@@ -320,16 +320,27 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
   // Flips between true and false depending on when a flat profile row gets
   // rendered.
   private static boolean rowEvenOdd = true;
+
   private final Tree.Resources resources;
+
   private final Div profileDiv;
+
   private final JavaScriptProfile profile;
+
   private final ResizeCallback resizeCallback;
+
   private final SourceClickCallback sourceClickCallback;
+
   private final SourcePresenter sourcePresenter;
+
   private final Css css;
+
   private final SymbolServerController ssController;
 
+  private final ManagesEventListeners listenerManager;
+
   public JavaScriptProfileRenderer(Container container, Resources resources,
+      ManagesEventListeners listenerManager,
       SymbolServerController ssController, SourcePresenter sourcePresenter,
       JavaScriptProfile profile, SourceClickCallback sourceClickCallback,
       ResizeCallback resizeCallback) {
@@ -341,6 +352,7 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
     this.ssController = ssController;
     this.sourcePresenter = sourcePresenter;
     this.css = resources.javaScriptProfileRendererCss();
+    this.listenerManager = listenerManager;
   }
 
   /**
@@ -440,7 +452,7 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
       anchor.setHref("javascript:;");
       cell.appendChild(anchor.getElement());
       final int moreRowIndex = rowIndex;
-      trackRemover(anchor.addClickListener(new ClickListener() {
+      listenerManager.manageEventListener(anchor.addClickListener(new ClickListener() {
 
         public void onClick(ClickEvent event) {
           profileTable.deleteRow(moreRowIndex + 1);
@@ -494,7 +506,7 @@ public class JavaScriptProfileRenderer extends EventCleanupTrait {
       resourceLocation = "".equals(resourceLocation) ? "" : resourceLocation
           + ":" + jsSymbol.getLineNumber();
       anchor.setHref("javascript:;");
-      trackRemover(anchor.addClickListener(new ClickListener() {
+      listenerManager.manageEventListener(anchor.addClickListener(new ClickListener() {
         public void onClick(ClickEvent event) {
           String resourceUrl = jsSymbol.getResourceBase()
               + jsSymbol.getResourceName();

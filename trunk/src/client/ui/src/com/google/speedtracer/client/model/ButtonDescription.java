@@ -18,7 +18,7 @@ package com.google.speedtracer.client.model;
 import com.google.gwt.topspin.ui.client.Button;
 import com.google.gwt.topspin.ui.client.ClickListener;
 import com.google.gwt.topspin.ui.client.Container;
-import com.google.speedtracer.client.util.dom.EventCleanup;
+import com.google.speedtracer.client.util.dom.ManagesEventListeners;
 
 /**
  * Class used to encapsulate the look and the behavior of a
@@ -40,16 +40,16 @@ public class ButtonDescription {
    * Converts this ButtonDescription to an instance of {@link Button}.
    * 
    * @param parent the parent {@link Container} that we will attach this
-   *          {@link Button} to.
-   * @param cleanup the {@link EventCleanup} object that owns the remover object
-   *          returned when hooking up the {@link ClickListener}.
-   * @return the newly created {@link Button}.
+   *          {@link Button} to
+   * @param listenerManager an object to own event listeners
+   * @return the newly created {@link Button}
    */
-  public Button createButton(Container parent, EventCleanup cleanup) {
+  public Button createButton(Container parent,
+      ManagesEventListeners listenerManager) {
     Button button = new Button(parent);
     button.getElement().setClassName(cssClassSelector);
     button.getElement().setAttribute("title", toolTip);
-    cleanup.trackRemover(button.addClickListener(behavior));
+    listenerManager.manageEventListener(button.addClickListener(behavior));
     return button;
   }
 
