@@ -121,7 +121,7 @@ public class Tree extends Widget {
      * @param parentContainer An alternative container to use for holding this
      *          Item (it will be attached to the parent element.)
      */
-    protected Item(Item parent, Container parentContainer) {
+    public Item(Item parent, Container parentContainer) {
       this(parent.owner, parentContainer);
       this.parent = parent;
       parent.childList.add(this);
@@ -137,7 +137,7 @@ public class Tree extends Widget {
      * 
      * @param parent existing item in the tree
      */
-    protected Item(Item parent) {
+    public Item(Item parent) {
       this(parent, parent.ensureContainer());
     }
 
@@ -146,7 +146,7 @@ public class Tree extends Widget {
      * 
      * @param tree the item's tree
      */
-    protected Item(Tree tree) {
+    public Item(Tree tree) {
       this(tree, tree.defaultContainer);
       tree.setSelection(this);
       this.owner.childList.add(this);
@@ -470,25 +470,6 @@ public class Tree extends Widget {
       Item item = childList.get(i);
       setOpenRecursive(item, false);
     }
-  }
-
-  /**
-   * Create a root level item.
-   * 
-   * @return a new Item instance.
-   */
-  public Item createItem() {
-    return new Item(this);
-  }
-
-  /**
-   * Create an item as a child of an existing tree item.
-   * 
-   * @param item existing tree item
-   * @return a new Item instance.
-   */
-  public Item createItem(Item item) {
-    return new Item(item);
   }
 
   public void disableSelection(boolean disable) {
