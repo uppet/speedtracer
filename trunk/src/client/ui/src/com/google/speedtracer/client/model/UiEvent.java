@@ -15,7 +15,6 @@
  */
 package com.google.speedtracer.client.model;
 
-import com.google.gwt.dom.client.Element;
 import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.JsIntegerDoubleMap;
 
@@ -123,18 +122,6 @@ public class UiEvent extends EventRecord {
     return this.overhead || 0;
   }-*/;
 
-  /**
-   * Pulls the cached canvas element corresponding to the rendered
-   * {@link com.google.speedtracer.client.visualizations.view.EventTraceBreakdown.MasterEventTraceGraph}
-   * from a {@link UiEvent} or null if it hasn't been rendered yet.
-   * 
-   * @return the {@link Element} corresponding to the canvas for the rendered
-   *         master bar graph
-   */
-  public final native Element getRenderedMasterEventTraceGraph() /*-{
-    return this.masterGraph;
-  }-*/;
-
   public final native double getSelfTime() /*-{
     return this.selfTime;
   }-*/;
@@ -222,18 +209,6 @@ public class UiEvent extends EventRecord {
    */
   public final native void setProcessingJavaScriptProfile() /*-{
     this.javaScriptProfileState = "Processing";
-  }-*/;
-
-  /**
-   * Caches a canvas element corresponding to the rendered
-   * {@link com.google.speedtracer.client.visualizations.view.EventTraceBreakdown.MasterEventTraceGraph}
-   * for a {@link UiEvent}.
-   * 
-   * @param frameBuffer the {@link Element} corresponding to the rendered canvas
-   *          tag
-   */
-  public final native void setRenderedMasterEventTraceGraph(Element frameBuffer) /*-{
-    this.masterGraph = frameBuffer;
   }-*/;
 
   public final native void setSelfTime(double t) /*-{

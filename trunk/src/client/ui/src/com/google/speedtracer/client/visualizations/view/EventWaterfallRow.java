@@ -17,6 +17,7 @@ package com.google.speedtracer.client.visualizations.view;
 
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.graphics.client.Color;
 import com.google.gwt.resources.client.CssResource;
@@ -36,7 +37,6 @@ import com.google.speedtracer.client.util.dom.DocumentExt;
 import com.google.speedtracer.client.visualizations.model.LogMessageVisitor;
 import com.google.speedtracer.client.visualizations.model.SluggishnessModel;
 import com.google.speedtracer.client.visualizations.model.SluggishnessVisualization;
-import com.google.speedtracer.client.visualizations.view.EventTraceBreakdown.MasterEventTraceGraph;
 import com.google.speedtracer.client.visualizations.view.FilteringScrollTable.Cell;
 import com.google.speedtracer.client.visualizations.view.FilteringScrollTable.TableRow;
 
@@ -53,7 +53,7 @@ public class EventWaterfallRow extends TableRow {
    */
   public interface Css extends CssResource {
     double calloutPadding();
-    
+
     String colorBox();
 
     String durationCallout();
@@ -82,7 +82,6 @@ public class EventWaterfallRow extends TableRow {
    * lazily grab an Element to display.
    */
   public class UiEventPillboxCell extends Cell {
-    MasterEventTraceGraph cachedGraphElem;
     private DivElement durationCallout;
 
     public UiEventPillboxCell() {
@@ -92,15 +91,12 @@ public class EventWaterfallRow extends TableRow {
     @Override
     protected Element createElement() {
       Element elem = super.createElement();
-      this.cachedGraphElem = eventBreakdown.createMasterEventTraceGraph(event.getRenderedMasterEventTraceGraph());
-      elem.appendChild(cachedGraphElem.getElement());
+      elem.appendChild(eventBreakdown.getRenderedCanvasElement());
       sizeEventBar(elem);
       return elem;
     }
 
     private void sizeEventBar(Element elem) {
-      assert cachedGraphElem != null : "The event bar graph is null!";
-
       SluggishnessVisualization visualization = eventWaterfall.getVisualization();
       int cellWidth = visualization.getTimeline().getCurrentGraphWidth();
       SluggishnessModel model = visualization.getModel();
@@ -116,9 +112,11 @@ public class EventWaterfallRow extends TableRow {
           * domainToPixels;
 
       EventWaterfallRow.Css css = resources.eventWaterfallRowCss();
-      cachedGraphElem.getElement().setClassName(css.eventBar());
-      cachedGraphElem.getElement().getStyle().setWidth(barPixelWidth, Unit.PX);
-      cachedGraphElem.getElement().getStyle().setLeft(barOffset, Unit.PX);
+      final Element graphElem = eventBreakdown.getRenderedCanvasElement();
+      final Style graphStyle = graphElem.getStyle();
+      graphElem.setClassName(css.eventBar());
+      graphStyle.setWidth(barPixelWidth, Unit.PX);
+      graphStyle.setLeft(barOffset, Unit.PX);
 
       if (durationCallout == null) {
         durationCallout = elem.getOwnerDocument().createDivElement();
