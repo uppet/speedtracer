@@ -16,6 +16,7 @@
 package com.google.speedtracer.client.visualizations.view;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.graphics.client.Canvas;
 import com.google.gwt.graphics.client.Color;
 import com.google.gwt.graphics.client.ImageHandle;
@@ -59,29 +60,25 @@ public class EventTraceBreakdown {
   }
 
   /**
-   * Base class for colored bars next to nodes in the Event Trace Tree.
+   * Overlay type that represents the {@link Element} associated the guide lines
+   * for the event bar graph.
    */
-  public abstract class EventTraceGraph {
-    // The Y axis does not need to have much detail. We would make it 1 if not
-    // for LoLEvents needing a strokeRect().
-    protected static final int COORD_HEIGHT = 10;
-    private final Canvas canvas;
-    private final double domainToCoords;
+  public static class EventTraceGraphGuides extends Element {
+    protected EventTraceGraphGuides() {
+    }
+  }
 
+  /**
+   * Capable of updating the canvas rendering for a {@link UiEvent} inside of an
+   * event tree.
+   */
+  public class Renderer {
+    private final Canvas canvas;
     private final UiEvent event;
 
-    protected EventTraceGraph(UiEvent event, Element element, int coordWidth) {
-      this.canvas = new Canvas(element);
-      this.canvas.setLineWidth(2);
+    private Renderer(Canvas canvas, UiEvent event) {
       this.event = event;
-      this.domainToCoords = coordWidth / event.getDuration();
-    }
-
-    protected EventTraceGraph(UiEvent event, int coordWidth) {
-      this.canvas = new Canvas(coordWidth, COORD_HEIGHT);
-      this.canvas.setLineWidth(2);
-      this.event = event;
-      this.domainToCoords = coordWidth / event.getDuration();
+      this.canvas = canvas;
     }
 
     public Element getElement() {
@@ -89,14 +86,12 @@ public class EventTraceBreakdown {
     }
 
     /**
-     * Renders this bar in its entirety, showing time in children as well.
+     * Renders only time spent in self leaving gaps where time was spent in
+     * children.
      */
-    public abstract void render();
-
-    /**
-     * Only shows the time spent in self.
-     */
-    public void renderOnlyTimeInSelf() {
+    public void renderOnlySelf() {
+      final double domainToCoords = canvas.getCoordWidth()
+          / event.getDuration();
       canvas.clear();
       canvas.setFillStyle(EventRecordColors.getColorForType(event.getType()));
       canvas.fillRect(0, 0, canvas.getCoordWidth(), canvas.getCoordHeight());
@@ -118,274 +113,30 @@ public class EventTraceBreakdown {
       }
     }
 
-    protected Canvas getCanvas() {
-      return canvas;
-    }
-
-    protected UiEvent getEvent() {
-      return event;
-    }
-
-    protected double getMyDomainToCoords() {
-      return domainToCoords;
-    }
-  }
-
-  /**
-   * Overlay type that represents the {@link Element} associated the guide lines
-   * for the event bar graph.
-   */
-  public static class EventTraceGraphGuides extends Element {
-    protected EventTraceGraphGuides() {
-    }
-  }
-
-  /**
-   * {@link Canvas} that represents the colored bar for the top level event
-   * dispatch node. This is rendered once only and is sampled to draw the reset
-   * of the event graph bars.
-   */
-  public class MasterEventTraceGraph extends EventTraceGraph {
     /**
-     * Simply utility class for aggregating information in two
-     * JsIntegerDoubleMaps by iterating over one of them.
+     * Renders time in self and overlays time spent in children.
      */
-    class TypeMapAggregator implements IterationCallBack {
-      double maxValue = 0;
-      JsIntegerDoubleMap parentTypeMap;
-      int typeOfMax;
-
-      public TypeMapAggregator(JsIntegerDoubleMap parentTypeMap) {
-        this.parentTypeMap = parentTypeMap;
-      }
-
-      public void onIteration(int key, double val) {
-        double value = ((parentTypeMap.hasKey(key)) ? parentTypeMap.get(key)
-            + val : val);
-        parentTypeMap.put(key, value);
-        maybeChangeMax(key, value);
-      }
-
-      private void maybeChangeMax(int key, double val) {
-        if (val >= maxValue) {
-          typeOfMax = key;
-          maxValue = val;
-        }
-      }
-    }
-
-    // We have larger space in the X axis so that we can sample at sub pixel
-    // precision.
-    private static final int MASTER_COORD_WIDTH = 1000;
-
-    // Nodes that are sub pixel may eventually add up to something significant.
-    // We also do no want to render a bunch of subpixel fills since the end
-    // result will be anti-aliased and the colors will be averaged. We want
-    // discrete blocks of colors... even at the expense of absolute correctness.
-    private final JsIntegerDoubleMap littleNodes = JsIntegerDoubleMap.create();
-
-    private MasterEventTraceGraph() {
-      super(rootEvent, MASTER_COORD_WIDTH);
-      render();
-    }
-
-    private MasterEventTraceGraph(Element element) {
-      super(rootEvent, element, MASTER_COORD_WIDTH);
-    }
-
-    /**
-     * Renders the master event bar by simply replaying the pre-order traversal
-     * history stored in the root {@link UiEvent}. Nodes should render back to
-     * front with the right z-ordering.
-     */
-    @Override
-    public void render() {
-      getCanvas().clear();
-      traverseAndRender(null, getEvent());
-      // Cache rendered framebuffer on UiEvent
-      getEvent().setRenderedMasterEventTraceGraph(getElement());
-    }
-
-    /**
-     * Post order traversal. At each visit, we know that the typeMap for all our
-     * children should be up to date for that subtree. We simply update our own
-     * typemap with the information contained in the children's typeMap, and
-     * then set our own dominant color if it matters.
-     */
-    private void computeDominantColorForSubtree(UiEvent node) {
-      JsIntegerDoubleMap typeMap = JsIntegerDoubleMap.create();
-      JSOArray<UiEvent> children = node.getChildren();
-      // Leaf node check
-      if (children.isEmpty()) {
-        markNode(node);
-        int nodeType = node.getType();
-        // For LotsOfLittleEvents we pick the color of the most contributing
-        // member.
-        if (nodeType == LotsOfLittleEvents.TYPE) {
-          LotsOfLittleEvents lolEventsNode = node.cast();
-          nodeType = lolEventsNode.getDominantEventTypeTuple().getType();
-        }
-        typeMap.put(nodeType, node.getSelfTime());
-        // Set the typemap for parent nodes to use in their calculations.
-        node.setTypeDurations(typeMap);
-        setDominantColorIfImportant(node, nodeType);
-        return;
-      }
-
-      // Recursive call
-      for (int i = 0, n = children.size(); i < n; i++) {
-        computeDominantColorForSubtree(children.get(i));
-      }
-
-      // Visit the node.
-      // A Visit includes an iteration over the children to aggregate their type
-      // map information into our own. And then figuring out what the dominant
-      // type is.
-      markNode(node);
-      TypeMapAggregator aggregator = new TypeMapAggregator(typeMap);
-      for (int i = 0, n = children.size(); i < n; i++) {
-        children.get(i).getTypeDurations().iterate(aggregator);
-      }
-
-      // Set the typemap for parent nodes to use in their calculations.
-      node.setTypeDurations(typeMap);
-      setDominantColorIfImportant(node, aggregator.typeOfMax);
-    }
-
-    /**
-     * Checks to see if a node has been visited during the dominant color
-     * computation.
-     */
-    private native boolean isMarked(UiEvent node) /*-{
-      return !!node.typeBreakdownDone;
-    }-*/;
-
-    /**
-     * Marks a node as visited during the dominant color computation.
-     */
-    private native void markNode(UiEvent node) /*-{
-      node.typeBreakdownDone = true;
-    }-*/;
-
-    /**
-     * Renders a sub-rectangle for a LoLEvent showing the contributing
-     * proportions of its components.
-     */
-    private void renderLoLEvent(UiEvent parent, double startX,
-        double totalWidth, LotsOfLittleEvents lolEventsNode) {
-      JSOArray<TypeCountDurationTuple> typeCountDurationTuples = lolEventsNode.getTypeCountDurationTuples();
-      double currStartX = startX;
-      for (int i = 0, n = typeCountDurationTuples.size(); i < n; i++) {
-        TypeCountDurationTuple tuple = typeCountDurationTuples.get(i);
-        getCanvas().setFillStyle(
-            EventRecordColors.getColorForType(tuple.getType()));
-        double width = tuple.getDuration() * getMyDomainToCoords();
-        getCanvas().fillRect(currStartX, 0, width, COORD_HEIGHT);
-        currStartX += width;
-      }
-
-      // fill in the remaining gap space at the end.
-      // Draw a border to show that ordering guarantees dont matter, and to
-      // imply that the remaining time is time spent in the parent.
-      getCanvas().setFillStyle(
-          EventRecordColors.getColorForType(LotsOfLittleEvents.TYPE));
-      getCanvas().setStrokeStyle(
-          EventRecordColors.getColorForType(parent.getType()));
-      double remainingWidth = totalWidth - (currStartX - startX);
-      getCanvas().fillRect(currStartX, 0, remainingWidth, COORD_HEIGHT);
-      getCanvas().strokeRect(currStartX, 0, remainingWidth, COORD_HEIGHT);
-    }
-
-    private void renderNode(UiEvent parent, UiEvent node) {
-      double startX = (node.getTime() - getEvent().getTime())
-          * getMyDomainToCoords();
-      double width = node.getDuration() * getMyDomainToCoords();
-      int nodeType = node.getType();
-      boolean isAggregate = false;
-      // Insignificance is tricky. If we have lots of insignificant things, they
-      // can add up to a significant thing.
-      if (node.getDuration() < insignificanceThreshold) {
-        // We now attempt to associate a dominant type with this tiny node.
-        // We do not want to have exponential search behavior. So we mark
-        // already visited nodes.
-        if (!isMarked(node)) {
-          // We could have precomputed this in the AggregateTimeVisitor, but it
-          // would probably be a waste of memory to compute a valid subtree
-          // breakdown for each node in the tree since we only ever care about
-          // the root node and small-yet-significant nodes. Also... we want to
-          // do this lazily.
-
-          // We run over this small duration subtree and set the dominant color
-          // on each sub node when appropriate.
-          computeDominantColorForSubtree(node);
-        }
-
-        // We want to introduce aliasing on the master graph so that lots of
-        // tiny things that add up to something significant dont get blended
-        // together.
-        double aggregateTime = node.getSelfTime();
-
-        // Again... we have to special case LoLEvents that are tiny since their
-        // color depends on the dominant type inside.
-        if (nodeType == LotsOfLittleEvents.TYPE) {
-          LotsOfLittleEvents lolEventsNode = node.cast();
-          TypeCountDurationTuple dominantTypeTuple = lolEventsNode.getDominantEventTypeTuple();
-          nodeType = dominantTypeTuple.getType();
-          aggregateTime = dominantTypeTuple.getDuration();
-        }
-
-        if (littleNodes.hasKey(nodeType)) {
-          aggregateTime += littleNodes.get(nodeType);
-        }
-
-        if (aggregateTime < insignificanceThreshold) {
-          littleNodes.put(nodeType, aggregateTime);
-          return;
-        } else {
-          // We want to draw a discrete bar.
-          isAggregate = true;
-          width = insignificanceThreshold * getMyDomainToCoords();
-          // Reset the type specific aggregation.
-          littleNodes.put(nodeType, 0);
-        }
-      }
-
-      // For LotsOfLittleEvents we have a separate rendering path.
-      if (!isAggregate && nodeType == LotsOfLittleEvents.TYPE) {
-        LotsOfLittleEvents lolEventsNode = node.cast();
-        renderLoLEvent(parent, startX, width, lolEventsNode);
+    public void renderSelfAndChildren() {
+      canvas.clear();
+      Color dominantColor = getDominantColor(event);
+      // If this node has a dominant color set, then it is one of several
+      // important ones... show it with a 1 pixel bar.
+      if (dominantColor != null) {
+        // Simple fill with this color.
+        canvas.setFillStyle(dominantColor);
+        canvas.fillRect(0, 0, canvas.getCoordWidth(), canvas.getCoordHeight());
       } else {
-        getCanvas().setFillStyle(EventRecordColors.getColorForType(nodeType));
-        getCanvas().fillRect(startX, 0, width, COORD_HEIGHT);
-      }
-    }
-
-    private void setDominantColorIfImportant(UiEvent node, int dominantType) {
-      // We check to see if this insignificant thing is part of something
-      // significant.
-      JsIntegerDoubleMap aggregateTimes = rootEvent.getTypeDurations();
-      // Visitors should already have run
-      assert (aggregateTimes != null);
-
-      // Find the dominant color for this node, and if it belongs to an
-      // important color, then set the dominant color on the UiEvent.
-      if (aggregateTimes.hasKey(dominantType)
-          && (aggregateTimes.get(dominantType) >= aggregateThreshold)
-          || (node.getType() == LogEvent.TYPE)) {
-        setDominantColor(node, EventRecordColors.getColorForType(dominantType));
-      }
-    }
-
-    /**
-     * Should render back to front using a simple pre-order traversal.
-     * 
-     * @param node the current node in the traversal
-     */
-    private void traverseAndRender(UiEvent prev, UiEvent node) {
-      renderNode(prev, node);
-      JSOArray<UiEvent> children = node.getChildren();
-      for (int i = 0, n = children.size(); i < n; i++) {
-        traverseAndRender(node, children.get(i));
+        double sx = (event.getTime() - rootEvent.getTime())
+            * masterDomainToCoords;
+        double sw = (event.getDuration()) * masterDomainToCoords;
+        // Calling drawImage with a width of exactly 0 throws an exception in
+        // JavaScript. No need to even make the draw call in this situation.
+        // This is a defensive guard since we have guarantees earlier on that
+        // this will be non-zero. But leave it in just in case.
+        if (sw > 0) {
+          canvas.drawImage(getMasterImageHandle(), sx, 0, sw, COORD_HEIGHT, 0,
+              0, canvas.getCoordWidth(), COORD_HEIGHT);
+        }
       }
     }
   }
@@ -399,49 +150,36 @@ public class EventTraceBreakdown {
   }
 
   /**
-   * {@link Canvas} that represents the colored bar for nodes in the event trace
-   * tree that are children of the top level node. This event bar simply samples
-   * from the master bar.
+   * Simply utility class for aggregating information in two JsIntegerDoubleMaps
+   * by iterating over one of them.
    */
-  public class SubEventTraceGraph extends EventTraceGraph {
-    private final MasterEventTraceGraph masterBar;
+  class TypeMapAggregator implements IterationCallBack {
+    double maxValue = 0;
+    JsIntegerDoubleMap parentTypeMap;
+    int typeOfMax;
 
-    protected SubEventTraceGraph(MasterEventTraceGraph masterBar,
-        UiEvent event, int pixelWidth) {
-      super(event, pixelWidth);
-      this.masterBar = masterBar;
+    public TypeMapAggregator(JsIntegerDoubleMap parentTypeMap) {
+      this.parentTypeMap = parentTypeMap;
     }
 
-    /**
-     * Samples from the {@link MasterEventTraceGraph} to draw this sub bar.
-     */
-    @Override
-    public void render() {
-      getCanvas().clear();
-      Color dominantColor = getDominantColor(getEvent());
-      // If this node has a dominant color set, then it is one of several
-      // important ones... show it with a 1 pixel bar.
-      if (dominantColor != null) {
-        // Simple fill with this color.
-        getCanvas().setFillStyle(dominantColor);
-        getCanvas().fillRect(0, 0, getCanvas().getCoordWidth(),
-            getCanvas().getCoordHeight());
-      } else {
-        double sx = (getEvent().getTime() - rootEvent.getTime())
-            * masterDomainToCoords;
-        double sw = (getEvent().getDuration()) * masterDomainToCoords;
-        // Calling drawImage with a width of exactly 0 throws an exception in
-        // JavaScript. No need to even make the draw call in this situation.
-        // This is a defensive guard since we have guarantees earlier on that
-        // this will be non-zero. But leave it in just in case.
-        if (sw > 0) {
-          getCanvas().drawImage(masterBar.getElement().<ImageHandle> cast(),
-              sx, 0, sw, COORD_HEIGHT, 0, 0, getCanvas().getCoordWidth(),
-              COORD_HEIGHT);
-        }
+    public void onIteration(int key, double val) {
+      double value = ((parentTypeMap.hasKey(key)) ? parentTypeMap.get(key)
+          + val : val);
+      parentTypeMap.put(key, value);
+      maybeChangeMax(key, value);
+    }
+
+    private void maybeChangeMax(int key, double val) {
+      if (val >= maxValue) {
+        typeOfMax = key;
+        maxValue = val;
       }
     }
   }
+
+  private static final int COORD_HEIGHT = 10;
+
+  private static final int MASTER_COORD_WIDTH = 1000;
 
   private static native Color getDominantColor(UiEvent event) /*-{
     return event.dominantColor;
@@ -467,6 +205,19 @@ public class EventTraceBreakdown {
   private final UiEvent rootEvent;
 
   /**
+   * This element is used to display the full rendering for the rootEvent and
+   * all its children. It is also used as the master copy so that
+   * {@link Renderer}s can sample their region to avoid doing a full redraw.
+   */
+  private Element masterCanvasElement;
+
+  // Nodes that are sub pixel may eventually add up to something significant.
+  // We also do no want to render a bunch of subpixel fills since the end
+  // result will be anti-aliased and the colors will be averaged. We want
+  // discrete blocks of colors... even at the expense of absolute correctness.
+  private final JsIntegerDoubleMap littleNodes = JsIntegerDoubleMap.create();
+
+  /**
    * Constructor.
    * 
    * @param rootEvent the root event of the tree for which we are showing the
@@ -480,8 +231,7 @@ public class EventTraceBreakdown {
     this.rootEvent = rootEvent;
     this.domainToPixels = resources.eventTraceBreakdownCss().widgetWidth()
         / rootEvent.getDuration();
-    this.masterDomainToCoords = MasterEventTraceGraph.MASTER_COORD_WIDTH
-        / rootEvent.getDuration();
+    this.masterDomainToCoords = MASTER_COORD_WIDTH / rootEvent.getDuration();
     this.insignificanceThreshold = rootEvent.getDuration()
         / (resources.eventTraceBreakdownCss().widgetWidth());
 
@@ -489,6 +239,18 @@ public class EventTraceBreakdown {
     // pixels. Meaning if you combined the contribution of that event type over
     // the entire event, it would occupy 5 pixels.
     this.aggregateThreshold = 5 * insignificanceThreshold;
+  }
+
+  public Element cloneRenderedCanvasElement() {
+    ensureMasterIsRendered();
+    int width = (int) (rootEvent.getDuration() * domainToPixels);
+    final Canvas canvas = new Canvas(width, COORD_HEIGHT);
+    canvas.setLineWidth(2);
+    final Element element = canvas.getElement();
+    element.setClassName(resources.eventTraceBreakdownCss().masterRender());
+    element.getStyle().setPropertyPx("width", width);
+    new Renderer(canvas, rootEvent).renderSelfAndChildren();
+    return element;
   }
 
   /**
@@ -518,55 +280,9 @@ public class EventTraceBreakdown {
     return barGuides;
   }
 
-  /**
-   * Creates and returns a new {@link MasterEventTraceGraph}. If the specified
-   * {@link Element} is not null, it will use that for the backing frame buffer
-   * WITHOUT rendering a new one. If it is null, it will create and render a new
-   * one.
-   * 
-   * @param frameBuffer {@link Element} that corresponds to a rendered canvas
-   *          tag.
-   * @return the newly created {@link MasterEventTraceGraph}
-   */
-  public MasterEventTraceGraph createMasterEventTraceGraph(Element frameBuffer) {
-    MasterEventTraceGraph masterGraph;
-    if (frameBuffer == null) {
-      masterGraph = new MasterEventTraceGraph();
-    } else {
-      masterGraph = new MasterEventTraceGraph(frameBuffer);
-    }
-
-    return masterGraph;
-  }
-
-  /**
-   * Creates a {@link SubEventTraceGraph} that is simply a copy of the bar graph
-   * for the root node.
-   */
-  public SubEventTraceGraph createMasterRenderCopy(MasterEventTraceGraph master) {
-    int width = (int) (rootEvent.getDuration() * domainToPixels);
-    SubEventTraceGraph masterRender = new SubEventTraceGraph(master, rootEvent,
-        width);
-    Css css = resources.eventTraceBreakdownCss();
-    masterRender.getElement().setClassName(css.masterRender());
-    masterRender.getElement().getStyle().setPropertyPx("width", width);
-    return masterRender;
-  }
-
-  /**
-   * Creates a {@link SubEventTraceGraph}, renders it and sets its position.
-   * 
-   * @param master the {@link MasterEventTraceGraph} that this bar will sample
-   *          its colors from.
-   * @param event
-   * @param nodeDepth
-   * @return
-   */
-  public SubEventTraceGraph createSubEventTraceGraph(
-      MasterEventTraceGraph master, UiEvent event, int nodeDepth) {
-    int leftOffset = getLeftOffset(event, nodeDepth);
+  public Renderer createRenderer(UiEvent event, int depth) {
+    ensureMasterIsRendered();
     int width = (int) (event.getDuration() * domainToPixels);
-
     // We may have truncated something that, on aggregate may matter.
     if (width == 0) {
       // If this node has a dominant color set, then it contains a child that is
@@ -577,13 +293,77 @@ public class EventTraceBreakdown {
     }
 
     Css css = resources.eventTraceBreakdownCss();
-    SubEventTraceGraph subBar = new SubEventTraceGraph(master, event, width);
-    subBar.getElement().setClassName(css.eventGraph());
 
-    // Set positioning information.
-    subBar.getElement().getStyle().setPropertyPx("left", leftOffset);
-    subBar.getElement().getStyle().setPropertyPx("width", width);
-    return subBar;
+    final Canvas canvas = new Canvas(width, COORD_HEIGHT);
+    canvas.setLineWidth(2);
+    final Element element = canvas.getElement();
+    final Style style = element.getStyle();
+    element.setClassName(css.eventGraph());
+    style.setPropertyPx("left", getLeftOffset(event, depth));
+    style.setPropertyPx("width", width);
+
+    return new Renderer(canvas, event);
+  }
+
+  public Element getRenderedCanvasElement() {
+    ensureMasterIsRendered();
+    return masterCanvasElement;
+  }
+
+  /**
+   * Post order traversal. At each visit, we know that the typeMap for all our
+   * children should be up to date for that subtree. We simply update our own
+   * typemap with the information contained in the children's typeMap, and then
+   * set our own dominant color if it matters.
+   */
+  private void computeDominantColorForSubtree(UiEvent node) {
+    JsIntegerDoubleMap typeMap = JsIntegerDoubleMap.create();
+    JSOArray<UiEvent> children = node.getChildren();
+    // Leaf node check
+    if (children.isEmpty()) {
+      markNode(node);
+      int nodeType = node.getType();
+      // For LotsOfLittleEvents we pick the color of the most contributing
+      // member.
+      if (nodeType == LotsOfLittleEvents.TYPE) {
+        LotsOfLittleEvents lolEventsNode = node.cast();
+        nodeType = lolEventsNode.getDominantEventTypeTuple().getType();
+      }
+      typeMap.put(nodeType, node.getSelfTime());
+      // Set the typemap for parent nodes to use in their calculations.
+      node.setTypeDurations(typeMap);
+      setDominantColorIfImportant(node, nodeType);
+      return;
+    }
+
+    // Recursive call
+    for (int i = 0, n = children.size(); i < n; i++) {
+      computeDominantColorForSubtree(children.get(i));
+    }
+
+    // Visit the node.
+    // A Visit includes an iteration over the children to aggregate their type
+    // map information into our own. And then figuring out what the dominant
+    // type is.
+    markNode(node);
+    TypeMapAggregator aggregator = new TypeMapAggregator(typeMap);
+    for (int i = 0, n = children.size(); i < n; i++) {
+      children.get(i).getTypeDurations().iterate(aggregator);
+    }
+
+    // Set the typemap for parent nodes to use in their calculations.
+    node.setTypeDurations(typeMap);
+    setDominantColorIfImportant(node, aggregator.typeOfMax);
+  }
+
+  private void ensureMasterIsRendered() {
+    if (masterCanvasElement != null) {
+      return;
+    }
+
+    final Canvas canvas = new Canvas(MASTER_COORD_WIDTH, COORD_HEIGHT);
+    traverseAndRender(canvas, null, rootEvent);
+    masterCanvasElement = canvas.getElement();
   }
 
   /**
@@ -607,7 +387,145 @@ public class EventTraceBreakdown {
     return -offsetPixels;
   }
 
+  private ImageHandle getMasterImageHandle() {
+    return masterCanvasElement.cast();
+  }
+
   private int getPixelWidth(double duration) {
     return (int) Math.max(1, domainToPixels * duration);
+  }
+
+  /**
+   * Checks to see if a node has been visited during the dominant color
+   * computation.
+   */
+  private native boolean isMarked(UiEvent node) /*-{
+    return !!node.typeBreakdownDone;
+  }-*/;
+
+  /**
+   * Marks a node as visited during the dominant color computation.
+   */
+  private native void markNode(UiEvent node) /*-{
+    node.typeBreakdownDone = true;
+  }-*/;
+
+  /**
+   * Renders a sub-rectangle for a LoLEvent showing the contributing proportions
+   * of its components.
+   */
+  private void renderLoLEvent(Canvas canvas, UiEvent parent, double startX,
+      double totalWidth, LotsOfLittleEvents lolEventsNode) {
+    JSOArray<TypeCountDurationTuple> typeCountDurationTuples = lolEventsNode.getTypeCountDurationTuples();
+    double currStartX = startX;
+    for (int i = 0, n = typeCountDurationTuples.size(); i < n; i++) {
+      TypeCountDurationTuple tuple = typeCountDurationTuples.get(i);
+      canvas.setFillStyle(EventRecordColors.getColorForType(tuple.getType()));
+      double width = tuple.getDuration() * masterDomainToCoords;
+      canvas.fillRect(currStartX, 0, width, COORD_HEIGHT);
+      currStartX += width;
+    }
+
+    // fill in the remaining gap space at the end.
+    // Draw a border to show that ordering guarantees dont matter, and to
+    // imply that the remaining time is time spent in the parent.
+    canvas.setFillStyle(EventRecordColors.getColorForType(LotsOfLittleEvents.TYPE));
+    canvas.setStrokeStyle(EventRecordColors.getColorForType(parent.getType()));
+    double remainingWidth = totalWidth - (currStartX - startX);
+    canvas.fillRect(currStartX, 0, remainingWidth, COORD_HEIGHT);
+    canvas.strokeRect(currStartX, 0, remainingWidth, COORD_HEIGHT);
+  }
+
+  private void renderNode(Canvas canvas, UiEvent parent, UiEvent node) {
+    double startX = (node.getTime() - rootEvent.getTime())
+        * masterDomainToCoords;
+    double width = node.getDuration() * masterDomainToCoords;
+    int nodeType = node.getType();
+    boolean isAggregate = false;
+    // Insignificance is tricky. If we have lots of insignificant things, they
+    // can add up to a significant thing.
+    if (node.getDuration() < insignificanceThreshold) {
+      // We now attempt to associate a dominant type with this tiny node.
+      // We do not want to have exponential search behavior. So we mark
+      // already visited nodes.
+      if (!isMarked(node)) {
+        // We could have precomputed this in the AggregateTimeVisitor, but it
+        // would probably be a waste of memory to compute a valid subtree
+        // breakdown for each node in the tree since we only ever care about
+        // the root node and small-yet-significant nodes. Also... we want to
+        // do this lazily.
+
+        // We run over this small duration subtree and set the dominant color
+        // on each sub node when appropriate.
+        computeDominantColorForSubtree(node);
+      }
+
+      // We want to introduce aliasing on the master graph so that lots of
+      // tiny things that add up to something significant dont get blended
+      // together.
+      double aggregateTime = node.getSelfTime();
+
+      // Again... we have to special case LoLEvents that are tiny since their
+      // color depends on the dominant type inside.
+      if (nodeType == LotsOfLittleEvents.TYPE) {
+        LotsOfLittleEvents lolEventsNode = node.cast();
+        TypeCountDurationTuple dominantTypeTuple = lolEventsNode.getDominantEventTypeTuple();
+        nodeType = dominantTypeTuple.getType();
+        aggregateTime = dominantTypeTuple.getDuration();
+      }
+
+      if (littleNodes.hasKey(nodeType)) {
+        aggregateTime += littleNodes.get(nodeType);
+      }
+
+      if (aggregateTime < insignificanceThreshold) {
+        littleNodes.put(nodeType, aggregateTime);
+        return;
+      } else {
+        // We want to draw a discrete bar.
+        isAggregate = true;
+        width = insignificanceThreshold * masterDomainToCoords;
+        // Reset the type specific aggregation.
+        littleNodes.put(nodeType, 0);
+      }
+    }
+
+    // For LotsOfLittleEvents we have a separate rendering path.
+    if (!isAggregate && nodeType == LotsOfLittleEvents.TYPE) {
+      LotsOfLittleEvents lolEventsNode = node.cast();
+      renderLoLEvent(canvas, parent, startX, width, lolEventsNode);
+    } else {
+      canvas.setFillStyle(EventRecordColors.getColorForType(nodeType));
+      canvas.fillRect(startX, 0, width, COORD_HEIGHT);
+    }
+  }
+
+  private void setDominantColorIfImportant(UiEvent node, int dominantType) {
+    // We check to see if this insignificant thing is part of something
+    // significant.
+    JsIntegerDoubleMap aggregateTimes = rootEvent.getTypeDurations();
+    // Visitors should already have run
+    assert (aggregateTimes != null);
+
+    // Find the dominant color for this node, and if it belongs to an
+    // important color, then set the dominant color on the UiEvent.
+    if (aggregateTimes.hasKey(dominantType)
+        && (aggregateTimes.get(dominantType) >= aggregateThreshold)
+        || (node.getType() == LogEvent.TYPE)) {
+      setDominantColor(node, EventRecordColors.getColorForType(dominantType));
+    }
+  }
+
+  /**
+   * Should render back to front using a simple pre-order traversal.
+   * 
+   * @param node the current node in the traversal
+   */
+  private void traverseAndRender(Canvas canvas, UiEvent prev, UiEvent node) {
+    renderNode(canvas, prev, node);
+    JSOArray<UiEvent> children = node.getChildren();
+    for (int i = 0, n = children.size(); i < n; i++) {
+      traverseAndRender(canvas, node, children.get(i));
+    }
   }
 }

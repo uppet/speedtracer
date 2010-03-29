@@ -26,9 +26,7 @@ import com.google.speedtracer.client.model.LogEvent;
 import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.TimeStampFormatter;
-import com.google.speedtracer.client.visualizations.view.EventTraceBreakdown.EventTraceGraph;
-import com.google.speedtracer.client.visualizations.view.EventTraceBreakdown.MasterEventTraceGraph;
-import com.google.speedtracer.client.visualizations.view.EventTraceBreakdown.SubEventTraceGraph;
+import com.google.speedtracer.client.visualizations.view.EventTraceBreakdown.Renderer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +68,7 @@ public class LazyEventTree extends Tree {
       }
     }
 
-    private final EventTraceGraph barGraph;
+    private final Renderer renderer;
     private boolean dirtyChildren = true;
     private final UiEvent uiEvent;
 
@@ -95,9 +93,9 @@ public class LazyEventTree extends Tree {
       setItemTarget(uiEvent);
       final LazyEventTree tree = parent.getOwningTree();
       addLabelForEvent(getItemLabelElement(), uiEvent);
-      barGraph = tree.breakdownGraph.createSubEventTraceGraph(
-          tree.masterBarGraph, uiEvent, getNodeDepth());
-      getContentElement().appendChild(barGraph.getElement());
+      renderer = tree.breakdownGraph.createRenderer(uiEvent,
+          getNodeDepth());
+      getContentElement().appendChild(renderer.getElement());
     }
 
     /**
@@ -113,9 +111,9 @@ public class LazyEventTree extends Tree {
       setItemTarget(uiEvent);
       final LazyEventTree tree = parent.getOwningTree();
       addLabelForEvent(getItemLabelElement(), uiEvent);
-      barGraph = tree.breakdownGraph.createSubEventTraceGraph(
-          tree.masterBarGraph, uiEvent, getNodeDepth());
-      getContentElement().appendChild(barGraph.getElement());
+      renderer = tree.breakdownGraph.createRenderer(uiEvent,
+          getNodeDepth());
+      getContentElement().appendChild(renderer.getElement());
     }
 
     /**
@@ -130,9 +128,9 @@ public class LazyEventTree extends Tree {
       this.uiEvent = uiEvent;
       setItemTarget(uiEvent);
       addLabelForEvent(getItemLabelElement(), uiEvent);
-      barGraph = backRef.breakdownGraph.createSubEventTraceGraph(
-          backRef.masterBarGraph, uiEvent, getNodeDepth());
-      getContentElement().appendChild(barGraph.getElement());
+      renderer = backRef.breakdownGraph.createRenderer(uiEvent,
+          getNodeDepth());
+      getContentElement().appendChild(renderer.getElement());
     }
 
     public void expand() {
@@ -411,19 +409,17 @@ public class LazyEventTree extends Tree {
   private static void renderBarGraph(LazyItem item) {
     // Do initial rendering of the bar graph.
     if (item.isOpen()) {
-      item.barGraph.getElement().getStyle().setProperty("border",
+      item.renderer.getElement().getStyle().setProperty("border",
           "1px solid #ccc");
-      item.barGraph.renderOnlyTimeInSelf();
+      item.renderer.renderOnlySelf();
     } else {
-      item.barGraph.render();
-      item.barGraph.getElement().getStyle().setProperty("border", "none");
+      item.renderer.renderSelfAndChildren();
+      item.renderer.getElement().getStyle().setProperty("border", "none");
     }
   };
 
   private final EventTraceBreakdown breakdownGraph;
-  // This acts as an overview of all the time spent. We pass this on when
-  // creating all the sub bar graphs. They sample from this.
-  private final MasterEventTraceGraph masterBarGraph;
+
   private final LazyItem rootNode;
 
   /**
@@ -448,14 +444,11 @@ public class LazyEventTree extends Tree {
     });
 
     this.breakdownGraph = breakdownGraph;
-    this.masterBarGraph = breakdownGraph.createMasterEventTraceGraph(treeRoot.getRenderedMasterEventTraceGraph());
 
     // We want to stick a render of the masterBar ABOVE the tree.
     // Which means inserting it before the tree's <ul>.
-    SubEventTraceGraph masterBarGraphRender = breakdownGraph.createMasterRenderCopy(masterBarGraph);
     getElement().getParentElement().insertBefore(
-        masterBarGraphRender.getElement(), getElement());
-    masterBarGraphRender.render();
+        breakdownGraph.cloneRenderedCanvasElement(), getElement());
 
     // Builds up the tree with treeRoot as the root UiEvent.
     rootNode = new LazyItem(treeRoot, this);
