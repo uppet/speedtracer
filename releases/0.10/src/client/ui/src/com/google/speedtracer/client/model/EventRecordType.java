@@ -70,7 +70,7 @@ public class EventRecordType {
     "Resource Response",                // 13 RESOURCE_RECEIVE_RESPONSE
     "Resource Finish",                  // 14 RESOURCE_FINISH
     "JavaScript Callback",              // 15 JAVASCRIPT_EXECUTION
-    "Resource Data Recived",            // 16 RESOURCE_DATA_RECEIVED
+    "Resource Data Received",           // 16 RESOURCE_DATA_RECEIVED
   };
 
   private static final String[] speedTracerTypeStrings = {
@@ -114,7 +114,7 @@ public class EventRecordType {
     // 15 JAVASCRIPT_EXECUTION
     "JavaScript was run in an event dispatch.",
     // 16 RESOURCE_DATA_RECEIVED
-    "Data was received from the resource loader.",
+    "Processing for a file received by the resource loader.",
   };
 
   private static final String[] speedTracerHelpStrings = {

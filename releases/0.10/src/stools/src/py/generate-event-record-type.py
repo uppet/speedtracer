@@ -130,8 +130,8 @@ webkitEvents = [
   { 
     'value' : 16, 
     'constant' : 'RESOURCE_DATA_RECEIVED',
-    'desc' : 'Resource Data Recived',
-    'help_text' : 'Data was received from the resource loader.',
+    'desc' : 'Resource Data Received',
+    'help_text' : 'Processing for a file received by the resource loader.',
   }
 ]
 # END INSPECTOR TIMELINE RECORDS.
