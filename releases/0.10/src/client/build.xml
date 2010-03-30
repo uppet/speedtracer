@@ -1,0 +1,86 @@
+<project name="speedtracer-client" default="build">
+  <!-- Default values are overridden by ../build.xml -->
+  <property name="config" value="Release" />
+  <!-- client.pem - can be set to a location for a key. -->
+  <property name="speedtracer.destdir" location="../${config}" />
+  <property name="speedtracer.revision" value="0" />
+  <property name="moniker" value="speedtracer" />
+
+  <property name="speedtracer.ui.destdir" location="${speedtracer.destdir}/${moniker}" />
+
+  <!-- TODO(knorton): Perform search for Chrome. -->
+  <property environment="env" />
+  <property name="chrome.local.1"
+      location="${env.USERPROFILE}/AppData/Local/Google/Chrome/Application/chrome.exe" />
+  <property name="chrome.local.2"
+      location="${env.USERPROFILE}/Local Settings/Application Data/Google/Chrome/Application/chrome.exe" />
+  <property name="chrome.global.1"
+      location="C:/Program Files (x86)/Google/Chrome/Application/chrome.exe" />
+  <property name="chrome.global.2"
+      location="C:/Program Files/Google/Chrome/Application/chrome.exe" />
+
+  <condition property="chrome.path" value="${chrome.local.1}">
+    <available file="${chrome.local.1}" />
+  </condition>
+  <condition property="chrome.path" value="${chrome.local.2}">
+    <available file="${chrome.local.2}" />
+  </condition>
+  <condition property="chrome.path" value="${chrome.global.1}">
+    <available file="${chrome.global.1}" />
+  </condition>
+  <condition property="chrome.path" value="${chrome.global.2}">
+    <available file="${chrome.global.2}" />
+  </condition>
+
+  <target name="speedtracer.client.build">
+    <!--inherits: config, revision, client.pem, speedtracer.destdir, speedtracer.ui.destdir -->
+    <ant dir="ui" target="build" />
+
+    <!-- Chrome does not have good error checking for missing pem
+      files, so we make sure we fail if you specify a key file that
+      isn't available -->
+    <condition property="speedtracer.client.pem.valid">
+      <or>
+        <available file="${speedtracer.client.pem.path}" />
+        <not>
+          <isset property="client.pem" />
+        </not>
+      </or>
+    </condition>
+    <fail message="Pem file is invalid: ${speedtracer.client.pem.path}"
+        unless="speedtracer.client.pem.valid" />
+
+    <condition property="speedtracer.client.pem.options"
+        value="--pack-extension-key=${speedtracer.client.pem.path}"
+        else="">
+      <isset property="client.pem" />
+    </condition>
+
+    <exec executable="${chrome.path}">
+      <!-- user-data-dir is required to make sure an existing
+           chrome instance does not interfere.  -->
+      <arg line="--pack-extension=${speedtracer.ui.destdir}
+                 --no-message-box
+                 --user-data-dir=${speedtracer.destdir}/obj/user-data-dir
+                 --no-first-run
+                 ${speedtracer.client.pem.options}" />
+    </exec>
+
+    <!-- Check to ensure that a crx was actually produced. -->
+    <condition property="speedtracer.client.success">
+      <available file="${speedtracer.destdir}/${moniker}.crx" />
+    </condition>
+    <fail message="${moniker}.crx was not produced."
+        unless="speedtracer.client.success" />
+
+    <!-- Also produce a zip file that can be used to update the gallery. -->
+    <zip basedir="${speedtracer.ui.destdir}"
+        destfile="${speedtracer.destdir}/${moniker}.zip" /> 
+  </target>
+
+  <target name="build" depends="speedtracer.client.build" />
+
+  <target name="test">
+    <ant dir="ui" target="test" />
+  </target>
+</project>

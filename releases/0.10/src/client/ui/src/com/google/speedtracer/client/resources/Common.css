@@ -1,0 +1,31 @@
+/**
+ * Annotated CSS for common shared styles in Monitor module.
+ */
+body {
+  /*
+   * There is no need to give a family list, because we know what renderer
+   * we are in.
+   */
+  font-family: Verdana;
+  font-size: 12px;
+  overflow: hidden;
+}
+ 
+.even {
+  background-color: #ededed;
+  font-size: 80%;
+}
+
+.even:hover {
+  background-color: #e6e6ff;
+}
+
+.odd {
+  background-color: #fefefe;
+  font-size: 80%;
+}
+
+.odd:hover {
+  background-color: #e6e6ff;
+}
+ 

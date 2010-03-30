@@ -1,0 +1,27 @@
+/**
+ * Annotated CSS for TimeScale.java.
+ */
+/*
+@sprite .timeScaleBase {
+  gwt-image: "scaleBg";
+  height: 15px;
+}*/
+
+.timeScaleBase {
+  position:absolute;
+  width: 100%;
+  height: 15px;
+  z-index: 26;
+}
+
+@sprite .scale {
+  gwt-image: "scaleLines";
+  height: 13px;
+}
+
+.scaleValue {
+  position: absolute;
+  top: 3px;
+  font-size: 9px;
+  color: #333;
+}

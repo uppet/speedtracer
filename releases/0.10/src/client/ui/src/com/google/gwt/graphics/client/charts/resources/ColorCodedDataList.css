@@ -1,0 +1,24 @@
+/* Annotated styles for ColorCodedList.java */
+.entryColor {
+  width: 15px;
+  height: 7px;
+  display: inline-block;
+  border: 1px solid #7483aa;  
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+.label {
+}
+
+.list {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;  
+}
+
+.list td {
+  padding: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -1,0 +1,37 @@
+/**
+ * Annotated CSS for MockTestDataPanel.java.
+ */
+.base {
+  position: absolute;
+  width: 200px;
+  \-webkit-box-shadow: 1px 5px 5px rgba(0, 0, 0, 0.5);
+  background-color: #fff;
+  z-index: 201;
+  color: #000;
+  display: none;
+}
+
+.menuItem {
+  padding: 10px;
+  width: 180px;
+  cursor: pointer;
+  border-bottom: black 1px solid;
+}
+
+/* button to choose between data sets when in mock mode */
+@sprite .testMenuButton {
+  gwt-image: "controllerTestMenuButton";
+  border: none;
+}
+
+@sprite .testMenuButton:hover {
+  gwt-image: "controllerTestMenuButtonHover";
+}
+
+@sprite .testMenuButton:active {
+  gwt-image: "controllerTestMenuButtonPress";
+}
+
+@sprite .testMenuButton:toggleButtonDown {
+  gwt-image: "controllerTestMenuButtonDown";
+}

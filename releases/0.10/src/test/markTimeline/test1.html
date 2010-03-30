@@ -1,0 +1,16 @@
+<html>
+ <head>
+ </head>
+ <body>
+  <div id="status"></div>
+  <script>
+  var statusDiv = document.getElementById("status");
+  if (console && console.markTimeline) {
+     console.markTimeline("test1");
+     statusDiv.innerHTML = "marked timeline";
+  } else {
+     statusDiv.innerHTML = "no console.markTimeline present.";
+  }
+  </script>
+ </body>
+</html>
