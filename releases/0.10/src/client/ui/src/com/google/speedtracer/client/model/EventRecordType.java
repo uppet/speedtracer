@@ -45,6 +45,7 @@ public class EventRecordType {
   public static final int RESOURCE_RECEIVE_RESPONSE = 13;
   public static final int RESOURCE_FINISH = 14;
   public static final int JAVASCRIPT_EXECUTION = 15;
+  public static final int RESOURCE_DATA_RECEIVED = 16;
 
   // Speed Tracer Types
   public static final int AGGREGATED_EVENTS = 0x7FFFFFFF;
@@ -69,6 +70,7 @@ public class EventRecordType {
     "Resource Response",                // 13 RESOURCE_RECEIVE_RESPONSE
     "Resource Finish",                  // 14 RESOURCE_FINISH
     "JavaScript Callback",              // 15 JAVASCRIPT_EXECUTION
+    "Resource Data Recived",            // 16 RESOURCE_DATA_RECEIVED
   };
 
   private static final String[] speedTracerTypeStrings = {
@@ -111,6 +113,8 @@ public class EventRecordType {
     "A new request for a network resource completed.",
     // 15 JAVASCRIPT_EXECUTION
     "JavaScript was run in an event dispatch.",
+    // 16 RESOURCE_DATA_RECEIVED
+    "Data was received from the resource loader.",
   };
 
   private static final String[] speedTracerHelpStrings = {

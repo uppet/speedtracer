@@ -23,6 +23,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.speedtracer.client.model.EventVisitor.PostOrderVisitor;
 import com.google.speedtracer.client.model.EventVisitor.PreOrderVisitor;
 import com.google.speedtracer.client.model.ResourceUpdateEvent.UpdateResource;
+import com.google.speedtracer.client.util.JSOArray;
 
 /**
  * This class is used in Chrome when we are getting data from the devtools API.
@@ -192,6 +193,14 @@ public class DevToolsDataInstance extends DataInstance {
           // transition goes off.
           currentPage = null;
           break;
+        case EventRecordType.RESOURCE_DATA_RECEIVED:          
+          // Elevate children to top level.
+          UiEvent event = record.cast();
+          JSOArray<UiEvent> children = event.getChildren();
+          for (int i = 0, n = children.size(); i < n; i++) {
+            onEventRecord(children.get(i));
+          }
+          return;
       }
       // Forward to the dataInstance.
       onEventRecord(record);
