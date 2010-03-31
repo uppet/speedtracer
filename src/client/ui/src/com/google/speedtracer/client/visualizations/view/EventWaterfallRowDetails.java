@@ -46,13 +46,11 @@ import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.JavaScriptExecutionEvent;
 import com.google.speedtracer.client.model.JavaScriptProfile;
 import com.google.speedtracer.client.model.LogEvent;
-import com.google.speedtracer.client.model.LotsOfLittleEvents;
 import com.google.speedtracer.client.model.PaintEvent;
 import com.google.speedtracer.client.model.ParseHtmlEvent;
 import com.google.speedtracer.client.model.TimerCleared;
 import com.google.speedtracer.client.model.TimerFiredEvent;
 import com.google.speedtracer.client.model.TimerInstalled;
-import com.google.speedtracer.client.model.TypeCountDurationTuple;
 import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.client.model.XhrLoadEvent;
 import com.google.speedtracer.client.model.XhrReadyStateChangeEvent;
@@ -691,15 +689,6 @@ public class EventWaterfallRowDetails extends RowDetails implements
          * TimeStampFormatter.formatMilliseconds(domEvent.getBubbleDuration
          * ()));
          */
-        break;
-      case LotsOfLittleEvents.TYPE:
-        JSOArray<TypeCountDurationTuple> tuples = e.<LotsOfLittleEvents> cast().getTypeCountDurationTuples();
-        for (int i = 0, n = tuples.size(); i < n; i++) {
-          TypeCountDurationTuple tuple = tuples.get(i);
-          details.put(EventRecordType.typeToString(tuple.getType()), "count: "
-              + tuple.getCount() + " duration: "
-              + TimeStampFormatter.formatMilliseconds(tuple.getDuration(), 3));
-        }
         break;
       case TimerFiredEvent.TYPE:
         TimerInstalled timerData = eventWaterfall.getSourceModel().getTimerMetaData(

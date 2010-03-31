@@ -91,35 +91,12 @@ public class AggregateTimeVisitor implements PostOrderVisitor {
 
   public void visitUiEvent(UiEvent e) {
     int currType = e.getType();
-
-    if (currType == EventRecordType.AGGREGATED_EVENTS) {
-      // This has to be a leaf node.
-      LotsOfLittleEvents lolec = e.cast();
-      // We compute the self time for this lolevent.
-      JSOArray<TypeCountDurationTuple> tuples = lolec.getTypeCountDurationTuples();
-      double lolSelfTime = 0;
-      // We also keep track of the dominant tuple.
-      TypeCountDurationTuple dominantTuple = tuples.get(0);
-      for (int i = 0, n = tuples.size(); i < n; i++) {
-        TypeCountDurationTuple tuple = tuples.get(i);
-        double tupleDuration = tuple.getDuration();
-        updateDuration(tuple.getType(), tupleDuration);
-        lolSelfTime += tupleDuration;
-        // We later cache the type of the max duration aggregate event.
-        if (tupleDuration > dominantTuple.getDuration()) {
-          dominantTuple = tuple;
-        }
-      }
-      lolec.setSelfTime(lolSelfTime);
-      lolec.setDominantEventTypeTuple(dominantTuple);
-    } else {
-      // Compute the self time of this node and update the time aggregates.
-      double duration = e.getDuration();
-      double childTime = computeTimeInChildren(e);
-      double selfTime = duration - childTime;
-      e.setSelfTime(selfTime);
-      updateDuration(currType, selfTime);
-    }
+    // Compute the self time of this node and update the time aggregates.
+    double duration = e.getDuration();
+    double childTime = computeTimeInChildren(e);
+    double selfTime = duration - childTime;
+    e.setSelfTime(selfTime);
+    updateDuration(currType, selfTime);
   }
 
   private double computeTimeInChildren(UiEvent node) {
