@@ -144,6 +144,9 @@ maxInt = 2147483647
 
 speedTracerEvents = [
   {
+    # NOTE: AGGREGATED_EVENTS is no longer being used but may be added back
+    # in the future, so we have kept the type enum for it. However, it is
+    # currently ignored in the frontend.
     'value' : maxInt,
     'constant' : 'AGGREGATED_EVENTS',
     'desc' : 'AGGREGATED Events',
