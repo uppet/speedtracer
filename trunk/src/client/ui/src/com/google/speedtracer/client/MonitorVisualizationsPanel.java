@@ -52,7 +52,7 @@ import com.google.speedtracer.client.view.MainTimeLine;
 import com.google.speedtracer.client.view.OverViewTimeLine;
 import com.google.speedtracer.client.view.TimeScale;
 import com.google.speedtracer.client.view.OverViewTimeLine.OverViewTimeLineModel;
-import com.google.speedtracer.client.visualizations.model.NetworkTimeLineModel;
+import com.google.speedtracer.client.visualizations.model.NetworkVisualizationModel;
 import com.google.speedtracer.client.visualizations.model.NetworkVisualization;
 import com.google.speedtracer.client.visualizations.model.SluggishnessModel;
 import com.google.speedtracer.client.visualizations.model.SluggishnessVisualization;
@@ -423,7 +423,7 @@ public class MonitorVisualizationsPanel extends Div {
         detailsViewPanel.getContainer(), resources);
 
     // Network Visualization
-    NetworkTimeLineModel networkModel = (NetworkTimeLineModel) initialState.getVisualizationModel(NetworkVisualization.TITLE);
+    NetworkVisualizationModel networkModel = (NetworkVisualizationModel) initialState.getVisualizationModel(NetworkVisualization.TITLE);
     NetworkVisualization networkVisualization = new NetworkVisualization(
         mainTimeLine, networkModel, detailsViewPanel.getContainer(), resources);
 

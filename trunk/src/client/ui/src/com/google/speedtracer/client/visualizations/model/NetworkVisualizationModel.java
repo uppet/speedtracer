@@ -21,16 +21,10 @@ import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.HintletEngineHost;
 import com.google.speedtracer.client.model.NetworkResource;
 import com.google.speedtracer.client.model.NetworkResourceModel;
-import com.google.speedtracer.client.model.ResourceFinishEvent;
 import com.google.speedtracer.client.model.ResourceRecord;
-import com.google.speedtracer.client.model.ResourceResponseEvent;
-import com.google.speedtracer.client.model.ResourceUpdateEvent;
-import com.google.speedtracer.client.model.ResourceWillSendEvent;
-import com.google.speedtracer.client.model.ResourceUpdateEvent.UpdateResource;
 import com.google.speedtracer.client.timeline.GraphModel;
 import com.google.speedtracer.client.timeline.HighlightModel;
 import com.google.speedtracer.client.timeline.ModelData;
-import com.google.speedtracer.client.util.JsIntegerMap;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +33,7 @@ import java.util.List;
  * Underlying model implementation that maintains NetworkTimeLineDetailView's
  * state.
  */
-public class NetworkTimeLineModel implements VisualizationModel,
+public class NetworkVisualizationModel implements VisualizationModel,
     NetworkResourceModel.Listener, HintletEngineHost.HintListener {
 
   /**
@@ -58,15 +52,7 @@ public class NetworkTimeLineModel implements VisualizationModel,
 
   private int openRequests = 0;
 
-  private List<NetworkResource> redirectQueue = new ArrayList<NetworkResource>();
-
   private List<ResourceRefreshListener> resourceRefreshListeners = new ArrayList<ResourceRefreshListener>();
-
-  /**
-   * Map of NetworkResource POJOs. Information about a network resource is
-   * filled in progressively as we get chunks of information about it.
-   */
-  private final JsIntegerMap<NetworkResource> resourceStore = JsIntegerMap.create();
 
   /**
    * We keep an index sorted by start time.
@@ -75,7 +61,7 @@ public class NetworkTimeLineModel implements VisualizationModel,
 
   private final NetworkResourceModel sourceModel;
 
-  public NetworkTimeLineModel(DataModel dataModel) {
+  public NetworkVisualizationModel(DataModel dataModel) {
     this.dataModel = dataModel;
     graphModel = GraphModel.createGraphModel(new ModelData(), "", "ms", "",
         " requests", true);
@@ -84,18 +70,6 @@ public class NetworkTimeLineModel implements VisualizationModel,
     this.sourceModel = dataModel.getNetworkResourceModel();
     sourceModel.addListener(this);
     dataModel.getHintletEngineHost().addHintListener(this);
-  }
-
-  /**
-   * Adds a NetworkResource to our resource store as well as to the list of
-   * resources sorted by start time. We assume that we do not get network
-   * resource starts out of order.
-   * 
-   * @param resource the resource we are adding to our book keeping
-   */
-  public void addResource(NetworkResource resource) {
-    resourceStore.put(resource.getIdentifier(), resource);
-    sortedResources.add(resource);
   }
 
   public void addResourceRefreshListener(ResourceRefreshListener listener) {
@@ -126,7 +100,7 @@ public class NetworkTimeLineModel implements VisualizationModel,
    * @return returns the {@link NetworkResource}
    */
   public NetworkResource getResource(int id) {
-    return resourceStore.get(id);
+    return sourceModel.getResource(id);
   }
 
   public List<NetworkResource> getSortedResources() {
@@ -161,68 +135,32 @@ public class NetworkTimeLineModel implements VisualizationModel,
     fireResourceRefreshListeners(res);
   }
 
-  public void onNetworkResourceRequestStarted(
-      ResourceWillSendEvent resourceStart) {
-    // Check for dupe IDs. If we find one, assume it is a redirect.
-    NetworkResource previousResource = getResource(resourceStart.getIdentifier());
-    if (previousResource != null) {
-      // We have a redirect.
-      redirectQueue.add(previousResource);
+  public void onNetworkResourceRequestStarted(NetworkResource resource,
+      boolean isRedirect) {
+    assert (resource != null) : "Resource null in start!";
+    // We don't get a close for a redirect, so we just need to not increment
+    // again.
+    if (!isRedirect) {
+      openRequests++;
     }
-    openRequests++;
-    getGraphModel().addData(resourceStart.getTime(), openRequests);
-    NetworkResource resource = new NetworkResource(resourceStart);
-    addResource(resource);
+    getGraphModel().addData(resource.getStartTime(), openRequests);
+    sortedResources.add(resource);
   }
 
-  public void onNetworkResourceResponseFinished(
-      ResourceFinishEvent resourceFinish) {
+  public void onNetworkResourceResponseFinished(NetworkResource resource) {
+    assert (resource != null) : "Resource null in finish!";
     openRequests--;
-    getGraphModel().addData(resourceFinish.getTime(), openRequests);
-    NetworkResource resource = getResource(resourceFinish.getIdentifier());
-    if (resource != null) {
-      resource.update(resourceFinish);
-    }
+    getGraphModel().addData(resource.getEndTime(), openRequests);
   }
 
-  public void onNetworkResourceResponseStarted(
-      ResourceResponseEvent resourceResponse) {
-    NetworkResource resource = getResource(resourceResponse.getIdentifier());
-    if (resource != null) {
-      resource.update(resourceResponse);
-    }
+  public void onNetworkResourceResponseStarted(NetworkResource resource) {
+    assert (resource != null) : "Resource null in response!";
   }
 
-  public void onNetworkResourceUpdated(ResourceUpdateEvent resourceUpdate) {
+  public void onNetworkResourceUpdated(NetworkResource resource) {
     // TODO(jaimeyap): We should check for the load event and the domcontent
     // event here and do something with it.
-    NetworkResource resource = getResource(resourceUpdate.getIdentifier());
-    if (resource != null) {
-      resource.update(resourceUpdate);
-    } else {
-      // We are dealing potentially with an update for a redirect.
-      UpdateResource update = resourceUpdate.getUpdate();
-      // Look for it.
-      int i = 0;
-      while (i < redirectQueue.size()) {
-        NetworkResource redirectCandidate = redirectQueue.get(i);
-        if (redirectCandidate.getUrl().equals(update.getUrl())) {
-          // If we have a main resource, then we need to provision a spot for it
-          // since it would be lost on the previous page transition.
-          if (redirectCandidate.isMainResource() && update.isMainResource()) {
-            matchRedirect(i, redirectCandidate, resourceUpdate);
-            break;
-          }
-          // If the URLs are the same and they have the same start time, then we
-          // have a match.
-          if (redirectCandidate.getOtherStartTime() == update.getStartTime()) {
-            matchRedirect(i, redirectCandidate, resourceUpdate);
-            break;
-          }
-        }
-        i++;
-      }
-    }
+    assert (resource != null) : "Resource null in update!";
   }
 
   private NetworkResource findResourceForRecord(ResourceRecord rec) {
@@ -245,24 +183,5 @@ public class NetworkTimeLineModel implements VisualizationModel,
     for (int i = 0, l = resourceRefreshListeners.size(); i < l; ++i) {
       resourceRefreshListeners.get(i).onResourceRefresh(res);
     }
-  }
-
-  private void matchRedirect(int index, NetworkResource redirectCandidate,
-      ResourceUpdateEvent resourceUpdate) {
-    // We have found the redirect.
-    redirectCandidate.update(resourceUpdate);
-    // Should not be a concurrent modification, since we now bail out of
-    // the loop right after mutating the queue.
-    redirectQueue.remove(index);
-
-    // We know that redirects get a single update that populates all the
-    // fields. We assume the graph is closed out.
-    openRequests--;
-    double endTime = redirectCandidate.getEndTime();
-
-    assert (!Double.isNaN(endTime) && endTime > 0) : "endTime unset for redirect update!";
-
-    // Add the data point.
-    getGraphModel().addData(endTime, openRequests);
   }
 }

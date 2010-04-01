@@ -19,11 +19,8 @@ import com.google.gwt.core.client.GWT;
 import com.google.speedtracer.client.model.DataModel;
 import com.google.speedtracer.client.model.HintletEngineHost;
 import com.google.speedtracer.client.model.HintletException;
+import com.google.speedtracer.client.model.NetworkResource;
 import com.google.speedtracer.client.model.NetworkResourceModel;
-import com.google.speedtracer.client.model.ResourceFinishEvent;
-import com.google.speedtracer.client.model.ResourceResponseEvent;
-import com.google.speedtracer.client.model.ResourceUpdateEvent;
-import com.google.speedtracer.client.model.ResourceWillSendEvent;
 import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.client.model.UiEventModel;
 import com.google.speedtracer.client.view.ZippyLogger;
@@ -69,23 +66,17 @@ public class Logging {
       logText("HintletEngine: " + hintletException.getException());
     }
 
-    public void onNetworkResourceRequestStarted(
-        ResourceWillSendEvent resourceStart) {
+    public void onNetworkResourceRequestStarted(NetworkResource resource,
+        boolean isRedirect) {
     }
 
-    public void onNetworkResourceResponseFailed(
-        ResourceFinishEvent resourceError) {
+    public void onNetworkResourceResponseFinished(NetworkResource resource) {
     }
 
-    public void onNetworkResourceResponseFinished(
-        ResourceFinishEvent resourceFinish) {
+    public void onNetworkResourceResponseStarted(NetworkResource resource) {
     }
 
-    public void onNetworkResourceResponseStarted(
-        ResourceResponseEvent resourceResponse) {
-    }
-
-    public void onNetworkResourceUpdated(ResourceUpdateEvent resourceUpdate) {
+    public void onNetworkResourceUpdated(NetworkResource resource) {
     }
 
     public void onUiEventFinished(UiEvent event) {

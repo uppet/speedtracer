@@ -31,7 +31,7 @@ import com.google.speedtracer.client.util.dom.DocumentExt;
 import com.google.speedtracer.client.view.DetailView;
 import com.google.speedtracer.client.view.fx.CssTransitionFloat;
 import com.google.speedtracer.client.view.fx.CssTransitionFloat.CallBack;
-import com.google.speedtracer.client.visualizations.model.NetworkTimeLineModel;
+import com.google.speedtracer.client.visualizations.model.NetworkVisualizationModel;
 import com.google.speedtracer.client.visualizations.model.NetworkVisualization;
 
 import java.util.ArrayList;
@@ -170,7 +170,7 @@ public class NetworkTimeLineDetailView extends DetailView implements
   }
 
   protected void displayResourcesInWindow(double left, double right) {
-    NetworkTimeLineModel model = getModel();
+    NetworkVisualizationModel model = getModel();
     // We dont need to update if we
     // have not shifted bounds.
     if ((displayed.size() > 0) && (left == oldLeft) && (right == oldRight)) {
@@ -241,7 +241,7 @@ public class NetworkTimeLineDetailView extends DetailView implements
     return contentPanel;
   }
 
-  private NetworkTimeLineModel getModel() {
+  private NetworkVisualizationModel getModel() {
     return ((NetworkVisualization) getVisualization()).getModel();
   }
 }

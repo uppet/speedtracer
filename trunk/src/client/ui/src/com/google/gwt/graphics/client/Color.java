@@ -50,6 +50,7 @@ public class Color {
   public static final Color PALE_GREEN = new Color("#98FB98");
   public static final Color BROWN = new Color("#ab8f38");
   public static final Color CHROME_BLUE = new Color("#eeeeff");
+  public static final Color DARKBLUE = new Color("#5eb9f8");
 
   private String colorStr = "";
 
