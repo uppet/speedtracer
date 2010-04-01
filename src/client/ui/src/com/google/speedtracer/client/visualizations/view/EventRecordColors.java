@@ -24,6 +24,7 @@ import com.google.speedtracer.client.model.LogEvent;
 import com.google.speedtracer.client.model.PaintEvent;
 import com.google.speedtracer.client.model.ParseHtmlEvent;
 import com.google.speedtracer.client.model.RecalcStyleEvent;
+import com.google.speedtracer.client.model.ResourceDataReceivedEvent;
 import com.google.speedtracer.client.model.TimerFiredEvent;
 import com.google.speedtracer.client.model.XhrReadyStateChangeEvent;
 import com.google.speedtracer.client.util.JsIntegerMap;
@@ -48,6 +49,7 @@ public class EventRecordColors {
     colorMap.put(RecalcStyleEvent.TYPE, Color.DARKGREEN);
     colorMap.put(EvalScript.TYPE, Color.PEACH);
     colorMap.put(JavaScriptExecutionEvent.TYPE, Color.YELLOW);
+    colorMap.put(ResourceDataReceivedEvent.TYPE, Color.DARKBLUE);
 
     // TODO(jaimeyap): Make use of these colors later on.
     // colorMap.put(MouseHoverStyleEvent.TYPE, Color.LIMEGREEN);

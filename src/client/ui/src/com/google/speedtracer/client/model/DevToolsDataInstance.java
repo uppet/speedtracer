@@ -241,9 +241,6 @@ public class DevToolsDataInstance extends DataInstance {
           // transition goes off.
           currentPage = null;
           break;
-        case ResourceDataReceivedEvent.TYPE:
-          // Ignore this record.
-          return;
       }
       // Normalize and send to the dataInstance.
       normalizeAndDispatchEventRecord(record);

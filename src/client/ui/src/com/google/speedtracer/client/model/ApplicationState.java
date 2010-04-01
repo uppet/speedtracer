@@ -19,7 +19,7 @@ import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.util.IterableFastStringMap;
 import com.google.speedtracer.client.util.IterableFastStringMap.IterationCallBack;
 import com.google.speedtracer.client.visualizations.model.HintletReportModel;
-import com.google.speedtracer.client.visualizations.model.NetworkTimeLineModel;
+import com.google.speedtracer.client.visualizations.model.NetworkVisualizationModel;
 import com.google.speedtracer.client.visualizations.model.NetworkVisualization;
 import com.google.speedtracer.client.visualizations.model.SluggishnessModel;
 import com.google.speedtracer.client.visualizations.model.SluggishnessVisualization;
@@ -98,7 +98,7 @@ public class ApplicationState {
     visualizationModelMap.put(SluggishnessVisualization.TITLE,
         new SluggishnessModel(sourceModel));
     visualizationModelMap.put(NetworkVisualization.TITLE,
-        new NetworkTimeLineModel(sourceModel));
+        new NetworkVisualizationModel(sourceModel));
     visualizationModelMap.put(HintletReport.TITLE, new HintletReportModel(
         sourceModel.getHintletEngineHost()));
   }

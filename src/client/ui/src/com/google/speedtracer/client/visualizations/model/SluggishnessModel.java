@@ -150,6 +150,10 @@ public class SluggishnessModel implements VisualizationModel,
     return dataModel.getTabDescription().getUrl();
   }
 
+  public DataModel getDataModel() {
+    return this.dataModel;
+  }
+
   public List<UiEvent> getEventList() {
     return eventList;
   }

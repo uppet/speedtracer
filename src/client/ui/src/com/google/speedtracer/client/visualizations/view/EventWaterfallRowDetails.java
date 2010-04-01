@@ -39,6 +39,7 @@ import com.google.speedtracer.client.SourceViewer;
 import com.google.speedtracer.client.SymbolServerController;
 import com.google.speedtracer.client.SourceViewer.SourcePresenter;
 import com.google.speedtracer.client.SourceViewer.SourceViewerLoadedCallback;
+import com.google.speedtracer.client.model.DataModel;
 import com.google.speedtracer.client.model.DomEvent;
 import com.google.speedtracer.client.model.EvalScript;
 import com.google.speedtracer.client.model.EventRecordType;
@@ -46,8 +47,11 @@ import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.JavaScriptExecutionEvent;
 import com.google.speedtracer.client.model.JavaScriptProfile;
 import com.google.speedtracer.client.model.LogEvent;
+import com.google.speedtracer.client.model.NetworkResource;
+import com.google.speedtracer.client.model.NetworkResourceModel;
 import com.google.speedtracer.client.model.PaintEvent;
 import com.google.speedtracer.client.model.ParseHtmlEvent;
+import com.google.speedtracer.client.model.ResourceDataReceivedEvent;
 import com.google.speedtracer.client.model.TimerCleared;
 import com.google.speedtracer.client.model.TimerFiredEvent;
 import com.google.speedtracer.client.model.TimerInstalled;
@@ -734,6 +738,13 @@ public class EventWaterfallRowDetails extends RowDetails implements
         JavaScriptExecutionEvent jsExecEvent = e.cast();
         details.put("Function Call", jsExecEvent.getScriptName() + ": Line "
             + jsExecEvent.getScriptLine());
+        break;
+      case ResourceDataReceivedEvent.TYPE:
+        ResourceDataReceivedEvent dataRecEvent = e.cast();
+        DataModel dataModel = eventWaterfall.getVisualization().getModel().getDataModel();
+        NetworkResourceModel networkModel = dataModel.getNetworkResourceModel();
+        NetworkResource resource = networkModel.getResource(dataRecEvent.getIdentifier());
+        details.put("Processing Resource", resource.getLastPathComponent());
         break;
       default:
         break;

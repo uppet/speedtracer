@@ -29,8 +29,8 @@ import com.google.speedtracer.client.visualizations.view.PageTransitionMarker;
  * Monitors network events.
  */
 public class NetworkVisualization extends
-    Visualization<NetworkTimeLineDetailView, NetworkTimeLineModel> implements
-    NetworkTimeLineModel.ResourceRefreshListener {
+    Visualization<NetworkTimeLineDetailView, NetworkVisualizationModel> implements
+    NetworkVisualizationModel.ResourceRefreshListener {
 
   /**
    * Resources used by children of NetworkVisualization.
@@ -63,7 +63,7 @@ public class NetworkVisualization extends
    * @param detailsContainer
    * @param resources
    */
-  public NetworkVisualization(MainTimeLine parent, NetworkTimeLineModel model,
+  public NetworkVisualization(MainTimeLine parent, NetworkVisualizationModel model,
       Container detailsContainer, NetworkVisualization.Resources resources) {
     super(TITLE, SUBTITLE, model, createGraphUiProps());
     this.resources = resources;
@@ -83,7 +83,7 @@ public class NetworkVisualization extends
   @Override
   public void setModel(VisualizationModel model) {
     super.setModel(model);
-    NetworkTimeLineModel nModel = (NetworkTimeLineModel) model;
+    NetworkVisualizationModel nModel = (NetworkVisualizationModel) model;
     nModel.addResourceRefreshListener(this);
   }
 }
