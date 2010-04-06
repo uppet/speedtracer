@@ -22,14 +22,18 @@ public class Url {
   /**
    * Utility method for converting a resource URL to one relative to the
    * specified base.
+   * 
+   * The returned relative URL should not start with a '/'.
    */
   public static String convertToRelativeUrl(String base, String resourceUrl) {
-    // We normalize relative URLs to not begin with a '/'. Sometimes the origin
-    // is specified with a trailing '/', sometimes it isn't. We expect relative
-    // resource paths that are keys to NOT begin with a leading slash.
-    String originWithSlash = base.charAt(base.length() - 1) == '/' ? base
-        : base + "/";
-    return resourceUrl.replace(originWithSlash, "");
+    if (resourceUrl.startsWith(base, 0)) {
+      String relativeUrl = resourceUrl.substring(base.length(),
+          resourceUrl.length());
+      return (relativeUrl.charAt(0) == '/') ? relativeUrl.substring(1)
+          : relativeUrl;
+    } else {
+      return resourceUrl;
+    }
   }
 
   private String applicationUrl;
@@ -37,6 +41,9 @@ public class Url {
   private String originUrl;
 
   private final String url;
+
+  // We cache this because this is queried a crap ton during CPU profiling.
+  private String lastPathComponent;
 
   public Url(String url) {
     this.url = url;
@@ -61,8 +68,11 @@ public class Url {
    * @return the resource name
    */
   public String getLastPathComponent() {
-    int lastSlashIndex = url.lastIndexOf('/');
-    return url.substring(lastSlashIndex + 1, url.length());
+    if (lastPathComponent == null) {
+      int lastSlashIndex = url.lastIndexOf('/');
+      lastPathComponent = url.substring(lastSlashIndex + 1, url.length());
+    }
+    return lastPathComponent;
   }
 
   /**
@@ -73,10 +83,19 @@ public class Url {
    */
   public String getOrigin() {
     if (originUrl == null) {
-      originUrl = extractOriginImpl(getApplicationUrl());
+      originUrl = extractOriginImpl(url);
     }
 
     return originUrl;
+  }
+
+  /**
+   * Returns the path component of the resource url.
+   * 
+   * @return the resource path.
+   */
+  public String getPath() {
+    return convertToRelativeUrl(getOrigin() + "/", url);
   }
 
   /**
@@ -93,8 +112,12 @@ public class Url {
     return url;
   }
 
-  private native String extractOriginImpl(String applicationUrl) /*-{
-    var protocolSplit = applicationUrl.split("://");
+  private native String extractOriginImpl(String url) /*-{
+    var protocolSplit = url.split("://");
+    // Early out if the URL does not have an origin.
+    if (protocolSplit.length == 1) {
+      return "";
+    }
     var originEndIndex = protocolSplit[1].indexOf("/");
     // If there is no trailing slash, then we can assume that the end is the end
     // of the origin. 

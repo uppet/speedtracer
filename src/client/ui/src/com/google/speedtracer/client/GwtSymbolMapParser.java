@@ -19,6 +19,7 @@ import com.google.speedtracer.client.model.JsSymbol;
 import com.google.speedtracer.client.model.JsSymbolMap;
 import com.google.speedtracer.client.model.JsSymbolMap.JsSymbolMapParser;
 import com.google.speedtracer.client.util.JSOArray;
+import com.google.speedtracer.client.util.Url;
 
 /**
  * Parses a GWT symbol map and initializes a {@link JsSymbolMap}.
@@ -30,7 +31,7 @@ public class GwtSymbolMapParser implements JsSymbolMapParser {
     this.symbolMap = symbolMap;
   }
 
-  public void parse(String symbolMapStr) {   
+  public void parse(String symbolMapStr) {
     int start = 0;
     int end = symbolMapStr.indexOf('\n', start);
     while (end != -1) {
@@ -64,8 +65,8 @@ public class GwtSymbolMapParser implements JsSymbolMapParser {
 
     String sourceSymbolName = className + "::" + memberName;
 
-    JsSymbol sourceSymbol = new JsSymbol(sourcePathBase, sourceFileName,
-        Integer.parseInt(sourceLine), sourceSymbolName);
+    JsSymbol sourceSymbol = new JsSymbol(new Url(sourcePathBase
+        + sourceFileName), Integer.parseInt(sourceLine), sourceSymbolName);
     symbolMap.put(jsName, sourceSymbol);
   }
 }

@@ -36,11 +36,10 @@ import com.google.gwt.topspin.ui.client.ResizeListener;
 import com.google.gwt.topspin.ui.client.Table;
 import com.google.gwt.topspin.ui.client.Widget;
 import com.google.speedtracer.client.SourceViewer;
-import com.google.speedtracer.client.SymbolServerController;
+import com.google.speedtracer.client.SymbolServerService;
 import com.google.speedtracer.client.SourceViewer.SourcePresenter;
 import com.google.speedtracer.client.SourceViewer.SourceViewerLoadedCallback;
 import com.google.speedtracer.client.model.DataModel;
-import com.google.speedtracer.client.model.DomEvent;
 import com.google.speedtracer.client.model.EvalScript;
 import com.google.speedtracer.client.model.EventRecordType;
 import com.google.speedtracer.client.model.HintRecord;
@@ -63,9 +62,8 @@ import com.google.speedtracer.client.util.IterableFastStringMap;
 import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.JsIntegerDoubleMap;
 import com.google.speedtracer.client.util.TimeStampFormatter;
+import com.google.speedtracer.client.util.Url;
 import com.google.speedtracer.client.util.dom.WindowExt;
-import com.google.speedtracer.client.visualizations.model.JsStackTrace;
-import com.google.speedtracer.client.visualizations.model.JsStackTrace.JsStackFrame;
 import com.google.speedtracer.client.visualizations.view.FilteringScrollTable.RowDetails;
 import com.google.speedtracer.client.visualizations.view.JavaScriptProfileRenderer.ResizeCallback;
 import com.google.speedtracer.client.visualizations.view.JavaScriptProfileRenderer.SourceClickCallback;
@@ -140,28 +138,6 @@ public class EventWaterfallRowDetails extends RowDetails implements
     }
   }
 
-  /**
-   * Class that handles clicks on a link that is supposed to display source code
-   * in the {@link SourceViewer}.
-   */
-  private class SourceSymbolClickListener implements ClickListener {
-    private final int colNumber;
-    private final int lineNumber;
-    private final String resourceUrl;
-
-    SourceSymbolClickListener(String resourceUrl, int lineNumber, int colNumber) {
-      this.resourceUrl = resourceUrl;
-      this.lineNumber = lineNumber;
-      this.colNumber = colNumber;
-    }
-
-    public void onClick(ClickEvent event) {
-      showSource(resourceUrl, lineNumber, colNumber);
-    }
-  }
-
-  private static final String STACK_TRACE_KEY = "Stack Trace";
-
   private List<ColorCodedValue> data;
 
   private Table detailsTable;
@@ -188,6 +164,8 @@ public class EventWaterfallRowDetails extends RowDetails implements
 
   private SourceViewer sourceViewer;
 
+  private final SourceSymbolClickListener symbolClickListener;
+
   private DivElement treeDiv;
 
   protected EventWaterfallRowDetails(EventWaterfall eventWaterfall,
@@ -196,6 +174,12 @@ public class EventWaterfallRowDetails extends RowDetails implements
     parent.setDetails(this);
     this.resources = resources;
     this.eventWaterfall = eventWaterfall;
+    this.symbolClickListener = new SourceSymbolClickListener() {
+      public void onSymbolClicked(String resourceUrl, int lineNumber,
+          int colNumber) {
+        showSource(resourceUrl, lineNumber, colNumber);
+      }
+    };
   }
 
   @Override
@@ -333,11 +317,15 @@ public class EventWaterfallRowDetails extends RowDetails implements
     profileDiv.getElement().appendChild(profileHeading);
     profileHeading.setInnerText("Profile");
     ScopeBar bar = new ScopeBar(container, resources);
+    // TODO(jaimeyap): This will always return the most recent page we are
+    // viewing. This is a bug. We should have ApplicationState know the current
+    // TabDescription.
+    String currentAppUrl = eventWaterfall.getVisualization().getModel().getDataModel().getTabDescription().getUrl();
     jsProfileRenderer = new JavaScriptProfileRenderer(
         container,
         resources,
         this,
-        eventWaterfall.getVisualization().getCurrentSymbolServerController(),
+        SymbolServerService.getSymbolServerController(new Url(currentAppUrl)),
         this,
         eventWaterfall.getVisualization().getModel().getJavaScriptProfileForEvent(
             getParentRow().getEvent()), new SourceClickCallback() {
@@ -373,13 +361,13 @@ public class EventWaterfallRowDetails extends RowDetails implements
    */
   private Table createDetailsTable(Container parent, int pieChartHeight,
       final UiEvent e) {
-    IterableFastStringMap<String> detailsMap = getDetailsMapForEvent(e);
+    IterableFastStringMap<CellRenderer> detailsMap = getDetailsMapForEvent(e);
     final Table table = new Table(parent);
 
-    detailsMap.iterate(new IterableFastStringMap.IterationCallBack<String>() {
+    detailsMap.iterate(new IterableFastStringMap.IterationCallBack<CellRenderer>() {
       private boolean hasRow = false;
 
-      public void onIteration(String key, String val) {
+      public void onIteration(String key, CellRenderer cellRenderer) {
         // If we have at least one piece of data for this table, we add a
         // header
         if (!hasRow) {
@@ -409,20 +397,7 @@ public class EventWaterfallRowDetails extends RowDetails implements
         String rowKey = key.substring(1);
         cell.setInnerText(rowKey);
         cell = row.insertCell(-1);
-        fillDetailRowValue(cell, rowKey, val);
-      }
-
-      /**
-       * Populates the value cell for a Row in the Details Table for a single
-       * node.
-       */
-      private void fillDetailRowValue(TableCellElement cell, String key,
-          String val) {
-        if (key.equals(STACK_TRACE_KEY)) {
-          formatStackTrace(cell, val);
-        } else {
-          cell.setInnerText(val);
-        }
+        cellRenderer.render(cell);
       }
     });
 
@@ -640,17 +615,6 @@ public class EventWaterfallRowDetails extends RowDetails implements
     getParentRow().getElement().getStyle().setPropertyPx("height", height);
   }
 
-  private void formatStackTrace(TableCellElement cell, String val) {
-    JsStackTrace stackTrace = JsStackTrace.create(val);
-    List<JsStackFrame> frames = stackTrace.getFrames();
-    for (int i = 0, n = frames.size(); i < n; i++) {
-      final JsStackFrame frame = frames.get(i);
-      final StackFrameRenderer frameRenderer = new StackFrameRenderer(cell,
-          frame, resources, this);
-      renderStackFrame(frame, frameRenderer);
-    }
-  }
-
   private EventWaterfallRowDetails.Css getCss() {
     return resources.eventWaterfallRowDetailsCss();
   }
@@ -661,39 +625,37 @@ public class EventWaterfallRowDetails extends RowDetails implements
    * @param e the {@link UiEvent}
    * @return the details Map for the UiEvent
    */
-  private IterableFastStringMap<String> getDetailsMapForEvent(UiEvent e) {
-    IterableFastStringMap<String> details = new IterableFastStringMap<String>();
+  private IterableFastStringMap<CellRenderer> getDetailsMapForEvent(UiEvent e) {
+    IterableFastStringMap<CellRenderer> details = new IterableFastStringMap<CellRenderer>();
 
-    details.put("Description", e.getHelpString());
-    details.put("@", TimeStampFormatter.formatMilliseconds(e.getTime()));
+    details.put("Description", new StringCellRenderer(e.getHelpString()));
+    details.put("@", new StringCellRenderer(
+        TimeStampFormatter.formatMilliseconds(e.getTime())));
     if (e.getDuration() > 0) {
-      details.put("Duration", TimeStampFormatter.formatMilliseconds(
-          e.getDuration(), 3));
+      details.put("Duration", new StringCellRenderer(
+          TimeStampFormatter.formatMilliseconds(e.getDuration(), 3)));
     }
+
+    String currentAppUrl = eventWaterfall.getVisualization().getModel().getDataModel().getTabDescription().getUrl();
+
+    // This is the backtrace output by our prototype.
     String backTrace = e.getBackTrace();
     if (backTrace != null) {
-      details.put(STACK_TRACE_KEY, backTrace);
+      details.put("Stack Trace", new StackTraceRenderer(backTrace,
+          symbolClickListener, this, currentAppUrl, this, true, resources));
     }
-    // TODO(jaimeyap): figure out what we want to do with our backTrace vs the
-    // stuff landed in WebKit. Can we get symbol names?
-    // TODO(jaimeyap): Connect the following to our source viewer.
+    // This is the caller location output currently by WebKit.
     if (e.hasCallLocation()) {
-      details.put("Caused by", e.getCallerScriptName() + ": Line "
-          + e.getCallerScriptLine());
+      // TODO(jaimeyap): figure out what we want to do with our backTrace vs the
+      // stuff landed in WebKit. Can we get symbol names? For now we re-use the
+      // same infrastructure to render this.
+      backTrace = "ignored," + e.getCallerScriptName() + ","
+          + e.getCallerScriptLine() + ",-1,,";
+      details.put("Caused by", new StackTraceRenderer(backTrace,
+          symbolClickListener, this, currentAppUrl, this, true, resources));
     }
 
     switch (e.getType()) {
-      case DomEvent.TYPE:
-        // TODO(jaimeyap): Re-instrument the following.
-        /*
-         * DomEvent domEvent = e.cast(); details.put( "Capture Duration",
-         * TimeStampFormatter
-         * .formatMilliseconds(domEvent.getCaptureDuration())); details.put(
-         * "Bubble Duration",
-         * TimeStampFormatter.formatMilliseconds(domEvent.getBubbleDuration
-         * ()));
-         */
-        break;
       case TimerFiredEvent.TYPE:
         TimerInstalled timerData = eventWaterfall.getSourceModel().getTimerMetaData(
             e.<TimerInstalled> cast().getTimerId());
@@ -703,83 +665,82 @@ public class EventWaterfallRowDetails extends RowDetails implements
         populateDetailsForTimerInstall(e.<TimerInstalled> cast(), details);
         break;
       case TimerCleared.TYPE:
-        details.put("Cleared Timer Id", e.<TimerCleared> cast().getTimerId()
-            + "");
+        details.put("Cleared Timer Id", new StringCellRenderer(
+            e.<TimerCleared> cast().getTimerId() + ""));
         break;
       case PaintEvent.TYPE:
         PaintEvent paintEvent = e.cast();
-        details.put("Origin", paintEvent.getX() + ", " + paintEvent.getY());
-        details.put("Size", paintEvent.getWidth() + " x "
-            + paintEvent.getHeight());
+        details.put("Origin", new StringCellRenderer(paintEvent.getX() + ", "
+            + paintEvent.getY()));
+        details.put("Size", new StringCellRenderer(paintEvent.getWidth()
+            + " x " + paintEvent.getHeight()));
         break;
       case ParseHtmlEvent.TYPE:
         ParseHtmlEvent parseHtmlEvent = e.cast();
-        details.put("Line Number", parseHtmlEvent.getStartLine() + "");
-        details.put("Length", parseHtmlEvent.getLength() + " characters");
+        details.put("Line Number", new StringCellRenderer(
+            parseHtmlEvent.getStartLine() + ""));
+        details.put("Length", new StringCellRenderer(parseHtmlEvent.getLength()
+            + " characters"));
         break;
       case EvalScript.TYPE:
         EvalScript scriptTagEvent = e.cast();
-        details.put("Url", scriptTagEvent.getURL());
-        details.put("Line Number", scriptTagEvent.getLineNumber() + "");
+        details.put("Url", new StringCellRenderer(scriptTagEvent.getURL()));
+        details.put("Line Number", new StringCellRenderer(
+            scriptTagEvent.getLineNumber() + ""));
         break;
       case XhrReadyStateChangeEvent.TYPE:
         XhrReadyStateChangeEvent xhrEvent = e.cast();
-        details.put("Ready State", xhrEvent.getReadyState() + "");
-        details.put("Url", xhrEvent.getUrl());
+        details.put("Ready State", new StringCellRenderer(
+            xhrEvent.getReadyState() + ""));
+        details.put("Url", new StringCellRenderer(xhrEvent.getUrl()));
         break;
       case XhrLoadEvent.TYPE:
-        details.put("Url", e.<XhrLoadEvent> cast().getUrl());
+        details.put("Url", new StringCellRenderer(
+            e.<XhrLoadEvent> cast().getUrl()));
         break;
       case LogEvent.TYPE:
         LogEvent logEvent = e.cast();
-        details.put("Message", logEvent.getMessage());
+        details.put("Message", new StringCellRenderer(logEvent.getMessage()));
         break;
       case JavaScriptExecutionEvent.TYPE:
         JavaScriptExecutionEvent jsExecEvent = e.cast();
-        details.put("Function Call", jsExecEvent.getScriptName() + ": Line "
-            + jsExecEvent.getScriptLine());
+        backTrace = "ignored," + jsExecEvent.getScriptName() + ","
+            + jsExecEvent.getScriptLine() + ",-1,,";
+        details.put("Function Call", new StackTraceRenderer(backTrace,
+            symbolClickListener, this, currentAppUrl, this, true, resources));
         break;
       case ResourceDataReceivedEvent.TYPE:
         ResourceDataReceivedEvent dataRecEvent = e.cast();
         DataModel dataModel = eventWaterfall.getVisualization().getModel().getDataModel();
         NetworkResourceModel networkModel = dataModel.getNetworkResourceModel();
         NetworkResource resource = networkModel.getResource(dataRecEvent.getIdentifier());
-        details.put("Processing Resource", resource.getLastPathComponent());
+        String resourceUrlStr = resource.getLastPathComponent();
+        resourceUrlStr = "".equals(resourceUrlStr) ? resource.getUrl()
+            : resourceUrlStr;
+        details.put("Processing Resource", new StringCellRenderer(
+            resourceUrlStr));
         break;
       default:
         break;
     }
 
     if (e.getOverhead() > 0) {
-      details.put("Overhead", TimeStampFormatter.formatMilliseconds(
-          e.getOverhead(), 2));
+      details.put("Overhead", new StringCellRenderer(
+          TimeStampFormatter.formatMilliseconds(e.getOverhead(), 2)));
     }
 
     return details;
   }
 
   private void populateDetailsForTimerInstall(TimerInstalled timerData,
-      IterableFastStringMap<String> details) {
+      IterableFastStringMap<CellRenderer> details) {
     if (timerData != null) {
-      details.put("Timer Id", timerData.getTimerId() + "");
-      details.put("Timer Type", timerData.isSingleShot() ? "setTimeout"
-          : "setInterval");
-      details.put("Interval", timerData.getInterval() + "ms");
-    }
-  }
-
-  private void renderStackFrame(final JsStackFrame frame,
-      final StackFrameRenderer frameRenderer) {
-    final String resourceUrl = frame.getResourceUrl();
-
-    frameRenderer.renderFrame(new SourceSymbolClickListener(resourceUrl,
-        frame.getLineNumber(), frame.getColNumber()));
-
-    // Add resymbolized data to frame/profile if it is available.
-    SymbolServerController ssController = eventWaterfall.getVisualization().getCurrentSymbolServerController();
-    if (ssController != null) {
-      ssController.attemptResymbolization(frame.getResourceUrl(),
-          frame.getSymbolName(), frameRenderer, this);
+      details.put("Timer Id", new StringCellRenderer(timerData.getTimerId()
+          + ""));
+      details.put("Timer Type", new StringCellRenderer(timerData.isSingleShot()
+          ? "setTimeout" : "setInterval"));
+      details.put("Interval", new StringCellRenderer(timerData.getInterval()
+          + "ms"));
     }
   }
 }

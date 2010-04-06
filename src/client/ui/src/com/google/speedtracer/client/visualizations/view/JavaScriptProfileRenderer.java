@@ -107,8 +107,7 @@ public class JavaScriptProfileRenderer {
           resymbolizedSymbol, resymbolizedSymbol, new ClickListener() {
             public void onClick(ClickEvent event) {
               sourcePresenter.showSource(sourceServer
-                  + sourceSymbol.getResourceBase()
-                  + sourceSymbol.getResourceName(),
+                  + sourceSymbol.getResourceUrl().getPath(),
                   sourceSymbol.getLineNumber(), 0);
             }
           }));
@@ -178,8 +177,7 @@ public class JavaScriptProfileRenderer {
             resymbolizedSymbol, resymbolizedSymbol, new ClickListener() {
               public void onClick(ClickEvent event) {
                 sourcePresenter.showSource(sourceServer
-                    + sourceSymbol.getResourceBase()
-                    + sourceSymbol.getResourceName(),
+                    + sourceSymbol.getResourceUrl().getPath(),
                     sourceSymbol.getLineNumber(), 0);
               }
             }));
@@ -270,9 +268,9 @@ public class JavaScriptProfileRenderer {
           public void execute() {
             if (ssController != null) {
               JsSymbol jsSymbol = profileChild.getSymbol();
-              ssController.attemptResymbolization(jsSymbol.getResourceBase()
-                  + jsSymbol.getResourceName(), jsSymbol.getSymbolName(), item,
-                  sourcePresenter);
+              ssController.attemptResymbolization(
+                  jsSymbol.getResourceUrl().getUrl(), jsSymbol.getSymbolName(),
+                  item, sourcePresenter);
             }
           }
         });
@@ -299,8 +297,7 @@ public class JavaScriptProfileRenderer {
               if (ssController != null) {
                 final JsSymbol childSymbol = profileChild.getSymbol();
                 ssController.attemptResymbolization(
-                    childSymbol.getResourceBase()
-                        + childSymbol.getResourceName(),
+                    childSymbol.getResourceUrl().getUrl(),
                     childSymbol.getSymbolName(), childItem, sourcePresenter);
               }
             }
@@ -408,9 +405,9 @@ public class JavaScriptProfileRenderer {
       public void execute() {
         if (ssController != null) {
           final JsSymbol childSymbol = child.getSymbol();
-          ssController.attemptResymbolization(childSymbol.getResourceBase()
-              + childSymbol.getResourceName(), childSymbol.getSymbolName(),
-              childRenderer, sourcePresenter);
+          ssController.attemptResymbolization(
+              childSymbol.getResourceUrl().getUrl(),
+              childSymbol.getSymbolName(), childRenderer, sourcePresenter);
         }
       }
     });
@@ -501,15 +498,14 @@ public class JavaScriptProfileRenderer {
   private void renderResourceLocation(Element parent, final JsSymbol jsSymbol) {
     final Anchor anchor = new Anchor(new DefaultContainerImpl(parent));
 
-    String resourceLocation = jsSymbol.getResourceName();
+    String resourceLocation = jsSymbol.getResourceUrl().getLastPathComponent();
     if (!jsSymbol.isNativeSymbol()) {
       resourceLocation = "".equals(resourceLocation) ? "" : resourceLocation
           + ":" + jsSymbol.getLineNumber();
       anchor.setHref("javascript:;");
       listenerManager.manageEventListener(anchor.addClickListener(new ClickListener() {
         public void onClick(ClickEvent event) {
-          String resourceUrl = jsSymbol.getResourceBase()
-              + jsSymbol.getResourceName();
+          String resourceUrl = jsSymbol.getResourceUrl().getUrl();
           if (ClientConfig.isDebugMode()) {
             Logging.getLogger().logText(
                 "opening resource " + resourceUrl + " line: "

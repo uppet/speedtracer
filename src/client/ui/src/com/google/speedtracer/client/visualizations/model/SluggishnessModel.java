@@ -146,10 +146,6 @@ public class SluggishnessModel implements VisualizationModel,
     return currentRight;
   }
 
-  public String getCurrentUrl() {
-    return dataModel.getTabDescription().getUrl();
-  }
-
   public DataModel getDataModel() {
     return this.dataModel;
   }

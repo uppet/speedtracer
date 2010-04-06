@@ -17,6 +17,7 @@ package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.JsArrayNumber;
 import com.google.speedtracer.client.util.TimeStampFormatter;
+import com.google.speedtracer.client.util.Url;
 
 /**
  * This class stores a profile for a single top level event. It references into
@@ -35,7 +36,10 @@ public class JavaScriptProfile {
   public static final int STATE_UNKNOWN = 5;
   public static final int NUM_STATES = 6;
 
-  private static final JsSymbol rootSymbol = new JsSymbol("", "", 0, "(root)");
+  public static final Url NO_RESOURCE = new Url("");
+  
+  private static final JsSymbol rootSymbol = new JsSymbol(NO_RESOURCE, 0,
+      "(root)");
 
   public static String stateToString(int state) {
     switch (state) {

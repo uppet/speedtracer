@@ -18,6 +18,7 @@ package com.google.speedtracer.client;
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.speedtracer.client.model.JsSymbol;
 import com.google.speedtracer.client.model.JsSymbolMap;
+import com.google.speedtracer.client.util.Url;
 
 /**
  * Tests {@link JsSymbolMap}.
@@ -73,12 +74,10 @@ public class JsSymbolMapTests extends GWTTestCase {
     JsSymbol nullSymbol = symbolMap.lookup("IDontExist");
     assertTrue(nullSymbol == null);
 
-    String resourceBase = "path/to/a/resource";
-    String resourceName = "MyResource.java";
+    Url resourceUrl = new Url("path/to/a/resource/MyResource.java");
     int lineNumber = 14;
     String symbolName = "path.to.a.resource.MyResource.InnerClass::methodName";
-    JsSymbol symbol = new JsSymbol(resourceBase, resourceName, lineNumber,
-        symbolName);
+    JsSymbol symbol = new JsSymbol(resourceUrl, lineNumber, symbolName);
 
     assertEquals(symbolMap.getSourceServer(), sourceServer + "/");
 
@@ -86,8 +85,10 @@ public class JsSymbolMapTests extends GWTTestCase {
     symbolMap.put(obfuscatedName, symbol);
 
     JsSymbol retrievedSymbol = symbolMap.lookup(obfuscatedName);
-    assertEquals(resourceBase, retrievedSymbol.getResourceBase());
-    assertEquals(resourceName, retrievedSymbol.getResourceName());
+    assertEquals(resourceUrl.getPath(),
+        retrievedSymbol.getResourceUrl().getPath());
+    assertEquals(resourceUrl.getLastPathComponent(),
+        retrievedSymbol.getResourceUrl().getLastPathComponent());
     assertEquals(lineNumber, retrievedSymbol.getLineNumber());
     assertEquals(symbolName, retrievedSymbol.getSymbolName());
   }
@@ -138,8 +139,8 @@ public class JsSymbolMapTests extends GWTTestCase {
     JsSymbol symbol = symbolMap.lookup(obfuscatedSymbol);
     assertTrue(symbol != null);
 
-    assertEquals(sourcePathBase, symbol.getResourceBase());
-    assertEquals(sourceFileName, symbol.getResourceName());
+    assertEquals(sourcePathBase, symbol.getResourceUrl().getResourceBase());
+    assertEquals(sourceFileName, symbol.getResourceUrl().getLastPathComponent());
     assertEquals(lineNumber, symbol.getLineNumber());
     assertEquals(className + "::" + memberName, symbol.getSymbolName());
   }

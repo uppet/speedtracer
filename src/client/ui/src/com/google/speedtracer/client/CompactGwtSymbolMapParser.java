@@ -20,6 +20,7 @@ import com.google.speedtracer.client.model.JsSymbolMap;
 import com.google.speedtracer.client.model.JsSymbolMap.JsSymbolMapParser;
 import com.google.speedtracer.client.util.IterableFastStringMap;
 import com.google.speedtracer.client.util.JSOArray;
+import com.google.speedtracer.client.util.Url;
 
 /**
  * Parses a compressed form of the Gwt Symbol map.
@@ -47,7 +48,7 @@ public class CompactGwtSymbolMapParser implements JsSymbolMapParser {
    * If the FileName and the ClassName are the same, the fileName can be
    * replaced by %.
    */
-  public void parse(String symbolMapStr) {    
+  public void parse(String symbolMapStr) {
     int start = 0;
     int end = symbolMapStr.indexOf('\n', start);
     while (end != -1) {
@@ -65,7 +66,7 @@ public class CompactGwtSymbolMapParser implements JsSymbolMapParser {
     if (line.charAt(0) == '#') {
       return;
     }
-    
+
     JSOArray<String> symbolInfo = JSOArray.splitString(line, ",");
     if ("%%".equals(symbolInfo.get(0))) {
       definePackage(symbolInfo);
@@ -87,9 +88,9 @@ public class CompactGwtSymbolMapParser implements JsSymbolMapParser {
     }
 
     String packageName = packageMap.get(packageKey);
-    
+
     assert (packageName != null);
-    
+
     packageName = "".equals(packageName) ? "" : packageName + ".";
     fileName = "".equals(fileName) ? "Unknown" : fileName + ".java";
 
@@ -98,7 +99,7 @@ public class CompactGwtSymbolMapParser implements JsSymbolMapParser {
     String sourcePathBase = packageName.replace(".", "/");
     String sourceSymbolName = packageName + className + "::" + memberName;
 
-    JsSymbol sourceSymbol = new JsSymbol(sourcePathBase, fileName,
+    JsSymbol sourceSymbol = new JsSymbol(new Url(sourcePathBase + fileName),
         Integer.parseInt(sourceLine), sourceSymbolName);
     symbolMap.put(jsName, sourceSymbol);
   }

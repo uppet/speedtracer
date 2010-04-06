@@ -23,10 +23,12 @@ import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
+import com.google.speedtracer.client.SymbolServerController;
+import com.google.speedtracer.client.SymbolServerService;
 import com.google.speedtracer.client.SourceViewer.SourcePresenter;
 import com.google.speedtracer.client.SymbolServerController.Resymbolizeable;
 import com.google.speedtracer.client.model.JsSymbol;
-import com.google.speedtracer.client.util.dom.ManagesEventListeners;
+import com.google.speedtracer.client.util.Url;
 import com.google.speedtracer.client.visualizations.model.JsStackTrace.JsStackFrame;
 
 /**
@@ -55,36 +57,35 @@ public class StackFrameRenderer implements Resymbolizeable {
     Css stackFrameRendererCss();
   }
 
-  private final Css css;
-
-  private final Element myElem;
+  // Gets initialized when first rendered.
+  private Element myElem;
 
   private final JsStackFrame stackFrame;
 
-  private final ManagesEventListeners listenerManager;
-
-  public StackFrameRenderer(Element parent, JsStackFrame stackFrame,
-      Resources resources, ManagesEventListeners listenerManager) {
-    this.myElem = parent.getOwnerDocument().createDivElement();
-    this.stackFrame = stackFrame;
-    this.css = resources.stackFrameRendererCss();
-    this.listenerManager = listenerManager;
-    this.myElem.setClassName(css.stackFrame());
-    parent.appendChild(myElem);
-  }
+  private final StackTraceRenderer stackTraceRenderer;
 
   /**
-   * Renders the specified stack frame to the parent element.
+   * Constructor.
    * 
-   * @param symbolClickHandler The {@link ClickListener} that will handle the
-   *          click on the line/col number for the symbol
+   * @param stackFrame the {@link JsStackFrame} that this will render.
+   * @param stackTraceRenderer the {@link StackTraceRenderer} that is rendering
+   *          us.
    */
-  public void renderFrame(ClickListener symbolClickHandler) {
-    Document document = myElem.getOwnerDocument();
-    myElem.setInnerHTML("");
+  public StackFrameRenderer(JsStackFrame stackFrame,
+      StackTraceRenderer stackTraceRenderer) {
+    this.stackFrame = stackFrame;
+    this.stackTraceRenderer = stackTraceRenderer;
+  }
 
-    String resourceName = stackFrame.getResourceName().equals("")
-        ? stackFrame.getResourceBase() : stackFrame.getResourceName();
+  public void render(Element parentElem, boolean attemptResymbolization) {
+    assert (myElem == null) : "Render called twice for StackFrameRenderer!";
+
+    myElem = parentElem.getOwnerDocument().createDivElement();
+    Document document = myElem.getOwnerDocument();
+
+    String resourceName = stackFrame.getResourceUrl().getLastPathComponent();
+    resourceName = ("".equals(resourceName))
+        ? stackFrame.getResourceUrl().getPath() : resourceName;
 
     // If we still don't have anything, replace with [unknown]
     String symbolName = (stackFrame.getSymbolName().equals("")) ? "[unknown] "
@@ -96,13 +97,34 @@ public class StackFrameRenderer implements Resymbolizeable {
     // the Source Viewer when clicked.
     AnchorElement lineLink = document.createAnchorElement();
     lineLink.getStyle().setProperty("whiteSpace", "nowrap");
-    lineLink.setInnerText("Line " + stackFrame.getLineNumber() + " Col "
-        + stackFrame.getColNumber());
+    String columnStr = (stackFrame.getColNumber() > 0) ? " Col "
+        + stackFrame.getColNumber() : "";
+    lineLink.setInnerText("Line " + stackFrame.getLineNumber() + columnStr);
     lineLink.setHref("javascript:;");
     myElem.appendChild(lineLink);
     myElem.appendChild(document.createBRElement());
-    listenerManager.manageEventListener(ClickEvent.addClickListener(lineLink,
-        lineLink, symbolClickHandler));
+    stackTraceRenderer.getListenerManager().manageEventListener(
+        ClickEvent.addClickListener(lineLink, lineLink, new ClickListener() {
+          public void onClick(ClickEvent event) {
+            stackTraceRenderer.getSourceClickListener().onSymbolClicked(
+                stackFrame.getResourceUrl().getUrl(),
+                stackFrame.getLineNumber(), stackFrame.getColNumber());
+          }
+        }));
+
+    myElem.setClassName(stackTraceRenderer.getResources().stackFrameRendererCss().stackFrame());
+    parentElem.appendChild(myElem);
+
+    if (attemptResymbolization) {
+      // Add resymbolized data to frame/profile if it is available.
+      SymbolServerController ssController = SymbolServerService.getSymbolServerController(new Url(
+          stackTraceRenderer.getCurrentAppUrl()));
+      if (ssController != null) {
+        ssController.attemptResymbolization(
+            stackFrame.getResourceUrl().getUrl(), stackFrame.getSymbolName(),
+            this, stackTraceRenderer.getSourcePresenter());
+      }
+    }
   }
 
   /**
@@ -118,22 +140,24 @@ public class StackFrameRenderer implements Resymbolizeable {
    */
   public void reSymbolize(final String sourceServer,
       final JsSymbol sourceSymbol, final SourcePresenter sourcePresenter) {
+    assert (myElem != null) : "Element is null when attempting resymbolization in StackFrameRenderer";
+
     Document document = myElem.getOwnerDocument();
     AnchorElement symbolLink = document.createAnchorElement();
 
     symbolLink.setInnerText(sourceSymbol.getSymbolName());
     symbolLink.setHref("javascript:;");
-    symbolLink.setClassName(css.resymbolizedSymbol());
+    symbolLink.setClassName(stackTraceRenderer.getResources().stackFrameRendererCss().resymbolizedSymbol());
     myElem.appendChild(symbolLink);
     myElem.appendChild(document.createBRElement());
-    listenerManager.manageEventListener(ClickEvent.addClickListener(symbolLink,
-        symbolLink, new ClickListener() {
-          public void onClick(ClickEvent event) {
-            sourcePresenter.showSource(sourceServer
-                + sourceSymbol.getResourceBase()
-                + sourceSymbol.getResourceName(), sourceSymbol.getLineNumber(),
-                0);
-          }
-        }));
+    stackTraceRenderer.getListenerManager().manageEventListener(
+        ClickEvent.addClickListener(symbolLink, symbolLink,
+            new ClickListener() {
+              public void onClick(ClickEvent event) {
+                sourcePresenter.showSource(sourceServer
+                    + sourceSymbol.getResourceUrl().getPath(),
+                    sourceSymbol.getLineNumber(), 0);
+              }
+            }));
   }
 }

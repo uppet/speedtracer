@@ -142,19 +142,17 @@ public class V8SymbolTable {
       // line number.
       switch (symbolType.getValue()) {
         case JavaScriptProfileModelV8Impl.SYMBOL_TYPE_CALLBACK:
-          symbol = new JsSymbol("", "", 0, rawName, true);
+          symbol = new JsSymbol(JavaScriptProfile.NO_RESOURCE, 0, rawName, true);
           break;
         case JavaScriptProfileModelV8Impl.SYMBOL_TYPE_SCRIPT:
-          Url scriptUrl = new Url(rawName);
-          symbol = new JsSymbol("", scriptUrl.getLastPathComponent(), 0,
-              "[ScriptCompilation]");
+          symbol = new JsSymbol(new Url(rawName), 0, "[ScriptCompilation]");
           break;
         default:
           // We assume that the rest is a symbol in the page.
           JSOArray<String> pieces = JSOArray.splitString(rawName, " ");
 
           if (pieces.size() < 2) {
-            symbol = new JsSymbol("", "", 0, rawName);
+            symbol = new JsSymbol(JavaScriptProfile.NO_RESOURCE, 0, rawName);
             break;
           }
 
@@ -168,17 +166,14 @@ public class V8SymbolTable {
           }
 
           int lineNumberIndex = urlAndLine.lastIndexOf(':');
-
           if (lineNumberIndex > 0) {
             Url resourceUrl = new Url(urlAndLine.substring(0, lineNumberIndex));
             // The assumption is that this will always have a line number.
             // Should test to verify.
             int lineNumber = Integer.parseInt(urlAndLine.substring(lineNumberIndex + 1));
-            symbol = new JsSymbol(resourceUrl.getResourceBase(),
-                resourceUrl.getLastPathComponent(), lineNumber, symbolName,
-                isNative);
+            symbol = new JsSymbol(resourceUrl, lineNumber, symbolName, isNative);
           } else {
-            symbol = new JsSymbol("", urlAndLine, 0, symbolName, isNative);
+            symbol = new JsSymbol(new Url(urlAndLine), 0, symbolName, isNative);
           }
           break;
       }
@@ -225,7 +220,7 @@ public class V8SymbolTable {
     for (V8Symbol child : table.values()) {
       output.append("<tr>");
       output.append("<td>" + child.getJsSymbol().getSymbolName() + "</td>");
-      output.append("<td>" + child.getJsSymbol().getResourceName()
+      output.append("<td>" + child.getJsSymbol().getResourceUrl().getUrl()
           + child.getJsSymbol().getLineNumber() + "</td>");
 
       output.append("<td>"

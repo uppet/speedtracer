@@ -15,6 +15,8 @@
  */
 package com.google.speedtracer.client.model;
 
+import com.google.speedtracer.client.util.Url;
+
 /**
  * A Source and line number for a JavaScript symbol as specified in the symbol
  * mapping.
@@ -24,21 +26,17 @@ public class JsSymbol {
 
   private int lineNumber;
 
-  private String resourceName;
-
-  private String resourcePathBase;
+  private Url resourceUrl;
 
   private final String symbolName;
 
-  public JsSymbol(String resourcePathBase, String resourceName,
-      int lineNumber, String symbolName) {
-    this(resourcePathBase, resourceName, lineNumber, symbolName, false);
+  public JsSymbol(Url resourceUrl, int lineNumber, String symbolName) {
+    this(resourceUrl, lineNumber, symbolName, false);
   }
 
-  public JsSymbol(String resourcePathBase, String resourceName,
-      int lineNumber, String symbolName, boolean isNativeSymbol) {
-    this.resourcePathBase = resourcePathBase;
-    this.resourceName = resourceName;
+  public JsSymbol(Url resourceUrl, int lineNumber, String symbolName,
+      boolean isNativeSymbol) {
+    this.resourceUrl = resourceUrl;
     this.lineNumber = lineNumber;
     this.symbolName = symbolName;
     this.isNativeSymbol = isNativeSymbol;
@@ -48,23 +46,8 @@ public class JsSymbol {
     return lineNumber;
   }
 
-  /**
-   * The base of the resource. The base can be interpreted as the base of the
-   * URL to the resource.
-   * 
-   * @return the resource base path.
-   */
-  public String getResourceBase() {
-    return resourcePathBase;
-  }
-
-  /**
-   * The name of the source file or resource containing the symbol.
-   * 
-   * @return the name of the source file containing the symbol.
-   */
-  public String getResourceName() {
-    return resourceName;
+  public Url getResourceUrl() {
+    return resourceUrl;
   }
 
   public String getSymbolName() {
@@ -74,18 +57,18 @@ public class JsSymbol {
   public boolean isNativeSymbol() {
     return isNativeSymbol;
   }
-  
+
   public void merge(JsSymbol toMerge) {
-    if ("".equals(this.resourceName)) {
-      this.resourceName = toMerge.getResourceName();
-      this.resourcePathBase = toMerge.getResourceBase();
-      this.lineNumber = toMerge.getLineNumber();
+    if ("".equals(resourceUrl.getLastPathComponent())) {
+      resourceUrl = toMerge.getResourceUrl();
+      lineNumber = toMerge.getLineNumber();
     }
   }
 
   public boolean sameAs(JsSymbol symbol) {
-    return this.resourceName.equals(symbol.getResourceName())
-        && this.symbolName.equals(symbol.getSymbolName())
-        && (this.lineNumber == symbol.getLineNumber());
+    return resourceUrl.getLastPathComponent().equals(
+        symbol.getResourceUrl().getLastPathComponent())
+        && symbolName.equals(symbol.getSymbolName())
+        && (lineNumber == symbol.getLineNumber());
   }
 }

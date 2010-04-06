@@ -729,8 +729,8 @@ public class JavaScriptProfileModelV8Impl extends JavaScriptProfileModelImpl {
    * entry.
    */
   private void recordUnknownTick(JavaScriptProfileNode profileNode, int vmState) {
-    JsSymbol unknownSymbol = new JsSymbol("", "", 0, "unknown - "
-        + JavaScriptProfile.stateToString(vmState));
+    JsSymbol unknownSymbol = new JsSymbol(JavaScriptProfile.NO_RESOURCE, 0,
+        "unknown - " + JavaScriptProfile.stateToString(vmState));
     JavaScriptProfileNode child = profileNode.lookup(unknownSymbol,
         profileNode.getSymbolType());
     if (child == null) {

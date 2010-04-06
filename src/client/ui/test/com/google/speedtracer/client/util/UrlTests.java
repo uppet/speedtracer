@@ -22,6 +22,10 @@ import com.google.gwt.junit.client.GWTTestCase;
  */
 public class UrlTests extends GWTTestCase {
 
+  private static final Url emptyUrl = new Url("");
+
+  private static final Url pathOnlyUrl = new Url("some/path/to/resource.html");
+
   private static final Url urlWithHash = new Url(
       "https://wave.google.com/a/somedomain.com/#hashmark:foo:blah.baz!w%25stuff");
 
@@ -95,6 +99,35 @@ public class UrlTests extends GWTTestCase {
 
     origin = "https://wave.google.com:8080";
     assertEquals(origin, urlWithPort.getOrigin());
+
+    origin = "";
+    assertEquals(origin, pathOnlyUrl.getOrigin());
+
+    origin = "";
+    assertEquals(origin, emptyUrl.getOrigin());
+  }
+
+  /**
+   * Tests getting the path component of a URL.
+   */
+  public void testGetPath() {
+    String urlPath = "a/somedomain.com/#hashmark:foo:blah.baz!w%25stuff";
+    assertEquals(urlPath, urlWithHash.getPath());
+
+    urlPath = "a/somedomain.com/?somequery=1";
+    assertEquals(urlPath, urlWithQuery.getPath());
+
+    urlPath = "a/somedomain.com/?somequery=1#hashmark:foo:blah.baz!w%25stuff";
+    assertEquals(urlPath, urlWithQueryAndHash.getPath());
+
+    urlPath = "a/somedomain.com/?somequery=1#hashmark:foo:blah.baz!w%25stuff";
+    assertEquals(urlPath, urlWithPort.getPath());
+
+    urlPath = "some/path/to/resource.html";
+    assertEquals(urlPath, pathOnlyUrl.getPath());
+
+    urlPath = "";
+    assertEquals(urlPath, emptyUrl.getPath());
   }
 
   /**
@@ -106,8 +139,14 @@ public class UrlTests extends GWTTestCase {
     assertEquals(urlBase, urlWithHash.getResourceBase());
     assertEquals(urlBase, urlWithQuery.getResourceBase());
     assertEquals(urlBase, urlWithQueryAndHash.getResourceBase());
-    
+
     urlBase = "https://wave.google.com:8080/a/somedomain.com/";
     assertEquals(urlBase, urlWithPort.getResourceBase());
+
+    urlBase = "some/path/to/";
+    assertEquals(urlBase, pathOnlyUrl.getResourceBase());
+
+    urlBase = "";
+    assertEquals(urlBase, emptyUrl.getResourceBase());
   }
 }
