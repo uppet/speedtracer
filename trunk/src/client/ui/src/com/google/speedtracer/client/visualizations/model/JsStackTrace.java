@@ -19,6 +19,7 @@ import com.google.gwt.core.client.JsArrayString;
 import com.google.speedtracer.client.model.JsSymbol;
 import com.google.speedtracer.client.util.Csv;
 import com.google.speedtracer.client.util.JSOArray;
+import com.google.speedtracer.client.util.Url;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,20 +40,14 @@ public class JsStackTrace {
   public class JsStackFrame extends JsSymbol {
     private final int colNumber;
 
-    private JsStackFrame(String resourceUrlBase, String resourceName,
-        int lineNumber, int colNumber, String symbolName) {
-      super(resourceUrlBase, resourceName, lineNumber, symbolName);
+    private JsStackFrame(Url resourceUrl, int lineNumber, int colNumber,
+        String symbolName) {
+      super(resourceUrl, lineNumber, symbolName);
       this.colNumber = colNumber;
     }
 
     public int getColNumber() {
       return colNumber;
-    }
-
-    public String getResourceUrl() {
-      // The base for a JsStackFrame is interpreted as the URL base.
-      // This should already have a trailing slash.
-      return getResourceBase() + getResourceName();
     }
   }
 
@@ -78,13 +73,8 @@ public class JsStackTrace {
       // The second field is quoted, so a simple split() won't work.
       JsArrayString stackFrame = Csv.split(frameStrings.get(i));
 
-      String resourceUrl = stackFrame.get(1);
-      int resourceBaseEnd = resourceUrl.lastIndexOf("/") + 1;
-      String resourceUrlBase = resourceUrl.substring(0, resourceBaseEnd);
-      // Note that resourceName can be the empty string for main resources (like
-      // http://www.google.com/).
-      String resourceName = resourceUrl.substring(resourceBaseEnd,
-          resourceUrl.length());
+      String resourceUrlStr = stackFrame.get(1);
+      Url resourceUrl = new Url(resourceUrlStr);
 
       // We convert lineNumber and colNumber to a 1 based index.
       final int lineNumber = Integer.parseInt(stackFrame.get(2)) + 1;
@@ -96,8 +86,8 @@ public class JsStackTrace {
       // but if it isnt there, try the 4th.
       symbolName = (symbolName.equals("")) ? stackFrame.get(4) : symbolName;
 
-      this.frames.add(new JsStackFrame(resourceUrlBase, resourceName,
-          lineNumber, colNumber, symbolName));
+      this.frames.add(new JsStackFrame(resourceUrl, lineNumber, colNumber,
+          symbolName));
     }
   }
 }

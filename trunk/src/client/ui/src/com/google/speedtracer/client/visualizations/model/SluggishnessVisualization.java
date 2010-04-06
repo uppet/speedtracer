@@ -17,14 +17,11 @@ package com.google.speedtracer.client.visualizations.model;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.topspin.ui.client.Container;
-import com.google.speedtracer.client.SymbolServerController;
-import com.google.speedtracer.client.SymbolServerService;
 import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.client.model.UiEventModel;
 import com.google.speedtracer.client.model.Visualization;
 import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.timeline.GraphUiProps;
-import com.google.speedtracer.client.util.Url;
 import com.google.speedtracer.client.view.MainTimeLine;
 import com.google.speedtracer.client.visualizations.view.CurrentSelectionMarker;
 import com.google.speedtracer.client.visualizations.view.SluggishnessDetailView;
@@ -105,12 +102,6 @@ public class SluggishnessVisualization extends
       MainTimeLine timeLine) {
     return new SluggishnessDetailView(container, this,
         getModel().getSourceModel(), resources);
-  }
-
-  public SymbolServerController getCurrentSymbolServerController() {
-    SluggishnessModel sModel = (SluggishnessModel) getModel();
-    String resourceUrl = sModel.getCurrentUrl();
-    return SymbolServerService.getSymbolServerController(new Url(resourceUrl));
   }
 
   public MainTimeLine getTimeline() {

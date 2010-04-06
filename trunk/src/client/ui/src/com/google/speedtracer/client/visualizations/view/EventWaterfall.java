@@ -21,12 +21,15 @@ import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.MouseOverEvent;
 import com.google.gwt.topspin.ui.client.MouseOverListener;
 import com.google.speedtracer.client.SymbolServerController;
+import com.google.speedtracer.client.SymbolServerService;
 import com.google.speedtracer.client.model.ButtonDescription;
 import com.google.speedtracer.client.model.EventRecordType;
 import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.client.model.UiEventModel;
 import com.google.speedtracer.client.util.JsIntegerMap;
 import com.google.speedtracer.client.util.TimeStampFormatter;
+import com.google.speedtracer.client.util.Url;
+import com.google.speedtracer.client.visualizations.model.SluggishnessModel;
 import com.google.speedtracer.client.visualizations.model.SluggishnessVisualization;
 import com.google.speedtracer.client.visualizations.view.SluggishnessDetailView.EventWaterfallFilter;
 
@@ -167,7 +170,7 @@ public class EventWaterfall extends FilteringScrollTable {
   public void renderTable() {
     // Cancel any pending resymbolization requests.
     // Add resymbolized frame if it is available.
-    SymbolServerController ssController = getVisualization().getCurrentSymbolServerController();
+    SymbolServerController ssController = getCurrentSymbolServerController();
     if (ssController != null) {
       ssController.cancelPendingRequests();
     }
@@ -202,5 +205,11 @@ public class EventWaterfall extends FilteringScrollTable {
     this.beginIndex = beginIndex;
     this.setEndIndex(endIndex);
     renderTable();
+  }
+
+  private SymbolServerController getCurrentSymbolServerController() {
+    SluggishnessModel sModel = (SluggishnessModel) getVisualization().getModel();
+    String resourceUrl = sModel.getDataModel().getTabDescription().getUrl();
+    return SymbolServerService.getSymbolServerController(new Url(resourceUrl));
   }
 }

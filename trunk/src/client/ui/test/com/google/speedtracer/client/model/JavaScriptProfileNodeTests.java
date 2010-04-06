@@ -16,6 +16,7 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.junit.client.GWTTestCase;
+import com.google.speedtracer.client.util.Url;
 
 import java.util.List;
 
@@ -30,16 +31,17 @@ public class JavaScriptProfileNodeTests extends GWTTestCase {
   }
 
   public void testJavaScriptProfileNodeHierarchy() {
-    JavaScriptProfileNode topNode = new JavaScriptProfileNode(new JsSymbol("",
-        "", 0, "top"));
-    JavaScriptProfileNode child0 = new JavaScriptProfileNode(new JsSymbol("",
-        "", 0, "child0"));
+    Url resourceUrl = new Url("");
+    JavaScriptProfileNode topNode = new JavaScriptProfileNode(new JsSymbol(
+        resourceUrl, 0, "top"));
+    JavaScriptProfileNode child0 = new JavaScriptProfileNode(new JsSymbol(
+        resourceUrl, 0, "child0"));
     topNode.addChild(child0);
-    JavaScriptProfileNode child1 = new JavaScriptProfileNode(new JsSymbol("",
-        "", 0, "child1"));
+    JavaScriptProfileNode child1 = new JavaScriptProfileNode(new JsSymbol(
+        resourceUrl, 0, "child1"));
     topNode.addChild(child1);
-    JavaScriptProfileNode child2 = new JavaScriptProfileNode(new JsSymbol("",
-        "", 0, "child2"));
+    JavaScriptProfileNode child2 = new JavaScriptProfileNode(new JsSymbol(
+        resourceUrl, 0, "child2"));
     child1.addChild(child2);
 
     List<JavaScriptProfileNode> topChildren = topNode.getChildren();
@@ -56,15 +58,16 @@ public class JavaScriptProfileNodeTests extends GWTTestCase {
   }
 
   public void testJavaScriptProfileNodeMerge() {
-    JavaScriptProfileNode child0 = new JavaScriptProfileNode(new JsSymbol("",
-        "", 0, "child0"));
+    Url resourceUrl = new Url("");
+    JavaScriptProfileNode child0 = new JavaScriptProfileNode(new JsSymbol(
+        resourceUrl, 0, "child0"));
     child0.addSelfTime(1);
     child0.addTime(2);
     assertEquals(1.0, child0.getSelfTime(), .001);
     assertEquals(3.0, child0.getTime(), .001);
 
-    JavaScriptProfileNode child1 = new JavaScriptProfileNode(new JsSymbol("",
-        "", 0, "child1"));
+    JavaScriptProfileNode child1 = new JavaScriptProfileNode(new JsSymbol(
+        resourceUrl, 0, "child1"));
     child1.addSelfTime(3);
     child1.addTime(10);
     assertEquals(3.0, child1.getSelfTime(), .001);
@@ -78,16 +81,17 @@ public class JavaScriptProfileNodeTests extends GWTTestCase {
   }
 
   public void testJavaScriptProfileNodeTime() {
-    JavaScriptProfileNode topNode = new JavaScriptProfileNode(new JsSymbol("",
-        "", 0, "top"));
-    JavaScriptProfileNode child0 = new JavaScriptProfileNode(new JsSymbol("",
-        "", 0, "child0"));
+    Url resourceUrl = new Url("");
+    JavaScriptProfileNode topNode = new JavaScriptProfileNode(new JsSymbol(
+        resourceUrl, 0, "top"));
+    JavaScriptProfileNode child0 = new JavaScriptProfileNode(new JsSymbol(
+        resourceUrl, 0, "child0"));
     topNode.addChild(child0);
-    JavaScriptProfileNode child1 = new JavaScriptProfileNode(new JsSymbol("",
-        "", 0, "child1"));
+    JavaScriptProfileNode child1 = new JavaScriptProfileNode(new JsSymbol(
+        resourceUrl, 0, "child1"));
     topNode.addChild(child1);
-    JavaScriptProfileNode child2 = new JavaScriptProfileNode(new JsSymbol("",
-        "", 0, "child2"));
+    JavaScriptProfileNode child2 = new JavaScriptProfileNode(new JsSymbol(
+        resourceUrl, 0, "child2"));
     child1.addChild(child2);
 
     child0.addSelfTime(1.0);
