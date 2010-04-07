@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.google.speedtracer.client.model;
 
+import com.google.gwt.core.client.JsArrayNumber;
 import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.JsIntegerDoubleMap;
 
@@ -25,6 +26,62 @@ import java.util.Comparator;
  * the plugin.
  */
 public class UiEvent extends EventRecord {
+
+  /**
+   * A callback interface for traversing over a {@link UiEvent} in leaf-first
+   * order. This type of traversal provides a means to do an upward accumulation
+   * of the tree structure.
+   * 
+   * @see UiEvent#apply(LeafFirstTraversal)
+   * @see LeafFirstTraversalNumber
+   * @see LeafFirstTraversalVoid
+   * 
+   * @param <T> the type of the accumulating object
+   */
+  public interface LeafFirstTraversal<T> {
+    /**
+     * Called for each event/sub-event contained within a top-level
+     * {@link UiEvent}.
+     * 
+     * @param event the current event/sub-event
+     * @param values the accumulated values for each of current events children,
+     *          values will be empty for leafs
+     * @return the final accumulated value for this event/sub-event
+     */
+    T visit(UiEvent event, JSOArray<T> values);
+  }
+
+  /**
+   * A concrete specialization of {@link LeafFirstTraversal} which avoids having
+   * to use primitive boxing.
+   * 
+   * @see UiEvent#apply(LeafFirstTraversalNumber)
+   */
+  public interface LeafFirstTraversalNumber {
+
+    /**
+     * @see LeafFirstTraversal#visit(UiEvent, JSOArray)
+     */
+    double visit(UiEvent event, JsArrayNumber values);
+  }
+
+  /**
+   * A callback interface for traversing over a {@link UiEvent}. Use this type
+   * of traversal for lower overhead when you do not need to perform upward
+   * accumulation.
+   * 
+   * @see UiEvent#apply(LeafFirstTraversalVoid)
+   */
+  public interface LeafFirstTraversalVoid {
+    /**
+     * Called for each event/sub-event contained within a top-level
+     * {@link UiEvent}.
+     * 
+     * @param event the current event/sub-event
+     */
+    void visit(UiEvent event);
+  }
+
   /**
    * Comparator object for comparing UiEvent objects.
    */
@@ -62,11 +119,70 @@ public class UiEvent extends EventRecord {
     return data.hasOwnProperty('duration');
   }-*/;
 
+  private static <T> T apply(LeafFirstTraversal<T> visitor, UiEvent event) {
+    final JSOArray<T> values = JSOArray.create();
+    final JSOArray<UiEvent> children = event.getChildren();
+    for (int i = 0, n = children.size(); i < n; ++i) {
+      values.push(apply(visitor, children.get(i)));
+    }
+    return visitor.visit(event, values);
+  }
+
+  private static double apply(LeafFirstTraversalNumber visitor, UiEvent event) {
+    final JsArrayNumber values = JsArrayNumber.createArray().cast();
+    final JSOArray<UiEvent> children = event.getChildren();
+    for (int i = 0, n = children.size(); i < n; ++i) {
+      values.push(apply(visitor, children.get(i)));
+    }
+    return visitor.visit(event, values);
+  }
+
+  private static void apply(LeafFirstTraversalVoid visitor, UiEvent event) {
+    final JSOArray<UiEvent> children = event.getChildren();
+    for (int i = 0, n = children.size(); i < n; ++i) {
+      apply(visitor, children.get(i));
+    }
+    visitor.visit(event);
+  }
+
   protected UiEvent() {
   }
 
   public final void acceptVisitor(EventVisitor visitor) {
     visitor.visitUiEvent(this);
+  }
+
+  /**
+   * Applies a {@link LeafFirstTraversal} type visitor to this event and all of
+   * its child events.
+   * 
+   * @param <T> the accumulating type for the visitor
+   * @param visitor
+   * @return the final accumulated object for the event
+   */
+  public final <T> T apply(LeafFirstTraversal<T> visitor) {
+    return apply(visitor, this);
+  }
+
+  /**
+   * Applies a {@link LeafFirstTraversalNumber} type visitor to this event and
+   * all of its child events.
+   * 
+   * @param visitor
+   * @return the final accumulated value for the event
+   */
+  public final double apply(LeafFirstTraversalNumber visitor) {
+    return apply(visitor, this);
+  }
+
+  /**
+   * Applies a {@link LeafFirstTraversalVoid} type visitor to this event and all
+   * of its child events.
+   * 
+   * @param visitor
+   */
+  public final void apply(LeafFirstTraversalVoid visitor) {
+    apply(visitor, this);
   }
 
   public final native String getBackTrace() /*-{
