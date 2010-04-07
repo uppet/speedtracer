@@ -1,0 +1,52 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'>
+  <ui:style>
+    .base {
+      background: rgba(0, 0, 0, 0.8);
+      padding: 5px 20px;
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      left: 0;
+      z-index: 300;
+      color: #fff;
+    }
+    
+    .layout {
+      margin-right: 20px;
+    }
+    
+    .results {
+      left-margin: 20px;
+      right-margin: 20px;
+      padding: 10px;
+      height: 500px;
+      color: #000;
+      background-color: #fff;
+      border: 1px black solid;
+      overflow: auto;
+    }
+    
+    .closeButton {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      background-color: #000;
+      color: #fff;
+      font-size: 1.5em;
+      font-family: sans-serif;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </ui:style>
+  <div class='{style.base}'>
+    <h2>Search for Events marked with log entries and combine profiles</h2>
+    <div class='{style.closeButton}' ui:field='closeButton'>X</div>
+    <div class='{style.layout}'>
+      Regular Expression:
+      <input type='text' ui:field='regexpInput' />
+      <input type='button' value='Search' ui:field='searchButton' />
+    </div>
+    <br />
+    <div class='{style.results}' ui:field='resultsDiv'></div>
+  </div>
+</ui:UiBinder>

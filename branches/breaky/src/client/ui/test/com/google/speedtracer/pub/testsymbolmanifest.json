@@ -1,0 +1,12 @@
+{
+  "1587583491351748F4F66117168CA45B.cache.html": {
+    "symbols": "symbols/1587583491351748F4F66117168CA45B.symbolMap",
+    "sourceServer": "http://fakesourceserver:8088/foobar/",
+    "type": "gwt"
+  },
+  "http://nonGwtSymbols.js" : {
+    "symbols": "doesntmatter",
+    "sourceServer": "http://code.google.com/",
+    "type": "funky_chicken"
+  }
+} 

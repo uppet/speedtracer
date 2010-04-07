@@ -1,0 +1,4 @@
+{"hintletRule":"Frequent Layout activity","timestamp":1,"description":"Event triggered 22 layouts taking 102ms.","refRecord":1,"severity":2}
+{"hintletRule":"Frequent Layout activity","timestamp":3,"description":"Event triggered 3 layouts taking 150ms.","refRecord":3,"severity":2}
+{"hintletRule":"Frequent Layout activity","timestamp":6,"description":"Event triggered 3 layouts taking 200ms.","refRecord":6,"severity":2}
+{"hintletRule":"Frequent Layout activity","timestamp":7,"description":"Event triggered 25 layouts taking 180ms.","refRecord":7,"severity":2}

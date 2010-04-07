@@ -1,0 +1,10 @@
+/* Annotated styles for Legend.java */
+.pieChart {
+  width: 80px;
+  height: 80px;
+  margin-right: 20px;
+}
+
+.legend {  
+  float: right;
+}

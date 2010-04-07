@@ -1,0 +1,56 @@
+<!-- Manual test for the monitoring on/off callback -->
+<html>
+  <head>
+    <title>HeadlessExtension test4</title>
+    <script language="javascript" src="chrome-extension://jolleknjmmglebfldiogepklbacoohni/headless_api.js"></script>
+    <script>
+
+var timerInterval = window.setInterval(function() {
+  var helloDiv = document.getElementById('hello'); 
+  var content = helloDiv.innerText;
+  helloDiv.innerText = content + " hello";
+}, 450);
+
+function addTimeout() {
+  window.setTimeout(function() {
+    window.clearInterval(timerInterval);
+    speedtracer.stopMonitoring(function() {
+    var outputDiv = document.getElementById('output');
+      outputDiv.innerHTML = outputDiv.innerHTML + "<br/> Monitoring Disabled";
+        speedtracer.getDump(function(data) {
+          var outputDiv = document.getElementById('output');
+          outputDiv.innerHTML = outputDiv.innerHTML + "<br/>" + data;
+      })
+    });
+  }, 3000);
+}
+
+if (!window.speedtracer) { 
+  alert("SpeedTracer API not found");
+} else {
+  speedtracer.clearData();
+
+  speedtracer.startMonitoring(undefined, function() {
+    var outputDiv = document.getElementById('output');
+    outputDiv.innerHTML = outputDiv.innerHTML + "<br/> Monitoring Enabled";
+    addTimeout();
+  });
+}
+    </script>
+  </head>
+  <body>
+    <h1>HeadlessExtension test4</h1>
+    <p>
+    The div below is affected by a timer.  After a few intervals, a second 
+    div will be populated with timeline records pulled from the headless 
+    extension.
+    </p>
+    <p>
+    This test uses callbacks from speedtracer.startMonitoring() and 
+    speedtracer.stopMonitoring to trigger subsequent phases of the test.  
+    </p>
+    <div id='hello'></div>
+    Output:
+    <div id='output'></div>
+  </body>
+</html>
