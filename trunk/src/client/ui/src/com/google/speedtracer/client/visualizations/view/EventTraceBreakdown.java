@@ -121,6 +121,9 @@ public class EventTraceBreakdown {
         double sx = (event.getTime() - rootEvent.getTime())
             * masterDomainToCoords;
         double sw = (event.getDuration()) * masterDomainToCoords;
+        // Prevent exception due to rounding errors that slightly exceed
+        // MASTER_COORD_WIDTH
+        sw = Math.min(sw, MASTER_COORD_WIDTH);
         // Calling drawImage with a width of exactly 0 throws an exception in
         // JavaScript. No need to even make the draw call in this situation.
         // This is a defensive guard since we have guarantees earlier on that
