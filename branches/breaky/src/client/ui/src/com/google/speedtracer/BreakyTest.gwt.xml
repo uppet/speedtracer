@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Could not determine the version of your GWT SDK; using the module DTD from GWT 1.6.4. You may want to change this. -->
+<!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 1.6.4//EN" "http://google-web-toolkit.googlecode.com/svn/tags/1.6.4/distro-source/core/src/gwt-module.dtd">
+<module rename-to="breaky">
+	<inherits name="com.google.speedtracer.Common" />
+  <inherits name='com.google.gwt.xhr.XMLHttpRequest' />
+  <inherits name="com.google.speedtracer.HeadlessAPI" />
+  <script src="jsonschema-b4-speedtracer.js" /> 
+  <entry-point class="com.google.speedtracer.client.breaky.BreakyTest" />
+  <public path="breaky/public" />
+  <add-linker name="std" />
+</module>

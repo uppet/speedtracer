@@ -55,7 +55,7 @@ import java.util.HashMap;
 @Extension.ManifestInfo(name = "Speed Tracer - headless (by Google)", description = "Get insight into the performance of your web applications.", version = ClientConfig.VERSION, permissions = {
     "tabs", "http://*/*", "https://*/*"}, icons = {
     "resources/icon16.png", "resources/icon32.png", "resources/icon48.png",
-    "resources/icon128.png"})
+    "resources/icon128.png"}, publicKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDLwpQwF5uAQ8ufE3XErrzZBim2rDzUpKFOD+/jStzSBczBXkZIdUhOpdrfhSbDjDUsPeWkHg1bdsjSGg/4hfGeJCFCOwwPqOJHFKVRPan1hMWu7nIDKWbP6d/eCBw8MWq1o+FObwbB0AIgNFsvoQgN1iwrRZB6rxkQmEdYQqiIOQIDAQAB")
 public class HeadlessBackgroundPage extends Extension implements
     ConnectEvent.Listener {
 
