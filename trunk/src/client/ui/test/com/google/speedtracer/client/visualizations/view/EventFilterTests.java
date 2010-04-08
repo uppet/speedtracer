@@ -17,11 +17,9 @@ package com.google.speedtracer.client.visualizations.view;
 
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.speedtracer.client.model.AggregateTimeVisitor;
-import com.google.speedtracer.client.model.EventVisitorTraverser;
 import com.google.speedtracer.client.model.LayoutEvent;
 import com.google.speedtracer.client.model.ParseHtmlEvent;
 import com.google.speedtracer.client.model.UiEvent;
-import com.google.speedtracer.client.model.EventVisitor.PostOrderVisitor;
 
 /**
  * Tests for {@link EventFilter}.
@@ -124,8 +122,7 @@ public class EventFilterTests extends GWTTestCase {
   }
 
   private void calcSelfTime(UiEvent uiEvent) {
-    PostOrderVisitor[] postOrderVisitors = {new AggregateTimeVisitor(uiEvent)};
-    EventVisitorTraverser.traversePostOrder(uiEvent, postOrderVisitors);
+    AggregateTimeVisitor.apply(uiEvent);
   }
 
   private UiEvent createUiEventDuration(int eventType, double duration) {
