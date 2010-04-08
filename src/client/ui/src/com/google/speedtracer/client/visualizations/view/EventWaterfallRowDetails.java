@@ -650,7 +650,7 @@ public class EventWaterfallRowDetails extends RowDetails implements
       // stuff landed in WebKit. Can we get symbol names? For now we re-use the
       // same infrastructure to render this.
       backTrace = "ignored," + e.getCallerScriptName() + ","
-          + e.getCallerScriptLine() + ",-1,,";
+          + e.getCallerScriptLine() + ",-1,," + e.getCallerFunctionName();
       details.put("Caused by", new StackTraceRenderer(backTrace,
           symbolClickListener, this, currentAppUrl, this, true, resources));
     }
