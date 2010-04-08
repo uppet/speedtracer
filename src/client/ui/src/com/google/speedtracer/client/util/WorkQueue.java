@@ -41,9 +41,6 @@ public class WorkQueue implements Command.Method {
   private List<Node> queue = new ArrayList<Node>();
   private double executeStartTime;
 
-  public WorkQueue() {
-  }
-
   /**
    * Add work to the back of the queue.
    */
