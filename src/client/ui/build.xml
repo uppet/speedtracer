@@ -9,11 +9,15 @@
 
   <!-- TODO(knorton): Might be possible to get rid of this -->
   <property name="speedtracer.destdir" location="../../${config}" />
+  <property name="stools.pydir" location="../../stools/src/py" />
   <property name="moniker" value="speedtracer" />
   <property name="headless.moniker" value="speedtracerheadless" />
   <property name="destdir" location="${speedtracer.destdir}/${moniker}" />
   <property name="headless.destdir" 
             location="../../${config}/${headless.moniker}" />
+  <property name="breaky.moniker" value="speedtracerbreaky" />
+  <property name="breaky.destdir"
+            location="../../${config}/${breaky.moniker}" />
   <property name="speedtracer.revision" value="0" />
 
   <!-- Platform identifier -->
@@ -172,6 +176,36 @@
       <fileset dir="${wardir}">
         <include name="hintletengine/**" />
       </fileset>
+    </copy>
+  </target>
+
+  <!-- The Breaky Test -->
+  <target name="breaky.build">
+    <mkdir dir="${breaky.destdir}" />
+    <uptodate property="speedtracer.client.breaky.updated"
+      targetfile="${wardir}/breaky/breaky.nocache.js">
+      <srcfiles dir="src" includes="**/**" />
+    </uptodate>
+    <antcall target="breaky.build.run" />
+
+    <!-- Run the test 10 seconds is more than enough for the current version -->
+    <exec executable="python" failonerror="yes" timeout="10000" dir="${breaky.destdir}">
+      <arg value="${stools.pydir}/breaky-test.py" />
+      <arg value="--headless_path=${headless.destdir}" />
+      <arg value="--chrome_path=${chrome.path}" />
+    </exec>
+  </target>
+
+  <!-- A conditional sub-target to be called from breaky.build -->
+  <target name = "breaky.build.run"
+    depends="init, classes.build, headless.extension.build"
+    unless="speedtracer.client.breaky.updated">
+    <gwtc module="com.google.speedtracer.BreakyTest" />
+    <copy todir="${breaky.destdir}">
+      <fileset dir="${wardir}">
+        <include name="breaky/**" />
+      </fileset>
+      <fileset dir="war" includes="breaky.html" />
     </copy>
   </target>
 

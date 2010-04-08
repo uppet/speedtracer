@@ -18,6 +18,8 @@ package com.google.speedtracer.client.model;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.TextResource;
+import com.google.gwt.user.client.DeferredCommand;
+import com.google.speedtracer.client.breaky.DumpProcessor;
 import com.google.speedtracer.client.util.JSON;
 
 import java.util.ArrayList;
@@ -87,8 +89,16 @@ public class MockModelGenerator {
     String[] events = resource.getText().split("\n");
     generator.run(events);
   }
-
-  private static void initializeDataSets() {
+  
+  public static void simulateDump(DumpProcessor.DumpEntryHandler handler, int dataSetIndex) {
+    initializeDataSets();
+    TextResource resource = dataSets.get(dataSetIndex).dataSetResource;
+    String[] events = resource.getText().split("\n");
+    
+    DeferredCommand.addCommand(new DumpProcessor(handler, events)); 
+  }
+    
+   private static void initializeDataSets() {
     if (mockResources == null) {
       mockResources = GWT.create(MockResources.class);
       dataSets.add(new DataSet("digg.com", mockResources.diggDotCom()));

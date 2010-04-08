@@ -68,7 +68,8 @@ import java.util.HashMap;
     description = "Get insight into the performance of your web applications.", version = ClientConfig.VERSION, permissions = {
     "tabs", "http://*/*", "https://*/*"}, icons = {
     "resources/icon16.png", "resources/icon32.png", "resources/icon48.png",
-    "resources/icon128.png"})
+    "resources/icon128.png"},
+    publicKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDm+jz32G1duFpqC9Gvkx3sxjCapLPeTrLqAxpUfTMUtpE8kmwEYc92LDOPzWooPzLINwqpNJNANQyvrJufzNENBDiDWY5QtHt/vXf25BM71Um+HistVJ35Cxg/wcmBXI/fi5qt7EQUDRW0hd0Bwo2m+mXiv4QGZNVz5Q8SaGG2tQIDAQAB")
 public abstract class BackgroundPage extends Extension {
 
   /**

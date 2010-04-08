@@ -44,9 +44,10 @@ class ExtensionArtifact extends Artifact<ExtensionArtifact> {
   private final String version;
   private final String updateUrl;
   private final IconInfo[] icons;
+  private final String publicKey;
 
   public ExtensionArtifact(String name, String description, String version,
-      String[] permissions, String updateUrl, IconInfo[] icons) {
+      String[] permissions, String updateUrl, IconInfo[] icons, String publicKey) {
     super(ExtensionLinker.class);
     this.name = name;
     this.description = description;
@@ -54,6 +55,7 @@ class ExtensionArtifact extends Artifact<ExtensionArtifact> {
     this.permissions = permissions;
     this.updateUrl = updateUrl;
     this.icons = icons;
+    this.publicKey = publicKey;
   }
 
   public String getDescription() {
@@ -78,6 +80,10 @@ class ExtensionArtifact extends Artifact<ExtensionArtifact> {
 
   public String getVersion() {
     return version;
+  }
+  
+  public String getPublicKey() {
+    return publicKey;
   }
 
   @Override

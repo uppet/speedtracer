@@ -146,7 +146,8 @@ public class ExtensionGenerator extends Generator {
     if (spec != null) {
       return new ExtensionArtifact(spec.name(), spec.description(),
           spec.version(), spec.permissions(), spec.updateUrl(),
-          createIconResources(logger, context, userType, spec.icons()));
+          createIconResources(logger, context, userType, spec.icons()),
+          spec.publicKey());
     }
 
     logger.log(TreeLogger.ERROR,
