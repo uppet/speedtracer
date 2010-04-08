@@ -32,25 +32,48 @@ import java.util.List;
  * Handles profile data records and stores parsed profiles for later retrieval.
  */
 public class JavaScriptProfileModel implements EventRecordHandler {
-  private class VisitProfileWorker implements WorkQueue.Node {
-    private final EventVisitor visitor;
-    private JsArrayNumber eventsWithProfiles;
-    private int currentEventSequence;
+  /**
+   * A callback object for processing each event contained within a
+   * {@link JavaScriptProfileModel}.
+   * 
+   * @see JavaScriptProfileModel#processEventsWithProfiles(EventProcessor)
+   */
+  public interface EventProcessor {
+    void onCompleted();
 
-    public VisitProfileWorker(EventVisitor visitor,
+    void process(UiEvent event);
+  }
+
+  private class EventProcessorWorker implements WorkQueue.Node {
+    public final EventProcessor processor;
+    private final JsArrayNumber eventsWithProfiles;
+    private final int currentEventSequence;
+
+    public EventProcessorWorker(EventProcessor processor,
         JsArrayNumber eventsWithProfiles, int currentEventSequence) {
-      this.visitor = visitor;
+      this.processor = processor;
       this.eventsWithProfiles = eventsWithProfiles;
       this.currentEventSequence = currentEventSequence;
     }
 
     public void execute() {
-      doVisitEventsWithProfiles(visitor, eventsWithProfiles,
-          currentEventSequence);
+      for (int i = currentEventSequence, length = eventsWithProfiles.length(); i < length; ++i) {
+        int eventSequence = (int) eventsWithProfiles.get(i);
+        UiEvent event = eventRecordLookup.findEventRecord(eventSequence).cast();
+        assert UiEvent.isUiEvent(event);
+        assert event.hasJavaScriptProfile();
+        processor.process(event);
+        if (workQueue.isTimeSliceExpired()) {
+          workQueue.append(new EventProcessorWorker(processor,
+              eventsWithProfiles, i + 1));
+          return;
+        }
+      }
+      processor.onCompleted();
     }
 
     public String getDescription() {
-      return "VisitProfileWorker";
+      return "EventProcessorWorker";
     }
   }
 
@@ -142,37 +165,20 @@ public class JavaScriptProfileModel implements EventRecordHandler {
       if (!profileData.isOrphaned()) {
         rec = eventRecordLookup.findEventRecord(profileData.getSequence() - 1).cast();
       }
-      processProfileData(rec, profileData);      
-    }    
+      processProfileData(rec, profileData);
+    }
   }
 
   /**
-   * Iterates over any UiEvent that has processed profile data.
+   * Iterates over any {@link UiEvent} that has processed profile data
+   * associated with it. The iteration will be carried out asynchronously and
+   * calls to {@link EventProcessor#process(UiEvent)} may be deferred via Timer.
+   * 
+   * @param processor
    */
-  public void visitEventsWithProfiles(EventVisitor visitor) {
-    JsArrayNumber eventsWithProfiles = profileMap.getKeys();
-    int currentEventSequence = 0;
-
-    WorkQueue.Node worker = new VisitProfileWorker(visitor, eventsWithProfiles,
-        currentEventSequence);
-    workQueue.append(worker);
-  }
-
-  private void doVisitEventsWithProfiles(EventVisitor visitor,
-      JsArrayNumber eventsWithProfiles, int currentEventSequence) {
-    for (int i = currentEventSequence, length = eventsWithProfiles.length(); i < length; ++i) {
-      int eventSequence = (int) eventsWithProfiles.get(i);
-      UiEvent event = (UiEvent) eventRecordLookup.findEventRecord(eventSequence);
-      if (event.hasJavaScriptProfile()) {
-        visitor.visitUiEvent(event);
-      }
-      if (workQueue.isTimeSliceExpired()) {
-        workQueue.append(new VisitProfileWorker(visitor, eventsWithProfiles,
-            i + 1));
-        return;
-      }
-    }
-    visitor.postProcess();
+  public void processEventsWithProfiles(EventProcessor processor) {
+    workQueue.append(new EventProcessorWorker(processor, profileMap.getKeys(),
+        0));
   }
 
   private void dumpNodeChildrenFlat(double totalTime,

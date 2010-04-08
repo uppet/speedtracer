@@ -102,7 +102,7 @@ public class JavaScriptProfileModelTests extends GWTTestCase {
         UiEvent event1 = (UiEvent) lookup.findEventRecord(1);
         UiEvent event3 = (UiEvent) lookup.findEventRecord(3);
         if (event1.hasJavaScriptProfile() && event3.hasJavaScriptProfile()) {
-          doTestVisit(profileModel);
+          doTestEventProcessing(profileModel);
         } else {
           Command.defer(this);
         }
@@ -111,12 +111,12 @@ public class JavaScriptProfileModelTests extends GWTTestCase {
     delayTestFinish(10000);
   }
 
-  // After the profile data is parsed, the visit code can be exercised.
-  private void doTestVisit(final JavaScriptProfileModel profileModel) {
-    profileModel.visitEventsWithProfiles(new EventVisitor() {
-      boolean foundEvent[] = new boolean[4];
+  // After the profile data is parsed, the EventProcessor code can be exercised.
+  private void doTestEventProcessing(final JavaScriptProfileModel profileModel) {
+    profileModel.processEventsWithProfiles(new JavaScriptProfileModel.EventProcessor() {
+      final boolean foundEvent[] = new boolean[4];
 
-      public void postProcess() {
+      public void onCompleted() {
         if (foundEvent[1] && foundEvent[3]) {
           finishTest();
         } else {
@@ -124,9 +124,8 @@ public class JavaScriptProfileModelTests extends GWTTestCase {
         }
       }
 
-      public void visitUiEvent(UiEvent e) {
-        int sequence = e.getSequence();
-        foundEvent[sequence] = true;
+      public void process(UiEvent event) {
+        foundEvent[event.getSequence()] = true;
       }
     });
   }

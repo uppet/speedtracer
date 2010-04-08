@@ -36,13 +36,10 @@ import com.google.speedtracer.client.SymbolServerService;
 import com.google.speedtracer.client.SourceViewer.SourcePresenter;
 import com.google.speedtracer.client.SourceViewer.SourceViewerLoadedCallback;
 import com.google.speedtracer.client.model.DataModel;
-import com.google.speedtracer.client.model.EventVisitor;
-import com.google.speedtracer.client.model.EventVisitorTraverser;
 import com.google.speedtracer.client.model.JavaScriptProfile;
 import com.google.speedtracer.client.model.JavaScriptProfileModel;
 import com.google.speedtracer.client.model.LogEvent;
 import com.google.speedtracer.client.model.UiEvent;
-import com.google.speedtracer.client.model.EventVisitor.PostOrderVisitor;
 import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.Url;
 import com.google.speedtracer.client.util.dom.EventListenerOwner;
@@ -104,40 +101,6 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
     }
   }
 
-  private class MatchLogVisitor implements PostOrderVisitor {
-    private boolean found = false;
-    private final String regexp;
-    private int sequence;
-
-    public MatchLogVisitor(String regexp) {
-      this.regexp = regexp;
-    }
-
-    public void postProcess() {
-      // Reset to starting state
-      found = false;
-    }
-
-    public void setSequence(int sequence) {
-      this.sequence = sequence;
-    }
-
-    public void visitUiEvent(UiEvent e) {
-      if (found) {
-        return;
-      }
-      if (e.getType() == LogEvent.TYPE) {
-        LogEvent event = (LogEvent) e;
-        String message = event.getMessage();
-        if (message.matches(regexp)) {
-          found = true;
-          matchingProfiles.push(dataModel.getJavaScriptProfileModel().getProfileForEvent(
-              sequence));
-        }
-      }
-    }
-  }
-
   private class ProfileClickListener implements ClickListener {
     private final int profileType;
     private final JavaScriptProfileRenderer renderer;
@@ -150,6 +113,55 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
 
     public void onClick(ClickEvent clickEvent) {
       renderer.show(profileType);
+    }
+  }
+
+  private class SearchController implements
+      JavaScriptProfileModel.EventProcessor, UiEvent.LeafFirstTraversalVoid {
+    private int eventsFound = 0;
+    private int logsFound = 0;
+    private JSOArray<JavaScriptProfile> matchingProfiles;
+    private final String regexp;
+
+    // Transient state that is reset each time we search a UiEvent.
+    private boolean found;
+    private int sequence;
+
+    private SearchController(String regexp) {
+      this.regexp = regexp;
+    }
+
+    public void onCompleted() {
+      onSearchCompleted(eventsFound, logsFound, matchingProfiles);
+    }
+
+    public void process(UiEvent event) {
+      eventsFound++;
+      if (event.hasUserLogs()) {
+        logsFound++;
+        seachForMatchingLogs(event);
+      }
+    }
+
+    public void visit(UiEvent event) {
+      if (found) {
+        return;
+      }
+
+      if (event.getType() == LogEvent.TYPE) {
+        final LogEvent log = event.cast();
+        if (log.getMessage().matches(regexp)) {
+          found = true;
+          matchingProfiles.push(dataModel.getJavaScriptProfileModel().getProfileForEvent(
+              sequence));
+        }
+      }
+    }
+
+    private void seachForMatchingLogs(UiEvent event) {
+      found = false;
+      sequence = event.getSequence();
+      event.apply(this);
     }
   }
 
@@ -176,8 +188,6 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
   private boolean inSearch = false;
 
   private final EventListenerOwner listenerOwner = new EventListenerOwner();
-
-  private JSOArray<JavaScriptProfile> matchingProfiles;
 
   private ErrorDiv errorDiv;
 
@@ -234,18 +244,18 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
    * found profiles into one, then displays a renderer to display the resulting
    * merge profile.
    */
-  private void mergeProfiles() {
+  private void mergeProfiles(JSOArray<JavaScriptProfile> profiles) {
     JavaScriptProfile profile = new JavaScriptProfile();
-    for (int i = 0, length = matchingProfiles.size(); i < length; ++i) {
-      profile.merge(matchingProfiles.get(i));
+    for (int i = 0, length = profiles.size(); i < length; ++i) {
+      profile.merge(profiles.get(i));
     }
     Container resultsContainer = new DefaultContainerImpl(resultsDiv);
     ScopeBar bar = new ScopeBar(resultsContainer, resources);
 
     listenerOwner.removeAllEventListeners();
     JavaScriptProfileRenderer renderer = new JavaScriptProfileRenderer(
-        resultsContainer, resources, listenerOwner, getSymbolServerController(), this,
-        profile, new SourceClickCallback() {
+        resultsContainer, resources, listenerOwner,
+        getSymbolServerController(), this, profile, new SourceClickCallback() {
 
           public void onSourceClick(final String resourceUrl,
               final int lineNumber) {
@@ -263,8 +273,18 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
     bar.setSelected(flatProfile, true);
   }
 
+  private void onSearchCompleted(int eventCount, int logCount,
+      JSOArray<JavaScriptProfile> profiles) {
+    inSearch = false;
+    resultsDiv.setInnerHTML("<div>Found " + eventCount + " events, " + logCount
+        + " log entries, and " + profiles.size() + " matching logs.</div><br/>");
+    mergeProfiles(profiles);
+  }
+
   private void search(final String regexp, JavaScriptProfileModel profileModel) {
     if (inSearch) {
+      // TODO(knorton): It should not be possible to run a search if one is
+      // already running.
       Window.alert("A search is already running.");
       return;
     }
@@ -273,33 +293,6 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
     // TODO(zundel): This is kind of ghetto - put up a spinner or something -
     // this takes a while.
     resultsDiv.setInnerHTML("Searching...");
-    matchingProfiles = JSOArray.createArray().cast();
-
-    profileModel.visitEventsWithProfiles(new EventVisitor() {
-      private int eventsFound = 0;
-      private int logsFound = 0;
-      private MatchLogVisitor matchLogVisitor = new MatchLogVisitor(regexp);
-      private PostOrderVisitor visitors[] = { matchLogVisitor };
-
-      public void postProcess() {
-        inSearch = false;
-        resultsDiv.setInnerHTML("<div>Found " + eventsFound + " events, "
-            + logsFound + " log entries, and " + matchingProfiles.size()
-            + " matching logs.</div><br/>");
-        mergeProfiles();
-      }
-
-      public void visitUiEvent(UiEvent e) {
-        if (e.hasJavaScriptProfile()) {
-          eventsFound++;
-          if (e.hasUserLogs()) {
-            logsFound++;
-            matchLogVisitor.setSequence(e.getSequence());
-            EventVisitorTraverser.traversePostOrder(e, visitors);
-          }
-        }
-        matchLogVisitor.postProcess();
-      }
-    });
+    profileModel.processEventsWithProfiles(new SearchController(regexp));
   }
 }
