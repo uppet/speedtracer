@@ -190,12 +190,21 @@ public class UiEvent extends EventRecord {
   }-*/;
 
   /**
+   * Returns the script name for the JS code of the top JS call frame.
+   * 
+   * @return the script name
+   */
+  public final native String getCallerFunctionName() /*-{
+    return this.callerFunctionName || "";
+  }-*/;
+
+  /**
    * Returns the line number of the top JS call frame.
    * 
    * @return the line number
    */
   public final native int getCallerScriptLine() /*-{
-    return this.callerScriptLine;
+    return this.callerScriptLine || 0;
   }-*/;
 
   /**
@@ -204,7 +213,7 @@ public class UiEvent extends EventRecord {
    * @return the script name
    */
   public final native String getCallerScriptName() /*-{
-    return this.callerScriptName;
+    return this.callerScriptName || "";
   }-*/;
 
   public final native JSOArray<UiEvent> getChildren() /*-{

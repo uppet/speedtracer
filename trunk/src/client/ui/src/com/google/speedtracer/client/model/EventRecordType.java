@@ -46,6 +46,7 @@ public class EventRecordType {
   public static final int RESOURCE_FINISH = 14;
   public static final int JAVASCRIPT_EXECUTION = 15;
   public static final int RESOURCE_DATA_RECEIVED = 16;
+  public static final int GCEvent = 17;
 
   // Speed Tracer Types
   public static final int AGGREGATED_EVENTS = 0x7FFFFFFF;
@@ -71,6 +72,7 @@ public class EventRecordType {
     "Resource Finish",                  // 14 RESOURCE_FINISH
     "JavaScript Callback",              // 15 JAVASCRIPT_EXECUTION
     "Resource Data Received",           // 16 RESOURCE_DATA_RECEIVED
+    "Garbage Collection",               // 17 GCEvent
   };
 
   private static final String[] speedTracerTypeStrings = {
@@ -115,6 +117,8 @@ public class EventRecordType {
     "JavaScript was run in an event dispatch.",
     // 16 RESOURCE_DATA_RECEIVED
     "Processing a file received by the resource loader.",
+    // 17 GCEvent
+    "The JavaScript engine ran its garbage collector to reclaim memory.",
   };
 
   private static final String[] speedTracerHelpStrings = {

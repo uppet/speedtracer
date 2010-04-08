@@ -132,6 +132,12 @@ webkitEvents = [
     'constant' : 'RESOURCE_DATA_RECEIVED',
     'desc' : 'Resource Data Received',
     'help_text' : 'Processing a file received by the resource loader.',
+  },
+  { 
+    'value' : 17, 
+    'constant' : 'GCEvent',
+    'desc' : 'Garbage Collection',
+    'help_text' : 'The JavaScript engine ran its garbage collector to reclaim memory.',
   }
 ]
 # END INSPECTOR TIMELINE RECORDS.

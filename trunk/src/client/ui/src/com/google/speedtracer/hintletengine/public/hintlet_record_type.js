@@ -37,6 +37,7 @@ hintlet.types = {
   'RESOURCE_FINISH' : 14,
   'JAVASCRIPT_EXECUTION' : 15,
   'RESOURCE_DATA_RECEIVED' : 16,
+  'GCEvent' : 17,
   'AGGREGATED_EVENTS' : 2147483647,
   'TAB_CHANGED' : 2147483646,
   'RESOURCE_UPDATED' : 2147483645,
@@ -61,6 +62,7 @@ hintlet.webkitTypeList = [
   'RESOURCE_FINISH',                   // 14
   'JAVASCRIPT_EXECUTION',              // 15
   'RESOURCE_DATA_RECEIVED',            // 16
+  'GCEvent',                           // 17
 ];
 
 hintlet.speedTracerTypeList = [
