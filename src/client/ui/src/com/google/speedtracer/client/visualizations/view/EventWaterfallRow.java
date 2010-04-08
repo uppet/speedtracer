@@ -25,16 +25,13 @@ import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.speedtracer.client.model.AggregateTimeVisitor;
 import com.google.speedtracer.client.model.EventRecordType;
-import com.google.speedtracer.client.model.EventVisitorTraverser;
 import com.google.speedtracer.client.model.HintRecord;
+import com.google.speedtracer.client.model.LogMessageVisitor;
 import com.google.speedtracer.client.model.UiEvent;
-import com.google.speedtracer.client.model.EventVisitor.PostOrderVisitor;
-import com.google.speedtracer.client.model.EventVisitor.PreOrderVisitor;
 import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.util.dom.DocumentExt;
-import com.google.speedtracer.client.visualizations.model.LogMessageVisitor;
 import com.google.speedtracer.client.visualizations.model.SluggishnessModel;
 import com.google.speedtracer.client.visualizations.model.SluggishnessVisualization;
 import com.google.speedtracer.client.visualizations.view.FilteringScrollTable.Cell;
@@ -206,19 +203,8 @@ public class EventWaterfallRow extends TableRow {
     }
 
     private void runVisitors() {
-      // visitor that aggregates time
-      AggregateTimeVisitor aggregateTimeVisitor = new AggregateTimeVisitor(
-          event);
-
-      // We know that if this already exists, visitors have already run
-      if (!aggregateTimeVisitor.alreadyApplied()
-          || !event.hasBeenCheckedForLogs()) {
-        LogMessageVisitor whiteListVisitor = new LogMessageVisitor(event);
-        PreOrderVisitor[] preOrderVisitors = {whiteListVisitor};
-        PostOrderVisitor[] postOrderVisitors = {aggregateTimeVisitor};
-        EventVisitorTraverser.traverse(event, preOrderVisitors,
-            postOrderVisitors);
-      }
+      AggregateTimeVisitor.apply(event);
+      LogMessageVisitor.apply(event);
     }
 
     private void updateIndicator() {
