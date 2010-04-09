@@ -220,7 +220,8 @@ public class EventTraceBreakdown {
     this.rootEvent = rootEvent;
     this.domainToPixels = resources.eventTraceBreakdownCss().widgetWidth()
         / rootEvent.getDuration();
-    this.masterDomainToCoords = MASTER_COORD_WIDTH / rootEvent.getDuration();
+    this.masterDomainToCoords = MASTER_COORD_WIDTH
+        / ((rootEvent.getDuration() == 0) ? 1 : rootEvent.getDuration());
     this.insignificanceThreshold = rootEvent.getDuration()
         / (resources.eventTraceBreakdownCss().widgetWidth());
 
