@@ -21,6 +21,7 @@ $sessionId = null;
 function __MODULE_FUNC__() {
   // TODO(zundel): Add slot for property providers.
   var strongName;
+  var softPermutationId = 0;
   try {
 // __PERMUTATIONS_BEGIN__
     // Permutation logic
@@ -29,8 +30,13 @@ function __MODULE_FUNC__() {
     // intentionally silent on property failure
     return;
   }
+  var idx = strongName.indexOf(':');
+  if (idx != -1) {
+    softPermutationId = Number(strongName.substring(idx + 1));
+    strongName = strongName.substring(0, idx);
+  }
   importScripts(strongName + ".cache.js");
-  gwtOnLoad(undefined, '__MODULE_NAME__', '');
+  gwtOnLoad(undefined, '__MODULE_NAME__', '', softPermutationId);
  }
  
  __MODULE_FUNC__();
