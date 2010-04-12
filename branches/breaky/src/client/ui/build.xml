@@ -188,11 +188,17 @@
     </uptodate>
     <antcall target="breaky.build.run" />
 
+    <!-- Extract the absolute path to chrome, since the test runs in the breaky
+    directory -->
+    <path id="chrome.abs">
+      <pathelement location="${chrome.path}" />
+    </path>
+
     <!-- Run the test 10 seconds is more than enough for the current version -->
     <exec executable="python" failonerror="yes" timeout="10000" dir="${breaky.destdir}">
       <arg value="${stools.pydir}/breaky-test.py" />
       <arg value="--headless_path=${headless.destdir}" />
-      <arg value="--chrome_path=${chrome.path}" />
+      <arg value="--chrome_path=${toString:chrome.abs}" />
     </exec>
   </target>
 
