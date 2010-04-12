@@ -1,0 +1,71 @@
+/* Annotated styles for Tree.java */
+@def treeIndent 15px;
+@def itemHeight 16px;
+
+.treeItem {
+  list-style-type: none;
+  display: block;
+}
+
+.itemList > .treeItem {
+  margin-left: treeIndent;
+}
+
+.tree {
+  display: block;
+  padding-left: 5px;
+  margin: 0;
+}
+
+.treeItemContent {
+  min-height: itemHeight;
+  display: inline-block;
+  position: relative;
+  padding: 2px;
+}
+
+.treeItemContentSelected {
+  min-height: itemHeight;
+  display: inline-block;
+  position: relative;
+  padding: 1px;  
+  background: #cbd3e6;
+  \-webkit-border-radius: 2px;
+  border: 1px solid #96a5cc; 
+}
+
+.treeItemLabel {
+  padding: 2px;
+}
+
+.expansionControl {
+  float: left;
+}
+
+@sprite .leaf {
+  gwt-image: "itemLeaf";  
+}
+
+@sprite .plus {
+  gwt-image: "itemPlus";  
+}
+
+@sprite .minus {
+  gwt-image: "itemMinus";  
+}
+
+@sprite .nodeAnnotation {
+  gwt-image: "infoBubble";
+  position: absolute;
+  left: -13px;
+  top: -5px;
+}
+
+.itemList {
+  position: relative;
+  border-left: 1px dotted #aaa;
+  padding-left: 0;
+  margin-left: 6px;
+  margin-top: 0;
+  margin-bottom: 0;
+}

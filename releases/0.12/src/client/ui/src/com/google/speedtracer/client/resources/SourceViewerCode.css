@@ -1,0 +1,15 @@
+/**
+ * Annotated Css for the code in the source iframe found in SourceViewer.java.
+ */
+ @def scrollPadding 30px;
+ 
+.highlightedLine {
+  background-color: yellow;
+}
+
+@sprite .columnMarker {
+  display: inline-block;
+  gwt-image: "columnMarker";
+  position: relative;
+  top: -5px;
+}

@@ -1,0 +1,41 @@
+<html>
+ <head>
+ <title>Profiler Test 1</title>
+ <script>
+
+function getTime() {
+  var now = new Date();
+  return now.getTime();
+}
+
+function wait(msecs) {
+  var endTime = getTime() + msecs;
+  while (getTime() < endTime) 
+    ;
+}
+
+function outer() {
+  for (var i = 0 ; i < 5; ++i) {
+    wait(20);
+    inner();
+  }
+}
+
+function inner() {
+  wait(5);
+}
+
+function busyWork() {
+  for (var i = 0 ; i < 4; ++i) {
+    wait(4);   
+    outer();
+  }
+  document.getElementById("status").innerHTML = "Done.";
+}
+
+ </script>
+ </head>
+<body onload="busyWork();">
+  <div id="status">Running test</div>
+</body>
+</html>

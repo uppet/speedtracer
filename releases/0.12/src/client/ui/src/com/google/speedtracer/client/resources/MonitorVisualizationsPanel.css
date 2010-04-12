@@ -1,0 +1,66 @@
+/**
+ * Annotated CSS for MonitorVisualizationsPanel.java.
+ */
+ @def timelineHeight 131px;
+ @def borderWidth 1px;
+ @def topPadding 16px;
+
+.visualizationPanel {
+  position: absolute;
+  /* Controller is 39px */
+  top: 39px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0;
+  background-color: #eee;
+}
+
+.graphContainer {
+  position: absolute;
+  right: 0;
+  padding-top: 15px;
+  background-color: #fff;
+}
+
+.timelineContainer {
+  position: absolute;
+  width: 100%;
+  height: timelineHeight;
+  border-top: borderWidth solid #aaa;
+  border-bottom: borderWidth solid #000;
+  \-webkit-box-shadow: 0 5px 5px rgba(0, 0, 0, 0.5);
+  z-index: 25;
+}
+
+.tabList {
+  position: absolute;
+  overflow: visible;
+  top: 0;
+  left: 0;
+  height: 131px;
+  border-right: borderWidth solid #222;
+  background-color: #dfeaf8;
+}
+
+.tabListEntry {
+  width: 100%;
+  cursor: pointer;
+  padding: 10px;
+  color: #888;
+  text-shadow: #fff 1px 1px 1px;
+}
+
+.tabListEntrySelected {
+  margin-left: 1px;
+  color: #000;
+  background-color: #fff;
+  \-webkit-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
+}
+
+.buttonBar {
+  position: absolute;
+  bottom: 0;
+  padding-left: 5px;
+  padding-bottom: 1px;
+}

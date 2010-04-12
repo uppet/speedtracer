@@ -1,0 +1,19 @@
+/**
+ * JavaScriptProfileRenderer.css
+ */
+ .treeItemTopDiv {
+   display: inline-block;
+   top: 0;
+   left: 0;
+ }
+ 
+ .treeItemBottomDiv {
+   left-margin: auto;
+   right-margin: auto;
+   text-decoration: none;
+ }
+ 
+ .resymbolizedLink {
+   display: inline-block;
+   font-size: 0.85em;
+ }

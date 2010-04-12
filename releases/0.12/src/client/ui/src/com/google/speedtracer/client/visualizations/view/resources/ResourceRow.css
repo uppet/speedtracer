@@ -1,0 +1,51 @@
+/**
+ * Annotated CSS for ResourceRow.java.
+ */
+ 
+ /* Distance between the header text and hintlet indicator or cell border */
+ @def headerTextRightPad 5px;
+ 
+ /* Distance between top of row and the hintlet indiciator */
+ @def hintletIndicatorTopPad 2px;
+ 
+.rowEven {
+  display: block;
+}
+
+.rowOdd {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.header {
+  position: relative; 
+  height: 33px;
+  padding: 0;
+}
+
+.headerText {
+  position: absolute;
+  top: 1px;
+  left: 35px;
+  right: 0;
+  /* right needs to be adjusted if there is a hintlet indicator present */
+  height: 30px;
+  padding-top: 2px;
+  font-size: 8pt;
+}
+
+.headerText > div {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.url {   
+  color: #777;
+  font-size: 7pt;
+}
+
+.resourceHintIndicator {
+  position: absolute;
+  top: hintletIndicatorTopPad;
+  right: headerTextRightPad;
+}

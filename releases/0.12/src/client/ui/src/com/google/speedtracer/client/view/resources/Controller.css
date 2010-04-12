@@ -1,0 +1,220 @@
+/**
+ * Annotated CSS for Controller.java.
+ */
+ 
+ @def controllerBaseWidth 710px;
+ 
+ /**
+  * Controller is 39px high and all contained elements should be top: 4px and
+  * height: 29px.
+  */
+@sprite .base {
+  gwt-image: "controllerBackground";
+  color: #fff;
+  top: 0;
+  left: 0;
+  right: 0;
+  position: absolute;
+  height: 39px;
+  background-color: #f5f5fa;
+  min-width: controllerBaseWidth;
+  overflow: visible;
+}
+
+.control {
+  position: relative;
+  display: inline;
+  /* Relative positioning tries to stick us down about half way*/
+  top: -10px;
+}
+
+/* Record-stop button */
+@sprite .recordStopButton {
+  gwt-image: "controllerRecordStopButton";
+  border: none;
+  margin-left: 10px;
+}
+
+@sprite .recordStopButton:hover {
+  gwt-image: "controllerRecordStopButtonHover";
+}
+
+@sprite .recordStopButton:active {
+  gwt-image: "controllerRecordStopButtonPress";
+}
+
+@sprite .recordStopButton.toggleButtonDown {
+  gwt-image: "controllerRecordStopButtonDown";
+}
+
+/* Report button */
+@sprite .reportButton {
+  gwt-image: "controllerReportButton";
+  border: none;
+  margin-left: 10px;
+}
+
+@sprite .reportButton:hover {
+  gwt-image: "controllerReportButtonHover";
+}
+
+@sprite .reportButton:active {
+  gwt-image: "controllerReportButtonPress";
+}
+
+/* Save button */
+@sprite .saveButton {
+  gwt-image: "controllerSaveButton";
+  border: none;
+}
+
+@sprite .saveButton:hover {
+  gwt-image: "controllerSaveButtonHover";
+}
+
+@sprite .saveButton:active {
+  gwt-image: "controllerSaveButtonPress";
+}
+
+/* TODO(zundel): I don't think this image is needed since it isn't a toggle */
+@sprite .saveButton:toggleButtonDown {
+  gwt-image: "controllerSaveButtonDown";
+}
+
+/* Reset button */
+@sprite .resetButton {
+  gwt-image: "controllerResetButton";
+  border: none;
+}
+
+@sprite .resetButton:hover {
+  gwt-image: "controllerResetButtonHover";
+}
+
+@sprite .resetButton:active {
+  gwt-image: "controllerResetButtonPress";
+}
+
+/* Zoom all button */
+@sprite .zoomAllButton {
+  gwt-image: "controllerZoomAllButton";
+  border: none;
+}
+
+@sprite .zoomAllButton:hover {
+  gwt-image: "controllerZoomAllButtonHover";
+}
+
+@sprite .zoomAllButton:active {
+  gwt-image: "controllerZoomAllButtonPress";
+}
+
+/* Zoom in button */
+@sprite .zoomInButton {
+  gwt-image: "controllerZoomInButton";
+  border: none;
+}
+
+@sprite .zoomInButton:hover {
+  gwt-image: "controllerZoomInButtonHover";
+}
+
+@sprite .zoomInButton:active {
+  gwt-image: "controllerZoomInButtonPress";
+}
+
+/* Zoom out button */
+@sprite .zoomOutButton {
+  gwt-image: "controllerZoomOutButton";
+  border: none;
+}
+
+@sprite .zoomOutButton:hover {
+  gwt-image: "controllerZoomOutButtonHover";
+}
+
+@sprite .zoomOutButton:active {
+  gwt-image: "controllerZoomOutButtonPress";
+}
+
+/* Help button */
+@sprite .helpButton {
+  gwt-image: "controllerHelpButton";
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  border: none;
+}
+
+@sprite .helpButton:hover {
+  gwt-image: "controllerHelpButtonHover";
+}
+
+@sprite .helpButton:active {
+  gwt-image: "controllerHelpButtonPress";
+}
+
+@sprite .helpButton.toggleButtonDown {
+  gwt-image: "controllerHelpButtonDown";
+}
+
+/* Settings button */
+@sprite .settingsButton {
+  gwt-image: "controllerSettingsButton";
+  margin-left: 10px;
+  border: none;
+}
+
+@sprite .settingsButton:hover {
+  gwt-image: "controllerSettingsButtonHover";
+}
+
+@sprite .settingsButton:active {
+  gwt-image: "controllerSettingsButtonPress";
+}
+
+/* Info screen panel that contains current timestamp */
+@sprite .infoScreen {
+  gwt-image: "controllerInfoScreenBackground";
+  top: 5px;
+  position: relative;
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.infoScreenZoomLabel, .infoScreenTotalLabel {
+  position: absolute;
+  top: 2px;
+  font-size: 9px;
+  color: #415086;
+}
+
+.infoScreenZoomLabel {
+  left: 103px;
+}
+
+.infoScreenTotalLabel {
+  left: 12px;
+}
+
+.infoScreenZoom, .infoScreenTotal {
+  position: absolute;
+  top: 13px;
+  font-size: 12px;
+  color: #415086;
+}
+
+.infoScreenTotal {
+  left: 12px;
+}
+
+.infoScreenZoom {
+  left: 103px;
+}
+
+.pageSelect {
+  top: -5px;
+  width: 170px;
+  margin-left: 10px;
+}
