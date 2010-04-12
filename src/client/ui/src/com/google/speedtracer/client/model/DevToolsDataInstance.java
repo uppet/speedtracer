@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,9 +22,8 @@ import com.google.gwt.chrome.crx.client.events.DevToolsPageEvent.PageEvent;
 import com.google.gwt.chrome.crx.client.events.Event.ListenerHandle;
 import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.speedtracer.client.model.EventVisitor.PostOrderVisitor;
-import com.google.speedtracer.client.model.EventVisitor.PreOrderVisitor;
 import com.google.speedtracer.client.model.ResourceUpdateEvent.UpdateResource;
+import com.google.speedtracer.client.model.UiEvent.LeafFirstTraversalVoid;
 import com.google.speedtracer.client.util.JSOArray;
 
 /**
@@ -45,14 +44,22 @@ public class DevToolsDataInstance extends DataInstance {
      */
     static native Dispatcher createDispatcher(Proxy delegate) /*-{
       return {
-      addRecordToTimeline: function(record) {
-      delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onTimeLineRecord(Lcom/google/speedtracer/client/model/UnNormalizedEventRecord;)(record[1]);
-      },
-      updateResource: function(update) {
-      delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onUpdateResource(ILcom/google/gwt/core/client/JavaScriptObject;)(update[1], update[2]);
-      }
+        addRecordToTimeline: function(record) {
+          delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onTimeLineRecord(Lcom/google/speedtracer/client/model/UnNormalizedEventRecord;)(record[1]);
+        },
+        updateResource: function(update) {
+          delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onUpdateResource(ILcom/google/gwt/core/client/JavaScriptObject;)(update[1], update[2]);
+        }
       };
     }-*/;
+
+    private class TimeNormalizingVisitor implements LeafFirstTraversalVoid {
+      public void visit(UiEvent event) {
+        assert getBaseTime() >= 0 : "baseTime should already be set.";
+        event.<UnNormalizedEventRecord> cast().convertToEventRecord(
+            getBaseTime());
+      }
+    }
 
     private double baseTime;
 
@@ -66,10 +73,7 @@ public class DevToolsDataInstance extends DataInstance {
 
     private JSOArray<UnNormalizedEventRecord> pendingRecords = JSOArray.create();
 
-    private final PostOrderVisitor[] postOrderVisitors = {};
-
-    private final PreOrderVisitor[] preOrderVisitors = {new TimeNormalizerVisitor(
-        this)};
+    private final TimeNormalizingVisitor timeNormalizingVisitor = new TimeNormalizingVisitor();
 
     private final int tabId;
 
@@ -177,11 +181,8 @@ public class DevToolsDataInstance extends DataInstance {
 
       assert (getBaseTime() >= 0) : "Base Time is still not set";
 
-      // We run visitors to normalize the times for this tree and to do any
-      // other transformations we want.
-      EventVisitorTraverser.traverse(record.<UiEvent> cast(), preOrderVisitors,
-          postOrderVisitors);
-
+      // Run a visitor to normalize the times for this tree.    
+      record.<UiEvent>cast().apply(timeNormalizingVisitor);
       forwardToDataInstance(record);
     }
 
