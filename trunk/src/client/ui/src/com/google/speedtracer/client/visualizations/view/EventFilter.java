@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,40 +15,15 @@
  */
 package com.google.speedtracer.client.visualizations.view;
 
+import com.google.speedtracer.client.model.AggregateTimeVisitor;
 import com.google.speedtracer.client.model.EventRecord;
-import com.google.speedtracer.client.model.EventVisitorTraverser;
 import com.google.speedtracer.client.model.UiEvent;
-import com.google.speedtracer.client.model.EventVisitor.PreOrderVisitor;
+import com.google.speedtracer.client.util.JsIntegerDoubleMap;
 
 /**
  * A class that contains the filter criteria for events.
  */
 public class EventFilter {
-
-  private class SubtypeDurationVisitor implements PreOrderVisitor {
-    private double duration = 0;
-
-    public SubtypeDurationVisitor() {
-    }
-
-    public double getSubtypeDuration() {
-      return duration;
-    }
-
-    public void postProcess() {
-      // nothing to do
-    }
-
-    public void reset() {
-      duration = 0;
-    }
-
-    public void visitUiEvent(UiEvent uiEvent) {
-      if (EventFilter.this.eventType == uiEvent.getType()) {
-        duration += uiEvent.getSelfTime();
-      }
-    }
-  }
 
   private int eventType = -1;
 
@@ -56,8 +31,6 @@ public class EventFilter {
   private boolean filterUserLogs = false;
   private double minDuration = 0.0;
   private double minEventTypePercent = 0.0;
-
-  private final PreOrderVisitor[] postOrderVisitors = {new SubtypeDurationVisitor()};
 
   public EventFilter() {
   }
@@ -164,19 +137,17 @@ public class EventFilter {
     return false;
   }
 
-  // Walks children and adds up duration of all child self-times that match
-  // the filter's event type.
-  private double getSubtypeDuration(UiEvent eventRecord) {
-    SubtypeDurationVisitor visitor = (SubtypeDurationVisitor) postOrderVisitors[0];
-    visitor.reset();
-    EventVisitorTraverser.traversePreOrder(eventRecord, postOrderVisitors);
-    return visitor.getSubtypeDuration();
+  private double getDurationForEventType(UiEvent eventRecord) {
+    // Ensure aggregate times are computed.
+    AggregateTimeVisitor.apply(eventRecord);
+    final JsIntegerDoubleMap durationsByType = eventRecord.getTypeDurations();
+    return durationsByType.hasKey(eventType) ? durationsByType.get(eventType) : 0.0;
   }
 
   private boolean shouldFilterEventType(double duration, EventRecord eventRecord) {
     if (duration > 0) {
       // For any record with duration, you've got to check the child types.
-      double typeDuration = getSubtypeDuration((UiEvent) eventRecord);
+      double typeDuration = getDurationForEventType((UiEvent) eventRecord);
       if (minEventTypePercent > 0) {
         if ((typeDuration / duration) < minEventTypePercent) {
           return true;
