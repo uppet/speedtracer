@@ -101,7 +101,7 @@ class ChromeRunner:
     elif(platform.system() == "Windows"):
       print "Trying to kill chrome PID %s" % (str(self.chrome_process.pid))
       import win32api
-      win32api.TerminateProcess(self.chrome_process._handle)
+      win32api.TerminateProcess(self.chrome_process._handle, -1)
     self.thread.join()
     #the TerminateProcess call is not cleaning up the file handles, so this
     #always fails
@@ -112,7 +112,7 @@ class ChromeRunner:
 def Main():
   parser = optparse.OptionParser()
   parser.add_option('--port', dest='port', type='int',
-                    help='http port to use (default: 9030)', default=9030)
+                    help='http port to use (default: 9033)', default=9033)
   parser.add_option('--hostname', dest='hostname',
                    help='hostname for web server',
                    default=None, type='string')

@@ -125,7 +125,7 @@ public class DumpValidator {
            "requires" : "callerScriptName",
            "optional" : true
          },
-         "callerScriptFunctionName" : {
+         "callerFunctionName" : {
             "type" : "string",
             "description" : "The name of the calling function in the script",
             "requires" : "callerScriptName",
