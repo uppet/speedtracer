@@ -111,7 +111,7 @@ public class DumpValidator {
            "description" : "Speedtracer Type ID",
            "type" : "integer", 
            "minimum" : 0,
-           "maximum" : 16
+           "maximum" : 19
          },
          "time"     : {"description" : "Milliseconds since start of session", "type" : "number", "minimum" : 0},
          "callerScriptName" : {
@@ -123,6 +123,24 @@ public class DumpValidator {
          "callerScriptLine" : {"type" : "integer",
            "description" : "The particular line of the calling script",
            "requires" : "callerScriptName",
+           "optional" : true
+         },
+         "callerScriptFunctionName" : {
+            "type" : "string",
+            "description" : "The name of the calling function in the script",
+            "requires" : "callerScriptName",
+            "optional" : true
+         },
+         "usedHeapSize" : {
+           "type" : "integer",
+           "description" : "Size in bytes used in the heap",
+           "requires" : "totalHeapSize",
+           "optional" : true,
+         },
+         "totalHeapSize" : {
+           "type" : "integer",
+           "description" : "Total size in bytes of the heap",
+           "requires" : "usedHeapSize",
            "optional" : true
          },
          "data"     : {"description" : "A JSON dictionary of data", "type" : "object" },
@@ -143,7 +161,8 @@ public class DumpValidator {
          "duration" : {"description" : "Milliseconds this event took", "type" : "number", "minimum" : 0},
          "children" : {
            "description" : "Child Events",
-           "type" : "array"
+           "type" : "array",
+           "optional" : true,
          }
        }
      },
@@ -490,6 +509,56 @@ public class DumpValidator {
              "identifier" : {"type" : "integer", "description" : "Integer id of this resource" },
            },
            "additionalProperties" : false
+         },
+         "additionalProperties" : false
+       }
+     },
+     "GC_EVENT" : {
+       "description" : "A GC Event. TODO: this is a brand new event type",
+       "id" : "GC_EVENT",
+       "type" : "object",
+       "extends" : {"$ref" : "TIMELINE_EVENT" },
+       "properties" : {
+         "type" : {"type" : "integer", "minimum" : 17, "maximum" : 17},
+         "data" : {
+           "type" : "object",
+           "properties" : {
+             "usedHeapSizeDelta" : {"type" : "integer", "description" : "TODO: delta from last GC event?"},
+           },
+           "additionalProperties" : false,
+         },
+         "additionalProperties" : false
+       }
+     },
+     "MarkDOMContent" : {
+       "description" : "TODO: this is a brand new event type",
+       "id" : "GC_EVENT",
+       "type" : "object",
+       "extends" : {"$ref" : "TIMELINE_EVENT" },
+       "properties" : {
+         "type" : {"type" : "integer", "minimum" : 18, "maximum" : 18},
+         "data" : {
+           "type" : "object",
+           "properties" : {
+           },
+           "additionalProperties" : false,
+         },
+         "additionalProperties" : false
+       }
+     },
+     "MarkLoadEvent" : {
+       "description" : "A GC Event. TODO: this is a brand new event type",
+       "id" : "GC_EVENT",
+       "type" : "object",
+       "extends" : {"$ref" : "TIMELINE_EVENT" },
+       "properties" : {
+         "type" : {"type" : "integer", "minimum" : 19, "maximum" : 19},
+         "data" : {
+           "type" : "object",
+           "properties" : {
+             "usedHeapSizeDelta" : {"type" : "integer", "description" : "TODO: delta from last GC event?"},
+           },
+           "additionalProperties" : false,
          },
          "additionalProperties" : false
        }
