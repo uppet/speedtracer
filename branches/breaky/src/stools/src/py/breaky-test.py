@@ -99,13 +99,14 @@ class ChromeRunner:
     if(platform.system() == "Linux"):
       os.kill(self.chrome_process.pid, 9)
     elif(platform.system() == "Windows"):
-      subprocess.Popen(["TASKILL",
-                        "/PID",
-                        str(self.chrome_process.pid),
-                        "/F"])
+      print "Trying to kill chrome PID %s" % (str(self.chrome_process.pid))
+      import win32api
+      win32api.TerminateProcess(self.chrome_process._handle)
     self.thread.join()
-    if self.user_data_dir:
-      shutil.rmtree(self.user_data_dir)
+    #the TerminateProcess call is not cleaning up the file handles, so this
+    #always fails
+    #if self.user_data_dir:
+    #  shutil.rmtree(self.user_data_dir)
 
     
 def Main():
@@ -141,8 +142,8 @@ def Main():
   if options.manual_mode:
     print "Manual Mode. Point chrome at %s" % breakyURL
   else:
-    c = ChromeRunner(options.chrome_path,
-                     options.headless_path,
+    c = ChromeRunner(os.path.abspath(options.chrome_path),
+                     os.path.abspath(options.headless_path),
                      breakyURL)
     c.start()
   while(keepGoing or options.manual_mode):
