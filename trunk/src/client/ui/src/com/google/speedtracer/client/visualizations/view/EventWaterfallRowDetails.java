@@ -714,11 +714,13 @@ public class EventWaterfallRowDetails extends RowDetails implements
         DataModel dataModel = eventWaterfall.getVisualization().getModel().getDataModel();
         NetworkResourceModel networkModel = dataModel.getNetworkResourceModel();
         NetworkResource resource = networkModel.getResource(dataRecEvent.getIdentifier());
-        String resourceUrlStr = resource.getLastPathComponent();
-        resourceUrlStr = "".equals(resourceUrlStr) ? resource.getUrl()
-            : resourceUrlStr;
-        details.put("Processing Resource", new StringCellRenderer(
-            resourceUrlStr));
+        if (resource != null) {
+          String resourceUrlStr = resource.getLastPathComponent();
+          resourceUrlStr = "".equals(resourceUrlStr) ? resource.getUrl()
+              : resourceUrlStr;
+          details.put("Processing Resource", new StringCellRenderer(
+              resourceUrlStr));
+        }
         break;
       default:
         break;
