@@ -16,7 +16,7 @@
 package com.google.speedtracer.client.model;
 
 import com.google.speedtracer.client.model.DataModel.EventRecordHandler;
-import com.google.speedtracer.client.model.EventVisitor.PostOrderVisitor;
+import com.google.speedtracer.client.model.UiEvent.LeafFirstTraversalVoid;
 import com.google.speedtracer.client.util.JsIntegerMap;
 
 import java.util.ArrayList;
@@ -37,13 +37,10 @@ public class UiEventModel implements EventRecordHandler {
    * Visitor that synthesizes top level timer installs if it detects a timer
    * installation in a trace tree.
    */
-  private class TimerInstallationVisitor implements PostOrderVisitor {
-    public void postProcess() {
-    }
-
-    public void visitUiEvent(UiEvent e) {
-      if (TimerInstalled.TYPE == e.getType()) {
-        onTimerInstalled(e.<TimerInstalled> cast());
+  private class TimerInstallationVisitor implements LeafFirstTraversalVoid {
+    public void visit(UiEvent event) {
+      if (TimerInstalled.TYPE == event.getType()) {
+        onTimerInstalled(event.<TimerInstalled> cast());
       }
     }
   }
@@ -52,37 +49,40 @@ public class UiEventModel implements EventRecordHandler {
    * This sets up the function routing for EventRecord TYPES corresponding to
    * top level events that we want to special case.
    * 
-   * @param proxy
+   * @param model
    * @param typeMap
    */
-  private static void setSpecialCasedEventCallbacks(final UiEventModel proxy, JsIntegerMap<EventRecordHandler> typeMap) {
+  private static void setSpecialCasedEventCallbacks(final UiEventModel model,
+      JsIntegerMap<EventRecordHandler> typeMap) {
 
     typeMap.put(EventRecordType.TIMER_CLEARED, new EventRecordHandler() {
       public void onEventRecord(EventRecord data) {
-        proxy.onTimerCleared(data.<TimerCleared> cast());
+        model.onTimerCleared(data.<TimerCleared> cast());
       }
     });
 
     typeMap.put(EventRecordType.TIMER_INSTALLED, new EventRecordHandler() {
       public void onEventRecord(EventRecord data) {
-        proxy.onTimerInstalled(data.<TimerInstalled> cast());
+        model.onTimerInstalled(data.<TimerInstalled> cast());
       }
     });
 
     // TODO(jaimeyap): We should eventually make InspectorResourceConverter use
     // these types instead of our own record types. For now we simply ignore
     // these webkit style network resource checkpoints.
-    typeMap.put(EventRecordType.RESOURCE_SEND_REQUEST, new EventRecordHandler() {
-      public void onEventRecord(EventRecord data) {
-        // Special cased to do nothing for now.
-      }
-    });
+    typeMap.put(EventRecordType.RESOURCE_SEND_REQUEST,
+        new EventRecordHandler() {
+          public void onEventRecord(EventRecord data) {
+            // Special cased to do nothing for now.
+          }
+        });
 
-    typeMap.put(EventRecordType.RESOURCE_RECEIVE_RESPONSE, new EventRecordHandler() {
-      public void onEventRecord(EventRecord data) {
-        // Special cased to do nothing for now.
-      }
-    });
+    typeMap.put(EventRecordType.RESOURCE_RECEIVE_RESPONSE,
+        new EventRecordHandler() {
+          public void onEventRecord(EventRecord data) {
+            // Special cased to do nothing for now.
+          }
+        });
 
     typeMap.put(EventRecordType.RESOURCE_FINISH, new EventRecordHandler() {
       public void onEventRecord(EventRecord data) {
@@ -103,7 +103,7 @@ public class UiEventModel implements EventRecordHandler {
 
   private final JsIntegerMap<EventRecordHandler> specialCasedTypeMap = JsIntegerMap.create();
 
-  private final PostOrderVisitor[] postOrderVisitors = {new TimerInstallationVisitor()};
+  private final TimerInstallationVisitor timerInstallationVisitor = new TimerInstallationVisitor();
 
   UiEventModel() {
     setSpecialCasedEventCallbacks(this, specialCasedTypeMap);
@@ -131,30 +131,30 @@ public class UiEventModel implements EventRecordHandler {
     }
   }
 
-  public void onTimerCleared(TimerCleared event) {
+  public void removeListener(Listener listener) {
+    listeners.remove(listener);
+  }
+
+  private void onTimerCleared(TimerCleared event) {
     // TODO (jaimeyap): handle this.
   }
 
   // This does not dispatch to the model listener. All we need to do here
   // is bookkeep the Timer Data.
-  public void onTimerInstalled(TimerInstalled timerData) {
+  private void onTimerInstalled(TimerInstalled timerData) {
     assert (!Double.isNaN(timerData.getTime()));
     timerMetaData.put(timerData.getTimerId(), timerData);
   }
 
-  public void onUiEventFinished(UiEvent event) {
+  private void onUiEventFinished(UiEvent event) {
     assert (!Double.isNaN(event.getTime()));
 
     // Run some visitors here to extract Timer Installations.
-    EventVisitorTraverser.traversePostOrder(event, postOrderVisitors);
+    event.apply(timerInstallationVisitor);
 
     for (int i = 0, n = listeners.size(); i < n; i++) {
       Listener listener = listeners.get(i);
       listener.onUiEventFinished(event);
     }
-  }
-
-  public void removeListener(Listener listener) {
-    listeners.remove(listener);
   }
 }
