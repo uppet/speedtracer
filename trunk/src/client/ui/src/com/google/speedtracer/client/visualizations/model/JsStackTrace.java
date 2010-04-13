@@ -77,8 +77,8 @@ public class JsStackTrace {
       Url resourceUrl = new Url(resourceUrlStr);
 
       // We convert lineNumber and colNumber to a 1 based index.
-      final int lineNumber = Integer.parseInt(stackFrame.get(2)) + 1;
-      final int colNumber = Integer.parseInt(stackFrame.get(3)) + 1;
+      final int lineNumber = Integer.parseInt(stackFrame.get(2));
+      final int colNumber = Integer.parseInt(stackFrame.get(3));
 
       // We get a funcName and an inferredName.
       // Prefer the last argument
