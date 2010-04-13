@@ -1,0 +1,28 @@
+/* Annotated CSS for SluggishnessEventFilterPanel.java */
+
+.filterPanelMinLabel {
+  display: inline-block;
+  margin-left: 10px;    
+}
+
+.filterPanelMinInput {
+  display: inline-block;
+  margin-left: 10px;
+  width: 60px;
+}
+
+/* Toggle FilterPanel button */
+@sprite .filterPanelButton {
+  gwt-image: "filterPanelButton";
+  border: none;
+  position: relative;
+  display: inline-block;
+}
+
+@sprite .filterPanelButton:hover {
+  gwt-image: "filterPanelButtonHover";
+}
+
+@sprite .filterPanelButton:active {
+  gwt-image: "filterPanelButtonPress";
+}

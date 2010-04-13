@@ -1,0 +1,37 @@
+/* Annotated CSS for EventWaterfallRow.java */
+@def calloutPadding 5px;
+
+@sprite .logMessageAnnotation {
+  gwt-image: "infoBubble";
+  display: inline-block;
+  float: left;
+  right: 3px;
+  top: 1px;
+  z-index: 20;
+}
+
+.colorBox {
+  margin-right: 5px;
+  width: 15px;
+  height: 7px;
+  display: inline-block;
+  border: 1px solid #7483aa;  
+}
+
+.iconContainer {
+  display: inline-block;
+  position: absolute;
+  right: 0;
+  padding-right: 3px;
+}
+
+.eventBar {
+  position: absolute;
+  top: 0;
+  height: 100%;  
+}
+
+.durationCallout {
+  position: absolute;
+  font-family: Lucida Console;
+}

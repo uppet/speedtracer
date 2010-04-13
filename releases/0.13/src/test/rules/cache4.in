@@ -1,0 +1,31 @@
+hintlet_cache_control.js
+
+# This file tests the rule in hintlet_cache_control.js:
+#   'Favicons should have an expiration at least one month in the future'
+# Be careful to only trigger the specific rule you're interested in, 
+# since there are several rules defined in this file.
+
+# Note that I haven't seen any favico records in the wild.  I don't think normal
+# instrumentation of the network layer catches them since they are not directly
+# referenced by the web page.  The rule and tests make an assumption that 
+# the records look like regular resource responses.
+
+# Input Record 1
+# Expected: HINTLET RECORD
+# No expires header and caching turned on
+{"data":{"headers":{"Cache-Control":"private","Content-Length":"1461","Content-Type":"image/vnd.microsoft.icon","Date":"Mon, 07 Sep 1998 17:43:37 GMT"},"resourceId":"0NetworkResourceEvent35","responseCode":200,"url":"http://www.example.com/favicon.ico"},"time":1,"type":23}
+
+# Input Record 2
+# Expected: none
+# Don't trigger, expiration time is way in the future
+{"data":{"headers":{"Expires":"Fri, 12 Jun 2020 00:00:00 GMT", "Cache-Control":"private","Content-Length":"1461","Content-Type":"image/vnd.microsoft.icon","Date":"Mon, 07 Sep 1998 17:43:37 GMT"},"resourceId":"0NetworkResourceEvent35","responseCode":200,"url":"http://www.example.com/favicon.ico"},"time":2,"type":23}
+
+# Input Record 3
+# Expected: none
+# Don't trigger, cookie set
+{"data":{"headers":{"Set-Cookie":"TESTCOOKIE","Cache-Control":"private","Content-Length":"1461","Content-Type":"image/vnd.microsoft.icon","Date":"Mon, 07 Sep 1998 17:43:37 GMT"},"resourceId":"0NetworkResourceEvent35","responseCode":200,"url":"http://www.example.com/favicon.ico"},"time":3,"type":23}
+
+# Input Record 4
+# Expected: HINTLET RECORD
+# Expiration date less than one month from the 'Date' field
+{"data":{"headers":{"Expires": "Mon, 14 Sep 1998 17:43:37 GMT", "Cache-Control":"private","Content-Length":"1461","Content-Type":"image/vnd.microsoft.icon","Date":"Mon, 07 Sep 1998 17:43:37 GMT"},"resourceId":"0NetworkResourceEvent35","responseCode":200,"url":"http://www.example.com/favicon.ico"},"time":4,"type":23}

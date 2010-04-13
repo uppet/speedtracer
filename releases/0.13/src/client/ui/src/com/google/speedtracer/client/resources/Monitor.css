@@ -1,0 +1,10 @@
+.buildInfoView {
+  background: rgba(0, 0, 0, 0.8);
+  padding: 5px 20px;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: 300;
+  color: #fff;
+}

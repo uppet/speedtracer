@@ -1,0 +1,8 @@
+<!DOCTYPE document SYSTEM
+    "http://google-web-toolkit.googlecode.com/svn/releases/1.7/distro-source/core/src/gwt-module.dtd">
+<module rename-to="monitor">
+  <inherits name="com.google.speedtracer.Common" />
+  <inherits name='com.google.gwt.xhr.XMLHttpRequest' />
+  <entry-point class="com.google.speedtracer.client.Monitor" />
+  <public path="monitor/public" />
+</module>

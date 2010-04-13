@@ -1,0 +1,260 @@
+<!--
+  TODO(knorton): Experimental UI Build.
+  TODO(knorton): Make a simplification pass through this.
+  -->
+<project name="speedtracer-ui" default="build">
+  <!-- Default values are overridden by ../build.xml -->
+  <property name="config" value="Release" />
+  <!-- Set the value "remote.browser" to enable JUnit (see below) -->
+
+  <!-- TODO(knorton): Might be possible to get rid of this -->
+  <property name="speedtracer.destdir" location="../../${config}" />
+  <property name="moniker" value="speedtracer" />
+  <property name="headless.moniker" value="speedtracerheadless" />
+  <property name="destdir" location="${speedtracer.destdir}/${moniker}" />
+  <property name="headless.destdir" 
+            location="../../${config}/${headless.moniker}" />
+  <property name="speedtracer.revision" value="0" />
+
+  <!-- Platform identifier -->
+  <condition property="platform" value="windows">
+    <os family="windows" />
+  </condition>
+  <condition property="platform" value="mac">
+    <and>
+      <os family="unix" />
+      <contains string="${os.name}" substring="mac" casesensitive="false" />
+    </and>
+  </condition>
+  <condition property="platform" value="linux">
+    <and>
+      <os family="unix" />
+      <not>
+        <contains string="${os.name}" substring="mac" casesensitive="false" />
+      </not>
+    </and>
+  </condition>
+  <fail unless="platform"
+      message="Building on ${os.name} not supported." />
+
+  <!-- Gwt -->
+  <property name="gwt.home" location="../../third_party/gwt" />
+  <condition property="gwt.options"
+      value="-XdisableCastChecking -XdisableClassMetadata"
+      else="-ea -style PRETTY">
+    <equals arg1="${config}" arg2="Release" casesensitive="true" />
+  </condition>
+
+  <!-- Junit -->
+  <property name="junit.jar"
+      location="../../third_party/junit/junit-3.8.1.jar" />
+  <property name="antlib.jar"
+      location="../../third_party/antlib/ant-junit-1.6.5.jar" />
+
+  <!-- Ui Options -->
+  <property name="intdir" location="${speedtracer.destdir}/obj/${moniker}" />
+  <property name="wardir" location="${intdir}/war" />
+  <property name="classdir" location="${intdir}/classes" />
+
+  <path id="classpath">
+    <pathelement path="src" />
+    <pathelement path="${gwt.home}/gwt-dev.jar" />
+    <pathelement path="${gwt.home}/gwt-user.jar" />
+    <pathelement path="${classdir}" />
+    <fileset dir="lib" includes="**/*.jar" />
+  </path>
+
+  <macrodef name="gwtc">
+    <attribute name="module" />
+    <attribute name="destdir" default="${wardir}" />
+    <attribute name="srcdir" default="src" />
+    <sequential>
+      <java dir="@{srcdir}"
+          classname="com.google.gwt.dev.Compiler"
+          classpathref="classpath"
+          fork="yes"
+          failonerror="true">
+        <sysproperty key="speedtracer.revision" value="${speedtracer.revision}" />
+        <jvmarg value="-Xmx512M"/>
+        <arg line="${gwt.options}" />
+        <arg value="-war" />
+        <arg file="@{destdir}" />
+        <arg value="@{module}" />
+      </java>
+    </sequential>
+  </macrodef>
+
+  <target name="init">
+    <mkdir dir="${classdir}" />
+    <copy todir="${wardir}">
+      <fileset dir="war" includes="monitor.html" />
+    </copy>
+  </target>
+
+  <target name="classes.build" depends="init">
+    <javac srcdir="src"
+        destdir="${classdir}"
+        classpathref="classpath" />
+  </target>
+
+  <target name="monitor.build">
+    <uptodate property="speedtracer.monitor.updated"
+        targetfile="${destdir}/monitor/monitor.nocache.js">
+      <srcfiles dir="src" includes="**/**" />
+    </uptodate>
+    <antcall target="monitor.build.run" />
+  </target>
+
+  <!-- A conditional sub-target to be called from monitor.build -->
+  <target name="monitor.build.run"
+      depends="init, classes.build"
+      unless="speedtracer.monitor.updated">
+    <gwtc module="com.google.speedtracer.Monitor${config}" />
+    <copy todir="${destdir}">
+      <fileset dir="${wardir}">
+        <include name="monitor/**" />
+      </fileset>
+    </copy>
+  </target>
+
+  <target name="extension.build">
+    <uptodate property="speedtracer.extension.updated"
+        targetfile="${destdir}/extension.html">
+      <srcfiles dir="src" includes="**/**" />
+    </uptodate>
+    <antcall target="extension.build.run" />
+  </target>
+
+  <target name="headless.extension.build">
+    <uptodate property="headless.extension.updated"
+        targetfile="${headless.destdir}/speedtracerheadless.html">
+      <srcfiles dir="src" includes="**/**" />
+    </uptodate>
+    <antcall target="headless.extension.build.run" />
+  </target>
+
+  <!-- A conditional sub-target to be called from extension.build -->
+  <target name="extension.build.run"
+      depends="init, classes.build"
+      unless="speedtracer.extension.updated">
+    <gwtc module="com.google.speedtracer.Extension${config}" />
+    <copy todir="${destdir}" includeEmptyDirs="false">
+      <fileset dir="${wardir}/extension" />
+      <fileset dir="${wardir}" includes="*" />
+    </copy>
+  </target>
+
+  <!-- A conditional sub-target to be called from headless.extension.build -->
+  <target name="headless.extension.build.run"
+      depends="init, classes.build"
+      unless="headless.extension.updated">
+    <gwtc module="com.google.speedtracer.HeadlessExtension${config}" />
+    <copy todir="${headless.destdir}" includeEmptyDirs="false">
+      <fileset dir="${wardir}/${headless.moniker}" />
+    </copy>
+  </target>
+
+
+  <target name="hintletengine.build">
+    <uptodate property="speedtracer.hintletengine.updated"
+        targetfile="${destdir}/hintletengine/hintletengine.nocache.js">
+      <srcfiles dir="src" includes="**/**" />
+    </uptodate>
+    <antcall target="hintletengine.build.run" />
+  </target>
+
+  <!-- A conditional sub-target to be called from extension.build -->
+  <target name="hintletengine.build.run"
+      depends="init, classes.build"
+      unless="speedtracer.hintletengine.updated">
+    <gwtc module="com.google.speedtracer.hintletengine.HintletEngine" />
+    <copy todir="${destdir}">
+      <fileset dir="${wardir}">
+        <include name="hintletengine/**" />
+      </fileset>
+    </copy>
+  </target>
+
+  <!-- Junit Properties -->
+  <condition property="junit.platform.args" value="-XstartOnFirstThread" else="">
+    <equals arg1="${platform}" arg2="mac" />
+  </condition>
+  <property name="speedtracer.junit.testcases" value="**/*Suite.class"/>
+  <property name="speedtracer.junit.out" value="${speedtracer.destdir}/test" />
+  <property name="speedtracer.junit.reports" 
+            value="${speedtracer.junit.out}/reports" />
+
+  <target name="tests.report-failures" if="speedtracer.tests.did-fail">
+    <concat>
+      <fileset dir="${speedtracer.junit.reports}" includes="TEST-*.txt" />
+    </concat>
+    <fail message="OMG! The tests failed!" />
+  </target>
+
+  <!-- Set the value "remote.browser" to enable JUnit.  You'll need  -->
+  <!-- to setup an instance of BrowserManagerServer running Chrome.      -->
+  <!-- Syntax is -Dremote.browser="rmi://{hostname}/{browser name}   -->
+  <target name="tests" depends="classes.build">
+    <fail message="UI tests require that you define remote.browser. Use -Dremote.browser=rmi://hostname/browsername."
+        unless="remote.browser" />
+
+    <javac srcdir="test" destdir="${classdir}">
+      <classpath>
+        <path refid="classpath" />
+        <pathelement location="${junit.jar}" />
+      </classpath>
+    </javac>
+
+    <fileset id="speedtracer.remoteweb.tests" dir="${classdir}" includes="${speedtracer.junit.testcases}" />
+
+    <taskdef name="junit" 
+         classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask">
+      <classpath>
+        <pathelement location="${junit.jar}" />
+        <pathelement location="${antlib.jar}" />
+      </classpath>
+    </taskdef>
+
+    <echo message="Running remote test at: ${remote.browser}" />
+    <echo message="Writing test results to ${speedtracer.junit.reports} for ${speedtracer.junit.testcases}" />
+    <mkdir dir="${speedtracer.junit.reports}" />
+
+    <junit dir="${speedtracer.junit.out}" fork="yes" printsummary="yes"
+        haltonfailure="no" tempdir="${speedtracer.junit.out}"
+        failureproperty="speedtracer.tests.did-fail">
+      <jvmarg line="${junit.platform.args}" />
+      <jvmarg line="-Xmx768m" />
+
+      <sysproperty key="gwt.args" value="-out www -prod -runStyle RemoteWeb:${remote.browser} -batch module" />
+
+      <classpath>
+        <path refid="classpath" />
+        <pathelement location="src" />
+        <pathelement location="test" />
+        <pathelement location="${classdir}" />
+        <pathelement location="${junit.jar}" />
+      </classpath>
+
+      <formatter type="plain" />
+
+      <batchtest todir="${speedtracer.junit.reports}">
+        <fileset refid="speedtracer.remoteweb.tests" />
+      </batchtest>
+    </junit>
+    <antcall target="tests.report-failures" />
+  </target>
+
+  <!-- Public targets -->
+  <target name="test" depends="tests" />
+
+  <target name="build" depends="extension.build,
+                                headless.extension.build,
+                                monitor.build,
+                                hintletengine.build" />
+
+  <target name="clean">
+    <delete dir="${destdir}" failonerror="false" />
+    <delete dir="${intdir}" failonerror="false" />
+  </target>
+
+</project>

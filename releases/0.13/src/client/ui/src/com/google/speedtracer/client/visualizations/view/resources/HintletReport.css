@@ -1,0 +1,82 @@
+/**
+ * Annotated CSS for HintletReport.java.
+ */
+
+@def evenRowColor #eee;
+@def timeColumnWidth 60px;
+@def severityColumnWidth 12px;
+
+/* viewport for scrolled area */
+.reportOuterDiv {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 25px;
+  bottom: 10px;
+  border: 1px solid black;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.reportTree {
+  position: relative;
+  width: 100%;
+}
+
+.reportRowSummaryDiv {
+  display: inline-block;
+  width: 200px;
+}
+
+.reportHintletIndicator {
+  display: inline;
+  position: relative;
+  padding-left: 5px;
+}
+
+.reportRowNameDiv {
+  display: inline;	
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.reportRowDetailTable {
+  border-collapse: collapse;
+  border: 1px #aaa solid;   
+  width: 100%; 
+}
+
+.reportTableHeader {
+  font-weight: bold;
+}
+
+.reportTableEvenRow {
+  background-color: evenRowColor;
+}
+
+/* Columns in the detail report */
+.reportRowDetailSeverityCell {
+  width: severityColumnWidth;
+  border: 1px #aaa solid;	
+}
+
+.reportRowDetailTimeCell {
+  width: timeColumnWidth;
+  border: 1px #aaa solid;	
+}
+
+.reportRowDetailCell {
+  border: 1px #aaa solid;
+}
+
+.reportRowDetailContentElem {
+   \-webkit-box-sizing: border-box;
+   width: 100%;
+   padding-right: 5px;	
+}
+
+.reportSeverityDot {
+  width: 10px;
+  height: 10px;
+  padding: 2px;
+}

@@ -1,0 +1,32 @@
+/**
+ * Annotated CSS for SortableTableHeader.java.
+ */
+ 
+ .headerOuterDiv {
+  display: inline-block;
+  width: 100%;
+ }
+
+ /* blank space for arrow */
+ .arrow {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  cursor: pointer;
+ }
+
+@sprite .arrowAscending {
+  gwt-image: "arrowAscending";
+  display: inline-block;
+}
+
+@sprite .arrowDescending {
+  gwt-image: "arrowDescending";
+  display: inline-block;
+}
+
+.text {
+  display: inline-block;
+  font-weight: bold;
+  padding-right: 4px;
+}

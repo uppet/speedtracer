@@ -1,0 +1,7 @@
+<!DOCTYPE document SYSTEM
+    "http://google-web-toolkit.googlecode.com/svn/releases/1.5/distro-source/core/src/gwt-module.dtd">
+<module>
+  <inherits name='com.google.gwt.core.Core' />
+  
+  <source path="headlessextension" />
+</module>
