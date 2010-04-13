@@ -81,6 +81,7 @@ public class JsSymbolMap {
   private IterableFastStringMap<JsSymbol> symbols;
 
   protected JsSymbolMap(String sourceServer) {
+    sourceServer = (null == sourceServer) ? "" : sourceServer;
     this.sourceServer = (sourceServer.charAt(sourceServer.length() - 1) == '/')
         ? sourceServer : sourceServer + "/";
     this.symbols = new IterableFastStringMap<JsSymbol>();
