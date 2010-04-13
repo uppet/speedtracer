@@ -148,10 +148,6 @@ public class UiEvent extends EventRecord {
   protected UiEvent() {
   }
 
-  public final void acceptVisitor(EventVisitor visitor) {
-    visitor.visitUiEvent(this);
-  }
-
   /**
    * Applies a {@link LeafFirstTraversal} type visitor to this event and all of
    * its child events.
