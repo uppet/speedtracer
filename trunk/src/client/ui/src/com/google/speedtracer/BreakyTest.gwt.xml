@@ -1,0 +1,11 @@
+<!DOCTYPE document SYSTEM
+    "http://google-web-toolkit.googlecode.com/svn/releases/1.7/distro-source/core/src/gwt-module.dtd">
+<module rename-to="breaky">
+	<inherits name="com.google.speedtracer.Common" />
+  <inherits name='com.google.gwt.xhr.XMLHttpRequest' />
+  <inherits name="com.google.speedtracer.HeadlessApi" />
+  <script src="jsonschema-b4-speedtracer.js" /> 
+  <entry-point class="com.google.speedtracer.client.breaky.BreakyTest" />
+  <public path="breaky/public" />
+  <add-linker name="std" />
+</module>

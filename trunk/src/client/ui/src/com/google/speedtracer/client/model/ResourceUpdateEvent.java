@@ -160,7 +160,8 @@ public class ResourceUpdateEvent extends ResourceRecord {
     update["identifier"] = resourceId;    
     return {
       type: @com.google.speedtracer.client.model.ResourceUpdateEvent::TYPE,
-      data: update
+      data: update,
+      time: 0
     }
   }-*/;
 

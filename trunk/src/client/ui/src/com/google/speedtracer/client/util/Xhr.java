@@ -39,6 +39,10 @@ public class Xhr {
   public static native XMLHttpRequest create() /*-{
     return new XMLHttpRequest();
   }-*/;
+  
+  public static native XMLHttpRequest createWorkaround() /*-{
+    return new $wnd.XMLHttpRequest();
+  }-*/;
 
   private static class Handler implements ReadyStateChangeHandler {
     private final XhrCallback callback;
@@ -64,10 +68,34 @@ public class Xhr {
     xhr.open("GET", url);
     xhr.send();
   }
+  
+  /**
+   * conroy: HACK HACK HACK
+   * A dirty hack for http://code.google.com/p/google-web-toolkit/issues/detail?id=3608
+   */
+  public static void getWorkaround(String url, final XhrCallback callback) {
+    XMLHttpRequest xhr = Xhr.createWorkaround();
+    xhr.setOnReadyStateChange(new Handler(callback));
+    xhr.open("GET", url);
+    xhr.send();
+  }
 
   public static void post(String url, String requestData, String contentType,
       final XhrCallback callback) {
     XMLHttpRequest xhr = Xhr.create();
+    xhr.setOnReadyStateChange(new Handler(callback));
+    xhr.open("POST", url);
+    xhr.setRequestHeader("Content-type", contentType);
+    xhr.send(requestData);
+  }
+  
+  /**
+   * conroy: HACK HACK HACK
+   * A dirty hack for http://code.google.com/p/google-web-toolkit/issues/detail?id=3608
+   */
+  public static void postWorkaround(String url, String requestData, String contentType,
+      final XhrCallback callback) {
+    XMLHttpRequest xhr = Xhr.createWorkaround();
     xhr.setOnReadyStateChange(new Handler(callback));
     xhr.open("POST", url);
     xhr.setRequestHeader("Content-type", contentType);
