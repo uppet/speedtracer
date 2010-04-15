@@ -51,11 +51,18 @@ import java.util.HashMap;
 /**
  * A Chrome extension background page script for running a headless version of
  * SpeedTracer intended to support benchmarking and unit testing.
+ * 
+ * NOTE: the public key is included because currently the Headless Extension relies on statically
+ * referring to the chrome extension ID. While the private key is required to generate a signed
+ * extension with the proper ID, including the public key in the manifest allows an unpacked,
+ * unsigned extension to load with the proper ID.
+ * 
+ * TODO(conroy): remove this once the reliance on the chrome extension ID is resolved.
  */
 @Extension.ManifestInfo(name = "Speed Tracer - headless (by Google)", description = "Get insight into the performance of your web applications.", version = ClientConfig.VERSION, permissions = {
     "tabs", "http://*/*", "https://*/*"}, icons = {
     "resources/icon16.png", "resources/icon32.png", "resources/icon48.png",
-    "resources/icon128.png"})
+    "resources/icon128.png"}, publicKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDLwpQwF5uAQ8ufE3XErrzZBim2rDzUpKFOD+/jStzSBczBXkZIdUhOpdrfhSbDjDUsPeWkHg1bdsjSGg/4hfGeJCFCOwwPqOJHFKVRPan1hMWu7nIDKWbP6d/eCBw8MWq1o+FObwbB0AIgNFsvoQgN1iwrRZB6rxkQmEdYQqiIOQIDAQAB")
 public class HeadlessBackgroundPage extends Extension implements
     ConnectEvent.Listener {
 

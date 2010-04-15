@@ -327,6 +327,10 @@ public class ExtensionLinker extends AbstractLinker {
       }
       config.put("icons", icons);
     }
+    
+    if(extension.getPublicKey().length() > 0) {
+      config.put("key", extension.getPublicKey());
+    }
 
     final StringWriter writer = new StringWriter();
     try {

@@ -46,6 +46,8 @@ public abstract class Extension implements EntryPoint {
     String updateUrl() default NO_UPDATE_URL;
 
     String version();
+
+    String publicKey();
   }
 
   public static final String NO_UPDATE_URL = "";

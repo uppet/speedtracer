@@ -16,6 +16,7 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.speedtracer.client.util.DataBag;
 import com.google.speedtracer.client.util.JSOArray;
 
 /**
@@ -26,30 +27,6 @@ public class EventRecord extends JavaScriptObject {
    * The data field in a record. TODO: Type checking on return values. For now
    * the run time errors are still pretty descriptive.
    */
-  protected static class DataBag extends JavaScriptObject {
-    protected DataBag() {
-    }
-
-    public final native boolean getBooleanProperty(String prop) /*-{
-      return !!this[prop];
-    }-*/;
-
-    public final native double getDoubleProperty(String prop) /*-{
-      return this[prop];
-    }-*/;
-
-    public final native int getIntProperty(String prop) /*-{
-      return this[prop];
-    }-*/;
-
-    public final native JavaScriptObject getJSObjectProperty(String prop) /*-{
-      return this[prop];
-    }-*/;
-
-    public final native String getStringProperty(String prop) /*-{
-      return this[prop];
-    }-*/;
-  }
 
   protected EventRecord() {
   }

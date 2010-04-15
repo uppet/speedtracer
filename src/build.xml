@@ -52,6 +52,10 @@
     <ant dir="client" target="test" />
   </target>
 
+  <target name="speedtracer.breaky.build">
+    <ant dir = "client" target="speedtracer.breaky.build" />
+  </target>
+
   <target name="clean">
     <delete dir="${speedtracer.destdir}" failonerror="false" />
   </target>
