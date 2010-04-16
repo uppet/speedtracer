@@ -15,6 +15,8 @@
  */
 package com.google.speedtracer.client.model;
 
+import com.google.speedtracer.shared.EventRecordType;
+
 /**
  * Base class for overlays passed up for NetworkResource related EventRecords.
  */

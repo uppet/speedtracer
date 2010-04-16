@@ -15,4 +15,15 @@
 # the License.
 
 BASE=`dirname $0`
-${BASE}/../../src/third_party/third_party/python_24/python ${BASE}/src/py/cpplint.py $@
+
+# Test to see if this is a Windows install
+echo `uname` | egrep '^CYGWIN' >/dev/null
+if [ $? == 0 ] ; then
+  # Run our pre-packaged python
+  PYTHON=${BASE}/../../src/third_party/third_party/python_24/python
+else 
+  # Run python from path
+  PYTHON=python
+fi
+
+${PYTHON} ${BASE}/src/py/cpplint.py $@

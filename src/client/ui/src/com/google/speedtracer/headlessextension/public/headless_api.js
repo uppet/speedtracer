@@ -76,7 +76,7 @@ if (!window.__gwtStatsEvent) {
 function onDOMContentLoaded() {
   fromApiDiv = document.getElementById(FROM_API_DIV_ID);
   if (fromApiDiv == null && onDOMContentLoadedDelayed == false) {
-    // There is a race witht he headless_content_script.js to add the divs
+    // There is a race with the headless_content_script.js to add the divs
     onDOMContentLoadedDelayed = true;
     window.setTimeout(onDOMContentLoaded, 1);
     return;

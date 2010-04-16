@@ -62,9 +62,11 @@
 
   <path id="classpath">
     <pathelement path="src" />
+    <pathelement path="../../api/src" />
     <pathelement path="${gwt.home}/gwt-dev.jar" />
     <pathelement path="${gwt.home}/gwt-user.jar" />
     <pathelement path="${classdir}" />
+    <fileset dir="${speedtracer.destdir}" includes="*.jar" />
     <fileset dir="lib" includes="**/*.jar" />
   </path>
 

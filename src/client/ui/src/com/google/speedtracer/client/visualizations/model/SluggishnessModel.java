@@ -17,7 +17,6 @@ package com.google.speedtracer.client.visualizations.model;
 
 import com.google.speedtracer.client.model.DataModel;
 import com.google.speedtracer.client.model.EventRecord;
-import com.google.speedtracer.client.model.EventRecordType;
 import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.HintletEngineHost;
 import com.google.speedtracer.client.model.JavaScriptProfile;
@@ -28,6 +27,7 @@ import com.google.speedtracer.client.timeline.GraphModel;
 import com.google.speedtracer.client.timeline.HighlightModel;
 import com.google.speedtracer.client.timeline.ModelData;
 import com.google.speedtracer.client.util.JsIntegerMap;
+import com.google.speedtracer.shared.EventRecordType;
 
 import java.util.ArrayList;
 import java.util.Collections;

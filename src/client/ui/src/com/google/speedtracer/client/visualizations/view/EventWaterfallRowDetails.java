@@ -41,7 +41,6 @@ import com.google.speedtracer.client.SourceViewer.SourcePresenter;
 import com.google.speedtracer.client.SourceViewer.SourceViewerLoadedCallback;
 import com.google.speedtracer.client.model.DataModel;
 import com.google.speedtracer.client.model.EvalScript;
-import com.google.speedtracer.client.model.EventRecordType;
 import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.JavaScriptExecutionEvent;
 import com.google.speedtracer.client.model.JavaScriptProfile;
@@ -70,6 +69,7 @@ import com.google.speedtracer.client.visualizations.view.JavaScriptProfileRender
 import com.google.speedtracer.client.visualizations.view.Tree.ExpansionChangeListener;
 import com.google.speedtracer.client.visualizations.view.Tree.Item;
 import com.google.speedtracer.client.visualizations.view.Tree.SelectionChangeListener;
+import com.google.speedtracer.shared.EventRecordType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -384,7 +384,7 @@ public class EventWaterfallRowDetails extends RowDetails implements
           title.setAttribute("colspan", "2");
           title.setAttribute("align", "left");
           title.setInnerText("Details for "
-              + EventRecordType.typeToDetailedTypeString(e));
+              + UiEvent.typeToDetailedTypeString(e));
           title.getStyle().setWidth(100, Unit.PX);
           titleRow.appendChild(title);
           table.getTableHead().appendChild(titleRow);

@@ -1,0 +1,159 @@
+<project name="speedtracer-api" default="build">
+  <!-- Default values are overridden by ../build.xml -->
+  <property name="config" value="Release" />
+  <!-- Set the value "remote.browser" to enable JUnit (see below) -->
+
+  <!-- TODO(knorton): Might be possible to get rid of this -->
+  <property name="speedtracer.destdir" location="../${config}" />
+  <property name="moniker" value="speedtracer" />
+  <property name="headless.moniker" value="speedtracerheadless" />
+  <property name="destdir" location="${speedtracer.destdir}/${moniker}" />
+  <property name="headless.destdir" 
+            location="../${config}/${headless.moniker}" />
+  <property name="speedtracer.revision" value="0" />
+
+  <!-- Platform identifier -->
+  <condition property="platform" value="windows">
+    <os family="windows" />
+  </condition>
+  <condition property="platform" value="mac">
+    <and>
+      <os family="unix" />
+      <contains string="${os.name}" substring="mac" casesensitive="false" />
+    </and>
+  </condition>
+  <condition property="platform" value="linux">
+    <and>
+      <os family="unix" />
+      <not>
+        <contains string="${os.name}" substring="mac" casesensitive="false" />
+      </not>
+    </and>
+  </condition>
+  <fail unless="platform"
+      message="Building on ${os.name} not supported." />
+
+  <!-- Gwt -->
+  <property name="gwt.home" location="../third_party/gwt" />
+  <condition property="gwt.options"
+      value="-XdisableCastChecking -XdisableClassMetadata"
+      else="-ea -style PRETTY">
+    <equals arg1="${config}" arg2="Release" casesensitive="true" />
+  </condition>
+
+  <!-- Junit -->
+  <property name="junit.jar"
+      location="../third_party/junit/junit-3.8.1.jar" />
+  <property name="antlib.jar"
+      location="../third_party/antlib/ant-junit-1.6.5.jar" />
+
+  <!-- Ui Options -->
+  <property name="intdir" location="${speedtracer.destdir}/obj/${moniker}-api" />
+  <property name="classdir" location="${intdir}/classes" />
+
+  <path id="classpath">
+    <pathelement path="src" />
+    <pathelement path="${gwt.home}/gwt-dev.jar" />
+    <pathelement path="${gwt.home}/gwt-user.jar" />
+    <pathelement path="${classdir}" />
+    <fileset dir="lib" includes="**/*.jar" />
+  </path>
+
+  <target name="init">
+    <mkdir dir="${classdir}" />
+  </target>
+
+  <target name="classes.build" depends="init">
+    <javac srcdir="src"
+        destdir="${classdir}"
+        classpathref="classpath" />
+    <!-- Create a .jar file of the results -->
+    <mkdir dir="${destdir}" />
+    <jar destfile="${speedtracer.destdir}/${moniker}-api.jar">
+         <fileset dir="${classdir}" />
+         <fileset dir="src" />
+    </jar>
+  </target>
+
+  <!-- Junit Properties -->
+  <condition property="junit.platform.args" value="-XstartOnFirstThread" else="">
+    <equals arg1="${platform}" arg2="mac" />
+  </condition>
+  <property name="speedtracer.junit.testcases" value="**/*Suite.class"/>
+  <property name="speedtracer.junit.out" value="${speedtracer.destdir}/test" />
+  <property name="speedtracer.junit.reports" 
+            value="${speedtracer.junit.out}/reports" />
+
+  <target name="tests.report-failures" if="speedtracer.tests.did-fail">
+    <concat>
+      <fileset dir="${speedtracer.junit.reports}" includes="TEST-*.txt" />
+    </concat>
+    <fail message="OMG! The tests failed!" />
+  </target>
+
+  <!-- Set the value "remote.browser" to enable JUnit.  You'll need  -->
+  <!-- to setup an instance of BrowserManagerServer running Chrome.      -->
+  <!-- Syntax is -Dremote.browser="rmi://{hostname}/{browser name}   -->
+  <target name="tests" depends="classes.build">
+    <fail message="UI tests require that you define remote.browser. Use -Dremote.browser=rmi://hostname/browsername."
+        unless="remote.browser" />
+
+    <javac srcdir="test" destdir="${classdir}">
+      <classpath>
+        <path refid="classpath" />
+        <pathelement location="${junit.jar}" />
+      </classpath>
+    </javac>
+
+    <fileset id="speedtracer.remoteweb.tests" dir="${classdir}" includes="${speedtracer.junit.testcases}" />
+
+    <taskdef name="junit" 
+         classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask">
+      <classpath>
+        <pathelement location="${junit.jar}" />
+        <pathelement location="${antlib.jar}" />
+      </classpath>
+    </taskdef>
+
+    <echo message="Running remote test at: ${remote.browser}" />
+    <echo message="Writing test results to ${speedtracer.junit.reports} for ${speedtracer.junit.testcases}" />
+    <mkdir dir="${speedtracer.junit.reports}" />
+
+    <junit dir="${speedtracer.junit.out}" fork="yes" printsummary="yes"
+        haltonfailure="no" tempdir="${speedtracer.junit.out}"
+        failureproperty="speedtracer.tests.did-fail">
+      <jvmarg line="${junit.platform.args}" />
+      <jvmarg line="-Xmx768m" />
+
+      <sysproperty key="gwt.args" 
+                   value="-out www -prod -runStyle RemoteWeb:${remote.browser} -batch module" />
+
+      <classpath>
+        <path refid="classpath" />
+        <pathelement location="src" />
+        <pathelement location="test" />
+        <pathelement location="${classdir}" />
+        <pathelement location="${junit.jar}" />
+      </classpath>
+
+      <formatter type="plain" />
+
+      <batchtest todir="${speedtracer.junit.reports}">
+        <fileset refid="speedtracer.remoteweb.tests" />
+      </batchtest>
+    </junit>
+    <antcall target="tests.report-failures" />
+  </target>
+
+  <!-- Public targets -->
+  <target name="test" depends="tests" />
+
+  <target name="build" depends="classes.build" />
+
+  <target name="clean">
+    <delete dir="bin" failonerror="false" />
+    <delete dir="${destdir}" failonerror="false" />
+    <delete dir="${intdir}" failonerror="false" />
+  </target>
+
+</project>

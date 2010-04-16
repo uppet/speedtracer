@@ -21,6 +21,7 @@ import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.JSON;
 import com.google.speedtracer.client.util.JsIntegerMap;
+import com.google.speedtracer.shared.EventRecordType;
 
 import java.util.ArrayList;
 import java.util.List;

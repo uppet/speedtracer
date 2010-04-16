@@ -18,6 +18,7 @@ package com.google.speedtracer.client.model;
 import com.google.speedtracer.client.model.DataModel.EventRecordHandler;
 import com.google.speedtracer.client.model.ResourceUpdateEvent.UpdateResource;
 import com.google.speedtracer.client.util.JsIntegerMap;
+import com.google.speedtracer.shared.EventRecordType;
 
 import java.util.ArrayList;
 import java.util.List;

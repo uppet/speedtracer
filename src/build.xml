@@ -41,6 +41,7 @@
          file="${speedtracer.destdir}/version-info.txt" />
 
     <!-- inherits: config, speedtracer.destdir, speedtracer.revision -->
+    <ant dir="api" target="build" />
     <ant dir="client" target="build" />
   </target>
 
@@ -49,6 +50,7 @@
   </target>
 
   <target name="test" depends="build">
+    <ant dir="api" target="test" />
     <ant dir="client" target="test" />
   </target>
 
