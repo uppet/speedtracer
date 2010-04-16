@@ -15,6 +15,7 @@
  */
 package com.google.speedtracer.client.visualizations.view;
 
+import com.google.gwt.graphics.client.Color;
 import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
 import com.google.gwt.topspin.ui.client.Container;
@@ -24,11 +25,15 @@ import com.google.speedtracer.client.SymbolServerController;
 import com.google.speedtracer.client.SymbolServerService;
 import com.google.speedtracer.client.model.ButtonDescription;
 import com.google.speedtracer.client.model.EventRecordType;
+import com.google.speedtracer.client.model.LogEvent;
 import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.client.model.UiEventModel;
+import com.google.speedtracer.client.util.JSOArray;
+import com.google.speedtracer.client.util.JsIntegerDoubleMap;
 import com.google.speedtracer.client.util.JsIntegerMap;
 import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.util.Url;
+import com.google.speedtracer.client.util.JsIntegerDoubleMap.IterationCallBack;
 import com.google.speedtracer.client.visualizations.model.SluggishnessModel;
 import com.google.speedtracer.client.visualizations.model.SluggishnessVisualization;
 import com.google.speedtracer.client.visualizations.view.SluggishnessDetailView.EventWaterfallFilter;
@@ -50,6 +55,166 @@ public class EventWaterfall extends FilteringScrollTable {
   private interface RowListener extends MouseOverListener, ClickListener {
   }
 
+  /**
+   * TODO(knorton): This class was simply extracted from EventTraceBreakdown but
+   * there are obvious refactorings and cleanups to be made in another pass. I
+   * plan to simplify this class considerably.
+   * 
+   * NOTES:
+   * <p>
+   * An event/sub-event gets marked with a dominant type if it's important, but
+   * small. Importance is determined by whether the node has children who are
+   * part of the set of types that exceed a threshold. Or, if it's a log
+   * message. :-) The dominant type is computed by descending a sub-tree and
+   * computing a type-duration map for every node.
+   * </p>
+   */
+  private static class Presenter implements LazyEventTree.Presenter {
+    /**
+     * Simply utility class for aggregating information in two
+     * JsIntegerDoubleMaps by iterating over one of them.
+     */
+    class TypeMapAggregator implements IterationCallBack {
+      double maxValue = 0;
+      JsIntegerDoubleMap parentTypeMap;
+      int typeOfMax;
+
+      public TypeMapAggregator(JsIntegerDoubleMap parentTypeMap) {
+        this.parentTypeMap = parentTypeMap;
+      }
+
+      public void onIteration(int key, double val) {
+        double value = ((parentTypeMap.hasKey(key)) ? parentTypeMap.get(key)
+            + val : val);
+        parentTypeMap.put(key, value);
+        maybeChangeMax(key, value);
+      }
+
+      private void maybeChangeMax(int key, double val) {
+        if (val >= maxValue) {
+          typeOfMax = key;
+          maxValue = val;
+        }
+      }
+    }
+
+    private static final int SIGNIFICANCE_IN_PIXELS = 1;
+    private static final int AGGREGATE_SIGNIFICANCE_IN_PIXELS = 5;
+
+    private static native Color getDominantColor(UiEvent event) /*-{
+      return event.dominantColor;
+    }-*/;
+
+    private static native void setDominantColor(UiEvent event, Color color) /*-{
+      event.dominantColor = color;
+    }-*/;
+
+    public Color getColor(UiEvent event) {
+      return EventRecordColors.getColorForType(event.getType());
+    }
+
+    public Color getDominantTypeColor(UiEvent event) {
+      return getDominantColor(event);
+    }
+
+    public double getInsignificanceThreshold(double msPerPixel) {
+      return SIGNIFICANCE_IN_PIXELS / msPerPixel;
+    }
+
+    public String getLabel(UiEvent event) {
+      return EventRecordType.typeToDetailedTypeString(event);
+    }
+
+    public boolean hasDominantType(UiEvent event, UiEvent rootEvent,
+        double msPerPixel) {
+      // We now attempt to associate a dominant type (color) with this tiny
+      // node. We do not want to have exponential search behavior. So we
+      // computeDominantColorForSubtree will memoize its results.
+      computeDominantColorForSubtree(event, msPerPixel, rootEvent);
+      return getDominantColor(event) != null;
+    }
+
+    /**
+     * Post order traversal. At each visit, we know that the typeMap for all our
+     * children should be up to date for that subtree. We simply update our own
+     * typemap with the information contained in the children's typeMap, and
+     * then set our own dominant color if it matters.
+     */
+    private void computeDominantColorForSubtree(UiEvent node,
+        double msPerPixel, UiEvent rootEvent) {
+      if (isMarked(node)) {
+        return;
+      }
+
+      JsIntegerDoubleMap typeMap = JsIntegerDoubleMap.create();
+      JSOArray<UiEvent> children = node.getChildren();
+      // Leaf node check
+      if (children.isEmpty()) {
+        markNode(node);
+        final int nodeType = node.getType();
+        typeMap.put(nodeType, node.getSelfTime());
+        // Set the typemap for parent nodes to use in their calculations.
+        node.setTypeDurations(typeMap);
+        setDominantColorIfImportant(node, nodeType, msPerPixel, rootEvent);
+        return;
+      }
+
+      // Recursive call
+      for (int i = 0, n = children.size(); i < n; i++) {
+        computeDominantColorForSubtree(children.get(i), msPerPixel, rootEvent);
+      }
+
+      // Visit the node.
+      // A Visit includes an iteration over the children to aggregate their type
+      // map information into our own. And then figuring out what the dominant
+      // type is.
+      markNode(node);
+      TypeMapAggregator aggregator = new TypeMapAggregator(typeMap);
+      for (int i = 0, n = children.size(); i < n; i++) {
+        children.get(i).getTypeDurations().iterate(aggregator);
+      }
+
+      // Set the typemap for parent nodes to use in their calculations.
+      node.setTypeDurations(typeMap);
+      setDominantColorIfImportant(node, aggregator.typeOfMax, msPerPixel,
+          rootEvent);
+    }
+
+    /**
+     * Checks to see if a node has been visited during the dominant color
+     * computation.
+     */
+    private native boolean isMarked(UiEvent node) /*-{
+      return !!node.typeBreakdownDone;
+    }-*/;
+
+    /**
+     * Marks a node as visited during the dominant color computation.
+     */
+    private native void markNode(UiEvent node) /*-{
+      node.typeBreakdownDone = true;
+    }-*/;
+
+    private void setDominantColorIfImportant(UiEvent node, int dominantType,
+        double msPerPixel, UiEvent rootEvent) {
+      final double aggregateThreshold = AGGREGATE_SIGNIFICANCE_IN_PIXELS
+          / msPerPixel;
+      // We check to see if this insignificant thing is part of something
+      // significant.
+      JsIntegerDoubleMap aggregateTimes = rootEvent.getTypeDurations();
+      // Visitors should already have run
+      assert aggregateTimes != null : "aggregateTimes is null";
+
+      // Find the dominant color for this node, and if it belongs to an
+      // important color, then set the dominant color on the UiEvent.
+      if (aggregateTimes.hasKey(dominantType)
+          && (aggregateTimes.get(dominantType) >= aggregateThreshold)
+          || (node.getType() == LogEvent.TYPE)) {
+        setDominantColor(node, EventRecordColors.getColorForType(dominantType));
+      }
+    }
+  }
+
   // The index of the first event in the table model.
   private int beginIndex = 0;
 
@@ -68,6 +233,8 @@ public class EventWaterfall extends FilteringScrollTable {
   private final UiEventModel sourceModel;
 
   private final SluggishnessVisualization visualization;
+
+  private final Presenter presenter = new Presenter();
 
   public EventWaterfall(Container container, EventWaterfallFilter filter,
       final SluggishnessVisualization visualization, UiEventModel sourceModel,
@@ -205,6 +372,10 @@ public class EventWaterfall extends FilteringScrollTable {
     this.beginIndex = beginIndex;
     this.setEndIndex(endIndex);
     renderTable();
+  }
+
+  LazyEventTree.Presenter getPresenter() {
+    return presenter;
   }
 
   private SymbolServerController getCurrentSymbolServerController() {
