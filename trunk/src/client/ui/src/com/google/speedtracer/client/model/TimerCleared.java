@@ -15,6 +15,8 @@
  */
 package com.google.speedtracer.client.model;
 
+import com.google.speedtracer.shared.EventRecordType;
+
 /**
  * Single event record with no duration corresponding to a cancellation
  * (clearing) of a timer scheduled with setTimeout.

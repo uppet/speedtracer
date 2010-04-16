@@ -24,7 +24,6 @@ import com.google.gwt.topspin.ui.client.MouseOverListener;
 import com.google.speedtracer.client.SymbolServerController;
 import com.google.speedtracer.client.SymbolServerService;
 import com.google.speedtracer.client.model.ButtonDescription;
-import com.google.speedtracer.client.model.EventRecordType;
 import com.google.speedtracer.client.model.LogEvent;
 import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.client.model.UiEventModel;
@@ -258,7 +257,7 @@ public class EventWaterfall extends FilteringScrollTable {
       public void onMouseOver(MouseOverEvent event) {
         UiEvent e = (UiEvent) event.getSource();
         assert e != null;
-        String description = EventRecordType.typeToDetailedTypeString(e) + " @"
+        String description = UiEvent.typeToDetailedTypeString(e) + " @"
             + TimeStampFormatter.format(e.getTime());
         EventWaterfall.this.getVisualization().getCurrentEventMarkerModel().update(
             e.getTime(), e.getDuration(), description, 0);

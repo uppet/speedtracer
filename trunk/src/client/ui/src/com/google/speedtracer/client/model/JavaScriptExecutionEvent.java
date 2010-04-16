@@ -15,6 +15,8 @@
  */
 package com.google.speedtracer.client.model;
 
+import com.google.speedtracer.shared.EventRecordType;
+
 /**
  * Overlay for webkit Call Function events that measure the time spent running a
  * JS event handler.

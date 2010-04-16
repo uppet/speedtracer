@@ -15,6 +15,8 @@
  */
 package com.google.speedtracer.client.model;
 
+import com.google.speedtracer.shared.EventRecordType;
+
 /**
  * TimerMetaData overlay. We get one of these when a Timer is installed.
  */

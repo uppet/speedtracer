@@ -197,7 +197,7 @@ regen_string = """/*
 """
 
 header_string = """/*
- * Copyright 2009 Google Inc.
+ * Copyright 2010 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -219,7 +219,7 @@ def writeJavaSource(path):
   """
   javaSrc = open(path, "w");
   javaSrc.write(header_string + "\n" + 
-"""package com.google.speedtracer.client.model;
+"""package com.google.speedtracer.shared;
 
 """ + regen_string + """
 /**
@@ -273,24 +273,6 @@ public class EventRecordType {
     javaSrc.write('    "' + event['help_text'].replace("\"", "'") + '"')
     javaSrc.write(",\n")
   javaSrc.write("""  };
-
-  public static String typeToDetailedTypeString(UiEvent e) {
-    switch (e.getType()) {
-      case DomEvent.TYPE:
-        return "DOM (" + ((DomEvent) e).getDomEventType() + ")";
-      case LogEvent.TYPE:
-        String logMessage = ((LogEvent) e).getMessage();
-        int logLength = logMessage.length();
-        logMessage = (logLength > 20) ? logMessage.substring(0, 8) + "..."
-            + logMessage.substring(logLength - 8, logLength) : logMessage;
-        return "Log: " + logMessage;
-      case TimerFiredEvent.TYPE:
-        TimerFiredEvent timerEvent = e.cast();
-        return "Timer Fire (" + timerEvent.getTimerId() + ")";
-      default:
-        return EventRecordType.typeToString(e.getType());
-    }
-  }
 
   public static String typeToHelpString(int type) {
     if (type < 0 || type >= webkitHelpStrings.length) {
@@ -385,7 +367,7 @@ typedef enum {
 
 def Main(basedir):
   """The main."""
-  java_path=basedir + "/client/ui/src/com/google/speedtracer/client/model/EventRecordType.java";
+  java_path=basedir + "/api/src/com/google/speedtracer/shared/EventRecordType.java";
   # check for the existence of the directory
   if (os.path.isdir(os.path.dirname(java_path)) == False):
     raise Exception("Path to java src: " + os.path.dirname(java_path) 

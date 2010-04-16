@@ -18,6 +18,7 @@ package com.google.speedtracer.client.model;
 import com.google.gwt.core.client.JsArrayNumber;
 import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.JsIntegerDoubleMap;
+import com.google.speedtracer.shared.EventRecordType;
 
 import java.util.Comparator;
 
@@ -344,4 +345,23 @@ public class UiEvent extends EventRecord {
   public final native void setTypeDurations(JsIntegerDoubleMap map) /*-{
     this.durationMap = map;
   }-*/;
+  
+  public static String typeToDetailedTypeString(UiEvent e) {
+    switch (e.getType()) {
+      case DomEvent.TYPE:
+        return "DOM (" + ((DomEvent) e).getDomEventType() + ")";
+      case LogEvent.TYPE:
+        String logMessage = ((LogEvent) e).getMessage();
+        int logLength = logMessage.length();
+        logMessage = (logLength > 20) ? logMessage.substring(0, 8) + "..."
+            + logMessage.substring(logLength - 8, logLength) : logMessage;
+        return "Log: " + logMessage;
+      case TimerFiredEvent.TYPE:
+        TimerFiredEvent timerEvent = e.cast();
+        return "Timer Fire (" + timerEvent.getTimerId() + ")";
+      default:
+        return EventRecordType.typeToString(e.getType());
+    }
+  }
+  
 }

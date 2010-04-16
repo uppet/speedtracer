@@ -11,6 +11,8 @@
   <inherits name='com.google.gwt.chrome.crx.Extension' />
   <inherits name='com.google.gwt.webworker.WebWorker' />
 
+  <inherits name='com.google.speedtracer.Api' />
+
   <define-property name="speedtracer.use_mock_mode"
     values="please, nope" />
 

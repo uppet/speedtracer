@@ -18,6 +18,7 @@ package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.speedtracer.client.model.NetworkResource.HeaderMap;
+import com.google.speedtracer.shared.EventRecordType;
 
 /**
  * Overlay type for Inspector resource updates.

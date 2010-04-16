@@ -15,6 +15,8 @@
  */
 package com.google.speedtracer.client.model;
 
+import com.google.speedtracer.shared.EventRecordType;
+
 /**
  * Single event record with no duration corresponding to the beginning of the
  * response from the server for a network resource request.

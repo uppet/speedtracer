@@ -21,12 +21,12 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.events.client.Event;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.InsertingContainerImpl;
-import com.google.speedtracer.client.model.EventRecordType;
 import com.google.speedtracer.client.model.LogEvent;
 import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.visualizations.view.EventTraceBreakdown.Renderer;
+import com.google.speedtracer.shared.EventRecordType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,7 +76,7 @@ public class LazyEventTree extends Tree {
   private static class LazyItem extends Tree.Item {
     private static void addLabelForEvent(Element itemElem, Presenter presenter,
         UiEvent event) {
-      itemElem.setInnerText(EventRecordType.typeToDetailedTypeString(event));
+      itemElem.setInnerText(UiEvent.typeToDetailedTypeString(event));
       itemElem.setInnerText(presenter.getLabel(event));
       final SpanElement timesElem = itemElem.appendChild(itemElem.getOwnerDocument().createSpanElement());
       timesElem.getStyle().setProperty("cssText", TIME_LABEL_STYLE);
