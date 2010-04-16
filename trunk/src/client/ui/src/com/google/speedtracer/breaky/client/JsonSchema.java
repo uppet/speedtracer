@@ -30,7 +30,7 @@ import com.google.speedtracer.client.util.JSOArray;
 public class JsonSchema extends JavaScriptObject {
 
   /**
-   * The Error format used by jsonschema
+   * The Error format used by JsonSchema.
    */
   public static class JsonSchemaError extends JavaScriptObject {
     protected JsonSchemaError() {
@@ -52,7 +52,7 @@ public class JsonSchema extends JavaScriptObject {
     /**
      * Factory method for manually generating out of band errors.
      */
-    public final static native JsonSchemaResults create(String property,
+    public static final native JsonSchemaResults create(String property,
         String message) /*-{
       return {"valid" : false, 
               "errors" : [
@@ -71,7 +71,6 @@ public class JsonSchema extends JavaScriptObject {
     public final native boolean isValid() /*-{
       return this.valid;
     }-*/;
-
   }
 
   protected JsonSchema() {
@@ -387,7 +386,7 @@ public class JsonSchema extends JavaScriptObject {
   }-*/;
 
   /**
-   * Validate an instance object against this schema
+   * Validate an instance object against this schema.
    * 
    * @param obj
    * @return {@link JsonSchemaResults} indicating valid/invalid + info

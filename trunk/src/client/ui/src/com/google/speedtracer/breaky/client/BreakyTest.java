@@ -55,7 +55,7 @@ import java.util.Date;
  */
 public class BreakyTest implements EntryPoint {
   /**
-   * A {@link DumpProcessor.DumpEntryHandler} for running the test in mock mode
+   * A {@link DumpProcessor.DumpEntryHandler} for running the test in mock mode.
    */
   private class MockHandler implements DumpProcessor.DumpEntryHandler {
     public boolean onDumpEntry(String dumpEntry) {
@@ -79,7 +79,7 @@ public class BreakyTest implements EntryPoint {
     }
   }
   /**
-   * A {@link DumpProcessor.DumpEntryHandler} for running the normal test
+   * A {@link DumpProcessor.DumpEntryHandler} for running the normal test.
    */
   private class RegularHandler implements DumpProcessor.DumpEntryHandler {
     public boolean onDumpEntry(String dumpEntry) {
@@ -95,8 +95,8 @@ public class BreakyTest implements EntryPoint {
     public void onFinished() {
       reportValid();
     }
-
   }
+
   private class XhrCb implements XhrCallback {
     public void onFail(XMLHttpRequest xhr) {
       log("XHR: Got an error: " + xhr.getResponseText());
@@ -106,16 +106,21 @@ public class BreakyTest implements EntryPoint {
       log("XHR: success: " + xhr.getResponseText());
     }
   }
+
   private static final int API_POLL_INTERVAL = 250;
+
+  private static int INITIAL_WALL_COUNT = 100;
+
   private static final int MAX_API_POLLS = 5 * (1000 / API_POLL_INTERVAL);
-  DumpValidator validator = new DumpValidator();
+  
+  private final DumpValidator validator = new DumpValidator();
+  
   private int apiPollCount = 0;
 
   private final DivElement statusDiv = Document.get().createDivElement();
 
   private int validationCount = 0;
 
-  private static int INITIAL_WALL_COUNT = 100;
   private int wallCount = INITIAL_WALL_COUNT;
 
   /**
@@ -123,7 +128,7 @@ public class BreakyTest implements EntryPoint {
    * is not loaded.
    */
   public void onModuleLoad() {
-    //Setup the statusDiv
+    // Setup the statusDiv
     statusDiv.getStyle().setBorderColor("#aa0");
     statusDiv.getStyle().setBorderWidth(1, Unit.PX);
     statusDiv.getStyle().setBorderStyle(BorderStyle.SOLID);
@@ -155,7 +160,7 @@ public class BreakyTest implements EntryPoint {
    */
   private String formatResults(String objString, JsonSchemaResults results) {
     if (results.isValid()) {
-      return "Valid:" + objString + "<br>";
+      return "Valid: " + objString + "<br>";
     } else {
       StringBuilder errorStringBuilder = new StringBuilder();
       errorStringBuilder.append("INVALID<br>Object: ");
@@ -179,11 +184,10 @@ public class BreakyTest implements EntryPoint {
         validateDump(dump);
       }
     });
-
   }
 
   /**
-   * Top level loader for the Headless API
+   * Top level loader for the Headless API.
    */
   private void loadApi() {
     if (!HeadlessApi.isLoaded()) {
@@ -196,14 +200,21 @@ public class BreakyTest implements EntryPoint {
     statusDiv.setInnerHTML(statusDiv.getInnerHTML() + "<p>" + message + "</p>");
   }
 
+  private void mockSimulateDump() {
+    // Fail fast if JSON is not present.
+    JSON.parse("{\"asdf\" : 3 }");    
+    log("About to validate");
+    String[] dump = MockModelGenerator.getDump(0);
+    DeferredCommand.addCommand(new DumpProcessor(new MockHandler(), dump));
+  }
+
   /**
    * Poll the Headless API asynchronous load. Once loaded, start the test.
    */
   private void pollApi() {
     if (HeadlessApi.isLoaded()) {
-      HeadlessApi.MonitoringOnOptions options = 
-        HeadlessApi.MonitoringOnOptions.createObject().cast();
-      
+      HeadlessApi.MonitoringOnOptions options = HeadlessApi.MonitoringOnOptions.createObject().cast();
+
       options.clearData();
       log("pollApi() starting monitoring...");
       HeadlessApi.startMonitoring(options, new MonitoringCallback() {
@@ -218,7 +229,7 @@ public class BreakyTest implements EntryPoint {
               reportInvalid("Caught a JavaScriptException: " + t.toString());
             }
           } finally {
-            //TODO(conroy): report all log messages via XHR for debugging
+            // TODO(conroy): report all log messages via XHR for debugging
           }
         }
       });
@@ -241,7 +252,7 @@ public class BreakyTest implements EntryPoint {
   }
 
   /**
-   * Tell the breaky server that this data set contained an invalid record
+   * Tell the breaky server that this data set contained an invalid record.
    * 
    * @param invalid the message describing the invalid data
    */
@@ -252,7 +263,7 @@ public class BreakyTest implements EntryPoint {
   }
 
   /**
-   * Tell the breaky server that this data set passed
+   * Tell the breaky server that this data set passed.
    */
   private void reportValid() {
     log("About to report valid..");
@@ -261,8 +272,8 @@ public class BreakyTest implements EntryPoint {
   }
 
   /**
-   * Make the browser do something so that we have some data to validate.
-   * For now, this does a simple 99 bottles of beer on the wall.
+   * Make the browser do something so that we have some data to validate. For
+   * now, this does a simple 99 bottles of beer on the wall.
    * 
    * TODO(conroy): improve coverage
    */
@@ -289,7 +300,8 @@ public class BreakyTest implements EntryPoint {
         }
         log(wallCount + " Bottles of Beer on the wall (h:"
             + String.valueOf(statusDiv.getClientHeight()) + ")");
-        statusDiv.getStyle().setBorderWidth(INITIAL_WALL_COUNT - wallCount, Unit.PX);
+        statusDiv.getStyle().setBorderWidth(INITIAL_WALL_COUNT - wallCount,
+            Unit.PX);
         statusDiv.getStyle().setBorderColor("#0000ff");
 
         if (wallCount > 0) {
@@ -310,16 +322,8 @@ public class BreakyTest implements EntryPoint {
     log("wait for it...");
   }
 
-  private void mockSimulateDump() {
-    log("fast fail if JSON isn't there");
-    JavaScriptObject test = JSON.parse("{\"asdf\" : 3 }");
-    log("About to validate");
-    String[] dump = MockModelGenerator.getDump(0);
-    DeferredCommand.addCommand(new DumpProcessor(new MockHandler(), dump));
-  }
-
   /**
-   * Validate a raw dump
+   * Validate a raw dump.
    * 
    * @param dump the dump as a raw string, with records separated by \n
    */

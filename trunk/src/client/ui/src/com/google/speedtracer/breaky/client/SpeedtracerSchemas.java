@@ -18,17 +18,19 @@ package com.google.speedtracer.breaky.client;
 import com.google.gwt.core.client.JavaScriptObject;
 
 /**
- * A simple container class for the Speedtracer schemas 
- * TODO(conroy): make the schema definitions the source of truth
- * for generate-event-record.py, etc..
+ * A simple container class for the Speed Tracer schemas
+ * 
+ * TODO(conroy): make the schema definitions the source of truth for
+ * generate-event-record.py, etc..
  */
 public class SpeedtracerSchemas {
   /**
    * Native method to return a JSON Dictionary of all the speedtracer schema
    * types.
+   * 
    * @return
    */
-  public static native final JavaScriptObject getSchemas() /*-{
+  public static final native JavaScriptObject getSchemas() /*-{
     return {
       // Base Definitions
      "TIMELINE_EVENT_BASE" : {
@@ -119,7 +121,7 @@ public class SpeedtracerSchemas {
        }
      },
 
-     //Some Handy Databag references
+     // Some Handy Databag references
      "EMPTY_DATA" : {
        "id" : "EMPTY_DATA",
        "description" : "An empty databag!",
@@ -150,7 +152,6 @@ public class SpeedtracerSchemas {
        },
        "additionalProperties" : false
      },
-
 
      // Concrete Events
      "DOM_EVENT" : { 
@@ -799,5 +800,5 @@ public class SpeedtracerSchemas {
      },
     };
   }-*/;
-  
+
 }

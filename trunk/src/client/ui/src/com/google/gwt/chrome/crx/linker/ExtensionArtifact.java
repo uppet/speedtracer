@@ -18,8 +18,6 @@ package com.google.gwt.chrome.crx.linker;
 import com.google.gwt.core.ext.linker.Artifact;
 
 class ExtensionArtifact extends Artifact<ExtensionArtifact> {
-  private static final long serialVersionUID = 8088249825810527401L;
-
   static class IconInfo {
     private final String filename;
     private final int size;
@@ -37,6 +35,8 @@ class ExtensionArtifact extends Artifact<ExtensionArtifact> {
       return size;
     }
   }
+
+  private static final long serialVersionUID = 8088249825810527401L;
 
   private final String description;
   private final String name;
@@ -74,16 +74,16 @@ class ExtensionArtifact extends Artifact<ExtensionArtifact> {
     return this.permissions;
   }
 
+  public String getPublicKey() {
+    return publicKey;
+  }
+
   public String getUpdateUrl() {
     return updateUrl;
   }
-
+  
   public String getVersion() {
     return version;
-  }
-  
-  public String getPublicKey() {
-    return publicKey;
   }
 
   @Override
