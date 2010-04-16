@@ -13,12 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.speedtracer.client.breaky;
+package com.google.speedtracer.breaky.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
-import com.google.speedtracer.client.breaky.JsonSchema.JsonSchemaResults;
+import com.google.speedtracer.breaky.client.JsonSchema.JsonSchemaResults;
 import com.google.speedtracer.client.util.DataBag;
 import com.google.speedtracer.client.util.JsIntegerMap;
 
@@ -60,7 +60,7 @@ public class DumpValidator {
    * @return JsArray<String> of schemas
    */
   public native final JsArrayString listSchemas() /*-{
-    var schemas = this.@com.google.speedtracer.client.breaky.DumpValidator::schemas;
+    var schemas = this.@com.google.speedtracer.breaky.client.DumpValidator::schemas;
     ret = [];
     for(schema in schemas) {
       ret.push(schema);
@@ -130,7 +130,7 @@ public class DumpValidator {
   private native final void hookResolver() /*-{
     var me = this;
     $wnd.JSONSchema.resolveReference = function(reference) {
-      return me.@com.google.speedtracer.client.breaky.DumpValidator::schemas[reference];
+      return me.@com.google.speedtracer.breaky.client.DumpValidator::schemas[reference];
     };
   }-*/;
 }

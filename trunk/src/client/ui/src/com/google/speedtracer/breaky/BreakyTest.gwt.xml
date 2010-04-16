@@ -5,7 +5,7 @@
   <inherits name='com.google.gwt.xhr.XMLHttpRequest' />
   <inherits name="com.google.speedtracer.HeadlessApi" />
   <script src="jsonschema-b4-speedtracer.js" /> 
-  <entry-point class="com.google.speedtracer.client.breaky.BreakyTest" />
-  <public path="breaky/public" />
+  <entry-point class="com.google.speedtracer.breaky.client.BreakyTest" />
+  <public path="public" />
   <add-linker name="std" />
 </module>

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.speedtracer.client.breaky;
+package com.google.speedtracer.breaky.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -30,8 +30,8 @@ import com.google.gwt.user.client.IncrementalCommand;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 import com.google.speedtracer.client.ClientConfig;
-import com.google.speedtracer.client.breaky.JsonSchema.JsonSchemaError;
-import com.google.speedtracer.client.breaky.JsonSchema.JsonSchemaResults;
+import com.google.speedtracer.breaky.client.JsonSchema.JsonSchemaError;
+import com.google.speedtracer.breaky.client.JsonSchema.JsonSchemaResults;
 import com.google.speedtracer.client.model.MockModelGenerator;
 import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.JSON;
@@ -134,7 +134,7 @@ public class BreakyTest implements EntryPoint {
       Timer t = new Timer() {
         @Override
         public void run() {
-          testValidator();
+          mockSimulateDump();
         }
       };
       t.schedule(10);
@@ -310,12 +310,12 @@ public class BreakyTest implements EntryPoint {
     log("wait for it...");
   }
 
-  private void testValidator() {
+  private void mockSimulateDump() {
     log("fast fail if JSON isn't there");
     JavaScriptObject test = JSON.parse("{\"asdf\" : 3 }");
     log("About to validate");
-
-    MockModelGenerator.simulateDump(new MockHandler(), 0);
+    String[] dump = MockModelGenerator.getDump(0);
+    DeferredCommand.addCommand(new DumpProcessor(new MockHandler(), dump));
   }
 
   /**
