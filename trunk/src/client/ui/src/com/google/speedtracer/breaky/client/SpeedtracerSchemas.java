@@ -567,8 +567,7 @@ public class SpeedtracerSchemas {
            "maximum" : 0x7FFFFFFD ,
            "description" : "MAX 32 BIT INTEGER - 2 (2147483645)"
          },
-         // TODO(conroy): require this to be 0 once speedtracer updates
-         "time" : {"type" : "number", "description" : "DEPRECATED. Previously synthesized (badly) out of the timingChanged information.", "optional" : true },
+         "time" : {"type" : "number", "description" : "Synthesized timingChanged information.", "optional" : true },
          "data" : {
            "type" : "object",
            "properties" : {

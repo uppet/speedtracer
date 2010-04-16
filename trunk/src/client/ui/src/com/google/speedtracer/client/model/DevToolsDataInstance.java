@@ -279,23 +279,27 @@ public class DevToolsDataInstance extends DataInstance {
           // with the other timeline records and to match our EventRecord
           // schema. We use fall through to give it a time associated with the
           // "last potentially occurring time that it knows about".
-
+          updateEvent.setTime(startTime);
         }
 
         if (responseTime > 0) {
           update.setResponseReceivedTime(responseTime);
+          updateEvent.setTime(responseTime);
         }
 
         if (loadTime > 0) {
           update.setLoadEventTime(loadTime);
+          updateEvent.setTime(loadTime);
         }
 
         if (domContentEventTime > 0) {
           update.setDomContentEventTime(domContentEventTime);
+          updateEvent.setTime(domContentEventTime);
         }
 
         if (endTime > 0) {
           update.setEndTime(endTime);
+          updateEvent.setTime(endTime);
         }
       }
 
