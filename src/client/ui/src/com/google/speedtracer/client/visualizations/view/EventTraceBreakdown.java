@@ -22,11 +22,9 @@ import com.google.gwt.graphics.client.Color;
 import com.google.gwt.graphics.client.ImageHandle;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
-import com.google.speedtracer.client.model.LogEvent;
 import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.JsIntegerDoubleMap;
-import com.google.speedtracer.client.util.JsIntegerDoubleMap.IterationCallBack;
 
 /**
  * Class used to position and style the event graph bar UI that lives next to
@@ -67,6 +65,63 @@ public class EventTraceBreakdown {
   }
 
   /**
+   * Allows clients to control the appearance and presentation of events in the
+   * breakdown graphs.
+   */
+  public interface Presenter {
+    /**
+     * Gets the color to use when rendering this event in a time breakdown.
+     * 
+     * @param event
+     * @return
+     */
+    Color getColor(UiEvent event);
+
+    /**
+     * Get an event's dominant color. For insignifcant events that do not have a
+     * dominant color and signifcant events, implementations should return
+     * <code>null</code>. A dominant color is a color that replaces an
+     * insignificant event's primary color when rendering an event breakdown.
+     * 
+     * NOTE: {@link Presenter#hasDominantType(UiEvent, UiEvent, double)} will
+     * always be called on an event prior to this method, so it is recommended
+     * that any computation for calculating the dominant color be done there.
+     * 
+     * @param event
+     * @return
+     */
+    Color getDominantTypeColor(UiEvent event);
+
+    /**
+     * Gets the theshold, in milliseconds, that determines if events are
+     * considered insignificant. <code>msPerPixel</code> is provided to allow
+     * implementers to base signifcance on pixel resolution.
+     * 
+     * @param msPerPixel the number of milliseconds in each pixel used to render
+     *          the event breakdown
+     * @return
+     */
+    double getInsignificanceThreshold(double msPerPixel);
+
+    /**
+     * Indicates whether an event contains a dominant type. This method will
+     * only be called on events where the duration is less than
+     * {@link Presenter#getInsignificanceThreshold(double)}. This method will
+     * always be called before {@link Presenter#getDominantTypeColor(UiEvent)}
+     * and should generally be used to carry out the computation needed to
+     * determine the dominant type.
+     * 
+     * @see Presenter#getDominantTypeColor(UiEvent)
+     * 
+     * @param event
+     * @param rootEvent the top-level event that contains this event
+     * @param msPerPixel the number of milliseconds in each pixel
+     * @return
+     */
+    boolean hasDominantType(UiEvent event, UiEvent rootEvent, double msPerPixel);
+  }
+
+  /**
    * Capable of updating the canvas rendering for a {@link UiEvent} inside of an
    * event tree.
    */
@@ -91,7 +146,7 @@ public class EventTraceBreakdown {
       final double domainToCoords = canvas.getCoordWidth()
           / event.getDuration();
       canvas.clear();
-      canvas.setFillStyle(EventRecordColors.getColorForType(event.getType()));
+      canvas.setFillStyle(presenter.getColor(event));
       canvas.fillRect(0, 0, canvas.getCoordWidth(), canvas.getCoordHeight());
 
       // now cut out the immediate children.
@@ -110,7 +165,8 @@ public class EventTraceBreakdown {
      */
     public void renderSelfAndChildren() {
       canvas.clear();
-      Color dominantColor = getDominantColor(event);
+      final Color dominantColor = presenter.getDominantTypeColor(event);
+
       // If this node has a dominant color set, then it is one of several
       // important ones... show it with a 1 pixel bar.
       if (dominantColor != null) {
@@ -120,7 +176,7 @@ public class EventTraceBreakdown {
       } else {
         double sx = (event.getTime() - rootEvent.getTime())
             * masterDomainToCoords;
-        double sw = (event.getDuration()) * masterDomainToCoords;
+        double sw = event.getDuration() * masterDomainToCoords;
         // Prevent exception due to rounding errors that slightly exceed
         // MASTER_COORD_WIDTH
         sw = Math.min(sw, MASTER_COORD_WIDTH);
@@ -144,53 +200,13 @@ public class EventTraceBreakdown {
     Css eventTraceBreakdownCss();
   }
 
-  /**
-   * Simply utility class for aggregating information in two JsIntegerDoubleMaps
-   * by iterating over one of them.
-   */
-  class TypeMapAggregator implements IterationCallBack {
-    double maxValue = 0;
-    JsIntegerDoubleMap parentTypeMap;
-    int typeOfMax;
-
-    public TypeMapAggregator(JsIntegerDoubleMap parentTypeMap) {
-      this.parentTypeMap = parentTypeMap;
-    }
-
-    public void onIteration(int key, double val) {
-      double value = ((parentTypeMap.hasKey(key)) ? parentTypeMap.get(key)
-          + val : val);
-      parentTypeMap.put(key, value);
-      maybeChangeMax(key, value);
-    }
-
-    private void maybeChangeMax(int key, double val) {
-      if (val >= maxValue) {
-        typeOfMax = key;
-        maxValue = val;
-      }
-    }
-  }
-
   private static final int COORD_HEIGHT = 10;
 
   private static final int MASTER_COORD_WIDTH = 1000;
 
-  private static native Color getDominantColor(UiEvent event) /*-{
-    return event.dominantColor;
-  }-*/;
-
-  private static native void setDominantColor(UiEvent event, Color color) /*-{
-    event.dominantColor = color;
-  }-*/;
-
-  // The amount of time that an event type on aggregate is deemed significant.
-  private final double aggregateThreshold;
-
   // conversion factor for converting from domain space to pixel space.
   private final double domainToPixels;
 
-  // The amount of time to occupy a pixel.
   private final double insignificanceThreshold;
 
   private final double masterDomainToCoords;
@@ -198,6 +214,8 @@ public class EventTraceBreakdown {
   private final Resources resources;
 
   private final UiEvent rootEvent;
+
+  private final Presenter presenter;
 
   /**
    * This element is used to display the full rendering for the rootEvent and
@@ -214,21 +232,16 @@ public class EventTraceBreakdown {
    * @param resources the {@link EventTraceBreakdown.Resources} for the
    *          breakdown.
    */
-  public EventTraceBreakdown(UiEvent rootEvent,
+  public EventTraceBreakdown(UiEvent rootEvent, Presenter presenter,
       EventTraceBreakdown.Resources resources) {
+    this.presenter = presenter;
     this.resources = resources;
     this.rootEvent = rootEvent;
-    this.domainToPixels = resources.eventTraceBreakdownCss().widgetWidth()
+    domainToPixels = resources.eventTraceBreakdownCss().widgetWidth()
         / rootEvent.getDuration();
-    this.masterDomainToCoords = MASTER_COORD_WIDTH
+    masterDomainToCoords = MASTER_COORD_WIDTH
         / ((rootEvent.getDuration() == 0) ? 1 : rootEvent.getDuration());
-    this.insignificanceThreshold = rootEvent.getDuration()
-        / (resources.eventTraceBreakdownCss().widgetWidth());
-
-    // An important color is one that on aggregate should occupy at least 5
-    // pixels. Meaning if you combined the contribution of that event type over
-    // the entire event, it would occupy 5 pixels.
-    this.aggregateThreshold = 5 * insignificanceThreshold;
+    insignificanceThreshold = presenter.getInsignificanceThreshold(domainToPixels);
   }
 
   public Element cloneRenderedCanvasElement() {
@@ -274,12 +287,11 @@ public class EventTraceBreakdown {
     ensureMasterIsRendered();
     int width = (int) (event.getDuration() * domainToPixels);
     // We may have truncated something that, on aggregate may matter.
-    if (width == 0) {
-      // If this node has a dominant color set, then it contains a child that is
-      // one of the important ones... show it with a 1 pixel bar.
-      if (getDominantColor(event) != null) {
-        width = 1;
-      }
+    // If this node has a dominant color set, then it contains a child that is
+    // one of the important ones... show it with a 1 pixel bar.
+    if (width == 0
+        && presenter.hasDominantType(event, rootEvent, domainToPixels)) {
+      width = 1;
     }
 
     Css css = resources.eventTraceBreakdownCss();
@@ -298,50 +310,6 @@ public class EventTraceBreakdown {
   public Element getRenderedCanvasElement() {
     ensureMasterIsRendered();
     return masterCanvasElement;
-  }
-
-  /**
-   * Post order traversal. At each visit, we know that the typeMap for all our
-   * children should be up to date for that subtree. We simply update our own
-   * typemap with the information contained in the children's typeMap, and then
-   * set our own dominant color if it matters.
-   */
-  private void computeDominantColorForSubtree(UiEvent node) {
-    if (isMarked(node)) {
-      return;
-    }
-
-    JsIntegerDoubleMap typeMap = JsIntegerDoubleMap.create();
-    JSOArray<UiEvent> children = node.getChildren();
-    // Leaf node check
-    if (children.isEmpty()) {
-      markNode(node);
-      final int nodeType = node.getType();
-      typeMap.put(nodeType, node.getSelfTime());
-      // Set the typemap for parent nodes to use in their calculations.
-      node.setTypeDurations(typeMap);
-      setDominantColorIfImportant(node, nodeType);
-      return;
-    }
-
-    // Recursive call
-    for (int i = 0, n = children.size(); i < n; i++) {
-      computeDominantColorForSubtree(children.get(i));
-    }
-
-    // Visit the node.
-    // A Visit includes an iteration over the children to aggregate their type
-    // map information into our own. And then figuring out what the dominant
-    // type is.
-    markNode(node);
-    TypeMapAggregator aggregator = new TypeMapAggregator(typeMap);
-    for (int i = 0, n = children.size(); i < n; i++) {
-      children.get(i).getTypeDurations().iterate(aggregator);
-    }
-
-    // Set the typemap for parent nodes to use in their calculations.
-    node.setTypeDurations(typeMap);
-    setDominantColorIfImportant(node, aggregator.typeOfMax);
   }
 
   private void ensureMasterIsRendered() {
@@ -385,21 +353,6 @@ public class EventTraceBreakdown {
     return (int) Math.max(1, domainToPixels * duration);
   }
 
-  /**
-   * Checks to see if a node has been visited during the dominant color
-   * computation.
-   */
-  private native boolean isMarked(UiEvent node) /*-{
-    return !!node.typeBreakdownDone;
-  }-*/;
-
-  /**
-   * Marks a node as visited during the dominant color computation.
-   */
-  private native void markNode(UiEvent node) /*-{
-    node.typeBreakdownDone = true;
-  }-*/;
-
   private void renderNode(Canvas canvas, UiEvent parent, UiEvent node,
       JsIntegerDoubleMap accumulatedErrorByType) {
     double startX = (node.getTime() - rootEvent.getTime())
@@ -409,12 +362,6 @@ public class EventTraceBreakdown {
     // Insignificance is tricky. If we have lots of insignificant things, they
     // can add up to a significant thing.
     if (node.getDuration() < insignificanceThreshold) {
-
-      // We now attempt to associate a dominant type (color) with this tiny
-      // node. We do not want to have exponential search behavior. So we
-      // computeDominantColorForSubtree will memoize its results.
-      computeDominantColorForSubtree(node);
-
       // When the sub-pixel strokes are composited, we get a misleading color
       // blend. We use a unique aliasing scheme here where we suppress short
       // duration events but keep up with the total time we've suppressed for
@@ -430,30 +377,15 @@ public class EventTraceBreakdown {
         accumulatedErrorByType.put(nodeType, correctedTime);
         return;
       }
+
       // We want to draw a discrete bar.
       width = insignificanceThreshold * masterDomainToCoords;
       // Reset the type specific aggregation.
       accumulatedErrorByType.put(nodeType, 0);
     }
 
-    canvas.setFillStyle(EventRecordColors.getColorForType(nodeType));
+    canvas.setFillStyle(presenter.getColor(node));
     canvas.fillRect(startX, 0, width, COORD_HEIGHT);
-  }
-
-  private void setDominantColorIfImportant(UiEvent node, int dominantType) {
-    // We check to see if this insignificant thing is part of something
-    // significant.
-    JsIntegerDoubleMap aggregateTimes = rootEvent.getTypeDurations();
-    // Visitors should already have run
-    assert aggregateTimes != null : "aggregateTimes is null";
-
-    // Find the dominant color for this node, and if it belongs to an
-    // important color, then set the dominant color on the UiEvent.
-    if (aggregateTimes.hasKey(dominantType)
-        && (aggregateTimes.get(dominantType) >= aggregateThreshold)
-        || (node.getType() == LogEvent.TYPE)) {
-      setDominantColor(node, EventRecordColors.getColorForType(dominantType));
-    }
   }
 
   /**

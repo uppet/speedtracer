@@ -414,8 +414,8 @@ public class EventWaterfallRowDetails extends RowDetails implements
     header.getElement().setInnerText("Event Trace");
 
     final LazyEventTree tree = new LazyEventTree(parent,
-        getParentRow().getEvent(), getParentRow().getEventBreakdown(),
-        resources);
+        eventWaterfall.getPresenter(), getParentRow().getEvent(),
+        getParentRow().getEventBreakdown(), resources);
 
     // Hook listeners to tree list to monitor selection changes and
     // expansion changes.

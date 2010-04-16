@@ -46,16 +46,40 @@ import java.util.List;
  * {@link EventTraceBreakdown} off the the side.
  */
 public class LazyEventTree extends Tree {
+
+  /**
+   * Allows clients to control the appearance and presentation of events in the
+   * tree.
+   */
+  public static interface Presenter extends EventTraceBreakdown.Presenter {
+    /**
+     * Gets an event's label as it should be displayed in the tree.
+     * 
+     * @param event
+     * @return
+     */
+    String getLabel(UiEvent event);
+  }
+
+  /**
+   * Specify a dependency on the resources used in EventPhaseBreakdown.
+   */
+  public interface Resources extends EventTraceBreakdown.Resources,
+      Tree.Resources {
+  }
+
   /**
    * A Lazy version of a Tree Item. It has the notion of "dirty Children",
    * meaning it has not constructed the DOM structure for its children yet. It
    * also has the facility for filling itself in.
    */
   private static class LazyItem extends Tree.Item {
-    private static void addLabelForEvent(Element itemElem, UiEvent event) {
+    private static void addLabelForEvent(Element itemElem, Presenter presenter,
+        UiEvent event) {
       itemElem.setInnerText(EventRecordType.typeToDetailedTypeString(event));
+      itemElem.setInnerText(presenter.getLabel(event));
       final SpanElement timesElem = itemElem.appendChild(itemElem.getOwnerDocument().createSpanElement());
-      timesElem.getStyle().setProperty("cssText", timeLabelStyle);
+      timesElem.getStyle().setProperty("cssText", TIME_LABEL_STYLE);
       if (event.getType() == EventRecordType.AGGREGATED_EVENTS) {
         timesElem.setInnerText(" "
             + TimeStampFormatter.formatMilliseconds(event.getSelfTime(), 1));
@@ -92,9 +116,8 @@ public class LazyEventTree extends Tree {
       this.uiEvent = uiEvent;
       setItemTarget(uiEvent);
       final LazyEventTree tree = parent.getOwningTree();
-      addLabelForEvent(getItemLabelElement(), uiEvent);
-      renderer = tree.breakdownGraph.createRenderer(uiEvent,
-          getNodeDepth());
+      addLabelForEvent(getItemLabelElement(), tree.getPresenter(), uiEvent);
+      renderer = tree.breakdownGraph.createRenderer(uiEvent, getNodeDepth());
       getContentElement().appendChild(renderer.getElement());
     }
 
@@ -110,9 +133,8 @@ public class LazyEventTree extends Tree {
       this.uiEvent = uiEvent;
       setItemTarget(uiEvent);
       final LazyEventTree tree = parent.getOwningTree();
-      addLabelForEvent(getItemLabelElement(), uiEvent);
-      renderer = tree.breakdownGraph.createRenderer(uiEvent,
-          getNodeDepth());
+      addLabelForEvent(getItemLabelElement(), tree.getPresenter(), uiEvent);
+      renderer = tree.breakdownGraph.createRenderer(uiEvent, getNodeDepth());
       getContentElement().appendChild(renderer.getElement());
     }
 
@@ -121,15 +143,14 @@ public class LazyEventTree extends Tree {
      * 
      * @param resources Static resources
      * @param uiEvent Event to display in this node.
-     * @param backRef Reference to the tree object.
+     * @param tree Reference to the tree object.
      */
-    private LazyItem(UiEvent uiEvent, LazyEventTree backRef) {
-      super(backRef);
+    private LazyItem(UiEvent uiEvent, LazyEventTree tree) {
+      super(tree);
       this.uiEvent = uiEvent;
       setItemTarget(uiEvent);
-      addLabelForEvent(getItemLabelElement(), uiEvent);
-      renderer = backRef.breakdownGraph.createRenderer(uiEvent,
-          getNodeDepth());
+      addLabelForEvent(getItemLabelElement(), tree.getPresenter(), uiEvent);
+      renderer = tree.breakdownGraph.createRenderer(uiEvent, getNodeDepth());
       getContentElement().appendChild(renderer.getElement());
     }
 
@@ -170,13 +191,6 @@ public class LazyEventTree extends Tree {
     private void setDirtyChildren(boolean b) {
       this.dirtyChildren = b;
     }
-  }
-
-  /**
-   * Specify a dependency on the resources used in EventPhaseBreakdown.
-   */
-  public interface Resources extends EventTraceBreakdown.Resources,
-      Tree.Resources {
   }
 
   /**
@@ -257,14 +271,14 @@ public class LazyEventTree extends Tree {
     }
   }
 
-  // We cap the number of nodes we expand in a single expansion so we don't
-  // accidentally reveal thousands/millions of nodes and hang the browser.
-  private static final int MAX_NODE_EXPANSION_COUNT = 50;
-
   // TODO(knorton): Move this to a CssResource. This requires that subclasses
   // of Tree be able to have more specific Tree.Resource types. That's
   // non-trivial at the moment.
-  private static final String timeLabelStyle = "color:#888;white-space:nowrap;";
+  private static final String TIME_LABEL_STYLE = "color:#888;white-space:nowrap;";
+
+  // We cap the number of nodes we expand in a single expansion so we don't
+  // accidentally reveal thousands/millions of nodes and hang the browser.
+  private static final int MAX_NODE_EXPANSION_COUNT = 50;
 
   // The threshold by which we determine if a node should be hidden/coalesced
   private static final double TREE_ITEM_COALESCING_THRESHOLD = 0.4;
@@ -422,6 +436,8 @@ public class LazyEventTree extends Tree {
 
   private final LazyItem rootNode;
 
+  private final Presenter presenter;
+
   /**
    * Constructor.
    * 
@@ -429,9 +445,11 @@ public class LazyEventTree extends Tree {
    * @param treeRoot the root UiEvent of the tree
    * @param resources our ImmutableResourceBundle resources
    */
-  public LazyEventTree(Container container, UiEvent treeRoot,
-      EventTraceBreakdown breakdownGraph, LazyEventTree.Resources resources) {
+  public LazyEventTree(Container container, Presenter presenter,
+      UiEvent treeRoot, EventTraceBreakdown breakdownGraph,
+      LazyEventTree.Resources resources) {
     super(container, resources);
+    this.presenter = presenter;
     EventTraceBreakdown.Css css = resources.eventTraceBreakdownCss();
     getElement().getStyle().setPaddingLeft(
         css.widgetWidth() + css.listMargin() + css.sideMargins(), Unit.PX);
@@ -465,5 +483,9 @@ public class LazyEventTree extends Tree {
    */
   private SiblingCoalescer createSiblingCoalescer(LazyItem parent) {
     return new SiblingCoalescer(parent);
+  }
+
+  private Presenter getPresenter() {
+    return presenter;
   }
 }

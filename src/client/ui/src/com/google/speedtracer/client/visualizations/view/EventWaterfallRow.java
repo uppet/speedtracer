@@ -235,11 +235,12 @@ public class EventWaterfallRow extends TableRow {
     this.resources = resources;
     this.eventWaterfall = eventWaterfall;
     this.event = event;
-    this.eventBreakdown = new EventTraceBreakdown(event, resources);
+    eventBreakdown = new EventTraceBreakdown(event,
+        eventWaterfall.getPresenter(), resources);
 
     // Create cells.
-    this.titleCell = new UiEventTitleCell();
-    this.pillBoxCell = new UiEventPillboxCell();
+    titleCell = new UiEventTitleCell();
+    pillBoxCell = new UiEventPillboxCell();
     addCell(this.titleCell);
     addCell(this.pillBoxCell);
   }
