@@ -182,7 +182,7 @@
   <!-- The Breaky Test -->
   <target name="breaky.build">
     <mkdir dir="${breaky.destdir}" />
-    <uptodate property="speedtracer.client.breaky.updated"
+    <uptodate property="speedtracer.breaky.client.updated"
       targetfile="${wardir}/breaky/breaky.nocache.js">
       <srcfiles dir="src" includes="**/**" />
     </uptodate>
@@ -205,8 +205,8 @@
   <!-- A conditional sub-target to be called from breaky.build -->
   <target name = "breaky.build.run"
     depends="init, classes.build, headless.extension.build"
-    unless="speedtracer.client.breaky.updated">
-    <gwtc module="com.google.speedtracer.BreakyTest" />
+    unless="speedtracer.breaky.client.updated">
+    <gwtc module="com.google.speedtracer.breaky.BreakyTest" />
     <copy todir="${breaky.destdir}">
       <fileset dir="${wardir}">
         <include name="breaky/**" />
