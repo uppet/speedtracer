@@ -180,6 +180,12 @@ speedTracerEvents = [
     'constant' : 'PROFILE_DATA',
     'desc' : 'JavaScript CPU profile data',
     'help_text' : 'Contains raw data from the JavaScript engine profiler.',
+  },
+  {
+    'value' : (maxInt - 4),
+    'constant' : 'SERVER_EVENT',
+    'desc' : 'An event from a server-side trace.',
+    'help_text' : 'This happened on the server.',
   }
 # END EXPERIMENTAL TYPES.
 ]
