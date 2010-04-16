@@ -75,6 +75,10 @@ public class HeadlessBackgroundPage extends Extension implements
     private class HeadlessDataModel extends DataModel {
 
       @Override
+      public void bind(TabDescription tabDescription, DataInstance dataInstance) {
+      }
+
+      @Override
       public void fireOnEventRecord(EventRecord data) {
         // Send this message over to the content script
         String dataString = JSON.stringify(data);
@@ -86,15 +90,11 @@ public class HeadlessBackgroundPage extends Extension implements
       }
 
       @Override
-      public void stopMonitoring() {
-      }
-
-      @Override
-      public void bind(TabDescription tabDescription, DataInstance dataInstance) {
-      }
-
-      @Override
       public void saveRecords(JSOArray<String> visitedUrls, String version) {
+      }
+
+      @Override
+      public void stopMonitoring() {
       }
     }
 

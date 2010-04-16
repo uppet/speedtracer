@@ -120,6 +120,24 @@ public class UiEvent extends EventRecord {
     return data.hasOwnProperty('duration');
   }-*/;
 
+  public static String typeToDetailedTypeString(UiEvent e) {
+    switch (e.getType()) {
+      case DomEvent.TYPE:
+        return "DOM (" + ((DomEvent) e).getDomEventType() + ")";
+      case LogEvent.TYPE:
+        String logMessage = ((LogEvent) e).getMessage();
+        int logLength = logMessage.length();
+        logMessage = (logLength > 20) ? logMessage.substring(0, 8) + "..."
+            + logMessage.substring(logLength - 8, logLength) : logMessage;
+        return "Log: " + logMessage;
+      case TimerFiredEvent.TYPE:
+        TimerFiredEvent timerEvent = e.cast();
+        return "Timer Fire (" + timerEvent.getTimerId() + ")";
+      default:
+        return EventRecordType.typeToString(e.getType());
+    }
+  }
+
   private static <T> T apply(LeafFirstTraversal<T> visitor, UiEvent event) {
     final JSOArray<T> values = JSOArray.create();
     final JSOArray<UiEvent> children = event.getChildren();
@@ -336,7 +354,7 @@ public class UiEvent extends EventRecord {
   public final native void setSelfTime(double t) /*-{
     this.selfTime = t;
   }-*/;
-
+  
   /**
    * Caches the durations map on this UiEvent.
    * 
@@ -345,23 +363,5 @@ public class UiEvent extends EventRecord {
   public final native void setTypeDurations(JsIntegerDoubleMap map) /*-{
     this.durationMap = map;
   }-*/;
-  
-  public static String typeToDetailedTypeString(UiEvent e) {
-    switch (e.getType()) {
-      case DomEvent.TYPE:
-        return "DOM (" + ((DomEvent) e).getDomEventType() + ")";
-      case LogEvent.TYPE:
-        String logMessage = ((LogEvent) e).getMessage();
-        int logLength = logMessage.length();
-        logMessage = (logLength > 20) ? logMessage.substring(0, 8) + "..."
-            + logMessage.substring(logLength - 8, logLength) : logMessage;
-        return "Log: " + logMessage;
-      case TimerFiredEvent.TYPE:
-        TimerFiredEvent timerEvent = e.cast();
-        return "Timer Fire (" + timerEvent.getTimerId() + ")";
-      default:
-        return EventRecordType.typeToString(e.getType());
-    }
-  }
   
 }
