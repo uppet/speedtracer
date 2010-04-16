@@ -53,6 +53,7 @@ public class EventRecordType {
   public static final int TAB_CHANGED = 0x7FFFFFFE;
   public static final int RESOURCE_UPDATED = 0x7FFFFFFD;
   public static final int PROFILE_DATA = 0x7FFFFFFC;
+  public static final int SERVER_EVENT = 0x7FFFFFFB;
 
   private static final String[] webkitTypeStrings = {
     "Dom Event",                        // 0 DOM_EVENT
@@ -80,6 +81,7 @@ public class EventRecordType {
     "Tab Changed",                      // 0x7FFFFFFE TAB_CHANGED
     "Resource Updated",                 // 0x7FFFFFFD RESOURCE_UPDATED
     "JavaScript CPU profile data",      // 0x7FFFFFFC PROFILE_DATA
+    "An event from a server-side trace.",   // 0x7FFFFFFB SERVER_EVENT
   };
 
   private static final String[] webkitHelpStrings = {
@@ -130,6 +132,8 @@ public class EventRecordType {
     "Details about a Network Resource were updated.",
     // 0x7FFFFFFC PROFILE_DATA
     "Contains raw data from the JavaScript engine profiler.",
+    // 0x7FFFFFFB SERVER_EVENT
+    "This happened on the server.",
   };
 
   public static String typeToDetailedTypeString(UiEvent e) {
