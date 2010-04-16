@@ -136,10 +136,10 @@ public class ExtensionLinker extends AbstractLinker {
       ArtifactSet artifacts) throws UnableToCompleteException {
     final SortedSet<CompilationResult> compilations = artifacts.find(CompilationResult.class);
     if (compilations.size() != 1) {
-      logger.log(TreeLogger.ERROR,
-          "Found " + compilations.size() + " permutations compiled in "
-              + ExtensionLinker.class.getSimpleName()
-              + ".  Use only a single permutation per module with this linker.");
+      logger.log(TreeLogger.ERROR, "Found " + compilations.size()
+          + " permutations compiled in "
+          + ExtensionLinker.class.getSimpleName()
+          + ".  Use only a single permutation per module with this linker.");
       logPermutations(logger, compilations);
       throw new UnableToCompleteException();
     }
@@ -151,10 +151,9 @@ public class ExtensionLinker extends AbstractLinker {
     final SortedSet<ExtensionArtifact> extensions = artifacts.find(ExtensionArtifact.class);
     if (extensions.size() != 1) {
       // TODO(knorton): Improve error message.
-      logger.log(
-          TreeLogger.ERROR,
-          ExtensionLinker.class.getSimpleName()
-              + ": got " + extensions.size() + " entry points, but there must be one per module.");
+      logger.log(TreeLogger.ERROR, ExtensionLinker.class.getSimpleName()
+          + ": got " + extensions.size()
+          + " entry points, but there must be one per module.");
       throw new UnableToCompleteException();
     }
 
@@ -195,13 +194,14 @@ public class ExtensionLinker extends AbstractLinker {
       for (SortedMap<SelectionProperty, String> propertySubMap : propertyMap) {
         builder.append("{");
         for (Entry<SelectionProperty, String> entry : propertySubMap.entrySet()) {
-          
+
           SelectionProperty selectionProperty = entry.getKey();
           if (!selectionProperty.isDerived()) {
-            builder.append(selectionProperty.getName() + ":" + entry.getValue() + " ");
+            builder.append(selectionProperty.getName() + ":" + entry.getValue()
+                + " ");
           }
         }
-        builder.append("}");        
+        builder.append("}");
       }
       logger.log(TreeLogger.ERROR, "Permutation " + count + ": "
           + builder.toString());
@@ -327,8 +327,8 @@ public class ExtensionLinker extends AbstractLinker {
       }
       config.put("icons", icons);
     }
-    
-    if(extension.getPublicKey().length() > 0) {
+
+    if (extension.getPublicKey().length() > 0) {
       config.put("key", extension.getPublicKey());
     }
 

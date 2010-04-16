@@ -80,19 +80,19 @@ public class MockModelGenerator {
     return result;
   }
 
+  public static String[] getDump(int dataSetIndex) {
+    initializeDataSets();
+    TextResource resource = dataSets.get(dataSetIndex).dataSetResource;
+    String[] events = resource.getText().split("\n");
+    return events;
+  }
+  
   public static void simulateDataSet(MockDataModel mockModel, int dataSetIndex) {
     initializeDataSets();
     TextResource resource = dataSets.get(dataSetIndex).dataSetResource;
     final Generator generator = new Generator(mockModel);
     String[] events = resource.getText().split("\n");
     generator.run(events);
-  }
-  
-  public static String[] getDump(int dataSetIndex) {
-    initializeDataSets();
-    TextResource resource = dataSets.get(dataSetIndex).dataSetResource;
-    String[] events = resource.getText().split("\n");
-    return events;
   }
     
    private static void initializeDataSets() {

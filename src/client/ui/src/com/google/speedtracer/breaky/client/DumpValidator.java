@@ -22,27 +22,32 @@ import com.google.speedtracer.breaky.client.JsonSchema.JsonSchemaResults;
 import com.google.speedtracer.client.util.DataBag;
 import com.google.speedtracer.client.util.JsIntegerMap;
 
+/**
+ * Validates a Speed Tracer JSON dump file.
+ */
 public class DumpValidator {
   private JsIntegerMap<JsonSchema> idMap = JsIntegerMap.create();
-  @SuppressWarnings("unused")
+
   private final JavaScriptObject schemas = SpeedtracerSchemas.getSchemas();
-  
+
   public DumpValidator() {
     fillIdMap();
     hookResolver();
   }
 
   /**
-   * Determine the schema that corresponds to the integer type
+   * Determine the schema that corresponds to the integer type.
+   * 
    * @param id the type
    * @return the corresponding {@link JsonSchema}
    */
   public final JsonSchema getSchema(int id) {
     return idMap.get(id);
   }
-  
+
   /**
-   * Determine the schema of an object by looking at its "type" field
+   * Determine the schema of an object by looking at its "type" field.
+   * 
    * @param obj the object with a "type" field
    * @return the corresponding {@link JsonSchema}
    */
@@ -53,13 +58,14 @@ public class DumpValidator {
       return null;
     }
   }
-  
+
   /**
-   * Native method for listing all available schemas
-   * (Helper method for building the idMap)
+   * Native method for listing all available schemas (Helper method for building
+   * the idMap).
+   * 
    * @return JsArray<String> of schemas
    */
-  public native final JsArrayString listSchemas() /*-{
+  public final native JsArrayString listSchemas() /*-{
     var schemas = this.@com.google.speedtracer.breaky.client.DumpValidator::schemas;
     ret = [];
     for(schema in schemas) {
@@ -69,7 +75,7 @@ public class DumpValidator {
   }-*/;
 
   /**
-   * Validate a Speedtracer dump object
+   * Validate a Speedtracer dump object.
    * 
    * @param obj a speedtracer dump object to be validated
    * @return {@link JsonSchemaResults} object indicating that the entire object
@@ -91,7 +97,7 @@ public class DumpValidator {
       JsArray<JavaScriptObject> children = DataBag.getJSObjectProperty(obj,
           "children").cast();
       for (int i = 0; i < children.length() && results.isValid(); i++) {
-        //TODO(conroy): make child validation incremental?
+        // TODO(conroy): make child validation incremental?
         results = this.validate(children.get(i));
       }
     }
@@ -106,16 +112,16 @@ public class DumpValidator {
   private void fillIdMap() {
     JsArrayString schemaNames = listSchemas();
     for (int i = 0; i < schemaNames.length(); i++) {
-      JsonSchema schema = (JsonSchema) DataBag.getJSObjectProperty(schemas, schemaNames.get(i));
+      JsonSchema schema = (JsonSchema) DataBag.getJSObjectProperty(schemas,
+          schemaNames.get(i));
       JavaScriptObject properties = schema.getProperties();
 
       if (DataBag.hasOwnProperty(properties, "type")) {
-        JsonSchema dumpType = 
-          DataBag.getJSObjectProperty(properties, "type").cast();
-        
-        if ((DataBag.hasOwnProperty(dumpType, "minimum") && 
-             DataBag.hasOwnProperty(dumpType, "maximum")) && 
-            dumpType.getMinimum() == dumpType.getMaximum()) {
+        JsonSchema dumpType = DataBag.getJSObjectProperty(properties, "type").cast();
+
+        if ((DataBag.hasOwnProperty(dumpType, "minimum") && DataBag.hasOwnProperty(
+            dumpType, "maximum"))
+            && dumpType.getMinimum() == dumpType.getMaximum()) {
           idMap.put(dumpType.getMinimum(), schema);
         }
       }
@@ -124,10 +130,10 @@ public class DumpValidator {
 
   /**
    * The speedtracer version of jsonschema uses a global function callback in
-   * order to resolve references.
-   * TODO(conroy): make the hook more flexible/non-global
+   * order to resolve references. TODO(conroy): make the hook more
+   * flexible/non-global
    */
-  private native final void hookResolver() /*-{
+  private native void hookResolver() /*-{
     var me = this;
     $wnd.JSONSchema.resolveReference = function(reference) {
       return me.@com.google.speedtracer.breaky.client.DumpValidator::schemas[reference];

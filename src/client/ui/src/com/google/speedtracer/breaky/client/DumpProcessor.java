@@ -18,28 +18,29 @@ package com.google.speedtracer.breaky.client;
 import com.google.gwt.user.client.IncrementalCommand;
 
 /**
- * A DumpProcessor drives a {@link DumpEntryHandler} with the data from
- * a dump (mock or real)
+ * A DumpProcessor drives a {@link DumpEntryHandler} with the data from a dump
+ * (mock or real)
  * 
  * TODO(conroy): Use a WorkQueue instead to improve performance.
  */
 public class DumpProcessor implements IncrementalCommand {
   /**
-   * An interface for incrementally processing dump records
+   * An interface for incrementally processing dump records.
    */
   public interface DumpEntryHandler {
     /**
-     * Handle a single entry in a dump 
+     * Handle a single entry in a dump.
+     * 
      * @param dumpEntry A single entry in the dump file to process.
      * @return true if the entry is valid, false otherwise
      */
-    public boolean onDumpEntry(String dumpEntry);
-    
+    boolean onDumpEntry(String dumpEntry);
+
     /**
-     * Called when finished parsing all records.
-     * Not called if a record is reported as invalid
+     * Called when finished parsing all records. Not called if a record is
+     * reported as invalid
      */
-    public void onFinished();
+    void onFinished();
   }
 
   private int eventIndex = 0;
@@ -50,21 +51,21 @@ public class DumpProcessor implements IncrementalCommand {
     this.handler = handler;
     this.events = events;
   }
-  
+
   /**
    * Process a single record. Fast-fail if a record is invalid.
    */
   public boolean execute() {
     String entry = events[eventIndex++];
-    if(entry.length() > 0) {
+    if (entry.length() > 0) {
       boolean isValid = handler.onDumpEntry(entry);
       boolean moreRecords = eventIndex < events.length;
-      if(isValid && !moreRecords) {
+      if (isValid && !moreRecords) {
         handler.onFinished();
       }
       return isValid && moreRecords;
     } else {
-      //ignore empty lines in the record data
+      // ignore empty lines in the record data
       return true;
     }
   }
