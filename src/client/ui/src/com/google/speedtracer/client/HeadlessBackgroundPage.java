@@ -52,12 +52,14 @@ import java.util.HashMap;
  * A Chrome extension background page script for running a headless version of
  * SpeedTracer intended to support benchmarking and unit testing.
  * 
- * NOTE: the public key is included because currently the Headless Extension relies on statically
- * referring to the chrome extension ID. While the private key is required to generate a signed
- * extension with the proper ID, including the public key in the manifest allows an unpacked,
- * unsigned extension to load with the proper ID.
+ * NOTE: the public key is included because currently the Headless Extension
+ * relies on statically referring to the chrome extension ID. While the private
+ * key is required to generate a signed extension with the proper ID, including
+ * the public key in the manifest allows an unpacked, unsigned extension to load
+ * with the proper ID.
  * 
- * TODO(conroy): remove this once the reliance on the chrome extension ID is resolved.
+ * TODO(conroy): remove this once the reliance on the chrome extension ID is
+ * resolved.
  */
 @Extension.ManifestInfo(name = "Speed Tracer - headless (by Google)", description = "Get insight into the performance of your web applications.", version = ClientConfig.VERSION, permissions = {
     "tabs", "http://*/*", "https://*/*"}, icons = {
@@ -84,16 +86,15 @@ public class HeadlessBackgroundPage extends Extension implements
       }
 
       @Override
-      public void saveRecords(JSOArray<String> visitedUrls, String version) {
-      }
-
-      @Override
       public void stopMonitoring() {
       }
 
       @Override
-      protected void bind(TabDescription tabDescription,
-          DataInstance dataInstance) {
+      public void bind(TabDescription tabDescription, DataInstance dataInstance) {
+      }
+
+      @Override
+      public void saveRecords(JSOArray<String> visitedUrls, String version) {
       }
     }
 

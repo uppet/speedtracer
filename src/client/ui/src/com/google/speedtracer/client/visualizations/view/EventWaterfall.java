@@ -121,7 +121,7 @@ public class EventWaterfall extends FilteringScrollTable {
     }
 
     public String getLabel(UiEvent event) {
-      return EventRecordType.typeToDetailedTypeString(event);
+      return UiEvent.typeToDetailedTypeString(event);
     }
 
     public boolean hasDominantType(UiEvent event, UiEvent rootEvent,
