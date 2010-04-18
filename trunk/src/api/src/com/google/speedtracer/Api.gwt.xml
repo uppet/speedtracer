@@ -1,7 +1,0 @@
-<!DOCTYPE document SYSTEM
-    "http://google-web-toolkit.googlecode.com/svn/releases/1.7/distro-source/core/src/gwt-module.dtd">
-<module>
-  <!-- Specify the paths for translatable code                    -->
-    <source path='client'/>
-    <source path='shared'/>
-</module>
