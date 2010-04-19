@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -89,6 +89,10 @@ public class JsonString implements JsonValue {
 
   public JsonString asString() {
     return this;
+  }
+
+  public JsonString copyDeeply() {
+    return new JsonString(value);
   }
 
   public String getString() {
