@@ -100,4 +100,64 @@ public class JsonTests extends TestCase {
     assertTrue(b.get("f").asBoolean().getBoolean());
     assertFalse(b.get("g").asBoolean().getBoolean());
   }
+  
+  /**
+   * Tests {@link JsonValue#copyDeeply()}.
+   */
+  public void testCopyDeeply() {
+    final JsonObject a = new JsonObject();
+    a.put("a", 3);
+    a.put("b", 120.456);
+    a.put("c", "json\n\r\f\t\b\u8730");
+    a.put("d", new JsonObject());
+    a.put("e", new JsonArray());
+    a.put("f", true);
+    a.put("g", JsonValue.NULL);
+    
+    // Get JsonValues for all of a's properties.
+    final JsonNumber aa = a.get("a").asNumber();
+    final JsonNumber ab = a.get("b").asNumber();
+    final JsonString ac = a.get("c").asString();
+    final JsonObject ad = a.get("d").asObject();
+    final JsonArray ae = a.get("e").asArray();
+
+    // Copy a and get references to all the new JsonValues.
+    final JsonObject b = a.copyDeeply();
+    final JsonNumber ba = b.get("a").asNumber();
+    final JsonNumber bb = b.get("b").asNumber();
+    final JsonString bc = b.get("c").asString();
+    final JsonObject bd = b.get("d").asObject();
+    final JsonArray be = b.get("e").asArray();
+    final JsonBoolean bf = b.get("f").asBoolean();
+    final JsonValue bg = b.get("g");    
+
+    // Test non-interned types.
+    // Integer
+    assertEquals(3, ba.getInteger());
+    assertNotSame(aa, ba);
+
+    // Decimal
+    assertEquals(120.456, bb.getDecimal(), 0.0001);
+    assertNotSame(ab, bb);
+
+    // String
+    assertEquals("json\n\r\f\t\b\u8730", bc.getString());
+    assertNotSame(ac, bc);
+    
+    // Object
+    assertTrue(bd.isEmpty());
+    assertNotSame(ad, bd);
+    
+    // Array
+    assertEquals(0, be.getLength());
+    assertNotSame(ae, be);
+    
+
+    // Test interned types.
+    // Boolean
+    assertTrue(bf.getBoolean());
+    
+    // NULL
+    assertEquals(bg, JsonValue.NULL);
+  }
 }

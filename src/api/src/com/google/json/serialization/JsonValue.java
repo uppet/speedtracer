@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,7 +22,7 @@ import java.io.Writer;
  * JSON placeholder for null.
  */
 public interface JsonValue {
-  JsonValue NULL = new JsonValue() {
+  final JsonValue NULL = new JsonValue() {
 
     public JsonArray asArray() {
       return null;
@@ -42,6 +42,10 @@ public interface JsonValue {
 
     public JsonString asString() {
       return null;
+    }
+
+    public JsonValue copyDeeply() {
+      return this;
     }
 
     public boolean isArray() {
@@ -78,6 +82,11 @@ public interface JsonValue {
   JsonObject asObject();
 
   JsonString asString();
+
+  /**
+   * Makes a full copy of the JSON data structure.
+   */
+  JsonValue copyDeeply();
 
   boolean isArray();
 
