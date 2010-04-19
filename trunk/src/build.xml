@@ -46,6 +46,7 @@
   </target>
 
   <target name="speedtracer.headless.build">
+    <ant dir="api" target="build" />
     <ant dir="client" target="speedtracer.headless.build" />
   </target>
 
@@ -55,6 +56,7 @@
   </target>
 
   <target name="speedtracer.breaky.build">
+    <ant dir = "api" target="build" />
     <ant dir = "client" target="speedtracer.breaky.build" />
   </target>
 
