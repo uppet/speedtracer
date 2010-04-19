@@ -15,6 +15,8 @@
  */
 package com.google.speedtracer;
 
+import com.google.json.serialization.JsonTests;
+import com.google.json.serialization.TokenizerTests;
 import com.google.speedtracer.server.JsonTraverserTest;
 
 import junit.framework.Test;
@@ -27,7 +29,9 @@ public class ApiTestsSuite extends TestSuite {
 
   public static Test suite() {
     final TestSuite suite = new TestSuite("Api Java Tests");
+    suite.addTestSuite(JsonTests.class);
     suite.addTestSuite(JsonTraverserTest.class);
+    suite.addTestSuite(TokenizerTests.class);
     return suite;
   }
 }
