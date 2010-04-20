@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app>
+
+  <!-- For debugging server-side traces feature. -->
+  <servlet>
+    <servlet-name>MockServerSideTraces</servlet-name>
+    <servlet-class>com.google.speedtracer.server.MockServerSideTracesServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>MockServerSideTraces</servlet-name>
+    <url-pattern>/server-trace/*</url-pattern>
+  </servlet-mapping>
+
   <welcome-file-list>
     <welcome-file>monitor.html</welcome-file>
   </welcome-file-list>
