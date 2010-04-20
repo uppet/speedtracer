@@ -166,16 +166,7 @@ public class SpeedtracerSchemas {
            "properties" : {
              "type" : {
                "type" : "string",
-               "enum" : [
-                 "mousemove",
-                 "mouseover",
-                 "click",
-                 "mouseout",
-                 "load",
-                 "unload",
-                 "DOMContentLoaded",
-                 "SpeedTracer Headless Event"
-                ]
+               "description" : "String representation of a DOM-Level-3-Event"
              }
            },
            "additionalProperties" : false
@@ -235,9 +226,9 @@ public class SpeedtracerSchemas {
          "data" : {
            "type" : "object",
            "properties" : {
-             "length" : {"type" : "integer"},
-             "startLine" : {"type" : "integer"},
-             "endLine" : {"type" : "integer"}
+             "length" : {"type" : "integer", "description" : "Length in bytes of the parsed section."},
+             "startLine" : {"type" : "integer", "description" : "The first line of the parsed section."},
+             "endLine" : {"type" : "integer", "descirption" : "The last line of the parsed section."}
            },
            "additionalProperties" : "false"
          }
@@ -447,7 +438,7 @@ public class SpeedtracerSchemas {
        }
      },
      "RESOURCE_DATA_RECEIVED" : {
-       "description" : "A parent event for the duration of processing an external or inline script and its associated resource loads",
+       "description" : "This is a parent event for processing data for any resource loaded from the resource loader (e.g. HTML pages, images, external scripts).",
        "id" : "RESOURCE_DATA_RECEIVED",
        "type" : "object",
        "extends" : {"$ref" : "TIMELINE_EVENT"},
