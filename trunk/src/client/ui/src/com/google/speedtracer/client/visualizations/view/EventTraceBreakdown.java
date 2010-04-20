@@ -176,6 +176,7 @@ public class EventTraceBreakdown {
       } else {
         double sx = (event.getTime() - rootEvent.getTime())
             * masterDomainToCoords;
+        assert sx >= 0 : "An event starts before it's containing event.";
         double sw = event.getDuration() * masterDomainToCoords;
         // Prevent exception due to rounding errors that slightly exceed
         // MASTER_COORD_WIDTH

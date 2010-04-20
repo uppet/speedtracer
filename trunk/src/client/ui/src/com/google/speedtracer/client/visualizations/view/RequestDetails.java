@@ -15,12 +15,14 @@
  */
 package com.google.speedtracer.client.visualizations.view;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.graphics.client.Color;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
@@ -29,16 +31,26 @@ import com.google.gwt.topspin.ui.client.ContainerImpl;
 import com.google.gwt.topspin.ui.client.CssTransitionEvent;
 import com.google.gwt.topspin.ui.client.CssTransitionListener;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
+import com.google.gwt.topspin.ui.client.InsertingContainerImpl;
 import com.google.gwt.topspin.ui.client.Table;
+import com.google.gwt.xhr.client.XMLHttpRequest;
+import com.google.speedtracer.client.ClientConfig;
+import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.model.NetworkResource;
+import com.google.speedtracer.client.model.ServerEvent;
+import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.client.model.NetworkResource.HeaderMap;
 import com.google.speedtracer.client.model.NetworkResource.HeaderMap.IterationCallBack;
+import com.google.speedtracer.client.util.JSON;
 import com.google.speedtracer.client.util.TimeStampFormatter;
+import com.google.speedtracer.client.util.Xhr;
 import com.google.speedtracer.client.util.dom.DocumentExt;
 import com.google.speedtracer.client.util.dom.LazilyCreateableElement;
 import com.google.speedtracer.client.util.dom.ManagesEventListeners;
 import com.google.speedtracer.client.visualizations.view.Tree.ExpansionChangeListener;
 import com.google.speedtracer.client.visualizations.view.Tree.Item;
+
+import java.util.ArrayList;
 
 /**
  * The panel of details that displays the details of the network request and
@@ -85,6 +97,47 @@ public class RequestDetails extends LazilyCreateableElement {
   }
 
   /**
+   * A general controller class to support the server event tree.
+   */
+  private class ServerEventTreeController implements LazyEventTree.Presenter,
+      Tree.SelectionChangeListener, Tree.ExpansionChangeListener {
+    private static final int SIGNIFICANCE_IN_PIXELS = 1;
+
+    public Color getColor(UiEvent event) {
+      return ServerEventColors.getColorFor(event.<ServerEvent> cast());
+    }
+
+    public Color getDominantTypeColor(UiEvent event) {
+      return null;
+    }
+
+    public double getInsignificanceThreshold(double msPerPixel) {
+      return SIGNIFICANCE_IN_PIXELS / msPerPixel;
+    }
+
+    public String getLabel(UiEvent event) {
+      assert event.getType() == ServerEvent.TYPE;
+      final String label = event.<ServerEvent> cast().getServerEventData().getLabel();
+      return label.length() > 50 ? label.substring(0, 50) + "..." : label;
+    }
+
+    public boolean hasDominantType(UiEvent event, UiEvent rootEvent,
+        double msPerPixel) {
+      // TODO(knorton): This presenter does not have dominant type color
+      // overrides. Will add this as needed.
+      return false;
+    }
+
+    public void onExpansionChange(Item changedItem) {
+      fixHeightOfParentRow();
+    }
+
+    public void onSelectionChange(ArrayList<Item> selected) {
+      fixHeightOfParentRow();
+    }
+  }
+
+  /**
    * Appends a TableRowElement and populates it with two cells.
    * 
    * @param summaryTable
@@ -107,12 +160,12 @@ public class RequestDetails extends LazilyCreateableElement {
     valueCell.setInnerText(value);
   }
 
-  private static void addSectionHeader(Css css, Document document,
-      Element parent, String text) {
+  private static Element createSectionHeader(Css css, Document document,
+      String text) {
     final DivElement header = document.createDivElement();
     header.setClassName(css.sectionHeader());
     header.setInnerHTML(text);
-    parent.appendChild(header);
+    return header;
   }
 
   private static Table createTable(Container container, String classname) {
@@ -346,6 +399,54 @@ public class RequestDetails extends LazilyCreateableElement {
     return ((contentLength < 0) ? "" : contentLength + " bytes");
   }
 
+  private void maybeShowServerEvents(final Element parent,
+      final Element insertAfter, final Css css, final Document document) {
+    if (!info.hasServerTraceUrl()) {
+      return;
+    }
+
+    final String traceUrl = info.getServerTraceUrl();
+
+    // TODO(knorton): Currently apps that have server-side tracing report traces
+    // for all resources even if they do not have a valid trace. This is going
+    // to change soon. When it does, this logic can change to assume that if a
+    // traceUrl header is present, a trace should be available.
+    //
+    // TODO(knorton): When playing back from a dump, we do not want to try to
+    // fetch the server-side trace.
+    Xhr.get(traceUrl, new Xhr.XhrCallback() {
+      public void onFail(XMLHttpRequest xhr) {
+        if (ClientConfig.isDebugMode()) {
+          Logging.getLogger().logText(
+              "Failed to fetch server trace: " + traceUrl + "(status: "
+                  + xhr.getStatusText() + ")");
+        }
+      }
+
+      public void onSuccess(XMLHttpRequest xhr) {
+        // TODO(knorton): Update Ui appropriately when parsing errors occur.
+        final ServerEvent event = ServerEvent.fromSpringInsightTrace(info,
+            JSON.parse(xhr.getResponseText()));
+
+        // insertBefore may be null, in which case Element.insertBefore will
+        // append.
+        final Element insertBefore = insertAfter.getNextSiblingElement();
+
+        parent.insertBefore(createSectionHeader(css, document, "Server Trace"),
+            insertBefore);
+        final LazyEventTree.Resources treeResources = GWT.create(LazyEventTree.Resources.class);
+        final ServerEventTreeController controller = new ServerEventTreeController();
+        final LazyEventTree tree = new LazyEventTree(
+            new InsertingContainerImpl(parent, insertBefore), controller, event,
+            new EventTraceBreakdown(event, controller, treeResources),
+            treeResources);
+        tree.addSelectionChangeListener(controller);
+        tree.addExpansionChangeListener(controller);
+        fixHeightOfParentRow();
+      }
+    });
+  }
+
   /**
    * Populates the contentElement with the info.
    * 
@@ -357,7 +458,7 @@ public class RequestDetails extends LazilyCreateableElement {
     final Document document = contentElem.getOwnerDocument();
 
     ContainerImpl container = new DefaultContainerImpl(contentElem);
-    Css css = resources.requestDetailsCss();
+    final Css css = resources.requestDetailsCss();
     hintletTreeWrapper = DocumentExt.get().createDivWithClassName(
         css.hintletTreeWrapper());
     contentElem.appendChild(hintletTreeWrapper);
@@ -366,17 +467,26 @@ public class RequestDetails extends LazilyCreateableElement {
     }
 
     // Summary Table.
-    addSectionHeader(css, document, contentElem, "Summary");
+    contentElem.appendChild(createSectionHeader(css, document, "Summary"));
     fillSummaryTable(createTable(container, css.nameValueTable()), css, info);
 
     // Request Headers.
-    addSectionHeader(css, document, contentElem, "Request Headers");
+    contentElem.appendChild(createSectionHeader(css, document,
+        "Request Headers"));
     fillHeaderTable(createTable(container, css.nameValueTable()), css,
         info.getRequestHeaders());
 
     // Response Headers.
-    addSectionHeader(css, document, contentElem, "Response Headers");
+    contentElem.appendChild(createSectionHeader(css, document,
+        "Response Headers"));
     fillHeaderTable(createTable(container, css.nameValueTable()), css,
         info.getResponseHeaders());
+
+    // TODO(knorton): Server events are turned off in release builds until the
+    // feature is ready.
+    // Server Events.
+    if (ClientConfig.isDebugMode()) {
+      maybeShowServerEvents(contentElem, hintletTreeWrapper, css, document);
+    }
   }
 }
