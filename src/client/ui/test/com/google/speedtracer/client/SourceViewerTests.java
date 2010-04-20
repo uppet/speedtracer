@@ -21,6 +21,7 @@ import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.TextResource;
+import com.google.speedtracer.client.SourceViewer.SourceViewerInitializedCallback;
 import com.google.speedtracer.client.SourceViewer.SourceViewerLoadedCallback;
 
 /**
@@ -52,21 +53,28 @@ public class SourceViewerTests extends GWTTestCase {
    */
   public void testFailedFetch() {
     SourceViewer.Resources resources = GWT.create(SourceViewer.Resources.class);
-    SourceViewer.create(Document.get().getBody(), "does-not-existsource.js", resources,
-        new SourceViewerLoadedCallback() {
-          public void onSourceFetchFail(int statusCode, SourceViewer viewer) {
-            assertTrue(statusCode != 200);
-            finishTest();            
-          }
+    SourceViewer.create(Document.get().getBody(), resources,
+        new SourceViewerInitializedCallback() {
 
-          public void onSourceViewerLoaded(SourceViewer viewer) {
-            assertTrue("Fetch should have failed.", false);            
+          public void onSourceViewerInitialized(SourceViewer viewer) {
+            viewer.loadResource("does-not-existsource.js",
+                new SourceViewerLoadedCallback() {
+                  public void onSourceFetchFail(int statusCode,
+                      SourceViewer viewer) {
+                    assertTrue(statusCode != 200);
+                    finishTest();
+                  }
+
+                  public void onSourceViewerLoaded(SourceViewer viewer) {
+                    assertTrue("Fetch should have failed.", false);
+                  }
+                });
           }
         });
 
     this.delayTestFinish(TEST_FINISH_DELAY);
   }
-  
+
   /**
    * Tests that we can retrieve the line contents given a line number.
    * 
@@ -79,25 +87,35 @@ public class SourceViewerTests extends GWTTestCase {
     final String[] testSource = testResources.testSource().getText().split(
         "\n\r|\n");
     SourceViewer.Resources resources = GWT.create(SourceViewer.Resources.class);
-    SourceViewer.create(Document.get().getBody(), "test-source.js", resources,
-        new SourceViewerLoadedCallback() {
-          public void onSourceFetchFail(int statusCode, SourceViewer viewer) {
-            assertTrue("Fetch failed.", false);
-          }
+    SourceViewer.create(Document.get().getBody(), resources,
+        new SourceViewerInitializedCallback() {
 
-          public void onSourceViewerLoaded(SourceViewer viewer) {
-            for (int i = 0; i < testSource.length; i++) {
-              // 1 based indexes for line numbers.
-              int index = i + 1;
-              String lineContents = viewer.getLineContents(index);
-              // Line contents are stripped of new lines. So we can compare
-              // directly with out testSource array above.
-              assertEquals("Line " + index + "'" + lineContents + "' != '"
-                  + testSource[i] + "'", testSource[i], lineContents);
-            }
-            // Clean up test.
-            Document.get().getBody().removeChild(viewer.getElement());
-            finishTest();
+          public void onSourceViewerInitialized(SourceViewer viewer) {
+            viewer.loadResource("test-source.js",
+                new SourceViewerLoadedCallback() {
+
+                  public void onSourceFetchFail(int statusCode,
+                      SourceViewer viewer) {
+                    assertTrue("Fetch failed.", false);
+                  }
+
+                  public void onSourceViewerLoaded(SourceViewer viewer) {
+                    for (int i = 0; i < testSource.length; i++) {
+                      // 1 based indexes for line numbers.
+                      int index = i + 1;
+                      String lineContents = viewer.getLineContents(index);
+                      // Line contents are stripped of new lines. So we can
+                      // compare
+                      // directly with out testSource array above.
+                      assertEquals("Line " + index + "'" + lineContents
+                          + "' != '" + testSource[i] + "'", testSource[i],
+                          lineContents);
+                    }
+                    // Clean up test.
+                    Document.get().getBody().removeChild(viewer.getElement());
+                    finishTest();
+                  }
+                });
           }
         });
 
@@ -113,29 +131,39 @@ public class SourceViewerTests extends GWTTestCase {
    */
   public void testHighlightRow() {
     final SourceViewer.Resources resources = GWT.create(SourceViewer.Resources.class);
-    SourceViewer.create(Document.get().getBody(), "test-source.js", resources,
-        new SourceViewerLoadedCallback() {
-          public void onSourceFetchFail(int statusCode, SourceViewer viewer) {
-            assertTrue("Fetch failed.", false);
-          }
+    SourceViewer.create(Document.get().getBody(), resources,
+        new SourceViewerInitializedCallback() {
 
-          public void onSourceViewerLoaded(SourceViewer viewer) {
-            SourceViewer.CodeCss styles = resources.sourceViewerCodeCss();
+          public void onSourceViewerInitialized(SourceViewer viewer) {
+            viewer.loadResource("test-source.js",
+                new SourceViewerLoadedCallback() {
 
-            viewer.highlightLine(2);
-            checkHasClassName(viewer, 2, styles.highlightedLine(), true);
+                  public void onSourceFetchFail(int statusCode,
+                      SourceViewer viewer) {
+                    assertTrue("Fetch failed.", false);
+                  }
 
-            viewer.highlightLine(4);
-            checkHasClassName(viewer, 2, styles.highlightedLine(), false);
-            checkHasClassName(viewer, 4, styles.highlightedLine(), true);
+                  public void onSourceViewerLoaded(SourceViewer viewer) {
+                    SourceViewer.CodeCss styles = resources.sourceViewerCodeCss();
 
-            viewer.highlightLine(6);
-            checkHasClassName(viewer, 4, styles.highlightedLine(), false);
-            checkHasClassName(viewer, 6, styles.highlightedLine(), true);
+                    viewer.highlightLine(2);
+                    checkHasClassName(viewer, 2, styles.highlightedLine(), true);
 
-            // Clean up test.
-            Document.get().getBody().removeChild(viewer.getElement());
-            finishTest();
+                    viewer.highlightLine(4);
+                    checkHasClassName(viewer, 2, styles.highlightedLine(),
+                        false);
+                    checkHasClassName(viewer, 4, styles.highlightedLine(), true);
+
+                    viewer.highlightLine(6);
+                    checkHasClassName(viewer, 4, styles.highlightedLine(),
+                        false);
+                    checkHasClassName(viewer, 6, styles.highlightedLine(), true);
+
+                    // Clean up test.
+                    Document.get().getBody().removeChild(viewer.getElement());
+                    finishTest();
+                  }
+                });
           }
         });
 

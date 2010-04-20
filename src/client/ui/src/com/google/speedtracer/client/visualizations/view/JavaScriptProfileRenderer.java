@@ -77,14 +77,6 @@ public class JavaScriptProfileRenderer {
     Css javaScriptProfileRendererCss();
   }
 
-  /**
-   * Callback invoked when clicking on the source line number link in the
-   * profile.
-   */
-  public interface SourceClickCallback {
-    void onSourceClick(String resourceUrl, int lineNumber);
-  }
-
   private class FlatChildRowRenderer implements Resymbolizeable {
     private final JavaScriptProfileNode profileNode;
     private final TableRowElement row;
@@ -96,7 +88,8 @@ public class JavaScriptProfileRenderer {
     }
 
     public void reSymbolize(final String sourceServer,
-        final JsSymbol sourceSymbol, final SourcePresenter sourcePresenter) {
+        final String sourceViewerServer, final JsSymbol sourceSymbol,
+        final SourcePresenter sourcePresenter) {
       AnchorElement resymbolizedSymbol = symbolNameCell.getOwnerDocument().createAnchorElement();
       resymbolizedSymbol.setClassName(css.resymbolizedLink());
       resymbolizedSymbol.setInnerText(sourceSymbol.getSymbolName());
@@ -108,7 +101,8 @@ public class JavaScriptProfileRenderer {
             public void onClick(ClickEvent event) {
               sourcePresenter.showSource(sourceServer
                   + sourceSymbol.getResourceUrl().getPath(),
-                  sourceSymbol.getLineNumber(), 0);
+                  sourceViewerServer, sourceSymbol.getLineNumber(), 0,
+                  sourceSymbol.getAbsoluteFilePath());
             }
           }));
 
@@ -166,7 +160,8 @@ public class JavaScriptProfileRenderer {
       }
 
       public void reSymbolize(final String sourceServer,
-          final JsSymbol sourceSymbol, final SourcePresenter sourcePresenter) {
+          final String sourceViewerServer, final JsSymbol sourceSymbol,
+          final SourcePresenter sourcePresenter) {
         AnchorElement resymbolizedSymbol = bottomDiv.getOwnerDocument().createAnchorElement();
         resymbolizedSymbol.setClassName(css.resymbolizedLink());
         resymbolizedSymbol.setInnerText(sourceSymbol.getSymbolName());
@@ -178,7 +173,8 @@ public class JavaScriptProfileRenderer {
               public void onClick(ClickEvent event) {
                 sourcePresenter.showSource(sourceServer
                     + sourceSymbol.getResourceUrl().getPath(),
-                    sourceSymbol.getLineNumber(), 0);
+                    sourceViewerServer, sourceSymbol.getLineNumber(), 0,
+                    sourceSymbol.getAbsoluteFilePath());
               }
             }));
 
@@ -326,7 +322,7 @@ public class JavaScriptProfileRenderer {
 
   private final ResizeCallback resizeCallback;
 
-  private final SourceClickCallback sourceClickCallback;
+  private final SourceSymbolClickListener sourceClickCallback;
 
   private final SourcePresenter sourcePresenter;
 
@@ -339,7 +335,7 @@ public class JavaScriptProfileRenderer {
   public JavaScriptProfileRenderer(Container container, Resources resources,
       ManagesEventListeners listenerManager,
       SymbolServerController ssController, SourcePresenter sourcePresenter,
-      JavaScriptProfile profile, SourceClickCallback sourceClickCallback,
+      JavaScriptProfile profile, SourceSymbolClickListener sourceClickCallback,
       ResizeCallback resizeCallback) {
     this.profileDiv = new Div(container);
     this.resources = resources;
@@ -511,8 +507,8 @@ public class JavaScriptProfileRenderer {
                 "opening resource " + resourceUrl + " line: "
                     + jsSymbol.getLineNumber());
           }
-          sourceClickCallback.onSourceClick(resourceUrl,
-              jsSymbol.getLineNumber());
+          sourceClickCallback.onSymbolClicked(resourceUrl, null,
+              jsSymbol.getLineNumber(), 0, null);
         }
       }));
     } else {

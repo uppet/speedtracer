@@ -36,9 +36,12 @@ import com.google.gwt.topspin.ui.client.ResizeListener;
 import com.google.gwt.topspin.ui.client.Table;
 import com.google.gwt.topspin.ui.client.Widget;
 import com.google.speedtracer.client.SourceViewer;
+import com.google.speedtracer.client.SourceViewerServer;
 import com.google.speedtracer.client.SymbolServerService;
 import com.google.speedtracer.client.SourceViewer.SourcePresenter;
+import com.google.speedtracer.client.SourceViewer.SourceViewerInitializedCallback;
 import com.google.speedtracer.client.SourceViewer.SourceViewerLoadedCallback;
+import com.google.speedtracer.client.SourceViewerServer.ActionCompletedCallback;
 import com.google.speedtracer.client.model.DataModel;
 import com.google.speedtracer.client.model.EvalScript;
 import com.google.speedtracer.client.model.HintRecord;
@@ -65,7 +68,6 @@ import com.google.speedtracer.client.util.Url;
 import com.google.speedtracer.client.util.dom.WindowExt;
 import com.google.speedtracer.client.visualizations.view.FilteringScrollTable.RowDetails;
 import com.google.speedtracer.client.visualizations.view.JavaScriptProfileRenderer.ResizeCallback;
-import com.google.speedtracer.client.visualizations.view.JavaScriptProfileRenderer.SourceClickCallback;
 import com.google.speedtracer.client.visualizations.view.Tree.ExpansionChangeListener;
 import com.google.speedtracer.client.visualizations.view.Tree.Item;
 import com.google.speedtracer.client.visualizations.view.Tree.SelectionChangeListener;
@@ -175,9 +177,11 @@ public class EventWaterfallRowDetails extends RowDetails implements
     this.resources = resources;
     this.eventWaterfall = eventWaterfall;
     this.symbolClickListener = new SourceSymbolClickListener() {
-      public void onSymbolClicked(String resourceUrl, int lineNumber,
-          int colNumber) {
-        showSource(resourceUrl, lineNumber, colNumber);
+      public void onSymbolClicked(String resourceUrl,
+          String sourceViewerServer, int lineNumber, int column,
+          String absoluteFilePath) {
+        showSource(resourceUrl, sourceViewerServer, lineNumber, 0,
+            absoluteFilePath);
       }
     };
   }
@@ -205,29 +209,45 @@ public class EventWaterfallRowDetails extends RowDetails implements
     }
   }
 
-  public void showSource(String resourceUrl, final int lineNumber,
-      final int colNumber) {
-    // TODO(jaimeyap): Put up a spinner or something. It may
-    // take a while to load the resource.
-    ensureSourceViewer(resourceUrl, new SourceViewerLoadedCallback() {
+  public void showSource(final String resourceUrl, String sourceViewerServer,
+      final int lineNumber, final int column, String absoluteFilePath) {
+    // TODO(jaimeyap): Put up a spinner or something. It may take a while to
+    // display the resource.
 
-      public void onSourceFetchFail(int statusCode, SourceViewer viewer) {
-        sourceViewer.hide();
-      }
+    // First try to jump to IDE.
+    SourceViewerServer.jumpToIde(sourceViewerServer, absoluteFilePath,
+        lineNumber, new ActionCompletedCallback() {
 
-      public void onSourceViewerLoaded(SourceViewer viewer) {
-        // The viewer should not be loaded at the URL we
-        // care about.
-        sourceViewer.show();
-        sourceViewer.highlightLine(lineNumber);
-        if (colNumber > 0) {
-          sourceViewer.markColumn(lineNumber, colNumber);
-          sourceViewer.scrollColumnMarkerIntoView();
-        } else {
-          sourceViewer.scrollHighlightedLineIntoView();
-        }
-      }
-    });
+          public void onFail() {
+            // Just show the source in our source viewer.
+            showSourceInSourceViewer(resourceUrl,
+                new SourceViewerLoadedCallback() {
+
+                  public void onSourceFetchFail(int statusCode,
+                      SourceViewer viewer) {
+                    viewer.hide();
+                  }
+
+                  public void onSourceViewerLoaded(SourceViewer viewer) {
+                    // The viewer should not be loaded at the URL we
+                    // care about.
+                    viewer.show();
+                    viewer.highlightLine(lineNumber);
+                    if (column > 0) {
+                      viewer.markColumn(lineNumber, column);
+                      viewer.scrollColumnMarkerIntoView();
+                    } else {
+                      viewer.scrollHighlightedLineIntoView();
+                    }
+                  }
+                });
+          }
+
+          public void onSuccess() {
+            // Do nothing. IDE should have focus.
+          }
+
+        });
   }
 
   @Override
@@ -328,9 +348,12 @@ public class EventWaterfallRowDetails extends RowDetails implements
         SymbolServerService.getSymbolServerController(new Url(currentAppUrl)),
         this,
         eventWaterfall.getVisualization().getModel().getJavaScriptProfileForEvent(
-            getParentRow().getEvent()), new SourceClickCallback() {
-          public void onSourceClick(String resourceUrl, final int lineNumber) {
-            showSource(resourceUrl, lineNumber, 0);
+            getParentRow().getEvent()), new SourceSymbolClickListener() {
+          public void onSymbolClicked(String resourceUrl,
+              String sourceViewerServer, int lineNumber, int column,
+              String absoluteFilePath) {
+            showSource(resourceUrl, sourceViewerServer, lineNumber, 0,
+                absoluteFilePath);
           }
         }, new ResizeCallback() {
           public void onResize() {
@@ -571,43 +594,6 @@ public class EventWaterfallRowDetails extends RowDetails implements
     }
   }
 
-  /**
-   * Make sure the source viewer exists and is loaded at the specified resource
-   * URL.
-   */
-  private void ensureSourceViewer(String resourceUrl,
-      final SourceViewerLoadedCallback callback) {
-    if (sourceViewer == null) {
-      // Attach the container above the table so that the source viewer is
-      // positioned independent of the table scroll and of the currently
-      // viewed row.
-      SourceViewer.create(eventWaterfall.getTableContents().getParentElement(),
-          resourceUrl, resources, new SourceViewerLoadedCallback() {
-
-            public void onSourceFetchFail(int statusCode, SourceViewer viewer) {
-              // TODO(jaimeyap): Indicate that the source was
-              // unable to be fetched. For now, simply do not
-              // attempt to show the sourceViewer.
-            }
-
-            public void onSourceViewerLoaded(SourceViewer viewer) {
-              EventWaterfallRowDetails.this.sourceViewer = viewer;
-              // Position the source viewer so that it fills half the
-              // details view. Below the table header, and flush with the
-              // bottom of the window.
-              viewer.getElement().getStyle().setTop(1, Unit.PX);
-              // Half the width with a little space for border of the table.
-              viewer.getElement().getStyle().setRight(51, Unit.PCT);
-
-              // Now forward to the callback.
-              callback.onSourceViewerLoaded(viewer);
-            }
-          });
-    } else {
-      sourceViewer.loadResource(resourceUrl, callback);
-    }
-  }
-
   private void fixHeightOfParentRow() {
     // Our height should be the size of the details panel + the row height
     int height = getElement().getOffsetHeight()
@@ -743,6 +729,36 @@ public class EventWaterfallRowDetails extends RowDetails implements
           ? "setTimeout" : "setInterval"));
       details.put("Interval", new StringCellRenderer(timerData.getInterval()
           + "ms"));
+    }
+  }
+
+  /**
+   * Make sure the source viewer exists and is loaded at the specified resource
+   * URL.
+   */
+  private void showSourceInSourceViewer(final String resourceUrl,
+      final SourceViewerLoadedCallback callback) {
+    if (sourceViewer == null) {
+      // Attach the container above the table so that the source viewer is
+      // positioned independent of the table scroll and of the currently
+      // viewed row.
+      SourceViewer.create(eventWaterfall.getTableContents().getParentElement(),
+          resources, new SourceViewerInitializedCallback() {
+            public void onSourceViewerInitialized(SourceViewer viewer) {
+              EventWaterfallRowDetails.this.sourceViewer = viewer;
+              // Position the source viewer so that it fills half the
+              // details view. Below the table header, and flush with the
+              // bottom of the window.
+              viewer.getElement().getStyle().setTop(1, Unit.PX);
+              // Half the width with a little space for border of the table.
+              viewer.getElement().getStyle().setRight(51, Unit.PCT);
+
+              // Now request the resource
+              viewer.loadResource(resourceUrl, callback);
+            }
+          });
+    } else {
+      sourceViewer.loadResource(resourceUrl, callback);
     }
   }
 }

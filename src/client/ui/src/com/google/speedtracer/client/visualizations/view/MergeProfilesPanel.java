@@ -34,6 +34,7 @@ import com.google.speedtracer.client.SourceViewer;
 import com.google.speedtracer.client.SymbolServerController;
 import com.google.speedtracer.client.SymbolServerService;
 import com.google.speedtracer.client.SourceViewer.SourcePresenter;
+import com.google.speedtracer.client.SourceViewer.SourceViewerInitializedCallback;
 import com.google.speedtracer.client.SourceViewer.SourceViewerLoadedCallback;
 import com.google.speedtracer.client.model.DataModel;
 import com.google.speedtracer.client.model.JavaScriptProfile;
@@ -45,15 +46,14 @@ import com.google.speedtracer.client.util.Url;
 import com.google.speedtracer.client.util.dom.EventListenerOwner;
 import com.google.speedtracer.client.view.AutoHideDiv;
 import com.google.speedtracer.client.view.HotKeyPanel;
-import com.google.speedtracer.client.visualizations.view.JavaScriptProfileRenderer.SourceClickCallback;
 
 /**
  * Offers a UI to allow merging together profiles from different events.
  */
 public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
   class MySourceViewerLoadedCallback implements SourceViewerLoadedCallback {
-    private String resourceUrl;
     private int lineNumber;
+    private String resourceUrl;
 
     public MySourceViewerLoadedCallback(String resourceUrl, int lineNumber) {
       this.resourceUrl = resourceUrl;
@@ -119,12 +119,12 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
   private class SearchController implements
       JavaScriptProfileModel.EventProcessor, UiEvent.LeafFirstTraversalVoid {
     private int eventsFound = 0;
-    private int logsFound = 0;
-    private JSOArray<JavaScriptProfile> matchingProfiles;
-    private final String regexp;
-
     // Transient state that is reset each time we search a UiEvent.
     private boolean found;
+    private int logsFound = 0;
+    private JSOArray<JavaScriptProfile> matchingProfiles;
+
+    private final String regexp;
     private int sequence;
 
     private SearchController(String regexp) {
@@ -174,22 +174,24 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
   InputElement regexpInput;
 
   @UiField
-  InputElement searchButton;
-
-  @UiField
   DivElement resultsDiv;
 
-  private final MonitorResources.Resources resources;
+  @UiField
+  InputElement searchButton;
 
   private final DataModel dataModel;
 
   private final Element elem;
 
+  private ErrorDiv errorDiv;
+
   private boolean inSearch = false;
 
   private final EventListenerOwner listenerOwner = new EventListenerOwner();
 
-  private ErrorDiv errorDiv;
+  private final MonitorResources.Resources resources;
+
+  private SourceViewer sourceViewer;
 
   public MergeProfilesPanel(DataModel dataModel,
       MonitorResources.Resources resources) {
@@ -218,9 +220,21 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
         });
   }
 
-  public void showSource(String resourceUrl, int lineNumber, int colNumber) {
-    SourceViewer.create(elem, resourceUrl, resources,
-        new MySourceViewerLoadedCallback(resourceUrl, lineNumber));
+  public void showSource(final String resourceUrl, String sourceViewerServer,
+      final int lineNumber, final int column, String absoluteFilePath) {
+    if (sourceViewer == null) {
+      SourceViewer.create(elem, resources,
+          new SourceViewerInitializedCallback() {
+            public void onSourceViewerInitialized(SourceViewer viewer) {
+              sourceViewer = viewer;
+              viewer.loadResource(resourceUrl,
+                  new MySourceViewerLoadedCallback(resourceUrl, lineNumber));
+            }
+          });
+    } else {
+      sourceViewer.loadResource(resourceUrl, new MySourceViewerLoadedCallback(
+          resourceUrl, lineNumber));
+    }
   }
 
   @Override
@@ -255,12 +269,14 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
     listenerOwner.removeAllEventListeners();
     JavaScriptProfileRenderer renderer = new JavaScriptProfileRenderer(
         resultsContainer, resources, listenerOwner,
-        getSymbolServerController(), this, profile, new SourceClickCallback() {
+        getSymbolServerController(), this, profile,
+        new SourceSymbolClickListener() {
 
-          public void onSourceClick(final String resourceUrl,
-              final int lineNumber) {
-            SourceViewer.create(elem, resourceUrl, resources,
-                new MySourceViewerLoadedCallback(resourceUrl, lineNumber));
+          public void onSymbolClicked(String resourceUrl,
+              String sourceViewerServer, int lineNumber, int column,
+              String absoluteFilePath) {
+            showSource(resourceUrl, sourceViewerServer, lineNumber, column,
+                absoluteFilePath);
           }
         }, null);
 

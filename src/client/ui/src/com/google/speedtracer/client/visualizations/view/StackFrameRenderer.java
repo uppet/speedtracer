@@ -107,8 +107,8 @@ public class StackFrameRenderer implements Resymbolizeable {
         ClickEvent.addClickListener(lineLink, lineLink, new ClickListener() {
           public void onClick(ClickEvent event) {
             stackTraceRenderer.getSourceClickListener().onSymbolClicked(
-                stackFrame.getResourceUrl().getUrl(),
-                stackFrame.getLineNumber(), stackFrame.getColNumber());
+                stackFrame.getResourceUrl().getUrl(), null,
+                stackFrame.getLineNumber(), stackFrame.getColNumber(), null);
           }
         }));
 
@@ -133,13 +133,16 @@ public class StackFrameRenderer implements Resymbolizeable {
    * 
    * @param sourceServer The source server URL that is needed to display a
    *          relative path for the source file
+   * @param sourceViewerServer A resource that provides a GET API to support
+   *          jump-to-IDE functionality. This is allows to be null.
    * @param sourceSymbol The symbol mapping in the original source for the
    *          function symbol in our stack frame.
    * @param sourcePresenter The {@link SourcePresenter} that will handle
    *          displaying the source of the resymbolized symbol.
    */
   public void reSymbolize(final String sourceServer,
-      final JsSymbol sourceSymbol, final SourcePresenter sourcePresenter) {
+      final String sourceViewerServer, final JsSymbol sourceSymbol,
+      final SourcePresenter sourcePresenter) {
     assert (myElem != null) : "Element is null when attempting resymbolization in StackFrameRenderer";
 
     Document document = myElem.getOwnerDocument();
@@ -156,7 +159,8 @@ public class StackFrameRenderer implements Resymbolizeable {
               public void onClick(ClickEvent event) {
                 sourcePresenter.showSource(sourceServer
                     + sourceSymbol.getResourceUrl().getPath(),
-                    sourceSymbol.getLineNumber(), 0);
+                    sourceViewerServer, sourceSymbol.getLineNumber(), 0,
+                    sourceSymbol.getAbsoluteFilePath());
               }
             }));
   }

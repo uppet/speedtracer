@@ -55,8 +55,8 @@ public class SymbolServerController {
    * symbol.
    */
   public interface Resymbolizeable {
-    void reSymbolize(String sourceServer, JsSymbol sourceSymbol,
-        SourcePresenter sourcePresenter);
+    void reSymbolize(String sourceServer, String sourceViewerServer,
+        JsSymbol sourceSymbol, SourcePresenter sourcePresenter);
   }
 
   /**
@@ -144,8 +144,8 @@ public class SymbolServerController {
           return;
         }
         // Enhance the rendered frame with the resymbolization.
-        renderer.reSymbolize(symbols.getSourceServer(), sourceSymbol,
-            sourcePresenter);
+        renderer.reSymbolize(symbols.getSourceServer(),
+            symbols.getSourceViewerServer(), sourceSymbol, sourcePresenter);
       }
     });
   }
@@ -282,6 +282,7 @@ public class SymbolServerController {
           if (fetchedSymbolMap == null) {
             fetchedSymbolMap = JsSymbolMap.parse(
                 resourceSymbolInfo.getSourceServer(),
+                resourceSymbolInfo.getSourceViewerServer(),
                 resourceSymbolInfo.getType(), xhr.getResponseText());
             put(symbolMapUrl, fetchedSymbolMap);
           }

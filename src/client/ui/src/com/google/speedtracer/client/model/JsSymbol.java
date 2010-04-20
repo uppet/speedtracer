@@ -26,20 +26,35 @@ public class JsSymbol {
 
   private int lineNumber;
 
+  // Temporary. This is needed for jump-to-ide since GPE currently is unable to
+  // resolve classpath relatives paths. It needs absolute paths to find source.
+  // This is something they plan on fixing soon.
+  private final String resourceUri;
+
   private Url resourceUrl;
 
   private final String symbolName;
 
   public JsSymbol(Url resourceUrl, int lineNumber, String symbolName) {
-    this(resourceUrl, lineNumber, symbolName, false);
+    this(resourceUrl, lineNumber, symbolName, false, null);
   }
 
   public JsSymbol(Url resourceUrl, int lineNumber, String symbolName,
       boolean isNativeSymbol) {
+    this(resourceUrl, lineNumber, symbolName, isNativeSymbol, null);
+  }
+
+  public JsSymbol(Url resourceUrl, int lineNumber, String symbolName,
+      boolean isNativeSymbol, String resourceUri) {
     this.resourceUrl = resourceUrl;
     this.lineNumber = lineNumber;
     this.symbolName = symbolName;
     this.isNativeSymbol = isNativeSymbol;
+    this.resourceUri = resourceUri;
+  }
+
+  public String getAbsoluteFilePath() {
+    return resourceUri;
   }
 
   public int getLineNumber() {
