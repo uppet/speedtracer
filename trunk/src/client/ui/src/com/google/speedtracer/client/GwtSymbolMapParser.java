@@ -50,7 +50,7 @@ public class GwtSymbolMapParser implements JsSymbolMapParser {
     String jsName = symbolInfo.get(0);
     String className = symbolInfo.get(2);
     String memberName = symbolInfo.get(3);
-    String sourceUri = symbolInfo.get(4);
+    String fileName = symbolInfo.get(4);
     String sourceLine = symbolInfo.get(5);
 
     // The path relative to the source server. We assume it is just the class
@@ -60,13 +60,14 @@ public class GwtSymbolMapParser implements JsSymbolMapParser {
     String sourcePathBase = sourcePath.substring(0, lastSlashIndex);
 
     // The sourceUri contains the actual file name.
-    String sourceFileName = sourceUri.substring(sourceUri.lastIndexOf('/') + 1,
-        sourceUri.length());
+    String sourceFileName = fileName.substring(fileName.lastIndexOf('/') + 1,
+        fileName.length());
 
     String sourceSymbolName = className + "::" + memberName;
 
     JsSymbol sourceSymbol = new JsSymbol(new Url(sourcePathBase
-        + sourceFileName), Integer.parseInt(sourceLine), sourceSymbolName);
+        + sourceFileName), Integer.parseInt(sourceLine), sourceSymbolName,
+        false, fileName);
     symbolMap.put(jsName, sourceSymbol);
   }
 }

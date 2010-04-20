@@ -56,10 +56,13 @@ public class SourceViewer {
   /**
    * Things that contain a SourceViewer can implement this interface to have
    * external entities display source through them.
+   * 
+   * TODO (jaimeyap): Remove the absoluteFilePath param when GPE is able to
+   * resolve classpath relative paths to files.
    */
   public interface SourcePresenter {
-    void showSource(String resourceUrl, final int lineNumber,
-        final int colNumber);
+    void showSource(String resourceUrl, String sourceViewerServer,
+        int lineNumber, int column, String absoluteFilePath);
   }
 
   /**
@@ -108,13 +111,20 @@ public class SourceViewer {
   }
 
   /**
-   * Callback invoked when the iFrame is loaded. This is used externally to
-   * obtain an initialized instance of the SourceViewer.
+   * Callback invoked when the source that was requested has been loaded.
    */
   public interface SourceViewerLoadedCallback {
     void onSourceViewerLoaded(SourceViewer viewer);
 
     void onSourceFetchFail(int statusCode, SourceViewer viewer);
+  }
+
+  /**
+   * Callback invoked when the SourceViewer instance is initialized and ready
+   * for use.
+   */
+  public interface SourceViewerInitializedCallback {
+    void onSourceViewerInitialized(SourceViewer viewer);
   }
 
   /**
@@ -140,13 +150,12 @@ public class SourceViewer {
    * 
    * @param parent the parent container element we will attach the SourceViewer
    *          to.
-   * @param targetSource the URL of the source we wish to view.
    * @param resources the ClientBundle instance for this class.
-   * @param callback the {@link SourceViewerLoadedCallback} that we pass the
-   *          loaded SourceViewer to.
+   * @param initializedCallback the {@link SourceViewerInitializedCallback} that
+   *          we pass the loaded SourceViewer to.
    */
-  public static void create(Element parent, final String targetSource,
-      final Resources resources, final SourceViewerLoadedCallback callback) {
+  public static void create(Element parent, final Resources resources,
+      final SourceViewerInitializedCallback initializedCallback) {
     Document document = parent.getOwnerDocument();
     // Create the iframe within which we will load the source.
     final IFrameElement sourceFrame = document.createIFrameElement();
@@ -168,7 +177,7 @@ public class SourceViewer {
         // we want to load.
         SourceViewer sourceViewer = new SourceViewer(baseElement, headerElem,
             sourceFrame, resources);
-        sourceViewer.loadResource(targetSource, callback);
+        initializedCallback.onSourceViewerInitialized(sourceViewer);
       }
     });
     sourceFrame.setSrc(SOURCE_FETCHER_URL);

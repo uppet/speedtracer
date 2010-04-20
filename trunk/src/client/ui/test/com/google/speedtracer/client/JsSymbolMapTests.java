@@ -25,6 +25,25 @@ import com.google.speedtracer.client.util.Url;
  */
 public class JsSymbolMapTests extends GWTTestCase {
 
+  class TestableSymbolMap extends JsSymbolMap {
+    TestableSymbolMap(String sourceServer) {
+      super(sourceServer, null);
+    }
+  }
+
+  String testCompactGwtSymbolMapString = "# { 3 }"
+      + '\n'
+      + "# { 'user.agent' : 'safari' }"
+      + '\n'
+      + "# %%, package literal, package key"
+      + '\n'
+      + "# jsName, jsniSymbolType, package key, className, memberName, fileName, sourceLine"
+      + '\n' + "%%,,0" + '\n' + "a,,0,<null>[],,,0" + '\n'
+      + "%%,com.google.some.package,1" + '\n'
+      + "v[],,1,Outer$Inner[],,Outer,44" + '\n'
+      + "%%,com.google.another.package,2" + '\n' + "aC,,2,SomeClass,,%,55"
+      + '\n' + "aM,m,2,SomeClass,aMethod,%,57" + '\n';
+
   String testGwtSymbolMapString = "# { 0 }"
       + '\n'
       + "# { 'speedtracer.use_mock_model' : 'nope' }"
@@ -40,28 +59,9 @@ public class JsSymbolMapTests extends GWTTestCase {
       + "sc,com.google.apu.demo.client.MultiColumnPanel::$manuallyAdjustColumns(Lcom/google/apu/demo/client/MultiColumnPanel;I)V,com.google.apu.demo.client.MultiColumnPanel,$manuallyAdjustColumns,file:/Users/jaimeyap/src/gitosis/apu-demo-app/src/com/google/apu/demo/client/MultiColumnPanel.java,46"
       + '\n';
 
-  String testCompactGwtSymbolMapString = "# { 3 }"
-      + '\n'
-      + "# { 'user.agent' : 'safari' }"
-      + '\n'
-      + "# %%, package literal, package key"
-      + '\n'
-      + "# jsName, jsniSymbolType, package key, className, memberName, fileName, sourceLine"
-      + '\n' + "%%,,0" + '\n' + "a,,0,<null>[],,,0" + '\n'
-      + "%%,com.google.some.package,1" + '\n'
-      + "v[],,1,Outer$Inner[],,Outer,44" + '\n'
-      + "%%,com.google.another.package,2" + '\n' + "aC,,2,SomeClass,,%,55"
-      + '\n' + "aM,m,2,SomeClass,aMethod,%,57" + '\n';
-
   @Override
   public String getModuleName() {
     return "com.google.speedtracer.Common";
-  }
-
-  class TestableSymbolMap extends JsSymbolMap {
-    TestableSymbolMap(String sourceServer) {
-      super(sourceServer);
-    }
   }
 
   /**
@@ -98,7 +98,7 @@ public class JsSymbolMapTests extends GWTTestCase {
    */
   public void testParseCompactGwtSymbolMap() {
     String sourceServer = "http://notrealsourceserver";
-    JsSymbolMap symbolMap = JsSymbolMap.parse(sourceServer,
+    JsSymbolMap symbolMap = JsSymbolMap.parse(sourceServer, "",
         JsSymbolMap.COMPACT_GWT_SYMBOL_MAP, testCompactGwtSymbolMapString);
     assertEquals(4, symbolMap.getSymbolCount());
 
@@ -117,7 +117,7 @@ public class JsSymbolMapTests extends GWTTestCase {
    */
   public void testParseGwtSymbolMap() {
     String sourceServer = "http://notrealsourceserver";
-    JsSymbolMap symbolMap = JsSymbolMap.parse(sourceServer,
+    JsSymbolMap symbolMap = JsSymbolMap.parse(sourceServer, "",
         JsSymbolMap.GWT_SYMBOL_MAP, testGwtSymbolMapString);
     assertEquals(4, symbolMap.getSymbolCount());
 

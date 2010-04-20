@@ -47,16 +47,18 @@ public class JsSymbolMap {
    * Parses the JavaScript symbol map and initializes a {@link JsSymbolMap} with
    * the corresponding symbols and their source mappings.
    * 
-   * @param sourceServer The base URL that should be used for looking up
-   *          original source files from the symbolMap.
+   * @param sourceServer The server that will serve original source files
+   *          referenced in the symbol map.
+   * @param sourceViewerServer Server that implements the source viewer
+   *          protocol. Currently only used for Jump-To-IDE functionality.
+   * @param type The type of symbol map we want to parse.
    * @param symbolMapStr The unprocessed text corresponding to the Symbol Map.
    * @return
    */
-  public static JsSymbolMap parse(String sourceServer, String type,
-      String symbolMapStr) {
-    JsSymbolMap symbolMap = new JsSymbolMap(sourceServer);
+  public static JsSymbolMap parse(String sourceServer,
+      String sourceViewerServer, String type, String symbolMapStr) {
+    JsSymbolMap symbolMap = new JsSymbolMap(sourceServer, sourceViewerServer);
     JsSymbolMapParser parser = null;
-
     if (GWT_SYMBOL_MAP.equals(type)) {
       parser = new GwtSymbolMapParser(symbolMap);
     } else if (COMPACT_GWT_SYMBOL_MAP.equals(type)) {
@@ -78,17 +80,25 @@ public class JsSymbolMap {
 
   private final String sourceServer;
 
+  // get API for supporting jump to IDE.
+  private final String sourceViewerServer;
+
   private IterableFastStringMap<JsSymbol> symbols;
 
-  protected JsSymbolMap(String sourceServer) {
+  protected JsSymbolMap(String sourceServer, String sourceViewerServer) {
     sourceServer = (null == sourceServer) ? "" : sourceServer;
     this.sourceServer = (sourceServer.charAt(sourceServer.length() - 1) == '/')
         ? sourceServer : sourceServer + "/";
     this.symbols = new IterableFastStringMap<JsSymbol>();
+    this.sourceViewerServer = sourceViewerServer;
   }
 
   public String getSourceServer() {
     return sourceServer;
+  }
+
+  public String getSourceViewerServer() {
+    return sourceViewerServer;
   }
 
   public int getSymbolCount() {

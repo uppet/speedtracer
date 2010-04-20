@@ -100,7 +100,7 @@ public class CompactGwtSymbolMapParser implements JsSymbolMapParser {
     String sourceSymbolName = packageName + className + "::" + memberName;
 
     JsSymbol sourceSymbol = new JsSymbol(new Url(sourcePathBase + fileName),
-        Integer.parseInt(sourceLine), sourceSymbolName);
+        Integer.parseInt(sourceLine), sourceSymbolName, false, fileName);
     symbolMap.put(jsName, sourceSymbol);
   }
 }
