@@ -56,7 +56,6 @@
     <pathelement path="${gwt.home}/gwt-dev.jar" />
     <pathelement path="${gwt.home}/gwt-user.jar" />
     <pathelement path="${classdir}" />
-    <fileset dir="lib" includes="**/*.jar" />
   </path>
 
   <target name="init">
