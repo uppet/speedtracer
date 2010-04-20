@@ -14,34 +14,24 @@
   <property name="speedtracer.headless.destdir" 
       location="../${config}/${headless.moniker}" />
 
-  <!-- TODO(knorton): Perform search for Chrome. -->
-  <property environment="env" />
-  <property name="chrome.local.1"
-      location="${env.USERPROFILE}/AppData/Local/Google/Chrome/Application/chrome.exe" />
-  <property name="chrome.local.2"
-      location="${env.USERPROFILE}/Local Settings/Application Data/Google/Chrome/Application/chrome.exe" />
-  <property name="chrome.global.1"
-      location="C:/Program Files (x86)/Google/Chrome/Application/chrome.exe" />
-  <property name="chrome.global.2"
-      location="C:/Program Files/Google/Chrome/Application/chrome.exe" />
-  <property name="chrome.global.3"
-      location="/opt/google/chrome/chrome" />
 
-  <condition property="chrome.path" value="${chrome.local.1}">
-    <available file="${chrome.local.1}" />
-  </condition>
-  <condition property="chrome.path" value="${chrome.local.2}">
-    <available file="${chrome.local.2}" />
-  </condition>
-  <condition property="chrome.path" value="${chrome.global.1}">
-    <available file="${chrome.global.1}" />
-  </condition>
-  <condition property="chrome.path" value="${chrome.global.2}">
-    <available file="${chrome.global.2}" />
-  </condition>
-  <condition property="chrome.path" value="${chrome.global.3}">
-    <available file="${chrome.global.3}" />
-  </condition>
+  <macrodef name="try-chrome-path">
+    <attribute name="path" />
+    <sequential>
+      <condition property="chrome.path" value="@{path}">
+        <available file="@{path}" />
+      </condition>
+    </sequential>
+  </macrodef>
+
+  <!-- Try to find Chrome -->
+  <property environment="env" />
+  <try-chrome-path path="/opt/google/chrome/chrome" />
+  <try-chrome-path path="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" />
+  <try-chrome-path path="${env.USERPROFILE}/AppData/Local/Google/Chrome/Application/chrome.exe" />
+  <try-chrome-path path="${env.USERPROFILE}/Local Settings/Application Data/Google/Chrome/Application/chrome.exe" />
+  <try-chrome-path path="C:/Program Files (x86)/Google/Chrome/Application/chrome.exe" />
+  <try-chrome-path path="C:/Program Files/Google/Chrome/Application/chrome.exe" />
 
   <target name="extension.package">
     <!-- Chrome does not have good error checking for missing pem
