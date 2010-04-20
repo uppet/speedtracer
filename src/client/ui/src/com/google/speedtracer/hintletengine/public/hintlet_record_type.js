@@ -42,6 +42,7 @@ hintlet.types = {
   'TAB_CHANGED' : 2147483646,
   'RESOURCE_UPDATED' : 2147483645,
   'PROFILE_DATA' : 2147483644,
+  'SERVER_EVENT' : 2147483643,
 };
 
 hintlet.webkitTypeList = [
@@ -70,4 +71,5 @@ hintlet.speedTracerTypeList = [
   'TAB_CHANGED',                       // 0x7FFFFFFE
   'RESOURCE_UPDATED',                  // 0x7FFFFFFD
   'PROFILE_DATA',                      // 0x7FFFFFFC
+  'SERVER_EVENT',                      // 0x7FFFFFFB
 ];
