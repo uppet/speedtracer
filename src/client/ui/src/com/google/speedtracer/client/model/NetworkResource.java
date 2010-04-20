@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,11 +18,13 @@ package com.google.speedtracer.client.model;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.speedtracer.client.model.ResourceUpdateEvent.UpdateResource;
 import com.google.speedtracer.client.util.JSOArray;
+import com.google.speedtracer.client.util.Url;
 
 /**
  * Data Payload for Network Resource Events.
  */
 public class NetworkResource {
+
   /**
    * Header Map of Strings.
    */
@@ -51,6 +53,8 @@ public class NetworkResource {
       this[key] = value;
     }-*/;
   }
+
+  private static final String SERVER_TRACE_HEADER_NAME = "X-TraceUrl";
 
   public static boolean isRedirect(int statusCode) {
     return statusCode == 302 || statusCode == 301;
@@ -208,6 +212,20 @@ public class NetworkResource {
     return responseReceivedTime;
   }
 
+  /**
+   * Gets the full URL for the server-side trace for this resource. Callers are
+   * required to check {@link #hasServerTraceUrl()} before calling this method.
+   * 
+   * @see #hasServerTraceUrl()
+   * 
+   * @return full URL
+   */
+  public String getServerTraceUrl() {
+    assert hasServerTraceUrl() : "hasServerTraceUrl is false for this resource";
+    return new Url(getUrl()).getOrigin()
+        + responseHeaders.get(SERVER_TRACE_HEADER_NAME);
+  }
+
   public double getStartTime() {
     return startTime;
   }
@@ -218,6 +236,18 @@ public class NetworkResource {
 
   public String getUrl() {
     return url;
+  }
+
+  /**
+   * Indicates whether this resource has a server-side trace url associated with
+   * it.
+   * 
+   * @see #getServerTraceUrl()
+   * 
+   * @return
+   */
+  public boolean hasServerTraceUrl() {
+    return responseHeaders.get(SERVER_TRACE_HEADER_NAME) != null;
   }
 
   public boolean isCached() {
