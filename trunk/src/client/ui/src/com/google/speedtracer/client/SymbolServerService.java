@@ -30,15 +30,37 @@ public class SymbolServerService {
     return symbolServerControllers.get(resourceUrl.getApplicationUrl());
   }
 
+  /**
+   * Creates and registers a {@link SymbolServerController} for a given resource
+   * URL. Note that the {@link SymbolServerController} instance is immediately
+   * available, even if before the the symbol manifest is fetched and parsed.
+   * The {@link SymbolServerController} will buffer any requests and service
+   * them once the manifest is loaded.
+   * 
+   * For cases where the manifest fails to be fetched, the associated
+   * {@link SymbolServerController} should be unregistered.
+   * 
+   * @param resourceUrl The {@link Url} that we want to associate a new
+   *          {@link SymbolServerController} with.
+   * @param symbolManifestUrl The {@link Url} for the Symbol Manifest that will
+   *          be used to initialize the {@link SymbolServerController} manifest.
+   */
   public static void registerSymbolServerController(Url resourceUrl,
-      String symbolManifestUrl) {
-    SymbolServerController ssController = symbolServerControllers.get(symbolManifestUrl);
-    if (ssController == null && symbolManifestUrl != null
-        && !symbolManifestUrl.equals("")) {
-      ssController = symbolServerControllers.put(
-          resourceUrl.getApplicationUrl(), new SymbolServerController(
-              resourceUrl, symbolManifestUrl));
+      Url symbolManifestUrl) {
+    if (symbolManifestUrl != null && !symbolManifestUrl.equals("")) {
+      symbolServerControllers.put(resourceUrl.getApplicationUrl(),
+          new SymbolServerController(resourceUrl, symbolManifestUrl));
     }
+  }
+
+  /**
+   * Removes any {@link SymbolServerController} associated with the specified
+   * resource URL key.
+   * 
+   * @param resourceUrl
+   */
+  protected static void unregisterSymbolServerController(Url resourceUrl) {
+    symbolServerControllers.remove(resourceUrl.getApplicationUrl());
   }
 
   private SymbolServerService() {

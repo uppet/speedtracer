@@ -515,11 +515,12 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     String symbolManifestUrl = storage.getStringItem(resourceUrl.getApplicationUrl());
 
     if (symbolManifestUrl == null || symbolManifestUrl.equals("")) {
-      return;
+      // Attempt to fetch one at a predetermined location.
+      symbolManifestUrl = resourceUrl.getResourceBase() + "symbolmanifest.json";
     }
 
-    SymbolServerService.registerSymbolServerController(resourceUrl,
-        symbolManifestUrl);
+    SymbolServerService.registerSymbolServerController(resourceUrl, new Url(
+        symbolManifestUrl));
   }
 
   /**

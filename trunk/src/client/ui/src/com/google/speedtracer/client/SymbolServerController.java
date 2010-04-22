@@ -110,9 +110,9 @@ public class SymbolServerController {
 
   private SymbolServerManifest symbolServerManifest;
 
-  SymbolServerController(Url mainResourceUrl, String symbolManifestUrl) {
+  SymbolServerController(Url mainResourceUrl, Url symbolManifestUrl) {
     this.mainResourceUrl = mainResourceUrl;
-    this.symbolManifestUrl = new Url(symbolManifestUrl);
+    this.symbolManifestUrl = symbolManifestUrl;
     this.pendingRequests = new ArrayList<PendingRequest>();
     // Start xhr for fetching our associated symbol manifest.
     init();
@@ -192,6 +192,7 @@ public class SymbolServerController {
           request.callback.onSymbolsFetchFailed(ERROR_MANIFEST_NOT_LOADED);
         }
         cancelPendingRequests();
+        SymbolServerService.unregisterSymbolServerController(mainResourceUrl);
         if (ClientConfig.isDebugMode()) {
           Logging.getLogger().logText(
               "Fetching manifest " + symbolManifestUrl.getUrl() + " failed.");
