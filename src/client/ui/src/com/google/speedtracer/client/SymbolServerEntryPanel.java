@@ -83,7 +83,7 @@ public class SymbolServerEntryPanel extends HotKeyPanel {
 
         // Register the SSController.
         SymbolServerService.registerSymbolServerController(resourceUrl,
-            symbolManifestUrl.getValue());
+            new Url(symbolManifestUrl.getValue()));
 
         SymbolServerEntryPanel.this.hide();
       }
