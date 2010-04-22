@@ -255,7 +255,7 @@ hintlet.register(HINTLET_NAME, function(dataRecord) {
   // all resources.
   // TODO(tonyg): Figure out some good rules around caching XHRs.
   // TODO(tonyg): Figure out if there is any way to cache a redirect.
-  var type = hintlet.getResourceType(url, headers);
+  var type = hintlet.getResourceType(resourceData);
   if (type == hintlet.RESOURCE_TYPE_DOCUMENT 
       || type == hintlet.RESOURCE_TYPE_OTHER) {
     return;

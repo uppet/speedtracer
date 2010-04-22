@@ -33,16 +33,16 @@ hintlet.register(HINTLET_NAME, function(dataRecord){
   }
 
   var url = resourceData.url;
-  var contentLength = resourceData.contentLength || 0;
+  var expectedContentLength = resourceData.expectedContentLength || 0;
   var severity = hintlet.SEVERITY_INFO;
   
-  if (contentLength > WARNING_ALARM_THRESHOLD) {
+  if (expectedContentLength > WARNING_ALARM_THRESHOLD) {
     severity = hintlet.SEVERITY_WARNING;
   }
   
-  if (contentLength > INFO_ALARM_THRESHOLD) {
+  if (expectedContentLength > INFO_ALARM_THRESHOLD) {
     hintlet.addHint(HINTLET_NAME, resourceData.responseReceivedTime,
-        contentLength + " bytes downloaded for " + "resource " + url,
+        expectedContentLength + " bytes downloaded for " + "resource " + url,
         dataRecord.sequence, severity);		   
   }
 });

@@ -48,8 +48,8 @@ function analyzeNoCacheRecord() {
   }
 }
 
-function analyzeDownloadSize(dataRecord, contentLength) {
-  var size = contentLength;
+function analyzeDownloadSize(dataRecord, expectedContentLength) {
+  var size = expectedContentLength;
   size = (size === undefined) ? 0 : size;
 
   var severity = null;
@@ -97,8 +97,6 @@ hintlet.register(HINTLET_NAME, function(dataRecord){
   hintletData.resourceData = resourceData;
 
   var url = resourceData.url;
-  var headers = resourceData.responseHeaders;
-  var contentLength = resourceData.contentLength;
 
   // The first file loaded should be the .nocache.js file - the selection 
   // script
@@ -122,7 +120,7 @@ hintlet.register(HINTLET_NAME, function(dataRecord){
     hintletData.analyzedNoCache = true;
     // Keep the hintlet from firing again.
     hintletData.isGWT = true;
-    analyzeDownloadSize(dataRecord, resourceData.contentLength);
+    analyzeDownloadSize(dataRecord, resourceData.expectedContentLength);
   }
 });
 
