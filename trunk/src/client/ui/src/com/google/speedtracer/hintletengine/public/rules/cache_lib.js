@@ -56,9 +56,8 @@ cache_lib.isCacheableResourceType = function(type) {
   case hintlet.RESOURCE_TYPE_STYLESHEET:
   case hintlet.RESOURCE_TYPE_SCRIPT:
   case hintlet.RESOURCE_TYPE_IMAGE:
-  case hintlet.RESOURCE_TYPE_CSSIMAGE:
   case hintlet.RESOURCE_TYPE_STYLESHEET:
-  case hintlet.RESOURCE_TYPE_OBJECT:
+  case hintlet.RESOURCE_TYPE_MEDIA:
     return true;
   default:
   }
@@ -76,7 +75,6 @@ cache_lib.isNonCacheableResourceType = function(type) {
   switch(type) {
   case hintlet.RESOURCE_TYPE_DOCUMENT:
   case hintlet.RESOURCE_TYPE_IFRAME:
-  case hintlet.RESOURCE_TYPE_REDIRECT:
   case hintlet.RESOURCE_TYPE_OTHER:
     return true;
   default:

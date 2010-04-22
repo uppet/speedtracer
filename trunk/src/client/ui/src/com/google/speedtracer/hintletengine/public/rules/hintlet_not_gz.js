@@ -19,7 +19,7 @@
 
 // We are looking for resources that do NOT contain 
 // Content-Encoding:  that indicates compression (e.g. gzip)
-// and have contentLength > 150 bytes
+// and have Content-Length > 150 bytes
 //{
 //    "responseHeaders": {
 //         "Cache-Control": "private, max-age=0",
@@ -30,7 +30,7 @@
 //         "Expires": "-1",
 //     },
 //
-//    "contentLength": 200
+//    "resourceSize": 200
 //}
 //
 
@@ -58,17 +58,16 @@ hintlet.register(HINTLET_NAME, function(dataRecord){
   var headers = resourceData.responseHeaders;
 
   // Don't suggest compressing very small components.
-  var size = resourceData.contentLength;
+  var size = resourceData.expectedContentLength;
   if (size < SIZE_THRESHOLD) {
     return;
   }
 
-  var resourceType = hintlet.getResourceType(url, headers);
+  var resourceType = hintlet.getResourceType(resourceData);
   switch (resourceType) {
     case hintlet.RESOURCE_TYPE_DOCUMENT:
     case hintlet.RESOURCE_TYPE_STYLESHEET:
     case hintlet.RESOURCE_TYPE_SCRIPT:
-    case hintlet.RESOURCE_TYPE_SUBDOCUMENT:
       break;
     default:
       return;

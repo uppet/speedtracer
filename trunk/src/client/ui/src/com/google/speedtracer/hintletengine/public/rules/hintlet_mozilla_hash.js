@@ -114,7 +114,7 @@ hintlet.register(HINTLET_NAME, function(dataRecord) {
     return;
   }
   var resourceType =
-      hintlet.getResourceType(url, resourceData.responseHeaders);
+      hintlet.getResourceType(resourceData);
   if (cache_lib.isNonCacheableResourceType(resourceType)) {
     return;
   }

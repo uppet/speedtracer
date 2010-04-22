@@ -27,25 +27,47 @@
 // hintlet rules that have called the hintlet.register() method.
 hintlet.rules = [];
 
-// Modified from PageSpeed componentsCollectorService.js
-// Component Types used by mozilla
-// http://www.xulplanet.com/references/xpcomref/ifaces/nsIContentPolicy.html
-hintlet.RESOURCE_TYPE_OTHER = 1; // Typically XHR
-hintlet.RESOURCE_TYPE_SCRIPT = 2;
-hintlet.RESOURCE_TYPE_IMAGE = 3;
-hintlet.RESOURCE_TYPE_CSSIMAGE = 31;  
-hintlet.RESOURCE_TYPE_FAVICON = 32;  
-hintlet.RESOURCE_TYPE_STYLESHEET = 4;
-hintlet.RESOURCE_TYPE_OBJECT = 5; // i.e. Flash
-hintlet.RESOURCE_TYPE_DOCUMENT = 6;
-hintlet.RESOURCE_TYPE_SUBDOCUMENT = 7; // Iframe
-hintlet.RESOURCE_TYPE_REDIRECT = 71;  // Custom type
-hintlet.RESOURCE_TYPE_JS_REDIRECT = 72;  // Custom type
-hintlet.RESOURCE_TYPE_REFRESH = 8;  // Unused
-hintlet.RESOURCE_TYPE_XBL = 9;  // Unused
-hintlet.RESOURCE_TYPE_PING = 10;  // Unused
-hintlet.RESOURCE_TYPE_XMLHTTPREQUEST = 11;
-hintlet.RESOURCE_TYPE_OBJECT_SUBREQUEST = 12;  // Unused
+
+/**
+ * Documented here for posterity and diffability, are the component types
+ * used by mozilla (and PageSpeed). 
+ *
+ * http://www.xulplanet.com/references/xpcomref/ifaces/nsIContentPolicy.html
+ *
+ * hintlet.RESOURCE_TYPE_OTHER = 1; // Typically XHR
+ * hintlet.RESOURCE_TYPE_SCRIPT = 2;
+ * hintlet.RESOURCE_TYPE_IMAGE = 3;
+ * hintlet.RESOURCE_TYPE_CSSIMAGE = 31;  
+ * hintlet.RESOURCE_TYPE_FAVICON = 32;  
+ * hintlet.RESOURCE_TYPE_STYLESHEET = 4;
+ * hintlet.RESOURCE_TYPE_OBJECT = 5; // i.e. Flash
+ * hintlet.RESOURCE_TYPE_DOCUMENT = 6;
+ * hintlet.RESOURCE_TYPE_SUBDOCUMENT = 7; // Iframe
+ * hintlet.RESOURCE_TYPE_REDIRECT = 71;  // Custom type
+ * hintlet.RESOURCE_TYPE_JS_REDIRECT = 72;  // Custom type
+ * hintlet.RESOURCE_TYPE_REFRESH = 8;  // Unused
+ * hintlet.RESOURCE_TYPE_XBL = 9;  // Unused
+ * hintlet.RESOURCE_TYPE_PING = 10;  // Unused
+ * hintlet.RESOURCE_TYPE_XMLHTTPREQUEST = 11;
+ * hintlet.RESOURCE_TYPE_OBJECT_SUBREQUEST = 12;  // Unused
+ */
+
+/**
+ * webInspectorTypes (from resourceData.type when didTypeChange==true)
+ * Note that these are a subset of the old mozilla types with different
+ * numeric values. 
+ */
+hintlet.RESOURCE_TYPE_DOCUMENT       = 0;
+hintlet.RESOURCE_TYPE_STYLESHEET     = 1;
+hintlet.RESOURCE_TYPE_IMAGE          = 2;
+hintlet.RESOURCE_TYPE_FONT           = 3;
+hintlet.RESOURCE_TYPE_SCRIPT         = 4;
+hintlet.RESOURCE_TYPE_XMLHTTPREQUEST = 5;
+hintlet.RESOURCE_TYPE_MEDIA          = 6; //aka RESOURCE_TYPE_OBJECT in moz
+hintlet.RESOURCE_TYPE_OTHER          = 7;
+// Custom Hintlet Types
+hintlet.RESOURCE_TYPE_FAVICON        = 8;
+
 
 /**
  * Severity constant values.
@@ -174,11 +196,16 @@ hintlet.stringToType = function(typeString) {
 hintlet.__mime_type_regexp = /^[^\/;]+\/[^\/;]+/;
 hintlet.__image_type_regexp = /^image\//;
 hintlet.__favicon_regexp = /\/favicon.ico$/;
-hintlet.getResourceType = function(url, headers) {
+hintlet.getResourceType = function(resourceData) {
+
+  if (resourceData.hasOwnProperty("type") &&
+      resourceData.type != hintlet.RESOURCE_TYPE_OTHER) {
+    return resourceData.type;
+  }
 
   // Looks in the specified dataRecords at the mime type embedded as the 
   // prefix of the Content-Type header and returns the appropriate resource type.
-  var contentTypeHeader = hintlet.hasHeader(headers, 'Content-Type');
+  var contentTypeHeader = hintlet.hasHeader(resourceData.responseHeaders, 'Content-Type');
   if (contentTypeHeader === undefined) {
     return hintlet.RESOURCE_TYPE_OTHER;
   }
@@ -204,8 +231,8 @@ hintlet.getResourceType = function(url, headers) {
   }
   // TODO(zundel): this test is less than complete.
   if (mimeType == "image/vnd.microsoft.icon" || 
-      (url &&
-       url.match(hintlet.__favicon_regexp))) {
+      (resourceData.url &&
+       resourceData.url.match(hintlet.__favicon_regexp))) {
     return hintlet.RESOURCE_TYPE_FAVICON;
   }
   if (mimeType.match(hintlet.__image_type_regexp)) {
@@ -241,6 +268,10 @@ hintlet.formatMilliseconds = function(ms, decimalPlaces) {
  *  not contain the given header.
  */
 hintlet.hasHeader = function(headers, targetHeader) {
+  if (!headers) {
+    return undefined;
+  }
+
   var targetHeaderLc = targetHeader.toLowerCase();
   for (var prop in headers) {
     if (prop.toLowerCase() == targetHeaderLc) {
@@ -320,23 +351,39 @@ hintlet._updateResource = function(update) {
   }
 
   if (updateData.didRequestChange) {
-    resourceData.domain = updateData.host;
+    resourceData.url = updateData.url;
+    resourceData.documentURL = updateData.documentURL;
+    resourceData.host = updateData.host;
     resourceData.path = updateData.path;
     resourceData.lastPathComponent = updateData.lastPathComponent;
     resourceData.requestHeaders = updateData.requestHeaders;
     resourceData.cached = updateData.cached;
-    resourceData.requestMethod = updateData.requestMethod;
     resourceData.mainResource = updateData.mainResource;
+    resourceData.requestMethod = updateData.requestMethod;
+    resourceData.requestFormData = updateData.requestFormData;
+    resourceData.cached = updateData.cached;
   }
   
   if (updateData.didResponseChange) {
-    resourceData.responseHeaders = updateData.responseHeaders;
-    resourceData.statusCode = updateData.statusCode;
     resourceData.mimeType = updateData.mimeType;
+    resourceData.suggestedFilename = updateData.suggestedFilename;
+    resourceData.expectedContentLength = updateData.expectedContentLength;
+    resourceData.statusCode = updateData.statusCode;
+    resourceData.responseHeaders = updateData.responseHeaders;
+    resourceData.mimeType = updateData.mimeType;
+  }
+
+  if (updateData.didTypeChange) {
+    resourceData.type = updateData.type
   }
  
   if (updateData.didLengthChange) {
-    resourceData.contentLength = updateData.contentLength;
+    resourceData.resourceSize = updateData.resourceSize;
+  }
+
+  if (updateData.didCompletionChange) {
+    resourceData.failed = updateData.failed;
+    resourceData.finished = updateData.finished;
   }
 
   if (updateData.didTimingChange) {
@@ -346,6 +393,18 @@ hintlet._updateResource = function(update) {
 
     if (updateData.responseReceivedTime) {
       resourceData.responseReceivedTime = updateData.responseReceivedTime;
+    }
+
+    if (updateData.endTime) {
+      resourceData.endTime = updateData.endTime;
+    }
+
+    if (updateData.loadEventTime) {
+      resourceData.loadEventTime = updateData.loadEventTime;
+    }
+
+    if (updateData.domContentEventTime) {
+      resourceData.domContentEventTime = updateData.domContentEventTime;
     }
   }
 }

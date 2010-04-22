@@ -46,28 +46,25 @@ hintlet.register(HINTLET_NAME, function(dataRecord){
     return;
   }
 
-  var url = resourceData.url;
-  var headers = resourceData.responseHeaders;
-  var resourceType = hintlet.getResourceType(url, headers);
+  var resourceType = hintlet.getResourceType(resourceData);
 
   // Make sure this is a static resource
   switch(resourceType) {
+    case hintlet.RESOURCE_TYPE_STYLESHEET:
     case hintlet.RESOURCE_TYPE_SCRIPT:
     case hintlet.RESOURCE_TYPE_IMAGE:
-    case hintlet.RESOURCE_TYPE_CSSIMAGE:
-    case hintlet.RESOURCE_TYPE_STYLESHEET:
-    case hintlet.RESOURCE_TYPE_OBJECT:
+    case hintlet.RESOURCE_TYPE_MEDIA:
       break;
     default:
       return;
   }
 
-  var cookie = hasCookie(headers);
+  var cookie = hasCookie(resourceData.responseHeaders);
   var sequence = dataRecord.sequence;
 
   if (cookie !== undefined) {
     hintlet.addHint(HINTLET_NAME, resourceData.responseReceivedTime,
-        "URL " + url + " is static content that should be "
+        "URL " + resourceData.url + " is static content that should be "
         + "served from a domain that does not set cookies.  Found " 
         + (cookie.length + 8) + " extra bytes from cookie.",
         sequence, hintlet.SEVERITY_INFO);
