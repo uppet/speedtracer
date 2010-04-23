@@ -27,7 +27,7 @@ function loadData() {
   if (dataContainer) {
     var portName = 
       (dataContainer.getAttribute("isRaw") == "true") ? "RAW_DATA_LOAD" : "DATA_LOAD";
-    var port = chrome.extension.connect( {
+    var port = chrome.extension.connect({
       name : portName
     });
     // We send the data when the monitor is ready for it.
@@ -63,6 +63,28 @@ function injectLoadUi() {
   }
 }
 
-if (window == top && isRecordDump()) {
-  injectLoadUi();
+function isTrampoline() {
+  return (window.location.href.toLowerCase().indexOf("file://") == 0) &&
+      (document.documentElement.getAttribute("openSpeedTracer") == "true");
+}
+
+function maybeAutoOpen() {
+  if (!isTrampoline()) {
+    return;
+  }
+  var redirectUrl = document.documentElement.getAttribute("redirectUrl");
+  chrome.extension.sendRequest({autoOpen: true}, function(response) {
+    if (response.ready && window.location.href != redirectUrl) {
+      window.location.href = redirectUrl;
+    }
+  });
+}
+
+if (window == top) {
+  if (isRecordDump()) {
+    injectLoadUi();
+  } else {
+    // Race condition with messaging the background page.
+    setTimeout(function() {maybeAutoOpen();}, 100);
+  }
 }

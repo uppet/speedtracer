@@ -29,13 +29,15 @@ import com.google.gwt.chrome.crx.client.events.BrowserActionEvent;
 import com.google.gwt.chrome.crx.client.events.ConnectEvent;
 import com.google.gwt.chrome.crx.client.events.ConnectExternalEvent;
 import com.google.gwt.chrome.crx.client.events.MessageEvent;
+import com.google.gwt.chrome.crx.client.events.RequestEvent;
 import com.google.gwt.chrome.crx.client.events.RequestExternalEvent;
+import com.google.gwt.chrome.crx.client.events.SendResponse;
+import com.google.gwt.chrome.crx.client.events.Sender;
 import com.google.gwt.chrome.crx.client.events.TabUpdatedEvent;
-import com.google.gwt.chrome.crx.client.events.RequestExternalEvent.SendResponse;
-import com.google.gwt.chrome.crx.client.events.RequestExternalEvent.Sender;
 import com.google.gwt.chrome.crx.client.events.TabUpdatedEvent.ChangeInfo;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.coreext.client.DataBag;
 import com.google.gwt.events.client.Event;
 import com.google.gwt.events.client.EventListener;
 import com.google.speedtracer.client.WindowChannel.Client;
@@ -64,12 +66,10 @@ import java.util.HashMap;
 /**
  * The Chrome extension background page script.
  */
-@Extension.ManifestInfo(name = "Speed Tracer (by Google)", 
-    description = "Get insight into the performance of your web applications.", version = ClientConfig.VERSION, permissions = {
+@Extension.ManifestInfo(name = "Speed Tracer (by Google)", description = "Get insight into the performance of your web applications.", version = ClientConfig.VERSION, permissions = {
     "tabs", "http://*/*", "https://*/*"}, icons = {
     "resources/icon16.png", "resources/icon32.png", "resources/icon48.png",
-    "resources/icon128.png"},
-    publicKey = "")
+    "resources/icon128.png"}, publicKey = "")
 public abstract class BackgroundPage extends Extension {
 
   /**
@@ -94,6 +94,19 @@ public abstract class BackgroundPage extends Extension {
       tabModel.tabDescription = tab;
       openMonitor(browserId, tab.getId(), tabModel);
     }
+  }
+
+  /**
+   * Callback function for notifying the Content Script that the Monitor has
+   * been opened after an AutoOpen request came in.
+   */
+  private static class AutoOpenSpeedTracerCallback extends SendResponse {
+    protected AutoOpenSpeedTracerCallback() {
+    }
+
+    public final native void monitorOpened() /*-{      
+      this({ready: true});
+    }-*/;
   }
 
   /**
@@ -182,6 +195,7 @@ public abstract class BackgroundPage extends Extension {
     DataInstance dataInstance;
     boolean monitorClosed = true;
     TabDescription tabDescription = null;
+    AutoOpenSpeedTracerCallback monitorOpenedCallback = null;
 
     TabModel(Icon icon) {
       this.currentIcon = icon;
@@ -198,6 +212,8 @@ public abstract class BackgroundPage extends Extension {
 
   private final HashMap<Integer, BrowserConnectionState> browserConnectionMap = new HashMap<Integer, BrowserConnectionState>();
 
+  private final MonitorTabClickListener monitorTabClickListener = new MonitorTabClickListener();
+
   /**
    * Our entry point function. All things start here.
    */
@@ -211,7 +227,7 @@ public abstract class BackgroundPage extends Extension {
     initialize();
 
     // Register page action and browser action listeners.
-    browserAction.addListener(new MonitorTabClickListener());
+    browserAction.addListener(monitorTabClickListener);
 
     listenForTabEvents();
     listenForContentScripts();
@@ -422,6 +438,11 @@ public abstract class BackgroundPage extends Extension {
                 browserConnection.tabMap.remove(tabModel);
               }
             });
+
+            if (tabModel.monitorOpenedCallback != null) {
+              tabModel.monitorOpenedCallback.monitorOpened();
+              tabModel.monitorOpenedCallback = null;
+            }
           }
 
           private void doResetBaseTime(WindowChannel.Message data) {
@@ -450,6 +471,26 @@ public abstract class BackgroundPage extends Extension {
                 || portName.equals(DataLoader.RAW_DATA_LOAD)) {
               // We are loading data.
               doDataLoad(port);
+            }
+          }
+        });
+
+    // A content script can message us if it detects that we should auto open
+    // Speed Tracer for a trampoline file.
+    Chrome.getExtension().getOnRequestEvent().addListener(
+        new RequestEvent.Listener() {
+          public void onRequest(JavaScriptObject request, Sender sender,
+              SendResponse sendResponse) {
+            if (DataBag.getBooleanProperty(request, "autoOpen")) {
+              // Open Speed Tracer.
+              Tab tab = sender.getTab();
+              monitorTabClickListener.onClicked(tab);
+              // The Monitor coming alive and calling back should be
+              // asynchronous. We should be able to stick in the SendResponse
+              // callback in before the Monitor calls back, and then notify the
+              // content script after we know the monitor is opened and ready.
+              BrowserConnectionState browserConnection = browserConnectionMap.get(CHROME_BROWSER_ID);
+              browserConnection.tabMap.get(tab.getId()).monitorOpenedCallback = sendResponse.cast();
             }
           }
         });

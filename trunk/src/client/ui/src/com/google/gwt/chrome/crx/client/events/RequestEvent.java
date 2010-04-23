@@ -20,19 +20,19 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;
 
 /**
- * Wraps event from chrome.onRequestExternal.
+ * Wraps event from chrome.onRequest.
  * 
  * See documentation at: <a href=
  * "http://dev.chromium.org/developers/design-documents/extensions/content-scripts"
  * >Content Script Messaging</a>
  * 
  */
-public class RequestExternalEvent extends Event {
+public class RequestEvent extends Event {
   /**
    * Called when a ContentScript opens a port.
    */
   public interface Listener {
-    void onRequestExternal(JavaScriptObject request, Sender sender,
+    void onRequest(JavaScriptObject request, Sender sender,
         SendResponse sendResponse);
   }
 
@@ -47,21 +47,21 @@ public class RequestExternalEvent extends Event {
    *          to the sender
    */
   @SuppressWarnings("unused")
-  private static void onRequestExternalImpl(Listener listener,
+  private static void onRequestImpl(Listener listener,
       JavaScriptObject request, Sender sender, SendResponse sendResponse) {
     UncaughtExceptionHandler ueh = GWT.getUncaughtExceptionHandler();
     if (ueh != null) {
       try {
-        listener.onRequestExternal(request, sender, sendResponse);
+        listener.onRequest(request, sender, sendResponse);
       } catch (Exception ex) {
         ueh.onUncaughtException(ex);
       }
     } else {
-      listener.onRequestExternal(request, sender, sendResponse);
+      listener.onRequest(request, sender, sendResponse);
     }
   }
 
-  protected RequestExternalEvent() {
+  protected RequestEvent() {
   }
 
   public final ListenerHandle addListener(Listener listener) {
@@ -70,7 +70,7 @@ public class RequestExternalEvent extends Event {
 
   private native JavaScriptObject addListenerImpl(Listener listener) /*-{
     var handle = function(request, sender, sendResponse) {
-      @com.google.gwt.chrome.crx.client.events.RequestExternalEvent::onRequestExternalImpl(Lcom/google/gwt/chrome/crx/client/events/RequestExternalEvent$Listener;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/chrome/crx/client/events/Sender;Lcom/google/gwt/chrome/crx/client/events/SendResponse;)
+      @com.google.gwt.chrome.crx.client.events.RequestEvent::onRequestImpl(Lcom/google/gwt/chrome/crx/client/events/RequestEvent$Listener;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/chrome/crx/client/events/Sender;Lcom/google/gwt/chrome/crx/client/events/SendResponse;)
       (listener, request, sender, sendResponse);
     }
 

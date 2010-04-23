@@ -512,6 +512,12 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
       TabDescription tabDescription) {
     LocalStorage storage = WindowExt.get().getLocalStorage();
     Url resourceUrl = new Url(tabDescription.getUrl());
+
+    // We are not permitted to do file:// XHRs.
+    if (Url.SCHEME_FILE.equals(resourceUrl.getScheme())) {
+      return;
+    }
+
     String symbolManifestUrl = storage.getStringItem(resourceUrl.getApplicationUrl());
 
     if (symbolManifestUrl == null || symbolManifestUrl.equals("")) {
