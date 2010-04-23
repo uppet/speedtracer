@@ -27,6 +27,8 @@ import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.coreext.client.JSOArray;
+import com.google.gwt.coreext.client.JSON;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 import com.google.speedtracer.client.messages.HeadlessClearDataMessage;
 import com.google.speedtracer.client.messages.HeadlessDumpDataAckMessage;
@@ -42,8 +44,6 @@ import com.google.speedtracer.client.model.DataModel;
 import com.google.speedtracer.client.model.DevToolsDataInstance;
 import com.google.speedtracer.client.model.EventRecord;
 import com.google.speedtracer.client.model.TabDescription;
-import com.google.speedtracer.client.util.JSOArray;
-import com.google.speedtracer.client.util.JSON;
 import com.google.speedtracer.client.util.Xhr;
 
 import java.util.HashMap;

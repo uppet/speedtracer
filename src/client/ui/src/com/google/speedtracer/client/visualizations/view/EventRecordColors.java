@@ -15,6 +15,7 @@
  */
 package com.google.speedtracer.client.visualizations.view;
 
+import com.google.gwt.coreext.client.JsIntegerMap;
 import com.google.gwt.graphics.client.Color;
 import com.google.speedtracer.client.model.DomEvent;
 import com.google.speedtracer.client.model.EvalScript;
@@ -28,7 +29,6 @@ import com.google.speedtracer.client.model.RecalcStyleEvent;
 import com.google.speedtracer.client.model.ResourceDataReceivedEvent;
 import com.google.speedtracer.client.model.TimerFiredEvent;
 import com.google.speedtracer.client.model.XhrReadyStateChangeEvent;
-import com.google.speedtracer.client.util.JsIntegerMap;
 
 /**
  * Simple constants class to hold our EventRecord Type-> Color mappings for

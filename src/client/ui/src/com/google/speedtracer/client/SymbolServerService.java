@@ -15,7 +15,7 @@
  */
 package com.google.speedtracer.client;
 
-import com.google.speedtracer.client.util.IterableFastStringMap;
+import com.google.gwt.coreext.client.IterableFastStringMap;
 import com.google.speedtracer.client.util.Url;
 
 /**

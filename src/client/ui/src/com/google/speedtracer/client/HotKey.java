@@ -15,14 +15,14 @@
  */
 package com.google.speedtracer.client;
 
+import com.google.gwt.coreext.client.JSOArray;
+import com.google.gwt.coreext.client.JsIntegerMap;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.events.client.Event;
 import com.google.gwt.events.client.EventListener;
 import com.google.gwt.events.client.EventListenerRemover;
 import com.google.gwt.topspin.ui.client.KeyDownEvent;
 import com.google.gwt.topspin.ui.client.KeyUpEvent;
-import com.google.speedtracer.client.util.JSOArray;
-import com.google.speedtracer.client.util.JsIntegerMap;
 
 /**
  * Provides a mean for registering global hot key bindings, particularly

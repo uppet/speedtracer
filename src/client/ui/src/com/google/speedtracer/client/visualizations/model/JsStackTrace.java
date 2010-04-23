@@ -16,9 +16,9 @@
 package com.google.speedtracer.client.visualizations.model;
 
 import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.coreext.client.JSOArray;
 import com.google.speedtracer.client.model.JsSymbol;
 import com.google.speedtracer.client.util.Csv;
-import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.Url;
 
 import java.util.ArrayList;

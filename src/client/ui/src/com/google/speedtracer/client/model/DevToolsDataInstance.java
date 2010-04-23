@@ -22,9 +22,9 @@ import com.google.gwt.chrome.crx.client.events.DevToolsPageEvent.PageEvent;
 import com.google.gwt.chrome.crx.client.events.Event.ListenerHandle;
 import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.coreext.client.JSOArray;
 import com.google.speedtracer.client.model.ResourceUpdateEvent.UpdateResource;
 import com.google.speedtracer.client.model.UiEvent.LeafFirstTraversalVoid;
-import com.google.speedtracer.client.util.JSOArray;
 
 /**
  * This class is used in Chrome when we are getting data from the devtools API.

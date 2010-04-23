@@ -17,6 +17,7 @@ package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;
+import com.google.gwt.coreext.client.JSON;
 import com.google.gwt.webworker.client.ErrorEvent;
 import com.google.gwt.webworker.client.ErrorHandler;
 import com.google.gwt.webworker.client.MessageEvent;
@@ -25,7 +26,6 @@ import com.google.gwt.webworker.client.Worker;
 import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.messages.HintMessage;
-import com.google.speedtracer.client.util.JSON;
 
 import java.util.ArrayList;
 import java.util.List;

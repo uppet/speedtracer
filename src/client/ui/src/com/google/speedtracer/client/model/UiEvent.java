@@ -16,8 +16,8 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.JsArrayNumber;
-import com.google.speedtracer.client.util.JSOArray;
-import com.google.speedtracer.client.util.JsIntegerDoubleMap;
+import com.google.gwt.coreext.client.JSOArray;
+import com.google.gwt.coreext.client.JsIntegerDoubleMap;
 import com.google.speedtracer.shared.EventRecordType;
 
 import java.util.Comparator;

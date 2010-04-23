@@ -16,8 +16,8 @@
 package com.google.speedtracer.client.messages;
 
 import com.google.gwt.chrome.crx.client.Port.Message;
+import com.google.gwt.coreext.client.JSON;
 import com.google.speedtracer.client.model.EventRecord;
-import com.google.speedtracer.client.util.JSON;
 
 /**
  * Overlay type associated with sending event record JSON strings over

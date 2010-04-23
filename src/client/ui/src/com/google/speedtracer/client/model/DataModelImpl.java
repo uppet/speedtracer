@@ -17,8 +17,8 @@ package com.google.speedtracer.client.model;
 
 import com.google.gwt.chrome.crx.client.Tabs;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.user.client.Window;
-import com.google.speedtracer.client.util.JSOArray;
 
 /**
  * Getters for getting all Models which provide events to drive UI.

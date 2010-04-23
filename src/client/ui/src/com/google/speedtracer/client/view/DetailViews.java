@@ -15,6 +15,7 @@
  */
 package com.google.speedtracer.client.view;
 
+import com.google.gwt.coreext.client.IterableFastStringMap;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
@@ -22,7 +23,6 @@ import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.gwt.topspin.ui.client.Div;
 import com.google.speedtracer.client.model.Visualization;
-import com.google.speedtracer.client.util.IterableFastStringMap;
 
 /**
  * Central panel in MainTimeLine. Contains views for each type of visualization.

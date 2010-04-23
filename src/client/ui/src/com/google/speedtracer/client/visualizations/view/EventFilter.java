@@ -15,10 +15,10 @@
  */
 package com.google.speedtracer.client.visualizations.view;
 
+import com.google.gwt.coreext.client.JsIntegerDoubleMap;
 import com.google.speedtracer.client.model.AggregateTimeVisitor;
 import com.google.speedtracer.client.model.EventRecord;
 import com.google.speedtracer.client.model.UiEvent;
-import com.google.speedtracer.client.util.JsIntegerDoubleMap;
 
 /**
  * A class that contains the filter criteria for events.

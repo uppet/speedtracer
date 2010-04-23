@@ -16,8 +16,8 @@
 package com.google.speedtracer.client.messages;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.coreext.client.JSON;
 import com.google.speedtracer.client.model.HintRecord;
-import com.google.speedtracer.client.util.JSON;
 
 /**
  * Message sent back over PostMessage from

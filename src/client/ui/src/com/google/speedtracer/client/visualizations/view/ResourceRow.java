@@ -15,6 +15,8 @@
  */
 package com.google.speedtracer.client.visualizations.view;
 
+import com.google.gwt.coreext.client.IterableFastStringMap;
+import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.events.client.EventListenerRemover;
@@ -30,8 +32,6 @@ import com.google.gwt.topspin.ui.client.MouseOverListener;
 import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.NetworkResource;
 import com.google.speedtracer.client.timeline.Constants;
-import com.google.speedtracer.client.util.IterableFastStringMap;
-import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.dom.DocumentExt;
 import com.google.speedtracer.client.util.dom.ImageResourceElementCreator;
 

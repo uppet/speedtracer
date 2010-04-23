@@ -15,10 +15,10 @@
  */
 package com.google.speedtracer.client.visualizations.view;
 
+import com.google.gwt.coreext.client.IterableFastStringMap;
 import com.google.gwt.graphics.client.Color;
 import com.google.speedtracer.client.model.EventRecordType;
 import com.google.speedtracer.client.model.ServerEvent;
-import com.google.speedtracer.client.util.IterableFastStringMap;
 
 /**
  *

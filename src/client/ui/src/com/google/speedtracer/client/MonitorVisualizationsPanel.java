@@ -15,6 +15,7 @@
  */
 package com.google.speedtracer.client;
 
+import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
@@ -43,7 +44,6 @@ import com.google.speedtracer.client.timeline.GraphModel;
 import com.google.speedtracer.client.timeline.TimeLineModel;
 import com.google.speedtracer.client.timeline.fx.Zoom;
 import com.google.speedtracer.client.timeline.fx.Zoom.CallBack;
-import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.dom.DocumentExt;
 import com.google.speedtracer.client.util.dom.EventListenerOwner;
 import com.google.speedtracer.client.view.Controller;

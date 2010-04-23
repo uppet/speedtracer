@@ -15,10 +15,10 @@
  */
 package com.google.speedtracer.client.model;
 
+import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.timeline.GraphUiProps;
-import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.view.DetailView;
 import com.google.speedtracer.client.view.MainTimeLine;
 import com.google.speedtracer.client.visualizations.model.TransientMarkerModel;

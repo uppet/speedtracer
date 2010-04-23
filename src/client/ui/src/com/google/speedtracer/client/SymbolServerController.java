@@ -15,13 +15,13 @@
  */
 package com.google.speedtracer.client;
 
+import com.google.gwt.coreext.client.IterableFastStringMap;
+import com.google.gwt.coreext.client.JSON;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 import com.google.speedtracer.client.SourceViewer.SourcePresenter;
 import com.google.speedtracer.client.SymbolServerManifest.ResourceSymbolInfo;
 import com.google.speedtracer.client.model.JsSymbol;
 import com.google.speedtracer.client.model.JsSymbolMap;
-import com.google.speedtracer.client.util.IterableFastStringMap;
-import com.google.speedtracer.client.util.JSON;
 import com.google.speedtracer.client.util.Url;
 import com.google.speedtracer.client.util.Xhr;
 import com.google.speedtracer.client.util.Xhr.XhrCallback;

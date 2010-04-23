@@ -16,10 +16,10 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.chrome.crx.client.events.DevToolsPageEvent.PageEvent;
+import com.google.gwt.coreext.client.JSON;
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.speedtracer.client.model.DataInstance.DataListener;
 import com.google.speedtracer.client.model.DevToolsDataInstance.Proxy;
-import com.google.speedtracer.client.util.JSON;
 
 import java.util.ArrayList;
 import java.util.List;
