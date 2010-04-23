@@ -17,7 +17,7 @@ package com.google.speedtracer.client.messages;
 
 import com.google.gwt.chrome.crx.client.Port.Message;
 import com.google.gwt.chrome.crx.client.events.DevToolsPageEvent.PageEvent;
-import com.google.speedtracer.client.util.JSON;
+import com.google.gwt.coreext.client.JSON;
 
 /**
  * Overlay type associated with sending an Inspector PageEvent JSON strings over

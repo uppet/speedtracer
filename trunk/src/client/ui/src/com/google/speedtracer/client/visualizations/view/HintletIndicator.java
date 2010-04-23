@@ -15,6 +15,7 @@
  */
 package com.google.speedtracer.client.visualizations.view;
 
+import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.graphics.client.Color;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
@@ -22,7 +23,6 @@ import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.Div;
 import com.google.speedtracer.client.MonitorResources;
 import com.google.speedtracer.client.model.HintRecord;
-import com.google.speedtracer.client.util.JSOArray;
 
 /**
  * An indicator for a table row that indicates there are hints on this entity.

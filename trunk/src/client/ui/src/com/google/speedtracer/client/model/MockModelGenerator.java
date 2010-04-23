@@ -16,9 +16,9 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.coreext.client.JSON;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.TextResource;
-import com.google.speedtracer.client.util.JSON;
 
 import java.util.ArrayList;
 import java.util.List;

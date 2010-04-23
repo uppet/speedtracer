@@ -15,7 +15,7 @@
  */
 package com.google.speedtracer.client.model;
 
-import com.google.speedtracer.client.util.JSOArray;
+import com.google.gwt.coreext.client.JSOArray;
 import com.google.speedtracer.client.util.Url;
 
 import java.util.TreeMap;

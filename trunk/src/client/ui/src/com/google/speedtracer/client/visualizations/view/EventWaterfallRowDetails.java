@@ -15,6 +15,9 @@
  */
 package com.google.speedtracer.client.visualizations.view;
 
+import com.google.gwt.coreext.client.IterableFastStringMap;
+import com.google.gwt.coreext.client.JSOArray;
+import com.google.gwt.coreext.client.JsIntegerDoubleMap;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -60,9 +63,6 @@ import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.client.model.XhrLoadEvent;
 import com.google.speedtracer.client.model.XhrReadyStateChangeEvent;
 import com.google.speedtracer.client.util.Command;
-import com.google.speedtracer.client.util.IterableFastStringMap;
-import com.google.speedtracer.client.util.JSOArray;
-import com.google.speedtracer.client.util.JsIntegerDoubleMap;
 import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.util.Url;
 import com.google.speedtracer.client.util.dom.WindowExt;

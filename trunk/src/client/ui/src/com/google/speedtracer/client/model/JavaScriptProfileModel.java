@@ -16,11 +16,11 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.JsArrayNumber;
+import com.google.gwt.coreext.client.JSOArray;
+import com.google.gwt.coreext.client.JsIntegerMap;
 import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.model.DataModel.EventRecordHandler;
-import com.google.speedtracer.client.util.JSOArray;
-import com.google.speedtracer.client.util.JsIntegerMap;
 import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.util.WorkQueue;
 

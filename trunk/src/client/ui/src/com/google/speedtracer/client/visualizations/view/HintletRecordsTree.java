@@ -15,12 +15,12 @@
  */
 package com.google.speedtracer.client.visualizations.view;
 
+import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.speedtracer.client.model.HintRecord;
-import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.TimeStampFormatter;
 
 /**

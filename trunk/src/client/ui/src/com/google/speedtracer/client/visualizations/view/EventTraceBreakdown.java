@@ -15,6 +15,8 @@
  */
 package com.google.speedtracer.client.visualizations.view;
 
+import com.google.gwt.coreext.client.JSOArray;
+import com.google.gwt.coreext.client.JsIntegerDoubleMap;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.graphics.client.Canvas;
@@ -23,8 +25,6 @@ import com.google.gwt.graphics.client.ImageHandle;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.speedtracer.client.model.UiEvent;
-import com.google.speedtracer.client.util.JSOArray;
-import com.google.speedtracer.client.util.JsIntegerDoubleMap;
 
 /**
  * Class used to position and style the event graph bar UI that lives next to

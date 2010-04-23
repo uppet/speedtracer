@@ -16,7 +16,7 @@
 package com.google.speedtracer.breaky.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.speedtracer.client.util.JSOArray;
+import com.google.gwt.coreext.client.JSOArray;
 
 /**
  * A simple JSO wrapper for JsonSchema objects see

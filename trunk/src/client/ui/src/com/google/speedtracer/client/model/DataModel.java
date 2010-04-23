@@ -17,10 +17,10 @@ package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;
+import com.google.gwt.coreext.client.JSOArray;
+import com.google.gwt.coreext.client.JSON;
+import com.google.gwt.coreext.client.JsIntegerMap;
 import com.google.speedtracer.client.ClientConfig;
-import com.google.speedtracer.client.util.JSOArray;
-import com.google.speedtracer.client.util.JSON;
-import com.google.speedtracer.client.util.JsIntegerMap;
 import com.google.speedtracer.shared.EventRecordType;
 
 import java.util.ArrayList;

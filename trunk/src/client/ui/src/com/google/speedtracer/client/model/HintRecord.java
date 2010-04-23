@@ -16,7 +16,7 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.speedtracer.client.util.JSOArray;
+import com.google.gwt.coreext.client.JSOArray;
 
 /**
  * Overlay for Hintlet payload. See the hintlet.addHint() function in

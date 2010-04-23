@@ -16,8 +16,8 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.coreext.client.JSOArray;
 import com.google.speedtracer.client.model.ResourceUpdateEvent.UpdateResource;
-import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.Url;
 
 /**

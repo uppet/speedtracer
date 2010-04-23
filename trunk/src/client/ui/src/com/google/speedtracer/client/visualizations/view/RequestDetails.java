@@ -16,6 +16,7 @@
 package com.google.speedtracer.client.visualizations.view;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.coreext.client.JSON;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -41,7 +42,6 @@ import com.google.speedtracer.client.model.ServerEvent;
 import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.client.model.NetworkResource.HeaderMap;
 import com.google.speedtracer.client.model.NetworkResource.HeaderMap.IterationCallBack;
-import com.google.speedtracer.client.util.JSON;
 import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.util.Xhr;
 import com.google.speedtracer.client.util.dom.DocumentExt;

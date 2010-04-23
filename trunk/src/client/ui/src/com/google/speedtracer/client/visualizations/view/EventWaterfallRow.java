@@ -15,6 +15,7 @@
  */
 package com.google.speedtracer.client.visualizations.view;
 
+import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
@@ -29,7 +30,6 @@ import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.LogMessageVisitor;
 import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.client.timeline.Constants;
-import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.util.dom.DocumentExt;
 import com.google.speedtracer.client.visualizations.model.SluggishnessModel;

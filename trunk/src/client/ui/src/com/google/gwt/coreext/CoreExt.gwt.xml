@@ -1,0 +1,9 @@
+<!DOCTYPE document SYSTEM
+    "http://google-web-toolkit.googlecode.com/svn/releases/1.7/distro-source/core/src/gwt-module.dtd">
+<module>
+	<!-- 
+		These are utility classes that extend core functionality of GWT 
+		TODO: push to get some (or all) of them pushed into GWT Core proper.
+	-->
+	<source path="client/" />
+</module>

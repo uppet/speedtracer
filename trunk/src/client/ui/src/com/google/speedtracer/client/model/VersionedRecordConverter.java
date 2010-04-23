@@ -15,7 +15,7 @@
  */
 package com.google.speedtracer.client.model;
 
-import com.google.speedtracer.client.util.IterableFastStringMap;
+import com.google.gwt.coreext.client.IterableFastStringMap;
 
 /**
  * Converts Speed Tracer records from a certain version to the current version.

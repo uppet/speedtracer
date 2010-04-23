@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.google.speedtracer.client.util;
+package com.google.gwt.coreext.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
@@ -182,7 +182,7 @@ public class IterableFastStringMap<T> extends AbstractMap<String, T> {
   // Prepend ':' to avoid conflicts with built-in Object properties.
   public native T get(String key) /*-{
     var value
-        = this.@com.google.speedtracer.client.util.IterableFastStringMap::map[':' + key];
+        = this.@com.google.gwt.coreext.client.IterableFastStringMap::map[':' + key];
     return (value == null) ? null : value;
   }-*/;
 
@@ -192,11 +192,11 @@ public class IterableFastStringMap<T> extends AbstractMap<String, T> {
   }
 
   public native void iterate(IterationCallBack<T> cb) /*-{
-    var objMap = this.@com.google.speedtracer.client.util.IterableFastStringMap::map;
+    var objMap = this.@com.google.gwt.coreext.client.IterableFastStringMap::map;
     
     for (var key in objMap) {
       if (key.charAt(0) == ':') {
-        cb.@com.google.speedtracer.client.util.IterableFastStringMap.IterationCallBack::onIteration(Ljava/lang/String;Ljava/lang/Object;)(key,objMap[key]);
+        cb.@com.google.gwt.coreext.client.IterableFastStringMap.IterationCallBack::onIteration(Ljava/lang/String;Ljava/lang/Object;)(key,objMap[key]);
       }
     }
   }-*/;
@@ -227,8 +227,8 @@ public class IterableFastStringMap<T> extends AbstractMap<String, T> {
   @Override
   public native T put(String key, T widget) /*-{
     var previous
-        = this.@com.google.speedtracer.client.util.IterableFastStringMap::map[':' + key];
-    this.@com.google.speedtracer.client.util.IterableFastStringMap::map[':' + key] = widget;
+        = this.@com.google.gwt.coreext.client.IterableFastStringMap::map[':' + key];
+    this.@com.google.gwt.coreext.client.IterableFastStringMap::map[':' + key] = widget;
     return (previous == null) ? null : previous;
   }-*/;
 
@@ -247,7 +247,7 @@ public class IterableFastStringMap<T> extends AbstractMap<String, T> {
   // only count keys with ':' prefix
   @Override
   public native int size() /*-{
-    var value = this.@com.google.speedtracer.client.util.IterableFastStringMap::map;
+    var value = this.@com.google.gwt.coreext.client.IterableFastStringMap::map;
     var count = 0;
     for(var key in value) {
       if (key.charAt(0) == ':') ++count;
@@ -287,7 +287,7 @@ public class IterableFastStringMap<T> extends AbstractMap<String, T> {
   }-*/;
 
   private native void init() /*-{
-    this.@com.google.speedtracer.client.util.IterableFastStringMap::map = [];
+    this.@com.google.gwt.coreext.client.IterableFastStringMap::map = [];
   }-*/;
 
   private String keyMustBeString(Object key) {
@@ -302,8 +302,8 @@ public class IterableFastStringMap<T> extends AbstractMap<String, T> {
   // Prepend ':' to avoid conflicts with built-in Object properties.
   private native T remove(String key) /*-{
     var previous
-        = this.@com.google.speedtracer.client.util.IterableFastStringMap::map[':' + key];
-    delete this.@com.google.speedtracer.client.util.IterableFastStringMap::map[':' + key];
+        = this.@com.google.gwt.coreext.client.IterableFastStringMap::map[':' + key];
+    delete this.@com.google.gwt.coreext.client.IterableFastStringMap::map[':' + key];
     return (previous == null) ? null : previous;
   }-*/;
 }

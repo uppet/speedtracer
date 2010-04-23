@@ -15,6 +15,8 @@
  */
 package com.google.speedtracer.client.visualizations.view;
 
+import com.google.gwt.coreext.client.JsIntegerMap;
+import com.google.gwt.coreext.client.JsIntegerMap.IterationCallBack;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.events.client.EventListenerRemover;
@@ -33,8 +35,6 @@ import com.google.gwt.topspin.ui.client.InputText;
 import com.google.gwt.topspin.ui.client.KeyUpEvent;
 import com.google.gwt.topspin.ui.client.KeyUpListener;
 import com.google.gwt.topspin.ui.client.Select;
-import com.google.speedtracer.client.util.JsIntegerMap;
-import com.google.speedtracer.client.util.JsIntegerMap.IterationCallBack;
 import com.google.speedtracer.client.visualizations.model.SluggishnessModel;
 
 /**

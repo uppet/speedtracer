@@ -18,9 +18,9 @@ package com.google.speedtracer.breaky.client;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.coreext.client.DataBag;
+import com.google.gwt.coreext.client.JsIntegerMap;
 import com.google.speedtracer.breaky.client.JsonSchema.JsonSchemaResults;
-import com.google.speedtracer.client.util.DataBag;
-import com.google.speedtracer.client.util.JsIntegerMap;
 
 /**
  * Validates a Speed Tracer JSON dump file.

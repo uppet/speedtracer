@@ -15,8 +15,8 @@
  */
 package com.google.speedtracer.client.model;
 
+import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.junit.client.GWTTestCase;
-import com.google.speedtracer.client.util.JSOArray;
 
 /**
  * Exercises the HintRecord class. 

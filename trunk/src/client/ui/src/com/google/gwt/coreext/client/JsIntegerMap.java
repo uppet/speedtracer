@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Google Inc.
+ * Copyright 2008 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,39 +13,36 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.speedtracer.client.util;
+package com.google.gwt.coreext.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArrayNumber;
 
 /**
- * Overlay type to deal strictly with double primitives and int keys. We can use
- * this instead of JsIntegerMap<T> in scenarios where we do not want to pay the
- * penalty of Double<->double autoboxing semantics. Since Java generics do not
- * support primitive types, JsIntegerMap can only hold values of type Double.
- * Additionally, pulling Doubles out of maps require that we need to do nullity
- * checks, and thus the GWT compiler must compile this to something that is a
- * Class wrapper for a double primitive, when what we really want is just a
- * plain double.
+ * Creates a lightweight map with integer keys based on a JavaScript object.
+ * 
+ * @param <T> the type contained as value in the map
  */
-public class JsIntegerDoubleMap extends JavaScriptObject {
+public class JsIntegerMap<T> extends JavaScriptObject {
 
   /**
    * Callback interface for int,double key value pairs.
    */
-  public interface IterationCallBack {
-    void onIteration(int key, double val);
+  public interface IterationCallBack<T> {
+    void onIteration(int key, T val);
   }
 
   /**
    * Create a new empty map.
    * 
+   * @param <T> the type of values to be stored in the map
    * @return an empty map
    */
-  public static JsIntegerDoubleMap create() {
-    return JavaScriptObject.createObject().cast();
-  }
+  public static native <T> JsIntegerMap<T> create() /*-{
+    return {};
+  }-*/;
 
-  protected JsIntegerDoubleMap() {
+  protected JsIntegerMap() {
   }
 
   /**
@@ -63,8 +60,24 @@ public class JsIntegerDoubleMap extends JavaScriptObject {
    * @param key
    * @return the value associated with the key
    */
-  public final native double get(int key) /*-{
+  public final native T get(int key) /*-{
     return this[key];
+  }-*/;
+  
+  /**
+   * Returns an array containing all the values in this map.
+   * 
+   * @return a snapshot of the values contained in the map
+   */
+  public final native JsArrayNumber getKeys() /*-{
+    var data = [];
+    for (var prop in this) {
+      var val = Number(prop);
+      if (!isNaN(val)) {
+        data.push(val);
+      }
+    }
+    return data;
   }-*/;
 
   /**
@@ -72,7 +85,7 @@ public class JsIntegerDoubleMap extends JavaScriptObject {
    * 
    * @return a snapshot of the values contained in the map
    */
-  public final native JSOArray<Double> getValues() /*-{
+  public final native JSOArray<T> getValues() /*-{
     var data = [];
     for (var i in this) {
       if (this.hasOwnProperty(i)) {
@@ -93,17 +106,14 @@ public class JsIntegerDoubleMap extends JavaScriptObject {
   }-*/;
 
   /**
-   * Iterates through the elements and calls back with the proper key value
-   * pair.
+   * Iterates through the contents and calls back out to a callback.
    * 
-   * @param callback
+   * @param cb callback object
    */
-  public final native void iterate(IterationCallBack callback) /*-{
-    for (key in this) {
+  public final native void iterate(IterationCallBack<T> cb) /*-{
+    for (var key in this) {
       if (this.hasOwnProperty(key)) {
-        callback.
-        @com.google.speedtracer.client.util.JsIntegerDoubleMap.IterationCallBack::onIteration(ID)
-        (parseInt(key), this[key]);
+        cb.@com.google.gwt.coreext.client.JsIntegerMap.IterationCallBack::onIteration(ILjava/lang/Object;)(parseInt(key),this[key]);
       }
     }
   }-*/;
@@ -114,7 +124,7 @@ public class JsIntegerDoubleMap extends JavaScriptObject {
    * @param key key with which the value will be associated
    * @param val value to be associated with key
    */
-  public final native void put(int key, double val) /*-{
+  public final native void put(int key, T val) /*-{
     this[key] = val;
   }-*/;
 }

@@ -17,7 +17,7 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.JsArrayNumber;
-import com.google.speedtracer.client.util.JsIntegerDoubleMap;
+import com.google.gwt.coreext.client.JsIntegerDoubleMap;
 
 /**
  * Computes self time and type durations for a {@link UiEvent}.

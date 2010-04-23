@@ -16,11 +16,11 @@
 
 package com.google.speedtracer.client.model;
 
+import com.google.gwt.coreext.client.IterableFastStringMap;
 import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.CompactGwtSymbolMapParser;
 import com.google.speedtracer.client.GwtSymbolMapParser;
 import com.google.speedtracer.client.Logging;
-import com.google.speedtracer.client.util.IterableFastStringMap;
 
 /**
  * Class used for re-symbolizing obfuscated JavaScript. Provides a simple

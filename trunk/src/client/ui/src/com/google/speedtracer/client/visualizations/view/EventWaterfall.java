@@ -15,6 +15,10 @@
  */
 package com.google.speedtracer.client.visualizations.view;
 
+import com.google.gwt.coreext.client.JSOArray;
+import com.google.gwt.coreext.client.JsIntegerDoubleMap;
+import com.google.gwt.coreext.client.JsIntegerMap;
+import com.google.gwt.coreext.client.JsIntegerDoubleMap.IterationCallBack;
 import com.google.gwt.graphics.client.Color;
 import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
@@ -27,12 +31,8 @@ import com.google.speedtracer.client.model.ButtonDescription;
 import com.google.speedtracer.client.model.LogEvent;
 import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.client.model.UiEventModel;
-import com.google.speedtracer.client.util.JSOArray;
-import com.google.speedtracer.client.util.JsIntegerDoubleMap;
-import com.google.speedtracer.client.util.JsIntegerMap;
 import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.util.Url;
-import com.google.speedtracer.client.util.JsIntegerDoubleMap.IterationCallBack;
 import com.google.speedtracer.client.visualizations.model.SluggishnessModel;
 import com.google.speedtracer.client.visualizations.model.SluggishnessVisualization;
 import com.google.speedtracer.client.visualizations.view.SluggishnessDetailView.EventWaterfallFilter;

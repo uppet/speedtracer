@@ -16,6 +16,7 @@
 package com.google.speedtracer.client.visualizations.view;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -41,7 +42,6 @@ import com.google.speedtracer.client.model.JavaScriptProfile;
 import com.google.speedtracer.client.model.JavaScriptProfileModel;
 import com.google.speedtracer.client.model.LogEvent;
 import com.google.speedtracer.client.model.UiEvent;
-import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.Url;
 import com.google.speedtracer.client.util.dom.EventListenerOwner;
 import com.google.speedtracer.client.view.AutoHideDiv;

@@ -15,9 +15,9 @@
  */
 package com.google.speedtracer.client.model;
 
+import com.google.gwt.coreext.client.IterableFastStringMap;
+import com.google.gwt.coreext.client.IterableFastStringMap.IterationCallBack;
 import com.google.speedtracer.client.timeline.Constants;
-import com.google.speedtracer.client.util.IterableFastStringMap;
-import com.google.speedtracer.client.util.IterableFastStringMap.IterationCallBack;
 import com.google.speedtracer.client.visualizations.model.HintletReportModel;
 import com.google.speedtracer.client.visualizations.model.NetworkVisualizationModel;
 import com.google.speedtracer.client.visualizations.model.NetworkVisualization;

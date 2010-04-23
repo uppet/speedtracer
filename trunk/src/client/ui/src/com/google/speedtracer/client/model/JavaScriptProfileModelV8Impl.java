@@ -16,6 +16,8 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.coreext.client.IterableFastStringMap;
+import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.speedtracer.client.ClientConfig;
@@ -23,8 +25,6 @@ import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.model.V8SymbolTable.AliasableEntry;
 import com.google.speedtracer.client.model.V8SymbolTable.V8Symbol;
 import com.google.speedtracer.client.util.Csv;
-import com.google.speedtracer.client.util.IterableFastStringMap;
-import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.WorkQueue;
 
 import java.util.ArrayList;

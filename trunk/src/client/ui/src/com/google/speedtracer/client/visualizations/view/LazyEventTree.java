@@ -15,6 +15,7 @@
  */
 package com.google.speedtracer.client.visualizations.view;
 
+import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.Style.Unit;
@@ -23,7 +24,6 @@ import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.InsertingContainerImpl;
 import com.google.speedtracer.client.model.LogEvent;
 import com.google.speedtracer.client.model.UiEvent;
-import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.visualizations.view.EventTraceBreakdown.Renderer;
 import com.google.speedtracer.shared.EventRecordType;

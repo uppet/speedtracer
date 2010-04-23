@@ -17,8 +17,8 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.JsArrayNumber;
+import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.junit.client.GWTTestCase;
-import com.google.speedtracer.client.util.JSOArray;
 
 /**
  * Tests {@link UiEvent}.

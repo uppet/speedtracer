@@ -15,6 +15,7 @@
  */
 package com.google.speedtracer.client.view;
 
+import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -39,7 +40,6 @@ import com.google.speedtracer.client.model.DataModel;
 import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.timeline.DomainObserver;
 import com.google.speedtracer.client.timeline.TimeLineModel.WindowBoundsObserver;
-import com.google.speedtracer.client.util.JSOArray;
 import com.google.speedtracer.client.util.TimeStampFormatter;
 
 /**
