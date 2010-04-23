@@ -19,6 +19,10 @@ package com.google.speedtracer.client.util;
  * Utility class for extracting parts of a URL String.
  */
 public class Url {
+  public static final String SCHEME_FILE = "file://";
+  public static final String SCHEME_HTTP = "http://";
+  public static final String SCHEME_HTTPS = "https://";
+
   /**
    * Utility method for converting a resource URL to one relative to the
    * specified base.
@@ -38,12 +42,12 @@ public class Url {
 
   private String applicationUrl;
 
+  // We cache this because this is queried a crap ton during CPU profiling.
+  private String lastPathComponent;
+
   private String originUrl;
 
   private final String url;
-
-  // We cache this because this is queried a crap ton during CPU profiling.
-  private String lastPathComponent;
 
   public Url(String url) {
     this.url = url;
@@ -106,6 +110,20 @@ public class Url {
   public String getResourceBase() {
     int lastSlashIndex = url.lastIndexOf('/');
     return url.substring(0, lastSlashIndex + 1);
+  }
+
+  /**
+   * Returns the protocol portion of the URL.
+   * 
+   * @return
+   */
+  public String getScheme() {
+    int schemeIndex = url.indexOf("://");
+    if (schemeIndex < 0) {
+      return "";
+    } else {
+      return url.substring(0, schemeIndex).toLowerCase() + "://";
+    }
   }
 
   public String getUrl() {

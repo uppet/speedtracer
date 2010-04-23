@@ -131,6 +131,25 @@ public class UrlTests extends GWTTestCase {
   }
 
   /**
+   * Tests getting the protocol component of a Url.
+   */
+  public void testGetProtocol() {
+    Url https = new Url("https://something");
+    Url http = new Url("http://something");
+    Url file = new Url("file://something");
+    Url capitalFile = new Url("FILE://something");
+    Url noProto = new Url("noproto");    
+    Url empty = new Url("");
+    
+    assertEquals(Url.SCHEME_HTTPS, https.getScheme());
+    assertEquals(Url.SCHEME_HTTP, http.getScheme());
+    assertEquals(Url.SCHEME_FILE, file.getScheme());
+    assertEquals(Url.SCHEME_FILE, capitalFile.getScheme());
+    assertEquals("", noProto.getScheme());
+    assertEquals("", empty.getScheme());
+  }
+  
+  /**
    * Tests getting the base of the URL, which is the URL minus the last path
    * component.
    */
