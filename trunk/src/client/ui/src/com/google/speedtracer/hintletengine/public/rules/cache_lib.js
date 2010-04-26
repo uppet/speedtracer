@@ -162,8 +162,9 @@ cache_lib.freshnessLifetimeGreaterThan = function(headers, timeMs) {
   var freshnessLifetimeMs;
 
   // The max-age overrides Expires in most modern browsers.
-  if (hintlet.headerContains(headers, 'Cache-Control', 'max-age')) {
-    var maxAgeMatch = headers['Cache-Control'].match(/max-age=(\d+)/);
+  var cacheControlHeader = hintlet.headerContains(headers, 'Cache-Control', 'max-age');
+  if (cacheControlHeader) {
+    var maxAgeMatch = cacheControlHeader.match(/max-age=(\d+)/);
     freshnessLifetimeMs =
         (maxAgeMatch && maxAgeMatch[1]) ? 1000 * maxAgeMatch[1] : 0;
   } else {
