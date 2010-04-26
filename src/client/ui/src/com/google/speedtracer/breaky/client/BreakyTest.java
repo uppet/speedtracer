@@ -107,19 +107,13 @@ public class BreakyTest implements EntryPoint {
     }
   }
 
-  private static final int API_POLL_INTERVAL = 250;
-
   private static int INITIAL_WALL_COUNT = 100;
-
-  private static final int MAX_API_POLLS = 5 * (1000 / API_POLL_INTERVAL);
   
-  private final DumpValidator validator = new DumpValidator();
-  
-  private int apiPollCount = 0;
-
   private final DivElement statusDiv = Document.get().createDivElement();
 
   private int validationCount = 0;
+
+  private final DumpValidator validator = new DumpValidator();
 
   private int wallCount = INITIAL_WALL_COUNT;
 
@@ -144,8 +138,7 @@ public class BreakyTest implements EntryPoint {
       };
       t.schedule(10);
     } else {
-      log("Running in regular mode. Loading Headless API.");
-      this.loadApi();
+      this.monitorAndRun();
     }
   }
 
@@ -186,16 +179,6 @@ public class BreakyTest implements EntryPoint {
     });
   }
 
-  /**
-   * Top level loader for the Headless API.
-   */
-  private void loadApi() {
-    if (!HeadlessApi.isLoaded()) {
-      HeadlessApi.loadApi();
-    }
-    pollApi();
-  }
-
   private void log(String message) {
     statusDiv.setInnerHTML(statusDiv.getInnerHTML() + "<p>" + message + "</p>");
   }
@@ -206,49 +189,6 @@ public class BreakyTest implements EntryPoint {
     log("About to validate");
     String[] dump = MockModelGenerator.getDump(0);
     DeferredCommand.addCommand(new DumpProcessor(new MockHandler(), dump));
-  }
-
-  /**
-   * Poll the Headless API asynchronous load. Once loaded, start the test.
-   */
-  private void pollApi() {
-    if (HeadlessApi.isLoaded()) {
-      HeadlessApi.MonitoringOnOptions options = HeadlessApi.MonitoringOnOptions.createObject().cast();
-
-      options.clearData();
-      log("pollApi() starting monitoring...");
-      HeadlessApi.startMonitoring(options, new MonitoringCallback() {
-        public void callback() {
-          try {
-            log("monitoring is on. running test...");
-            runTest();
-          } catch (JavaScriptException e) {
-            if (e.getStackTrace().length == 0) {
-              Throwable t = e.fillInStackTrace();
-              log(t.toString());
-              reportInvalid("Caught a JavaScriptException: " + t.toString());
-            }
-          } finally {
-            // TODO(conroy): report all log messages via XHR for debugging
-          }
-        }
-      });
-      log("pollApi() finished");
-      return;
-    }
-
-    if (apiPollCount++ > MAX_API_POLLS) {
-      reportInvalid("Unable to load API");
-    } else {
-      Timer t = new Timer() {
-        @Override
-        public void run() {
-          log("in poll");
-          pollApi();
-        }
-      };
-      t.schedule(API_POLL_INTERVAL);
-    }
   }
 
   /**
@@ -322,6 +262,38 @@ public class BreakyTest implements EntryPoint {
     log("wait for it...");
   }
 
+  /**
+   * Start monitoring, and kick off the test once monitoring is active.
+   */
+  private void monitorAndRun() {
+    if (!HeadlessApi.isLoaded()) {
+      log("Headless API is not loaded. Failing now");
+      reportInvalid("Headless API is not loaded!");
+      return;
+    }
+    
+    HeadlessApi.MonitoringOnOptions options = HeadlessApi.MonitoringOnOptions.createObject().cast();
+    options.clearData();
+    log("starting monitoring...");
+    HeadlessApi.startMonitoring(options, new MonitoringCallback() {
+      public void callback() {
+        try {
+          log("monitoring is on. running test...");
+          runTest();
+        } catch (JavaScriptException e) {
+          if (e.getStackTrace().length == 0) {
+            Throwable t = e.fillInStackTrace();
+            log(t.toString());
+            reportInvalid("Caught a JavaScriptException: " + t.toString());
+          }
+        } finally {
+          // TODO(conroy): report all log messages via XHR for debugging
+        }
+      }
+    });
+    return;
+  }
+  
   /**
    * Validate a raw dump.
    * 
