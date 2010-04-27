@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.speedtracer.client;
+package com.google.speedtracer.headlessextension.client;
 
 import com.google.gwt.chrome.crx.client.Chrome;
 import com.google.gwt.chrome.crx.client.Console;
@@ -22,6 +22,7 @@ import com.google.gwt.chrome.crx.client.Port;
 import com.google.gwt.chrome.crx.client.events.ConnectEvent;
 import com.google.gwt.chrome.crx.client.events.MessageEvent;
 import com.google.gwt.chrome.crx.client.events.MessageEvent.Message;
+import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -30,6 +31,7 @@ import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.coreext.client.JSON;
 import com.google.gwt.xhr.client.XMLHttpRequest;
+import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.messages.HeadlessClearDataMessage;
 import com.google.speedtracer.client.messages.HeadlessDumpDataAckMessage;
 import com.google.speedtracer.client.messages.HeadlessDumpDataMessage;
@@ -131,6 +133,8 @@ public class HeadlessBackgroundPage extends Extension implements
     }
 
     private void doHeadlessClearData(HeadlessClearDataMessage message) {
+      DataInstance dataInstance = getDataInstance();
+      dataInstance.setBaseTime(Duration.currentTimeMillis());
       eventRecordData.setLength(0);
     }
 
@@ -157,9 +161,9 @@ public class HeadlessBackgroundPage extends Extension implements
       HeadlessMonitoringOnAckMessage ackMessage = HeadlessMonitoringOnAckMessage.create();
       if (options != null) {
         if (options.clearData()) {
-          eventRecordData.setLength(0);
+          doHeadlessClearData(null);
         }
-        ackMessage.setReloadUrl(options.getReloadUrl());
+        ackMessage.setOptions(options);
       }
       sendToContentScript(port, ackMessage);
     }
@@ -171,6 +175,7 @@ public class HeadlessBackgroundPage extends Extension implements
       JsArray<JavaScriptObject> data = getEventRecordData();
       String payload = createXhrPayload(dataInstance.getBaseTime(), message,
           data);
+
       if (ClientConfig.isDebugMode()) {
         console.log("Sending payload of " + payload.length() + " bytes ("
             + data.length() + " trace records) to " + message.getUrl());

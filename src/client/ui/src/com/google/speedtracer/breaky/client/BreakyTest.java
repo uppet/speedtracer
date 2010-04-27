@@ -32,15 +32,15 @@ import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.IncrementalCommand;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.xhr.client.XMLHttpRequest;
-import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.breaky.client.JsonSchema.JsonSchemaError;
 import com.google.speedtracer.breaky.client.JsonSchema.JsonSchemaResults;
+import com.google.speedtracer.client.ClientConfig;
+import com.google.speedtracer.client.HeadlessApi;
+import com.google.speedtracer.client.HeadlessApi.MonitoringCallback;
 import com.google.speedtracer.client.model.MockModelGenerator;
 import com.google.speedtracer.client.util.Xhr;
 import com.google.speedtracer.client.util.Xhr.XhrCallback;
 import com.google.speedtracer.client.util.dom.WindowExt;
-import com.google.speedtracer.headlessextension.HeadlessApi;
-import com.google.speedtracer.headlessextension.HeadlessApi.MonitoringCallback;
 
 import java.util.Date;
 

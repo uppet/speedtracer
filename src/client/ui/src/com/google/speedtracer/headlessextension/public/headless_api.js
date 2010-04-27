@@ -54,6 +54,7 @@ var contentScriptEvent = document.createEvent('Event');
 contentScriptEvent.initEvent(EVENT_NAME, true, true);
 var toDispatch = [];
 var onDOMContentLoadedDelayed = false;
+var baseTime = new Date();
 
 // Optional debug loggging
 var loggingEnabled = false;
@@ -130,8 +131,8 @@ function handleMessagesToApi() {
     break;
   case PORT_HEADLESS_MONITORING_ON_ACK:
     var monitoringOnCallback = monitoringOnCallbacks.shift();
-    if (tmpRec.reload) {
-      window.location.href = tmpRec.reload;
+    if (tmpRec.options && tmpRec.options.reload) {
+      window.location.href = tmpRec.options.reload;
     } else {
       if (monitoringOnCallback) {
         monitoringOnCallback();
@@ -160,6 +161,7 @@ function handleMessagesToApi() {
 // This function clears any previously stored speed trace data.
 // Useful if you are performing multiple runs on the same URL.
 window.speedtracer.clearData = function() {
+  baseTime = new Date();
   sendMsg({'type':PORT_HEADLESS_CLEAR_DATA}); // 
 }
 
@@ -200,6 +202,10 @@ window.speedtracer.getDump = function(callback) {
 //    the callback will be invoked when the transmission is completed.
 //       callback (number responseCode)
 window.speedtracer.sendDump = function(url, header, callback) {
+  if (!header) {
+    header = {};
+  }
+  header.baseTime = baseTime.getTime();
   sendMsg({'type':PORT_HEADLESS_SEND_DUMP, 'header': header, 'url':url});
   sendDumpCallbacks.push(callback);
 }

@@ -3,6 +3,6 @@
 <module>
   <inherits name="com.google.speedtracer.Common" />
   <inherits name="com.google.speedtracer.HeadlessApi" />
-  <entry-point class="com.google.speedtracer.client.HeadlessBackgroundPage" />
+  <entry-point class="com.google.speedtracer.headlessextension.client.HeadlessBackgroundPage" />
   <add-linker name="crx" />
 </module>
