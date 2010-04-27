@@ -69,6 +69,7 @@ public abstract class DataModel implements HintletEngineHost.HintListener,
 
   protected JSOArray<String> traceDataCopy = JSOArray.create();
 
+  private BreakyWorkerHost breakyWorkerHost;
   private DataInstance dataInstance;
 
   private final List<EventRecordHandler> eventModels = new ArrayList<EventRecordHandler>();
@@ -88,6 +89,12 @@ public abstract class DataModel implements HintletEngineHost.HintListener,
   private final UiEventModel uiEventModel;
 
   protected DataModel() {
+    if (ClientConfig.isDebugMode()) {
+      this.breakyWorkerHost = new BreakyWorkerHost();
+      // NOTE: the order of adding models matters, since they modify the record
+      eventModels.add(breakyWorkerHost);
+    }
+    
     this.hintletEngineHost = new HintletEngineHost();
     this.networkResourceModel = new NetworkResourceModel();
     this.uiEventModel = new UiEventModel();
@@ -241,6 +248,7 @@ public abstract class DataModel implements HintletEngineHost.HintListener,
     // TODO(zundel): When profiling data is sent to the hintlet engine,
     // we've seen problems with web workers crashing. Until that is resolved,
     // we'll filter profiling data from being sent there.
+    // TODO(conroy): Make this a standard eventModel
     if (data.getType() != EventRecordType.PROFILE_DATA) {
       // Forward to the hintlet engine.
       hintletEngineHost.addRecord(data);

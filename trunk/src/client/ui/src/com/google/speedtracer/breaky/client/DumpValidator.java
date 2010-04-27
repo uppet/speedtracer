@@ -32,7 +32,7 @@ public class DumpValidator {
 
   public DumpValidator() {
     fillIdMap();
-    hookResolver();
+    JsonSchemaValidator.hookResolver(createResolverHook());
   }
 
   /**
@@ -88,7 +88,7 @@ public class DumpValidator {
           + obj.toString());
     }
 
-    JsonSchemaResults results = concreteSchema.validate(obj);
+    JsonSchemaResults results = JsonSchemaValidator.validate(obj, concreteSchema);
     if (!results.isValid()) {
       return results;
     }
@@ -103,6 +103,21 @@ public class DumpValidator {
     }
     return results;
   }
+
+  /**
+   * The speedtracer version of jsonschema uses a global function callback in
+   * order to resolve references.
+   * 
+   * TODO(conroy): make the hook more flexible/non-global
+   * 
+   * @param the jsonschema-b4 JSONSchema object
+   */
+  private native JavaScriptObject createResolverHook() /*-{
+    var me = this;
+    return function(reference) {
+      return me.@com.google.speedtracer.breaky.client.DumpValidator::schemas[reference];
+    };
+  }-*/;
 
   /**
    * In our schema set, if a schema has a fully constrained type property, then
@@ -127,16 +142,4 @@ public class DumpValidator {
       }
     }
   }
-
-  /**
-   * The speedtracer version of jsonschema uses a global function callback in
-   * order to resolve references. TODO(conroy): make the hook more
-   * flexible/non-global
-   */
-  private native void hookResolver() /*-{
-    var me = this;
-    $wnd.JSONSchema.resolveReference = function(reference) {
-      return me.@com.google.speedtracer.breaky.client.DumpValidator::schemas[reference];
-    };
-  }-*/;
 }

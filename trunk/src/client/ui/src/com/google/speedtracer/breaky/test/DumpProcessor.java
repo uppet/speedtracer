@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.speedtracer.breaky.client;
+package com.google.speedtracer.breaky.test;
 
 import com.google.gwt.user.client.IncrementalCommand;
 

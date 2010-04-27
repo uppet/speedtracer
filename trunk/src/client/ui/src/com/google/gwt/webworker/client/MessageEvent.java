@@ -26,6 +26,10 @@ public class MessageEvent extends JavaScriptObject {
     // required protected constructor for JavaScriptObject
   }
 
+  public final native JavaScriptObject getDataAsJSO() /*-{
+    return JSON.parse(this.data);
+  }-*/;
+
   public final native double getDataAsNumber() /*-{
     return this.data;
   }-*/;

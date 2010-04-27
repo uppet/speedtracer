@@ -27,8 +27,8 @@ import com.google.gwt.coreext.client.JSOArray;
  * 
  * Note that this wrapper does not walk the schema inheritance tree.
  */
-public class JsonSchema extends JavaScriptObject {
 
+public class JsonSchema extends JavaScriptObject {
   /**
    * The Error format used by JsonSchema.
    */
@@ -63,6 +63,26 @@ public class JsonSchema extends JavaScriptObject {
 
     protected JsonSchemaResults() {
     }
+    
+    public final String formatResultsHTML(String objString) {
+      if (isValid()) {
+        return "Valid: " + objString + "<br>";
+      } else {
+        StringBuilder errorStringBuilder = new StringBuilder();
+        errorStringBuilder.append("INVALID<br>Object: ");
+        errorStringBuilder.append(objString);
+        errorStringBuilder.append("<br>");
+        JSOArray<JsonSchemaError> errors = getErrors();
+        for (int i = 0, length = errors.size(); i < length; i++) {
+          errorStringBuilder.append("Property: ");
+          errorStringBuilder.append(errors.get(i).getProperty());
+          errorStringBuilder.append("<br>Error: ");
+          errorStringBuilder.append(errors.get(i).getMessage());
+          errorStringBuilder.append("<br>");
+        }
+        return errorStringBuilder.toString();
+      }
+    }
 
     public final native JSOArray<JsonSchemaError> getErrors() /*-{
       return this.errors || [];
@@ -72,6 +92,17 @@ public class JsonSchema extends JavaScriptObject {
       return this.valid;
     }-*/;
   }
+
+  /**
+   * Normal script injection puts it in $wnd, but in the worker thread there is
+   * no $wnd.
+   * TODO(conroy): nuke this and correctly put the script into global scope
+   * 
+   * @return a handle to the jsonschema-b4 JSONSchema object
+   */
+  private static native JavaScriptObject getJsonSchemaImpl() /*-{
+    return (typeof JSONSchema === 'undefined') ? $wnd.JSONSchema : JSONSchema;
+  }-*/;
 
   protected JsonSchema() {
   }
@@ -213,7 +244,7 @@ public class JsonSchema extends JavaScriptObject {
   public final native String getFormat() /*-{
     return this.format;
   }-*/;
-
+  
   /**
    * This should be a schema or an array of schemas. When this is an
    * object/schema and the instance value is an array, all the items in the
@@ -384,15 +415,5 @@ public class JsonSchema extends JavaScriptObject {
   public final native boolean getUniqueItems() /*-{
     return this.uniqueItems;
   }-*/;
-
-  /**
-   * Validate an instance object against this schema.
-   * 
-   * @param obj
-   * @return {@link JsonSchemaResults} indicating valid/invalid + info
-   */
-  public final native JsonSchemaResults validate(JavaScriptObject obj) /*-{
-    return results = $wnd.JSONSchema.validate(obj, this);
-  }-*/;
-
 }
+
