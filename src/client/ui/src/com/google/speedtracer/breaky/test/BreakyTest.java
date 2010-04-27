@@ -31,7 +31,6 @@ import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.IncrementalCommand;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.xhr.client.XMLHttpRequest;
-import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.breaky.client.DumpValidator;
 import com.google.speedtracer.breaky.client.JsonSchema.JsonSchemaResults;
 import com.google.speedtracer.client.ClientConfig;
