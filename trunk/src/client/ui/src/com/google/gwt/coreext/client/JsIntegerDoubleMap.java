@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,7 @@
 package com.google.gwt.coreext.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArrayNumber;
 
 /**
  * Overlay type to deal strictly with double primitives and int keys. We can use
@@ -72,7 +73,7 @@ public class JsIntegerDoubleMap extends JavaScriptObject {
    * 
    * @return a snapshot of the values contained in the map
    */
-  public final native JSOArray<Double> getValues() /*-{
+  public final native JsArrayNumber getValues() /*-{
     var data = [];
     for (var i in this) {
       if (this.hasOwnProperty(i)) {
