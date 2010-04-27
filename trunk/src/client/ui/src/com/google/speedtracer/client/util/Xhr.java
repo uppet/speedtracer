@@ -17,6 +17,7 @@ package com.google.speedtracer.client.util;
 
 import com.google.gwt.xhr.client.ReadyStateChangeHandler;
 import com.google.gwt.xhr.client.XMLHttpRequest;
+import com.google.speedtracer.client.util.dom.WindowExt;
 
 /**
  * Simple utility class for using {@link XMLHttpRequest}.
@@ -31,18 +32,6 @@ public class Xhr {
 
     void onSuccess(XMLHttpRequest xhr);
   }
-
-  /**
-   * Replacement for XMHttpRequest.create() to allow using this method in a
-   * Chrome Extensions background page.
-   */
-  public static native XMLHttpRequest create() /*-{
-    return new XMLHttpRequest();
-  }-*/;
-
-  public static native XMLHttpRequest createWorkaround() /*-{
-    return new $wnd.XMLHttpRequest();
-  }-*/;
 
   private static class Handler implements ReadyStateChangeHandler {
     private final XhrCallback callback;
@@ -62,43 +51,56 @@ public class Xhr {
     }
   }
 
-  public static void get(String url, final XhrCallback callback) {
-    XMLHttpRequest xhr = Xhr.create();
-    xhr.setOnReadyStateChange(new Handler(callback));
-    xhr.open("GET", url);
-    xhr.send();
+  public static void get(String url, XhrCallback callback) {
+    request(create(), "GET", url, callback);
   }
 
-  /**
-   * TODO(conroy): HACK HACK HACK A dirty hack for
-   * http://code.google.com/p/google-web-toolkit/issues/detail?id=3608.
-   */
-  public static void getWorkaround(String url, final XhrCallback callback) {
-    XMLHttpRequest xhr = Xhr.createWorkaround();
-    xhr.setOnReadyStateChange(new Handler(callback));
-    xhr.open("GET", url);
-    xhr.send();
+  public static void get(WindowExt window, String url, XhrCallback callback) {
+    request(create(window), "GET", url, callback);
+  }
+
+  public static void head(String url, XhrCallback callback) {
+    request(create(), "HEAD", url, callback);
+  }
+
+  public static void head(WindowExt window, String url, XhrCallback callback) {
+    request(create(window), "HEAD", url, callback);
   }
 
   public static void post(String url, String requestData, String contentType,
-      final XhrCallback callback) {
-    XMLHttpRequest xhr = Xhr.create();
+      XhrCallback callback) {
+    request(create(), "POST", url, requestData, contentType, callback);
+  }
+
+  public static void post(WindowExt window, String url, String requestData,
+      String contentType, XhrCallback callback) {
+    request(create(window), "POST", url, requestData, contentType, callback);
+  }
+
+  /**
+   * Replacement for XMHttpRequest.create() to allow using this method in a
+   * Chrome Extensions background page.
+   */
+  private static native XMLHttpRequest create() /*-{
+    return new XMLHttpRequest();
+  }-*/;
+
+  private static native XMLHttpRequest create(WindowExt window) /*-{
+    return new window.XMLHttpRequest();
+  }-*/;
+
+  private static void request(XMLHttpRequest xhr, String method, String url,
+      String requestData, String contentType, XhrCallback callback) {
     xhr.setOnReadyStateChange(new Handler(callback));
-    xhr.open("POST", url);
+    xhr.open(method, url);
     xhr.setRequestHeader("Content-type", contentType);
     xhr.send(requestData);
   }
 
-  /**
-   * TODO(conroy): HACK HACK HACK A dirty hack for
-   * http://code.google.com/p/google-web-toolkit/issues/detail?id=3608.
-   */
-  public static void postWorkaround(String url, String requestData,
-      String contentType, final XhrCallback callback) {
-    XMLHttpRequest xhr = Xhr.createWorkaround();
+  private static void request(XMLHttpRequest xhr, String method, String url,
+      final XhrCallback callback) {
     xhr.setOnReadyStateChange(new Handler(callback));
-    xhr.open("POST", url);
-    xhr.setRequestHeader("Content-type", contentType);
-    xhr.send(requestData);
+    xhr.open(method, url);
+    xhr.send();
   }
 }

@@ -38,6 +38,7 @@ import com.google.speedtracer.breaky.client.JsonSchema.JsonSchemaResults;
 import com.google.speedtracer.client.model.MockModelGenerator;
 import com.google.speedtracer.client.util.Xhr;
 import com.google.speedtracer.client.util.Xhr.XhrCallback;
+import com.google.speedtracer.client.util.dom.WindowExt;
 import com.google.speedtracer.headlessextension.HeadlessApi;
 import com.google.speedtracer.headlessextension.HeadlessApi.MonitoringCallback;
 
@@ -108,7 +109,7 @@ public class BreakyTest implements EntryPoint {
   }
 
   private static int INITIAL_WALL_COUNT = 100;
-  
+
   private final DivElement statusDiv = Document.get().createDivElement();
 
   private int validationCount = 0;
@@ -185,7 +186,7 @@ public class BreakyTest implements EntryPoint {
 
   private void mockSimulateDump() {
     // Fail fast if JSON is not present.
-    JSON.parse("{\"asdf\" : 3 }");    
+    JSON.parse("{\"asdf\" : 3 }");
     log("About to validate");
     String[] dump = MockModelGenerator.getDump(0);
     DeferredCommand.addCommand(new DumpProcessor(new MockHandler(), dump));
@@ -198,7 +199,7 @@ public class BreakyTest implements EntryPoint {
    */
   private void reportInvalid(String invalid) {
     log("About to report invalid...");
-    Xhr.postWorkaround(GWT.getModuleBaseURL() + "invalid", invalid,
+    Xhr.post(WindowExt.get(), GWT.getModuleBaseURL() + "invalid", invalid,
         "text/plain", new XhrCb());
   }
 
@@ -207,8 +208,8 @@ public class BreakyTest implements EntryPoint {
    */
   private void reportValid() {
     log("About to report valid..");
-    Xhr.postWorkaround(GWT.getModuleBaseURL() + "valid", "", "text/plain",
-        new XhrCb());
+    Xhr.post(WindowExt.get(), GWT.getModuleBaseURL() + "valid", "",
+        "text/plain", new XhrCb());
   }
 
   /**
@@ -271,7 +272,7 @@ public class BreakyTest implements EntryPoint {
       reportInvalid("Headless API is not loaded!");
       return;
     }
-    
+
     HeadlessApi.MonitoringOnOptions options = HeadlessApi.MonitoringOnOptions.createObject().cast();
     options.clearData();
     log("starting monitoring...");
@@ -293,7 +294,7 @@ public class BreakyTest implements EntryPoint {
     });
     return;
   }
-  
+
   /**
    * Validate a raw dump.
    * 
