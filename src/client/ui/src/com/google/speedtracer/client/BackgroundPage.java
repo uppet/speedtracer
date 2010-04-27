@@ -101,6 +101,7 @@ public abstract class BackgroundPage extends Extension {
    * been opened after an AutoOpen request came in.
    */
   private static class AutoOpenSpeedTracerCallback extends SendResponse {
+    @SuppressWarnings("all")
     protected AutoOpenSpeedTracerCallback() {
     }
 
