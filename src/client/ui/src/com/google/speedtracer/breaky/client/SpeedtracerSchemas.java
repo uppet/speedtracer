@@ -79,7 +79,6 @@ public class SpeedtracerSchemas {
            "requires" : "usedHeapSize",
            "optional" : true
          },
-         "data"     : {"description" : "A JSON dictionary of data", "type" : "object" },
          "sequence" : {
            "description" : "Sequence number of this event",
            "type" : "integer",
@@ -103,8 +102,13 @@ public class SpeedtracerSchemas {
            "description" : "Child Events.",
            "type" : "array",
            "optional" : true,
+         },
+         "data" : {
+           "description" : "A JSON dictionary of data",
+           "type" : "object"
          }
-       }
+       },
+       "additionalProperties" : false
      },
      "TIMELINE_EVENT_MARK" : {
        "id" : "TIMELINE_EVENT_MARK",
@@ -117,8 +121,14 @@ public class SpeedtracerSchemas {
            "type" : "array",
            "optional" : true
          },
-         "additionalProperties" : false
-       }
+         // Apparently, the data field is optional for some MARK events
+         "data" : {
+           "description" : "A JSON dictionary of data",
+           "type" : "object",
+           "optional" : true
+         }
+       },
+       "additionalProperties" : false
      },
 
      // Some Handy Databag references
@@ -372,7 +382,7 @@ public class SpeedtracerSchemas {
        "description" : "The renderer has started receiving bits from the resource loader (UI thread time).",
        "id" : "NETWORK_RESOURCE_START",
        "type" : "object",
-       "extends" : {"$ref" : "TIMELINE_EVENT_MARK"},
+       "extends" : {"$ref" : "TIMELINE_EVENT"},
        "properties" : {
          "type" : {"type" : "integer", "minimum" : 13, "maximum" : 13},
          "data" : {
@@ -483,6 +493,7 @@ public class SpeedtracerSchemas {
            "properties" : {
            },
            "additionalProperties" : false,
+           "optional" : true,
          },
          "additionalProperties" : false
        }
@@ -499,6 +510,7 @@ public class SpeedtracerSchemas {
            "properties" : {
            },
            "additionalProperties" : false,
+           "optional" : true
          },
          "additionalProperties" : false
        }

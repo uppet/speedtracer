@@ -1,10 +1,10 @@
 /** 
- * JSONSchema Validator - Validates JavaScript objects using JSON Schemas 
+ * JSONSchemaValidator Validator - Validates JavaScript objects using JSON Schemas 
  *  (http://www.json.com/json-schema-proposal/)
  *
  * Copyright (c) 2007 Kris Zyp SitePen (www.sitepen.com)
  * Licensed under the MIT (MIT-LICENSE.txt) license.
-To use the validator call JSONSchema.validate with an instance object and an optional schema object.
+To use the validator call JSONSchemaValidator.validate with an instance object and an optional schema object.
 If a schema is provided, it will be used to validate. If the instance object refers to a schema (self-validating), 
 that schema will be used to validate and the schema parameter is not necessary (if both exist, 
 both validations will occur). 
@@ -16,14 +16,15 @@ empty list will be returned. A validation error will have two properties:
 
 /*
  * Modified by Chris Conroy <conroy@google.com>
- *  -modified issue 17's proposed patch (http://code.google.com/p/jsonschema/issues/detail?id=17)
+ *  -modified issue 17's proposed patch (http://code.google.com/p/JSONSchemaValidator/issues/detail?id=17)
  *  -added logic to walk up the inheritance tree to gather parent properties
  *  when an object extends another schema
  *  -fixed type checking of Arrays created outside the context by using Douglas
  *  Crockford's method.
+ *  -changed the namespace to JSONSchemaValidator to avoid confusion with the JsonSchema type.
  */
 
-JSONSchema = {
+JSONSchemaValidator = {
         /*
          * A user provided function that can resolve a reference.
          *
@@ -40,7 +41,7 @@ JSONSchema = {
         },
   validate : function(/*Any*/instance,/*Object*/schema) {
     // Summary:
-    //    To use the validator call JSONSchema.validate with an instance object and an optional schema object.
+    //    To use the validator call JSONSchemaValidator.validate with an instance object and an optional schema object.
     //     If a schema is provided, it will be used to validate. If the instance object refers to a schema (self-validating), 
     //     that schema will be used to validate and the schema parameter is not necessary (if both exist, 
     //     both validations will occur). 
@@ -58,7 +59,7 @@ JSONSchema = {
     //     The checkPropertyChange method will check to see if an value can legally be in property with the given schema
     //     This is slightly different than the validate method in that it will fail if the schema is readonly and it will
     //     not check for self-validation, it is assumed that the passed in value is already internally valid.  
-    //     The checkPropertyChange method will return the same object type as validate, see JSONSchema.validate for 
+    //     The checkPropertyChange method will return the same object type as validate, see JSONSchemaValidator.validate for 
     //     information.
     //
     return this._validate(value,schema, property || "property");
@@ -71,7 +72,7 @@ JSONSchema = {
   // Internal wrapper for the user-provided resolve method
   function _resolve(/*Object*/ schema) {
     if(schema && schema.$ref){
-      var resolvedSchema = JSONSchema.resolveReference(schema.$ref);
+      var resolvedSchema = JSONSchemaValidator.resolveReference(schema.$ref);
       if(!resolvedSchema){
         addError("Unable to resolve schema reference to '" + schema.$ref + "'");
         return schema;

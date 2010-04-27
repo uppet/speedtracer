@@ -13,13 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.speedtracer.breaky.client;
+package com.google.speedtracer.breaky.test;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.coreext.client.JSON;
 import com.google.gwt.coreext.client.JSON.JSONParseException;
 import com.google.gwt.dom.client.DivElement;
@@ -32,7 +31,8 @@ import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.IncrementalCommand;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.xhr.client.XMLHttpRequest;
-import com.google.speedtracer.breaky.client.JsonSchema.JsonSchemaError;
+import com.google.speedtracer.client.ClientConfig;
+import com.google.speedtracer.breaky.client.DumpValidator;
 import com.google.speedtracer.breaky.client.JsonSchema.JsonSchemaResults;
 import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.HeadlessApi;
@@ -109,7 +109,7 @@ public class BreakyTest implements EntryPoint {
   }
 
   private static int INITIAL_WALL_COUNT = 100;
-
+  
   private final DivElement statusDiv = Document.get().createDivElement();
 
   private int validationCount = 0;
@@ -153,23 +153,7 @@ public class BreakyTest implements EntryPoint {
    * @return a message to display to the user
    */
   private String formatResults(String objString, JsonSchemaResults results) {
-    if (results.isValid()) {
-      return "Valid: " + objString + "<br>";
-    } else {
-      StringBuilder errorStringBuilder = new StringBuilder();
-      errorStringBuilder.append("INVALID<br>Object: ");
-      errorStringBuilder.append(objString);
-      errorStringBuilder.append("<br>");
-      JSOArray<JsonSchemaError> errors = results.getErrors();
-      for (int i = 0, length = errors.size(); i < length; i++) {
-        errorStringBuilder.append("Property: ");
-        errorStringBuilder.append(errors.get(i).getProperty());
-        errorStringBuilder.append("<br>Error: ");
-        errorStringBuilder.append(errors.get(i).getMessage());
-        errorStringBuilder.append("<br>");
-      }
-      return errorStringBuilder.toString();
-    }
+    return results.formatResultsHTML(objString);
   }
 
   private void getDump() {
@@ -272,7 +256,7 @@ public class BreakyTest implements EntryPoint {
       reportInvalid("Headless API is not loaded!");
       return;
     }
-
+    
     HeadlessApi.MonitoringOnOptions options = HeadlessApi.MonitoringOnOptions.createObject().cast();
     options.clearData();
     log("starting monitoring...");
@@ -294,7 +278,7 @@ public class BreakyTest implements EntryPoint {
     });
     return;
   }
-
+  
   /**
    * Validate a raw dump.
    * 
@@ -329,3 +313,4 @@ public class BreakyTest implements EntryPoint {
     }
   }
 }
+

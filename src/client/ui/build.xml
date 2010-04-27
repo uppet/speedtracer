@@ -108,7 +108,17 @@
         targetfile="${destdir}/monitor/monitor.nocache.js">
       <srcfiles dir="src" includes="**/**" />
     </uptodate>
-    <antcall target="monitor.build.run" />
+    <antcall target="monitor.${config}.build" />
+  </target>
+
+  <!-- Make the breakyworker a dependency of MonitorDebug -->
+  <target name="monitor.Debug.build"
+    depends="monitor.build.run, breakyworker.build">
+  </target>
+
+  <!-- Release only depends on the monitor module -->
+  <target name="monitor.Release.build"
+    depends="monitor.build.run">
   </target>
 
   <!-- A conditional sub-target to be called from monitor.build -->
@@ -177,6 +187,26 @@
     <copy todir="${destdir}">
       <fileset dir="${wardir}">
         <include name="hintletengine/**" />
+      </fileset>
+    </copy>
+  </target>
+
+  <target name="breakyworker.build">
+    <uptodate property="speedtracer.breakyworker.updated"
+      targetfile="${destdir}/breakyworker/breakyworker.nocache.js">
+      <srcfiles dir="src" includes="**/**" />
+    </uptodate>
+    <antcall target="breakyworker.build.run" />
+  </target>
+
+  <!-- A conditional sub-target to be called from breakyworker.build -->
+  <target name="breakyworker.build.run"
+      depends="init, classes.build"
+      unless="speedtracer.breakyworker.updated">
+    <gwtc module="com.google.speedtracer.breaky.BreakyWorker" />
+    <copy todir="${destdir}">
+      <fileset dir="${wardir}">
+        <include name="breakyworker/**" />
       </fileset>
     </copy>
   </target>
