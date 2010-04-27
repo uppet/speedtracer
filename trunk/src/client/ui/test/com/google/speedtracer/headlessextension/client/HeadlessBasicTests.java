@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.speedtracer.headlessextension;
+package com.google.speedtracer.headlessextension.client;
 
 import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.dom.client.DivElement;
@@ -22,7 +22,8 @@ import com.google.gwt.dom.client.Style.BorderStyle;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.gwt.user.client.Timer;
-import com.google.speedtracer.headlessextension.HeadlessApi.MonitoringCallback;
+import com.google.speedtracer.client.HeadlessApi;
+import com.google.speedtracer.client.HeadlessApi.MonitoringCallback;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -130,7 +131,7 @@ public class HeadlessBasicTests extends GWTTestCase {
 
   @Override
   public String getModuleName() {
-    return "com.google.speedtracer.HeadlessTests";
+    return "com.google.speedtracer.headlessextension.HeadlessTests";
   }
 
   /**
@@ -284,7 +285,7 @@ public class HeadlessBasicTests extends GWTTestCase {
   }
 
   /**
-   * Invoked at the end of a successful test, this method reporces success to
+   * Invoked at the end of a successful test, this method reports success to
    * JUnit and cleans up the state machine for the next run.
    */
   private Transition doTestSuccessful() {

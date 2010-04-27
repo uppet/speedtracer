@@ -157,36 +157,96 @@ function log(message) {
 }
 
 // Triggers monitoring to turn on from the query string. 
-//
-// SpeedTracer=monitor
-//   Turns on monitoring when the content script is loaded.  After the 
-//   ack for turning on monitoring is received, the current URL minus the 
-//   arguments parsed are used to reload the page.  
-function parseQueryString() {
-  var query = window.location.search;
-  if (query.charAt(0) == "?") {
-    var args = query.substring(1).split("&");
+// originalUrl - pass String(window.location)
+// queryString - pass window.location.search
+// (These above arguments are externalized for test purposes.)
+
+// TODO(zundel): Encountering escaped URLs could wreak havoc here.  ":" and "/" 
+//   are reserved and both would be used as parameters to SpeedTracer 
+//   configuration.  Determine if this will ever be a problem, and if so, run
+//   the string through a URL de-escaper.
+function parseQueryString(originalUrl, queryString) {
+  if (queryString.charAt(0) == "?") {
+    var args = queryString.substring(1).split("&");
     for (var i = 0; i < args.length; ++i) {
       var queryArg = args[i];
-      if (queryArg.search(/^SpeedTracer=/ == 0)) {
-        var value = queryArg.replace(/SpeedTracer=/, "");
-        if (value.toLowerCase() === "monitor") {
-          var newUrl = String(window.location);
-          newUrl = newUrl.replace(/SpeedTracer=monitor(&)?/, "");
-          log("Turning on monitoring and setting to reload: " + newUrl);
-          sendMsgToBackground({'type':PORT_HEADLESS_MONITORING_ON, 
-              'options':{'clearData':true,'reload':newUrl}});
-        }
+      if (queryArg.search(/^SpeedTracer=/) == 0) {
+        parseSpeedTracerQueryString(originalUrl, queryArg);
+        break;
       }
     }
   }
 }
 
-if (window == top) {
+// Take a string like this 
+// SppedTracer=monitor,header(foo:bar),xhr(http://nowhere.com)
+// and parses it
+// SpeedTracer=monitor
+//   Turns on monitoring when the content script is loaded.  After the 
+//   ack for turning on monitoring is received, the current URL minus the 
+//   arguments parsed are used to reload the page.  
+function parseSpeedTracerQueryString(originalUrl, queryArg) {
+  var turnOnMonitoring = false;
+  var header = {};
+  
+  var values=queryArg.substring(12).split(",");
+  for (var i = 0; i < values.length; ++i) {
+    var value = values[i];
+    if (value.toLowerCase() === "monitor") {
+      turnOnMonitoring = true;
+    } else if (value.toLowerCase().search(/^header\(/) == 0) {
+      var headerPair = value.substr(7, value.length - 8);
+      var pair = headerPair.split(":");
+      if (pair.length === 2) {
+        header[pair[0]]=pair[1];
+      }
+    }
+  }
+
+  if (turnOnMonitoring) {
+    var newUrl = removeQuerySubString(originalUrl, queryArg);
+    log("Turning on monitoring and setting to reload: " + newUrl);
+    sendMsgToBackground({'type':PORT_HEADLESS_MONITORING_ON, 
+        'options':{'clearData':true,'reload':newUrl,'header':header}});
+  }
+
+}
+
+// Removes 'querySubString' from the middle of 'queryString'
+// Intended to strip out the speedtracer portion of the query so
+// the page can be reloaded without it.
+function removeQuerySubString(queryString, querySubString) {
+  var startIndex = queryString.indexOf(querySubString);
+  if (startIndex >= 0) {
+    var prefix = queryString.slice(0, startIndex);
+    var suffix = queryString.slice(startIndex + querySubString.length);
+    var prefix_tail = prefix.slice(-1);
+    if ((prefix_tail === "&" || prefix_tail === "?")
+        && (suffix.length > 0 && suffix.slice(0,1) === "&")) {
+      // peel off the extra "&"
+      suffix = suffix.slice(1);
+    } else if (suffix.length === 0 && prefix_tail === "&") {
+      prefix = prefix.slice(0, -1);
+    }
+    return prefix + suffix;
+  }
+  
+  throw new Error("Couldn't find query substring " + querySubString + " to extract");
+}
+
+
+// Only execute if this code if it is running at the top level window
+// in an extension, or running in a unit test
+if (window == top || window.__isTest) {
   extensionPort = chrome.extension.connect( {
     name : "HEADLESS_API"
   });
   addHiddenDivs();
   extensionPort.onMessage.addListener(handleMessagesFromBackgroundPage);
-  parseQueryString();
 }
+
+// Only execute if this is actually running in an extension
+if (window == top && !window.__isTest) {
+  parseQueryString(String(window.location), window.location.search);
+}
+

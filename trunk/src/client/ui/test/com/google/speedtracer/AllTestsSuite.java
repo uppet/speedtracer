@@ -36,6 +36,7 @@ import com.google.speedtracer.client.util.UrlTests;
 import com.google.speedtracer.client.util.WorkQueueTests;
 import com.google.speedtracer.client.visualizations.model.UiThreadUtilizationTests;
 import com.google.speedtracer.client.visualizations.view.EventFilterTests;
+import com.google.speedtracer.headlessextension.client.HeadlessContentScriptTests;
 
 import junit.framework.Test;
 
@@ -66,6 +67,7 @@ public class AllTestsSuite extends GWTTestSuite {
     suite.addTestSuite(CsvTests.class);
     suite.addTestSuite(DevToolsDataInstanceTests.class);
     suite.addTestSuite(UiEventTests.class);
+    suite.addTestSuite(HeadlessContentScriptTests.class);
     return suite;
   }
 }

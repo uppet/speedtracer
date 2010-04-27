@@ -154,7 +154,7 @@
   <target name="headless.extension.build.run"
       depends="init, classes.build"
       unless="headless.extension.updated">
-    <gwtc module="com.google.speedtracer.HeadlessExtension${config}" />
+    <gwtc module="com.google.speedtracer.headlessextension.HeadlessExtension${config}" />
     <copy todir="${headless.destdir}" includeEmptyDirs="false">
       <fileset dir="${wardir}/${headless.moniker}" />
     </copy>
@@ -297,6 +297,8 @@
   <target name="clean">
     <delete dir="${destdir}" failonerror="false" />
     <delete dir="${intdir}" failonerror="false" />
+    <delete dir="www-test" failonerror="false" />
+    <delete dir=".gwt-tmp" failonerror="false" />
   </target>
 
 </project>

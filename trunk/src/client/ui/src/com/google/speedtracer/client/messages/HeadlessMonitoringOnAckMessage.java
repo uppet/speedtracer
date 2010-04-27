@@ -17,6 +17,7 @@ package com.google.speedtracer.client.messages;
 
 import com.google.gwt.chrome.crx.client.Port;
 import com.google.gwt.chrome.crx.client.Port.Message;
+import com.google.gwt.core.client.JavaScriptObject;
 
 /**
  * Message sent from the Background page to the API to acknowledge turning on
@@ -34,7 +35,7 @@ public class HeadlessMonitoringOnAckMessage extends Message {
   protected HeadlessMonitoringOnAckMessage() {
   }
 
-  public final native void setReloadUrl(String reloadUrl) /*-{
-    this.reload = reloadUrl;
+  public final native void setOptions(JavaScriptObject options) /*-{
+    this.options = options;
   }-*/;
 }
