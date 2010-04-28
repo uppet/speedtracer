@@ -31,6 +31,7 @@ import com.google.gwt.topspin.ui.client.MouseOutListener;
 import com.google.gwt.topspin.ui.client.MouseOverEvent;
 import com.google.gwt.topspin.ui.client.MouseOverListener;
 import com.google.gwt.topspin.ui.client.Window;
+import com.google.speedtracer.client.ServerEventController;
 import com.google.speedtracer.client.model.NetworkResource;
 import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.util.TimeStampFormatter;
@@ -306,15 +307,19 @@ public class NetworkPillBox extends Div implements OwnsEventListeners {
 
   private final NetworkPillBox.Resources resources;
 
+  private final ServerEventController serverEventController;
+
   public NetworkPillBox(Element parentRowElement,
       NetworkResource networkResource, double windowDomainLeft,
-      double windowDomainRight, Resources resources) {
+      double windowDomainRight, Resources resources,
+      ServerEventController serverEventController) {
     super(new DefaultContainerImpl(parentRowElement));
     this.parentRowElement = parentRowElement;
     this.networkResource = networkResource;
     this.resources = resources;
     this.domainLeft = windowDomainLeft;
     this.domainRight = windowDomainRight;
+    this.serverEventController = serverEventController;
 
     Element elem = getElement();
     elem.setClassName(resources.networkPillBoxCss().pillBoxTimeLine());
@@ -386,7 +391,7 @@ public class NetworkPillBox extends Div implements OwnsEventListeners {
     // Create the RequestDetails for this resource. The DOM should be lazily
     // created.
     details = new RequestDetails(getElement(), pillBoxContainer,
-        networkResource, listenerOwner, resources);
+        networkResource, listenerOwner, resources, serverEventController);
 
     // Add the ClickListener to toggle the visibility
     manageEventListener(ClickEvent.addClickListener(parentRowElement,

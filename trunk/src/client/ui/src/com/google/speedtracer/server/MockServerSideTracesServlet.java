@@ -58,7 +58,8 @@ public class MockServerSideTracesServlet extends HttpServlet {
     }
   }
 
-  private static void scaleRange(JsonObject json, long rootStartTime, double scaleFactor) {
+  private static void scaleRange(JsonObject json, long rootStartTime,
+      double scaleFactor) {
     assert json.get("duration").asNumber() != null;
     assert json.get("start").asNumber() != null;
 
@@ -95,6 +96,10 @@ public class MockServerSideTracesServlet extends HttpServlet {
     return data;
   }
 
+  private static boolean shouldReportTrace(int duration) {
+    return duration > 100;
+  }
+
   private static void updateRanges(JsonObject frame, long startTime,
       double scaleFactor) {
     scaleRange(frame.get("range").asObject(), startTime, scaleFactor);
@@ -110,7 +115,23 @@ public class MockServerSideTracesServlet extends HttpServlet {
     // Last part of the path is the duration. (i.e. /32)
     final String durationAsString = req.getPathInfo().substring(1);
     final int duration = Integer.parseInt(durationAsString);
-    res.setContentType("application/json");
-    scaleTrace(TEMPLATE_DATA.copyDeeply(), duration).write(res.getWriter());
+    if (shouldReportTrace(duration)) {
+      res.setContentType("application/json");
+      scaleTrace(TEMPLATE_DATA.copyDeeply(), duration).write(res.getWriter());
+    } else {
+      res.sendError(404);
+    }
+  }
+
+  @Override
+  protected void doHead(HttpServletRequest req, HttpServletResponse res)
+      throws ServletException, IOException {
+    final String durationAsString = req.getPathInfo().substring(1);
+    final int duration = Integer.parseInt(durationAsString);
+    if (shouldReportTrace(duration)) {
+      res.setStatus(200);
+    } else {
+      res.sendError(404);
+    }
   }
 }
