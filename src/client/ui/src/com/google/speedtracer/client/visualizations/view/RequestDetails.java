@@ -218,7 +218,8 @@ public class RequestDetails extends LazilyCreateableElement {
     final ServerEvent.Data data = event.getServerEventData();
     final String applicationUrl = data.getApplicationUrl();
     final String endPointUrl = data.getEndPointUrl();
-    if (applicationUrl == null && endPointUrl == null) {
+    final String traceViewUrl = data.getTraceViewUrl();
+    if (applicationUrl == null && endPointUrl == null && traceViewUrl == null) {
       return;
     }
 
@@ -227,20 +228,34 @@ public class RequestDetails extends LazilyCreateableElement {
     element.setClassName(css.springInsightViews());
     element.setInnerText("Spring Insight Views: ");
 
+    element.appendChild(document.createTextNode("("));
+
+    // Add Application URL
     if (applicationUrl != null) {
-      element.appendChild(document.createTextNode("("));
       element.appendChild(createNewTabLink(document, css.springInsightLink(),
           applicationUrl, "Application"));
-      element.appendChild(document.createTextNode(") "));
     }
 
+    // Add EndPoint URL
     if (endPointUrl != null) {
-      element.appendChild(document.createTextNode("("));
+      // Is there a previous item?
+      if (applicationUrl != null) {
+        element.appendChild(document.createTextNode(", "));
+      }
       element.appendChild(createNewTabLink(document, css.springInsightLink(),
           endPointUrl, "EndPoint"));
-      element.appendChild(document.createTextNode(") "));
     }
 
+    // Add Trace URL
+    if (traceViewUrl != null) {
+      // Are there previous items?
+      if (applicationUrl != null || endPointUrl != null) {
+        element.appendChild(document.createTextNode(", "));
+      }
+      element.appendChild(createNewTabLink(document, css.springInsightLink(),
+          traceViewUrl, "Trace"));
+    }
+    element.appendChild(document.createTextNode(") "));
     parent.appendChild(element);
   }
 

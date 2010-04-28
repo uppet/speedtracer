@@ -47,6 +47,10 @@ public final class ServerEvent extends UiEvent {
       return getStringProperty("label");
     }
 
+    public String getTraceViewUrl() {
+      return getStringProperty("traceUrl");
+    }
+
     public String getType() {
       return getStringProperty("type");
     }
@@ -62,6 +66,10 @@ public final class ServerEvent extends UiEvent {
     private native void setProperty(String name, String value) /*-{
       this[name] = value;
     }-*/;
+
+    private void setTraceViewUrl(String url) {
+      setProperty("traceUrl", url);
+    }
   }
 
   /**
@@ -156,27 +164,13 @@ public final class ServerEvent extends UiEvent {
     Resources getResources() {
       return getJSObjectProperty("resources");
     }
+
+    String getUrl() {
+      return getStringProperty("url");
+    }
   }
 
   public static final int TYPE = EventRecordType.SERVER_EVENT;
-
-  private static void addDataToTopLevelEvent(Data data,
-      NetworkResource resource, Trace trace) {
-    final Resources resources = trace.getResources();
-    if (resources != null) {
-      final String origin = new Url(resource.getUrl()).getOrigin();
-
-      final String appUrl = resources.getApplicationUrl();
-      if (appUrl != null) {
-        data.setApplicationUrl(origin + appUrl);
-      }
-
-      final String endPointUrl = resources.getEndPointUrl();
-      if (endPointUrl != null) {
-        data.setEndPointUrl(origin + endPointUrl);
-      }
-    }
-  }
 
   /**
    * Transforms a Spring Insight JSON object to a {@link ServerEvent}.
@@ -194,6 +188,31 @@ public final class ServerEvent extends UiEvent {
     addDataToTopLevelEvent(event.getServerEventData(), resource, trace);
     AggregateTimeVisitor.apply(event);
     return event;
+  }
+
+  private static void addDataToTopLevelEvent(Data data,
+      NetworkResource resource, Trace trace) {
+
+    final String origin = new Url(resource.getUrl()).getOrigin();
+    final String traceViewUrl = trace.getUrl();
+    if (traceViewUrl != null) {
+      data.setTraceViewUrl(origin + traceViewUrl);
+    }
+
+    final Resources resources = trace.getResources();
+    if (resources == null) {
+      return;
+    }
+
+    final String appUrl = resources.getApplicationUrl();
+    if (appUrl != null) {
+      data.setApplicationUrl(origin + appUrl);
+    }
+
+    final String endPointUrl = resources.getEndPointUrl();
+    if (endPointUrl != null) {
+      data.setEndPointUrl(origin + endPointUrl);
+    }
   }
 
   private static native ServerEvent create(int type, double time,
