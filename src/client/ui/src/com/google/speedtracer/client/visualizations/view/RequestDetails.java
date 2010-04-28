@@ -170,7 +170,7 @@ public class RequestDetails extends LazilyCreateableElement {
     link.setClassName(className);
     link.setHref(href);
     link.setInnerText(text);
-    link.setTarget("blank");
+    link.setTarget("_blank");
     return link;
   }
 
