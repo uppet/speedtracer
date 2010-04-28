@@ -19,6 +19,7 @@ package com.google.speedtracer.client.model;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.coreext.client.DataBag;
 import com.google.gwt.coreext.client.JSOArray;
+import com.google.speedtracer.client.util.Url;
 
 /**
  * A {@link UiEvent} representing a trace that was fetched from a server. This
@@ -34,6 +35,14 @@ public final class ServerEvent extends UiEvent {
     protected Data() {
     }
 
+    public String getApplicationUrl() {
+      return getStringProperty("applicationUrl");
+    }
+
+    public String getEndPointUrl() {
+      return getStringProperty("endPointUrl");
+    }
+
     public String getLabel() {
       return getStringProperty("label");
     }
@@ -41,6 +50,18 @@ public final class ServerEvent extends UiEvent {
     public String getType() {
       return getStringProperty("type");
     }
+
+    private void setApplicationUrl(String url) {
+      setProperty("applicationUrl", url);
+    }
+
+    private void setEndPointUrl(String url) {
+      setProperty("endPointUrl", url);
+    }
+
+    private native void setProperty(String name, String value) /*-{
+      this[name] = value;
+    }-*/;
   }
 
   /**
@@ -48,78 +69,114 @@ public final class ServerEvent extends UiEvent {
    * This is a simple representation of that structure.
    * 
    */
-  private static final class Frame extends JavaScriptObject {
+  private static final class Frame extends DataBag {
     @SuppressWarnings("all")
     protected Frame() {
     }
 
-    native JSOArray<Frame> getChildren() /*-{
-      return this.children;
-    }-*/;
+    JSOArray<Frame> getChildren() {
+      return getJSObjectProperty("children");
+    }
 
-    native Operation getOperation() /*-{
-      return this.operation;
-    }-*/;
+    Operation getOperation() {
+      return getJSObjectProperty("operation");
+    }
 
-    native Range getRange() /*-{
-      return this.range;
-    }-*/;
+    Range getRange() {
+      return getJSObjectProperty("range");
+    }
   }
 
   /**
    * A Spring Insight JSON object. An Operation is contained within a
    * {@link Frame}.
    */
-  private static final class Operation extends JavaScriptObject {
+  private static final class Operation extends DataBag {
     @SuppressWarnings("all")
     protected Operation() {
     }
 
-    native String getLabel() /*-{
-      return this.label;
-    }-*/;
+    String getLabel() {
+      return getStringProperty("label");
+    }
 
-    native String getType() /*-{
-      return this.type;
-    }-*/;
+    String getType() {
+      return getStringProperty("type");
+    }
   }
 
-  private static final class Range extends JavaScriptObject {
+  private static final class Range extends DataBag {
     @SuppressWarnings("all")
     protected Range() {
     }
 
-    native int getDuration() /*-{
-      return this.duration;
-    }-*/;
+    int getDuration() {
+      return getIntProperty("duration");
+    }
 
-    native double getStart() /*-{
-      return this.start;
-    }-*/;
+    double getStart() {
+      return getDoubleProperty("start");
+    }
+  }
+
+  private static final class Resources extends DataBag {
+    @SuppressWarnings("all")
+    protected Resources() {
+    }
+
+    public String getApplicationUrl() {
+      return getStringProperty("Application");
+    }
+
+    public String getEndPointUrl() {
+      return getStringProperty("Application.EndPoint");
+    }
   }
 
   /**
    * The top-level object in a Spring Insight JSON object.
    */
-  private static final class Trace extends JavaScriptObject {
-    static native Trace getTrace(JavaScriptObject root) /*-{
-      return root.trace;
-    }-*/;
+  private static final class Trace extends DataBag {
+    static Trace getTrace(JavaScriptObject root) {
+      return DataBag.getJSObjectProperty(root, "trace");
+    }
 
     @SuppressWarnings("all")
     protected Trace() {
     }
 
-    native Frame getFrameStack() /*-{
-      return this.frameStack;
-    }-*/;
+    Frame getFrameStack() {
+      return getJSObjectProperty("frameStack");
+    }
 
-    native Range getRange() /*-{
-      return this.range;
-    }-*/;
+    Range getRange() {
+      return getJSObjectProperty("range");
+    }
+
+    Resources getResources() {
+      return getJSObjectProperty("resources");
+    }
   }
 
   public static final int TYPE = EventRecordType.SERVER_EVENT;
+
+  private static void addDataToTopLevelEvent(Data data,
+      NetworkResource resource, Trace trace) {
+    final Resources resources = trace.getResources();
+    if (resources != null) {
+      final String origin = new Url(resource.getUrl()).getOrigin();
+
+      final String appUrl = resources.getApplicationUrl();
+      if (appUrl != null) {
+        data.setApplicationUrl(origin + appUrl);
+      }
+
+      final String endPointUrl = resources.getEndPointUrl();
+      if (endPointUrl != null) {
+        data.setEndPointUrl(origin + endPointUrl);
+      }
+    }
+  }
 
   /**
    * Transforms a Spring Insight JSON object to a {@link ServerEvent}.
@@ -134,6 +191,7 @@ public final class ServerEvent extends UiEvent {
     assert trace != null;
     final ServerEvent event = toServerEvent(resource,
         trace.getRange().getStart(), trace.getFrameStack());
+    addDataToTopLevelEvent(event.getServerEventData(), resource, trace);
     AggregateTimeVisitor.apply(event);
     return event;
   }

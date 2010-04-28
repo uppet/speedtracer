@@ -95,7 +95,7 @@ public class DumpValidator {
 
     if (DataBag.hasOwnProperty(obj, "children")) {
       JsArray<JavaScriptObject> children = DataBag.getJSObjectProperty(obj,
-          "children").cast();
+          "children");
       for (int i = 0; i < children.length() && results.isValid(); i++) {
         // TODO(conroy): make child validation incremental?
         results = this.validate(children.get(i));
@@ -132,7 +132,7 @@ public class DumpValidator {
       JavaScriptObject properties = schema.getProperties();
 
       if (DataBag.hasOwnProperty(properties, "type")) {
-        JsonSchema dumpType = DataBag.getJSObjectProperty(properties, "type").cast();
+        JsonSchema dumpType = DataBag.getJSObjectProperty(properties, "type");
 
         if ((DataBag.hasOwnProperty(dumpType, "minimum") && DataBag.hasOwnProperty(
             dumpType, "maximum"))

@@ -40,7 +40,7 @@ public class DataBag extends JavaScriptObject {
     return obj[prop];
   }-*/;
 
-  public static final native JavaScriptObject getJSObjectProperty(
+  public static final native <T extends JavaScriptObject> T getJSObjectProperty(
       JavaScriptObject obj, String prop) /*-{
     return obj[prop];
   }-*/;
@@ -70,7 +70,8 @@ public class DataBag extends JavaScriptObject {
     return this[prop];
   }-*/;
 
-  public final native JavaScriptObject getJSObjectProperty(String prop) /*-{
+  public final native <T extends JavaScriptObject> T getJSObjectProperty(
+      String prop) /*-{
     return this[prop];
   }-*/;
 
