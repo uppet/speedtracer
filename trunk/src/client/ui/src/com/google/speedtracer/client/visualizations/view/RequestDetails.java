@@ -16,6 +16,7 @@
 package com.google.speedtracer.client.visualizations.view;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.AnchorElement;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -31,7 +32,6 @@ import com.google.gwt.topspin.ui.client.ContainerImpl;
 import com.google.gwt.topspin.ui.client.CssTransitionEvent;
 import com.google.gwt.topspin.ui.client.CssTransitionListener;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
-import com.google.gwt.topspin.ui.client.InsertingContainerImpl;
 import com.google.gwt.topspin.ui.client.Table;
 import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.Logging;
@@ -74,6 +74,12 @@ public class RequestDetails extends LazilyCreateableElement {
     String rowEven();
 
     String sectionHeader();
+
+    String serverTraceTree();
+
+    String springInsightLink();
+
+    String springInsightViews();
 
     String valueCell();
   }
@@ -158,6 +164,16 @@ public class RequestDetails extends LazilyCreateableElement {
     valueCell.setInnerText(value);
   }
 
+  private static AnchorElement createNewTabLink(Document document,
+      String className, String href, String text) {
+    final AnchorElement link = document.createAnchorElement();
+    link.setClassName(className);
+    link.setHref(href);
+    link.setInnerText(text);
+    link.setTarget("blank");
+    return link;
+  }
+
   private static Element createSectionHeader(Css css, Document document,
       String text) {
     final DivElement header = document.createDivElement();
@@ -195,6 +211,37 @@ public class RequestDetails extends LazilyCreateableElement {
   private static String formatTimeSpan(double startTime, double endTime) {
     return "@" + TimeStampFormatter.formatMilliseconds(startTime) + " for "
         + TimeStampFormatter.formatMilliseconds(endTime - startTime);
+  }
+
+  private static void maybeAddSpringInsightLinks(ServerEvent event, Css css,
+      Element parent) {
+    final ServerEvent.Data data = event.getServerEventData();
+    final String applicationUrl = data.getApplicationUrl();
+    final String endPointUrl = data.getEndPointUrl();
+    if (applicationUrl == null && endPointUrl == null) {
+      return;
+    }
+
+    final Document document = parent.getOwnerDocument();
+    final DivElement element = document.createDivElement();
+    element.setClassName(css.springInsightViews());
+    element.setInnerText("Spring Insight Views: ");
+
+    if (applicationUrl != null) {
+      element.appendChild(document.createTextNode("("));
+      element.appendChild(createNewTabLink(document, css.springInsightLink(),
+          applicationUrl, "Application"));
+      element.appendChild(document.createTextNode(") "));
+    }
+
+    if (endPointUrl != null) {
+      element.appendChild(document.createTextNode("("));
+      element.appendChild(createNewTabLink(document, css.springInsightLink(),
+          endPointUrl, "EndPoint"));
+      element.appendChild(document.createTextNode(") "));
+    }
+
+    parent.appendChild(element);
   }
 
   private Element contentElem;
@@ -427,11 +474,20 @@ public class RequestDetails extends LazilyCreateableElement {
 
             parent.insertBefore(createSectionHeader(css, document,
                 "Server Trace"), insertBefore);
+
+            final DivElement container = document.createDivElement();
+            container.setClassName(css.serverTraceTree());
+            parent.insertBefore(container, insertBefore);
+
+            // TODO(knorton): Spring Insight specific functionality that needs
+            // to be better generalized.
+            maybeAddSpringInsightLinks(event, css, container);
+
             final LazyEventTree.Resources treeResources = GWT.create(LazyEventTree.Resources.class);
             final ServerEventTreeController controller = new ServerEventTreeController();
+
             final LazyEventTree tree = new LazyEventTree(
-                new InsertingContainerImpl(parent, insertBefore), controller,
-                event,
+                new DefaultContainerImpl(container), controller, event,
                 new EventTraceBreakdown(event, controller, treeResources),
                 treeResources);
             tree.addSelectionChangeListener(controller);
@@ -476,11 +532,7 @@ public class RequestDetails extends LazilyCreateableElement {
     fillHeaderTable(createTable(container, css.nameValueTable()), css,
         info.getResponseHeaders());
 
-    // TODO(knorton): Server events are turned off in release builds until the
-    // feature is ready.
     // Server Events.
-    if (ClientConfig.isDebugMode()) {
-      maybeShowServerEvents(contentElem, hintletTreeWrapper, css, document);
-    }
+    maybeShowServerEvents(contentElem, hintletTreeWrapper, css, document);
   }
 }

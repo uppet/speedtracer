@@ -247,7 +247,8 @@ public class NetworkResource {
    * @return
    */
   public boolean hasServerTraceUrl() {
-    return responseHeaders.get(SERVER_TRACE_HEADER_NAME) != null;
+    return (responseHeaders == null) ? false
+        : responseHeaders.get(SERVER_TRACE_HEADER_NAME) != null;
   }
 
   public boolean isCached() {

@@ -68,3 +68,17 @@
   border-bottom: 1px solid #666;
   font-size: 110%;
 }
+
+.springInsightViews {
+  font-size: 90%;
+  padding-bottom: 4px;
+}
+
+.springInsightLink {
+  color: #000;
+}
+
+.serverTraceTree {
+  padding-top: 4px;
+  margin-bottom: 20px;
+}
