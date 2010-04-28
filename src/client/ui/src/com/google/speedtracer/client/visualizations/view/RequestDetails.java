@@ -16,7 +16,6 @@
 package com.google.speedtracer.client.visualizations.view;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.coreext.client.JSON;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -34,16 +33,15 @@ import com.google.gwt.topspin.ui.client.CssTransitionListener;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.gwt.topspin.ui.client.InsertingContainerImpl;
 import com.google.gwt.topspin.ui.client.Table;
-import com.google.gwt.xhr.client.XMLHttpRequest;
 import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.Logging;
+import com.google.speedtracer.client.ServerEventController;
 import com.google.speedtracer.client.model.NetworkResource;
 import com.google.speedtracer.client.model.ServerEvent;
 import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.client.model.NetworkResource.HeaderMap;
 import com.google.speedtracer.client.model.NetworkResource.HeaderMap.IterationCallBack;
 import com.google.speedtracer.client.util.TimeStampFormatter;
-import com.google.speedtracer.client.util.Xhr;
 import com.google.speedtracer.client.util.dom.DocumentExt;
 import com.google.speedtracer.client.util.dom.LazilyCreateableElement;
 import com.google.speedtracer.client.util.dom.ManagesEventListeners;
@@ -222,6 +220,8 @@ public class RequestDetails extends LazilyCreateableElement {
 
   private final Element parentElem;
 
+  private final ServerEventController serverEventController;
+
   /**
    * ctor.
    * 
@@ -234,13 +234,15 @@ public class RequestDetails extends LazilyCreateableElement {
    */
   public RequestDetails(Element parentElem, Element pb,
       NetworkResource networkResource, ManagesEventListeners listenerManager,
-      NetworkPillBox.Resources resources) {
+      NetworkPillBox.Resources resources,
+      ServerEventController serverEventController) {
     super(listenerManager, resources.requestDetailsCss().details());
     this.parentElem = parentElem;
     this.resources = resources;
     this.pbCss = resources.networkPillBoxCss();
     this.pillBoxContainer = pb;
     this.info = networkResource;
+    this.serverEventController = serverEventController;
   }
 
   public void refresh() {
@@ -407,44 +409,36 @@ public class RequestDetails extends LazilyCreateableElement {
 
     final String traceUrl = info.getServerTraceUrl();
 
-    // TODO(knorton): Currently apps that have server-side tracing report traces
-    // for all resources even if they do not have a valid trace. This is going
-    // to change soon. When it does, this logic can change to assume that if a
-    // traceUrl header is present, a trace should be available.
-    //
     // TODO(knorton): When playing back from a dump, we do not want to try to
     // fetch the server-side trace.
-    Xhr.get(traceUrl, new Xhr.XhrCallback() {
-      public void onFail(XMLHttpRequest xhr) {
-        if (ClientConfig.isDebugMode()) {
-          Logging.getLogger().logText(
-              "Failed to fetch server trace: " + traceUrl + "(status: "
-                  + xhr.getStatusText() + ")");
-        }
-      }
+    serverEventController.requestTraceFor(info,
+        new ServerEventController.RequestTraceCallback() {
+          public void onFailure() {
+            if (ClientConfig.isDebugMode()) {
+              Logging.getLogger().logText(
+                  "Failed to fetch server trace: " + traceUrl);
+            }
+          }
 
-      public void onSuccess(XMLHttpRequest xhr) {
-        // TODO(knorton): Update Ui appropriately when parsing errors occur.
-        final ServerEvent event = ServerEvent.fromSpringInsightTrace(info,
-            JSON.parse(xhr.getResponseText()));
+          public void onSuccess(ServerEvent event) {
+            // insertBefore may be null, in which case Element.insertBefore will
+            // append.
+            final Element insertBefore = insertAfter.getNextSiblingElement();
 
-        // insertBefore may be null, in which case Element.insertBefore will
-        // append.
-        final Element insertBefore = insertAfter.getNextSiblingElement();
-
-        parent.insertBefore(createSectionHeader(css, document, "Server Trace"),
-            insertBefore);
-        final LazyEventTree.Resources treeResources = GWT.create(LazyEventTree.Resources.class);
-        final ServerEventTreeController controller = new ServerEventTreeController();
-        final LazyEventTree tree = new LazyEventTree(
-            new InsertingContainerImpl(parent, insertBefore), controller, event,
-            new EventTraceBreakdown(event, controller, treeResources),
-            treeResources);
-        tree.addSelectionChangeListener(controller);
-        tree.addExpansionChangeListener(controller);
-        fixHeightOfParentRow();
-      }
-    });
+            parent.insertBefore(createSectionHeader(css, document,
+                "Server Trace"), insertBefore);
+            final LazyEventTree.Resources treeResources = GWT.create(LazyEventTree.Resources.class);
+            final ServerEventTreeController controller = new ServerEventTreeController();
+            final LazyEventTree tree = new LazyEventTree(
+                new InsertingContainerImpl(parent, insertBefore), controller,
+                event,
+                new EventTraceBreakdown(event, controller, treeResources),
+                treeResources);
+            tree.addSelectionChangeListener(controller);
+            tree.addExpansionChangeListener(controller);
+            fixHeightOfParentRow();
+          }
+        });
   }
 
   /**

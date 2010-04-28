@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,6 +25,7 @@ import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.gwt.topspin.ui.client.ResizeEvent;
 import com.google.gwt.topspin.ui.client.ResizeListener;
 import com.google.gwt.topspin.ui.client.Window;
+import com.google.speedtracer.client.ServerEventController;
 import com.google.speedtracer.client.model.NetworkResource;
 import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.util.dom.DocumentExt;
@@ -83,6 +84,8 @@ public class NetworkTimeLineDetailView extends DetailView implements
   private final NetworkTimeLineDetailView.Resources resources;
 
   private boolean shouldFlash = false;
+
+  private final ServerEventController serverEventController = new ServerEventController();
 
   public NetworkTimeLineDetailView(Container parent, NetworkVisualization viz,
       NetworkTimeLineDetailView.Resources resources) {
@@ -224,7 +227,7 @@ public class NetworkTimeLineDetailView extends DetailView implements
             : lastPathComponent.substring(dotIndex);
 
         final ResourceRow row = new ResourceRow(getContainer(), resource,
-            fileExtension, left, right, this, resources);
+            fileExtension, left, right, this, resources, serverEventController);
 
         displayed.add(row);
       }

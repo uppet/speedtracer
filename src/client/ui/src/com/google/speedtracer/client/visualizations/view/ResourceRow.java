@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,6 +21,7 @@ import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.events.client.EventListenerRemover;
 import com.google.gwt.resources.client.CssResource;
+import com.google.gwt.resources.client.DataResource;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.ImageResource.ImageOptions;
 import com.google.gwt.resources.client.ImageResource.RepeatStyle;
@@ -29,6 +30,7 @@ import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.gwt.topspin.ui.client.Div;
 import com.google.gwt.topspin.ui.client.MouseOutListener;
 import com.google.gwt.topspin.ui.client.MouseOverListener;
+import com.google.speedtracer.client.ServerEventController;
 import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.NetworkResource;
 import com.google.speedtracer.client.timeline.Constants;
@@ -53,13 +55,17 @@ public class ResourceRow extends Div {
 
     int headerTextRightPad();
 
-    int hintletIndicatorTopPad();
+    String hintIndicator();
 
-    String resourceHintIndicator();
+    int hintIndicatorTopPad();
+
+    String indicators();
 
     String rowEven();
 
     String rowOdd();
+
+    String serverTraceIndicator();
 
     String url();
   }
@@ -69,6 +75,9 @@ public class ResourceRow extends Div {
    */
   public interface Resources extends NetworkPillBox.Resources,
       HintletIndicator.Resources {
+    @Source("resources/server-trace-icon.png")
+    DataResource serverTraceIcon();
+
     @Source("resources/resourceCSSIcon.png")
     ImageResource cssIcon();
 
@@ -91,7 +100,7 @@ public class ResourceRow extends Div {
 
   private HintletIndicator hintletIndicator;
 
-  private final DefaultContainerImpl hintletIndicatorContainer;
+  private final DefaultContainerImpl indicatorContainer;
 
   private int idCounter = 0;
 
@@ -107,16 +116,20 @@ public class ResourceRow extends Div {
 
   private final Element textElem;
 
+  private final ServerEventController serverEventController;
+
   public ResourceRow(Container container, NetworkResource resource,
       String fileType, double windowDomainLeft, double windowDomainRight,
       NetworkTimeLineDetailView networkDetailView,
-      ResourceRow.Resources resources) {
+      ResourceRow.Resources resources,
+      ServerEventController serverEventController) {
     super(container);
+    final Css css = resources.resourceRowCss();
     initMimeTypes(resources);
-    ResourceRow.Css css = resources.resourceRowCss();
     Element elem = getElement();
     this.resource = resource;
     this.resources = resources;
+    this.serverEventController = serverEventController;
 
     if (((networkDetailView.getRowCount()) & 1) == 1) {
       elem.setClassName(css.rowOdd());
@@ -147,13 +160,19 @@ public class ResourceRow extends Div {
     headerElem.setAttribute("title", resource.getUrl());
     elem.appendChild(headerElem);
 
-    hintletIndicatorContainer = new DefaultContainerImpl(headerElem);
+    final DivElement indicatorElem = DocumentExt.get().createDivElement();
+    indicatorElem.setClassName(css.indicators());
+    headerElem.appendChild(indicatorElem);
+
+    indicatorContainer = new DefaultContainerImpl(indicatorElem);
 
     // Adds a hintlet indicator if the record has associated hintlets.
     addHintletIndicator(resource.getHintRecords());
 
+    maybeAddServerTraceIndicator();
+
     pillBox = new NetworkPillBox(elem, resource, windowDomainLeft,
-        windowDomainRight, resources);
+        windowDomainRight, resources, serverEventController);
   }
 
   @Override
@@ -192,9 +211,11 @@ public class ResourceRow extends Div {
 
   public void refresh() {
     if (hintletIndicator != null) {
-      hintletIndicatorContainer.remove(hintletIndicator);
+      indicatorContainer.remove(hintletIndicator);
     }
     addHintletIndicator(resource.getHintRecords());
+
+    maybeAddServerTraceIndicator();
 
     pillBox.refresh();
   }
@@ -204,12 +225,12 @@ public class ResourceRow extends Div {
       return;
     }
 
-    hintletIndicator = new HintletIndicator(hintletIndicatorContainer,
-        hintRecords, resources);
+    hintletIndicator = new HintletIndicator(indicatorContainer, hintRecords,
+        resources);
     Element indicatorElem = hintletIndicator.getElement();
     indicatorElem.setId(idCounter++ + "");
     ResourceRow.Css css = resources.resourceRowCss();
-    indicatorElem.addClassName(css.resourceHintIndicator());
+    indicatorElem.addClassName(css.hintIndicator());
 
     // Make room for the HintletIndicator
     textElem.getStyle().setPropertyPx("right",
@@ -234,5 +255,24 @@ public class ResourceRow extends Div {
     mimeTypeMap.put(".xhtml", images.htmlDocumentIcon());
     mimeTypeMap.put(".js", images.javascriptIcon());
     mimeTypeMap.put("default", images.defaultIcon());
+  }
+
+  private void maybeAddServerTraceIndicator() {
+    if (!resource.hasServerTraceUrl()) {
+      return;
+    }
+
+    serverEventController.serverHasValidTrace(resource,
+        new ServerEventController.HasTraceCallback() {
+          public void onResponse(boolean hasTrace) {
+            if (!hasTrace) {
+              return;
+            }
+            final DivElement indicatorElem = DocumentExt.get().createDivWithClassName(
+                resources.resourceRowCss().serverTraceIndicator());
+            indicatorElem.setTitle("Includes timing data from the server.");
+            indicatorContainer.getElement().appendChild(indicatorElem);
+          }
+        });
   }
 }
