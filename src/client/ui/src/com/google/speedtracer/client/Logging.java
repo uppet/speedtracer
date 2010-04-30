@@ -38,10 +38,10 @@ public class Logging {
       NetworkResourceModel.Listener, UiEventModel.Listener,
       HintletEngineHost.ExceptionListener {
 
-    private final ZippyLogger logger;
+    private final ZippyLogger zippyLogger;
 
     public DebugListenerLogger() {
-      logger = ZippyLogger.get();
+      zippyLogger = ZippyLogger.get();
     }
 
     public void listenTo(DataModel model) {
@@ -51,19 +51,21 @@ public class Logging {
     }
 
     public void logHtml(String html) {
-      logger.logHtml(html);
+      zippyLogger.logHtml(html);
       GWT.log(html, null);
     }
 
     public void logText(String text) {
       String dressedUpText = "<span style=\"color:"
           + MonitorConstants.LOGGER_NET_HEADER_COLOR + "\">" + text + "</span>";
-      logger.logHtml(dressedUpText);
+      zippyLogger.logHtml(dressedUpText);
       GWT.log(text, null);
     }
 
     public void onHintletException(HintletException hintletException) {
-      logText("HintletEngine: " + hintletException.getException());
+      String text = "HintletEngine: " + hintletException.getException();
+      logText(text);
+      GWT.log(text, null);
     }
 
     public void onNetworkResourceRequestStarted(NetworkResource resource,
@@ -94,19 +96,58 @@ public class Logging {
     void logText(String text);
   }
 
-  private static ListenerLogger logger;
+  /**
+   * This is a stub logging implementation to make stray log messages safe in a
+   * release build.
+   */
+  public static class ReleaseListenerLogger implements ListenerLogger,
+      NetworkResourceModel.Listener, UiEventModel.Listener,
+      HintletEngineHost.ExceptionListener {
 
-  public static void createListenerLogger(DataModel model) {
-    if (ClientConfig.isDebugMode()) {
-      logger = new DebugListenerLogger();
-      if (model != null) {
-        logger.listenTo(model);
-      }
+    public ReleaseListenerLogger() {
+    }
+
+    public void listenTo(DataModel model) {
+    }
+
+    public void logHtml(String html) {
+    }
+
+    public void logText(String text) {
+    }
+
+    public void onHintletException(HintletException hintletException) {
+    }
+
+    public void onNetworkResourceRequestStarted(NetworkResource resource,
+        boolean isRedirect) {
+    }
+
+    public void onNetworkResourceResponseFinished(NetworkResource resource) {
+    }
+
+    public void onNetworkResourceResponseStarted(NetworkResource resource) {
+    }
+
+    public void onNetworkResourceUpdated(NetworkResource resource) {
+    }
+
+    public void onUiEventFinished(UiEvent event) {
     }
   }
 
+  private static ListenerLogger logger;
+
   public static ListenerLogger getLogger() {
-    assert logger != null;
+    // Lazy initialize the logger
+    if (logger == null) {
+      if (ClientConfig.isDebugMode()) {
+        logger = new DebugListenerLogger();
+      } else {
+        logger = new ReleaseListenerLogger();
+      }
+    }
+
     return logger;
   }
 }

@@ -16,7 +16,6 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.junit.client.GWTTestCase;
-import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.model.V8SymbolTable.AliasableEntry;
 import com.google.speedtracer.client.model.V8SymbolTable.V8Symbol;
 
@@ -61,10 +60,5 @@ public class V8SymbolTableTests extends GWTTestCase {
     assertNull(symbolTable.lookup(0x119));
     assertNull(symbolTable.lookup(0x126));
     assertNull(symbolTable.lookup(0x1000));
-  }
-
-  @Override
-  protected void gwtSetUp() throws Exception {
-    Logging.createListenerLogger(null);
   }
 }

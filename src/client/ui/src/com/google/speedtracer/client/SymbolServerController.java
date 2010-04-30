@@ -247,7 +247,7 @@ public class SymbolServerController {
   }
 
   private void serviceRequest(PendingRequest request) {
-    assert manifestLoaded;
+    assert manifestLoaded : "Manifest should be loaded";
 
     final ResourceSymbolInfo resourceSymbolInfo = lookupEntryInManifest(request.resourceUrl);
     final Callback callback = request.callback;

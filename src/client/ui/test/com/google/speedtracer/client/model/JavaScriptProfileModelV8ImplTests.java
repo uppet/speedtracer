@@ -16,7 +16,6 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.junit.client.GWTTestCase;
-import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.model.V8SymbolTable.V8Symbol;
 
 import java.util.Collections;
@@ -323,10 +322,5 @@ public class JavaScriptProfileModelV8ImplTests extends GWTTestCase {
 
     children = child.getChildren();
     assertEquals(0, children.size());
-  }
-
-  @Override
-  protected void gwtSetUp() throws Exception {
-    Logging.createListenerLogger(null);
   }
 }
