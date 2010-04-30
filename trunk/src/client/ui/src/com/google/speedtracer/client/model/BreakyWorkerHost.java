@@ -26,6 +26,7 @@ import com.google.gwt.webworker.client.ErrorHandler;
 import com.google.gwt.webworker.client.MessageEvent;
 import com.google.gwt.webworker.client.MessageHandler;
 import com.google.gwt.webworker.client.Worker;
+import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.model.DataModel.EventRecordHandler;
 
@@ -93,15 +94,19 @@ public class BreakyWorkerHost implements EventRecordHandler {
         JavaScriptObject breakyMessage = event.getDataAsJSO();
         int sequence = DataBag.getIntProperty(breakyMessage, "sequence");
         String message = DataBag.getStringProperty(breakyMessage, "message");
-        Logging.getLogger().logText("Breaky Error:(#" + sequence + ") " + message);
+        if (ClientConfig.isDebugMode()) {
+          Logging.getLogger().logText("Breaky Error:(#" + sequence + ") " + message);
+        }
       }
     });
   }
 
   private void onBreakyException(ErrorEvent event) {
-    Logging.getLogger().logText(
-        "Breaky Exception: " + event.getMessage() + " in " + event.getFilename()
-            + ":" + event.getLineNumber());
+    if (ClientConfig.isDebugMode()) {
+      Logging.getLogger().logText(
+          "Breaky Exception: " + event.getMessage() + " in " + event.getFilename()
+              + ":" + event.getLineNumber());
+    }
   }
 
 }

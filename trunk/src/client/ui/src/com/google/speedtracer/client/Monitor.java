@@ -335,7 +335,7 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
    */
   public void onTabChanged(TabChange nav) {
     // We should never get a page transition before initialize!!
-    assert (pageStates != null && pageStates.size() > 0);
+    assert (pageStates != null && pageStates.size() > 0) : "We should never get a page transition before initialize";
 
     String oldUrl = getUrlWithoutHash(controller.getPageUrlForIndex(pageStates.size() - 1));
     String newUrl = getUrlWithoutHash(nav.getUrl());
@@ -362,7 +362,7 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
       // Now swap in the page state
       setStateForPageAtIndex(pageIndex);
       controller.setSelectedPage(pageIndex);
-      // Start fetching the symbol manifest if it is available.
+      
       maybeInitializeSymbolServerController(model.getTabDescription());
     }
   }
@@ -464,6 +464,10 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     pageStates = new ArrayList<ApplicationState>();
     // Create our backing Model which provides our event stream.
     model = DataModel.Provider.createModel(tabDescription, handle);
+    
+    // setup debug logger as soon as we create the model
+    Logging.getLogger().listenTo(model);
+    
     model.getTabNavigationModel().addListener(this);
     // The top Controller bar for our top level actions.
     controller = new Controller(Root.getContainer(), model, this, resources);
@@ -503,9 +507,6 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     // in.
     new NoDataNotifier(monitorVisualizationsPanel.getMainTimeLine().getModel(),
         slideout);
-
-    // setup debug logger
-    Logging.createListenerLogger(model);
   }
 
   private void maybeInitializeSymbolServerController(

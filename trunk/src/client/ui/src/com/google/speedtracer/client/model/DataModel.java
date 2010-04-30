@@ -57,6 +57,7 @@ public abstract class DataModel implements HintletEngineHost.HintListener,
         DataInstance dataInstance) {
       final DataModel model = ClientConfig.isMockMode() ? new MockDataModel()
           : new DataModelImpl();
+      model.initialize();
       model.setTabDescription(tabDescription);
       model.dataInstance = dataInstance;
       model.bind(tabDescription, dataInstance);
@@ -76,35 +77,19 @@ public abstract class DataModel implements HintletEngineHost.HintListener,
 
   private JsIntegerMap<EventRecord> eventRecordMap = JsIntegerMap.create();
 
-  private final HintletEngineHost hintletEngineHost;
+  private HintletEngineHost hintletEngineHost;
 
-  private final NetworkResourceModel networkResourceModel;
+  private NetworkResourceModel networkResourceModel;
 
-  private final JavaScriptProfileModel profileModel;
+  private JavaScriptProfileModel profileModel;
 
   private TabDescription tabDescription;
 
-  private final TabChangeModel tabNavigationModel;
+  private TabChangeModel tabNavigationModel;
 
-  private final UiEventModel uiEventModel;
+  private UiEventModel uiEventModel;
 
   protected DataModel() {
-    if (ClientConfig.isDebugMode()) {
-      this.breakyWorkerHost = new BreakyWorkerHost();
-      // NOTE: the order of adding models matters, since they modify the record
-      eventModels.add(breakyWorkerHost);
-    }
-    
-    this.hintletEngineHost = new HintletEngineHost();
-    this.networkResourceModel = new NetworkResourceModel();
-    this.uiEventModel = new UiEventModel();
-    this.tabNavigationModel = new TabChangeModel();
-    this.profileModel = new JavaScriptProfileModel(this);
-    this.hintletEngineHost.addHintListener(this);
-    eventModels.add(uiEventModel);
-    eventModels.add(networkResourceModel);
-    eventModels.add(tabNavigationModel);
-    eventModels.add(profileModel);
   }
 
   /**
@@ -206,6 +191,15 @@ public abstract class DataModel implements HintletEngineHost.HintListener,
   }
 
   /**
+   * Hook up the various models. In the general case, we want all of them, but
+   * subclasses can pick and choose which models make sense for them.
+   */
+  public void initialize() {
+    initializeWorkers();
+    initializeData();
+  }
+  
+  /**
    * Data sources that drive the DataModel drive it through this single function
    * which passes in an {@link EventRecord}.
    * 
@@ -238,6 +232,28 @@ public abstract class DataModel implements HintletEngineHost.HintListener,
    */
   protected abstract void bind(TabDescription tabDescription,
       DataInstance dataInstance);
+
+  protected void initializeData() {
+    this.networkResourceModel = new NetworkResourceModel();
+    this.uiEventModel = new UiEventModel();
+    this.tabNavigationModel = new TabChangeModel();
+    this.profileModel = new JavaScriptProfileModel(this);
+    
+    eventModels.add(uiEventModel);
+    eventModels.add(networkResourceModel);
+    eventModels.add(tabNavigationModel);
+    eventModels.add(profileModel);
+  }
+  
+  protected void initializeWorkers() {
+    if (ClientConfig.isDebugMode()) {
+      this.breakyWorkerHost = new BreakyWorkerHost();
+      // NOTE: the order of adding models matters, some modify the record object
+      eventModels.add(0, breakyWorkerHost);
+    } 
+    this.hintletEngineHost = new HintletEngineHost();
+    this.hintletEngineHost.addHintListener(this);
+  }
 
   protected void setTabDescription(TabDescription tabDescription) {
     this.tabDescription = tabDescription;

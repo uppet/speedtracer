@@ -16,7 +16,6 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.junit.client.GWTTestCase;
-import com.google.speedtracer.client.Logging;
 
 /**
  * Test for parsing v8 log decompression.
@@ -104,10 +103,5 @@ public class V8LogDecompressorTests extends GWTTestCase {
     assertEquals("abcdefghijklmnopqrstuvwxyz", result);
     result = decompressor.decompressLogEntry("#1:10");
     assertEquals("klmnopqrstuvwxyz", result);
-  }
-
-  @Override
-  protected void gwtSetUp() throws Exception {
-    Logging.createListenerLogger(null);
   }
 }

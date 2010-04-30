@@ -16,7 +16,6 @@
 package com.google.speedtracer.client.util;
 
 import com.google.gwt.junit.client.GWTTestCase;
-import com.google.speedtracer.client.Logging;
 
 /**
  * Tests the WorkQueue class.
@@ -74,10 +73,5 @@ public class WorkQueueTests extends GWTTestCase {
     workQueue.prepend(new PrependWorkNode(1000));
     workQueue.prepend(new PrependWorkNode(100));
     workQueue.prepend(new PrependWorkNode(10));
-  }
-
-  @Override
-  protected void gwtSetUp() throws Exception {
-    Logging.createListenerLogger(null);
   }
 }

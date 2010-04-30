@@ -75,7 +75,6 @@ public class HeadlessBackgroundPage extends Extension implements
    */
   public class MessageHandler implements MessageEvent.Listener {
     private class HeadlessDataModel extends DataModel {
-
       @Override
       public void bind(TabDescription tabDescription, DataInstance dataInstance) {
       }
@@ -85,6 +84,15 @@ public class HeadlessBackgroundPage extends Extension implements
         // Send this message over to the content script
         String dataString = JSON.stringify(data);
         eventRecordData.push(dataString);
+      }
+
+      /**
+       * Only initialize the data because the headless extension does not use
+       * the workers.
+       */
+      @Override
+      public void initialize() {
+        initializeData();
       }
 
       @Override
@@ -212,6 +220,7 @@ public class HeadlessBackgroundPage extends Extension implements
         dataInstance = DevToolsDataInstance.create(id);
         dataInstances.put(id, dataInstance);
         DataModel dataModel = new HeadlessDataModel();
+        dataModel.initialize();
         dataInstance.load(dataModel);
       }
       return dataInstance;
