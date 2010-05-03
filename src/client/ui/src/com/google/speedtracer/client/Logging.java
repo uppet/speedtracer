@@ -56,9 +56,7 @@ public class Logging {
     }
 
     public void logText(String text) {
-      String dressedUpText = "<span style=\"color:"
-          + MonitorConstants.LOGGER_NET_HEADER_COLOR + "\">" + text + "</span>";
-      zippyLogger.logHtml(dressedUpText);
+      zippyLogger.logText(text);
       GWT.log(text, null);
     }
 

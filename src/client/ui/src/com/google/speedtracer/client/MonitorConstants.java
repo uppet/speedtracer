@@ -22,8 +22,5 @@ public class MonitorConstants {
   // Used for giving a 5% pad on the right so we can manipulate things
   // on the boundaries.
   public static final double EXTRA_DOMAIN_PADDING = 0.05;
-  public static String LOGGER_NET_HEADER_COLOR = "#5eb9f8";
-  public static String LOGGER_UI_HEADER_COLOR = "#ff8c00";
   public static final double MIN_GRAPH_DATA_RESOLUTION = 35;
-  public static final int OVERVIEW_TIMELINE_HEIGHT = 50;
 }
