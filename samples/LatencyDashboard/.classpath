@@ -7,5 +7,9 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/gwt-visualization"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/speedtracer-api.jar"/>
 	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/appengine-testing.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/appengine-api-labs-1.3.2.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/appengine-api-1.0-sdk-1.3.2.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/appengine-api-stubs.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>
