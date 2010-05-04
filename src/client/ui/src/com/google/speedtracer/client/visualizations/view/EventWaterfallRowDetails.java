@@ -178,7 +178,7 @@ public class EventWaterfallRowDetails extends RowDetails implements
     this.eventWaterfall = eventWaterfall;
     this.symbolClickListener = new SourceSymbolClickListener() {
       public void onSymbolClicked(String resourceUrl,
-          String sourceViewerServer, int lineNumber, int column,
+          SourceViewerServer sourceViewerServer, int lineNumber, int column,
           String absoluteFilePath) {
         showSource(resourceUrl, sourceViewerServer, lineNumber, 0,
             absoluteFilePath);
@@ -209,8 +209,9 @@ public class EventWaterfallRowDetails extends RowDetails implements
     }
   }
 
-  public void showSource(final String resourceUrl, String sourceViewerServer,
-      final int lineNumber, final int column, String absoluteFilePath) {
+  public void showSource(final String resourceUrl,
+      SourceViewerServer sourceViewerServer, final int lineNumber,
+      final int column, String absoluteFilePath) {
     // TODO(jaimeyap): Put up a spinner or something. It may take a while to
     // display the resource.
 
@@ -350,8 +351,8 @@ public class EventWaterfallRowDetails extends RowDetails implements
         eventWaterfall.getVisualization().getModel().getJavaScriptProfileForEvent(
             getParentRow().getEvent()), new SourceSymbolClickListener() {
           public void onSymbolClicked(String resourceUrl,
-              String sourceViewerServer, int lineNumber, int column,
-              String absoluteFilePath) {
+              SourceViewerServer sourceViewerServer, int lineNumber,
+              int column, String absoluteFilePath) {
             showSource(resourceUrl, sourceViewerServer, lineNumber, 0,
                 absoluteFilePath);
           }

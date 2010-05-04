@@ -55,8 +55,9 @@ public class SymbolServerController {
    * symbol.
    */
   public interface Resymbolizeable {
-    void reSymbolize(String sourceServer, String sourceViewerServer,
-        JsSymbol sourceSymbol, SourcePresenter sourcePresenter);
+    void reSymbolize(String sourceServer,
+        SourceViewerServer sourceViewerServer, JsSymbol sourceSymbol,
+        SourcePresenter sourcePresenter);
   }
 
   /**

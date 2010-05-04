@@ -21,6 +21,7 @@ import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.CompactGwtSymbolMapParser;
 import com.google.speedtracer.client.GwtSymbolMapParser;
 import com.google.speedtracer.client.Logging;
+import com.google.speedtracer.client.SourceViewerServer;
 
 /**
  * Class used for re-symbolizing obfuscated JavaScript. Provides a simple
@@ -56,7 +57,7 @@ public class JsSymbolMap {
    * @return
    */
   public static JsSymbolMap parse(String sourceServer,
-      String sourceViewerServer, String type, String symbolMapStr) {
+      SourceViewerServer sourceViewerServer, String type, String symbolMapStr) {
     JsSymbolMap symbolMap = new JsSymbolMap(sourceServer, sourceViewerServer);
     JsSymbolMapParser parser = null;
     if (GWT_SYMBOL_MAP.equals(type)) {
@@ -81,11 +82,12 @@ public class JsSymbolMap {
   private final String sourceServer;
 
   // get API for supporting jump to IDE.
-  private final String sourceViewerServer;
+  private final SourceViewerServer sourceViewerServer;
 
   private IterableFastStringMap<JsSymbol> symbols;
 
-  protected JsSymbolMap(String sourceServer, String sourceViewerServer) {
+  protected JsSymbolMap(String sourceServer,
+      SourceViewerServer sourceViewerServer) {
     sourceServer = (null == sourceServer) ? "" : sourceServer;
     this.sourceServer = (sourceServer.charAt(sourceServer.length() - 1) == '/')
         ? sourceServer : sourceServer + "/";
@@ -97,7 +99,7 @@ public class JsSymbolMap {
     return sourceServer;
   }
 
-  public String getSourceViewerServer() {
+  public SourceViewerServer getSourceViewerServer() {
     return sourceViewerServer;
   }
 

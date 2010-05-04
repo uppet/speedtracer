@@ -33,6 +33,7 @@ import com.google.gwt.topspin.ui.client.Div;
 import com.google.gwt.topspin.ui.client.Table;
 import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.Logging;
+import com.google.speedtracer.client.SourceViewerServer;
 import com.google.speedtracer.client.SymbolServerController;
 import com.google.speedtracer.client.SourceViewer.SourcePresenter;
 import com.google.speedtracer.client.SymbolServerController.Resymbolizeable;
@@ -88,8 +89,8 @@ public class JavaScriptProfileRenderer {
     }
 
     public void reSymbolize(final String sourceServer,
-        final String sourceViewerServer, final JsSymbol sourceSymbol,
-        final SourcePresenter sourcePresenter) {
+        final SourceViewerServer sourceViewerServer,
+        final JsSymbol sourceSymbol, final SourcePresenter sourcePresenter) {
       AnchorElement resymbolizedSymbol = symbolNameCell.getOwnerDocument().createAnchorElement();
       resymbolizedSymbol.setClassName(css.resymbolizedLink());
       resymbolizedSymbol.setInnerText(sourceSymbol.getSymbolName());
@@ -160,8 +161,8 @@ public class JavaScriptProfileRenderer {
       }
 
       public void reSymbolize(final String sourceServer,
-          final String sourceViewerServer, final JsSymbol sourceSymbol,
-          final SourcePresenter sourcePresenter) {
+          final SourceViewerServer sourceViewerServer,
+          final JsSymbol sourceSymbol, final SourcePresenter sourcePresenter) {
         AnchorElement resymbolizedSymbol = bottomDiv.getOwnerDocument().createAnchorElement();
         resymbolizedSymbol.setClassName(css.resymbolizedLink());
         resymbolizedSymbol.setInnerText(sourceSymbol.getSymbolName());

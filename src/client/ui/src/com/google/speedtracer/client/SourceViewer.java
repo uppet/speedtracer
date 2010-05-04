@@ -61,7 +61,7 @@ public class SourceViewer {
    * resolve classpath relative paths to files.
    */
   public interface SourcePresenter {
-    void showSource(String resourceUrl, String sourceViewerServer,
+    void showSource(String resourceUrl, SourceViewerServer sourceViewerServer,
         int lineNumber, int column, String absoluteFilePath);
   }
 

@@ -23,6 +23,7 @@ import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
+import com.google.speedtracer.client.SourceViewerServer;
 import com.google.speedtracer.client.SymbolServerController;
 import com.google.speedtracer.client.SymbolServerService;
 import com.google.speedtracer.client.SourceViewer.SourcePresenter;
@@ -133,15 +134,16 @@ public class StackFrameRenderer implements Resymbolizeable {
    * 
    * @param sourceServer The source server URL that is needed to display a
    *          relative path for the source file
-   * @param sourceViewerServer A resource that provides a GET API to support
-   *          jump-to-IDE functionality. This is allows to be null.
+   * @param sourceViewerServer A {@link SourceViewerServer} that provides a GET
+   *          API to support jump-to-IDE functionality. This is allowed to be
+   *          null/unset.
    * @param sourceSymbol The symbol mapping in the original source for the
    *          function symbol in our stack frame.
    * @param sourcePresenter The {@link SourcePresenter} that will handle
    *          displaying the source of the resymbolized symbol.
    */
   public void reSymbolize(final String sourceServer,
-      final String sourceViewerServer, final JsSymbol sourceSymbol,
+      final SourceViewerServer sourceViewerServer, final JsSymbol sourceSymbol,
       final SourcePresenter sourcePresenter) {
     assert (myElem != null) : "Element is null when attempting resymbolization in StackFrameRenderer";
 
