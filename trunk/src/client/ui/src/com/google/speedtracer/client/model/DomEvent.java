@@ -33,7 +33,7 @@ public class DomEvent extends UiEvent {
   public final String getDomEventType() {
     return getData().getStringProperty("type");
   }
-  
+
   // TODO (jaimeyap): Re-instrument this stuff.
   /*   
   public final double getBubbleDuration() {

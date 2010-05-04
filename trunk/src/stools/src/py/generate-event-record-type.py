@@ -135,9 +135,21 @@ webkitEvents = [
   },
   { 
     'value' : 17, 
-    'constant' : 'GCEvent',
+    'constant' : 'GC_EVENT',
     'desc' : 'Garbage Collection',
     'help_text' : 'The JavaScript engine ran its garbage collector to reclaim memory.',
+  },
+  { 
+    'value' : 18, 
+    'constant' : 'DOM_CONTENT_LOADED',
+    'desc' : 'DomContentLoaded Event',
+    'help_text' : 'The DomContentLoaded Event fired meaning all elements in the Document have been parsed and are ready.',
+  },
+  { 
+    'value' : 19, 
+    'constant' : 'LOAD_EVENT',
+    'desc' : 'WebKit Load Event',
+    'help_text' : 'Event indicating that all elements are loaded and all static resources (like images and CSS) have been downloaded and processed.',
   }
 ]
 # END INSPECTOR TIMELINE RECORDS.

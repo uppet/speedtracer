@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Google Inc.
+ * Copyright 2008 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,11 +18,12 @@ package com.google.speedtracer.client.model;
 import com.google.speedtracer.shared.EventRecordType;
 
 /**
- * Event that corresponds to a Garbage Collection run.
+ * Checkpoint event marking the time that the DOMContentLoaded event was fired,
+ * meaning that the DOM was ready.
  */
-public class GarbageCollectionEvent extends UiEvent {
-  public static final int TYPE = EventRecordType.GC_EVENT;
+public class DomContentLoadedEvent extends EventRecord {
+  public static final int TYPE = EventRecordType.DOM_CONTENT_LOADED;
 
-  protected GarbageCollectionEvent() {
+  protected DomContentLoadedEvent() {
   }
 }

@@ -19,6 +19,7 @@ package com.google.speedtracer.client.model;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.coreext.client.DataBag;
 import com.google.gwt.coreext.client.JSOArray;
+import com.google.speedtracer.shared.EventRecordType;
 
 /**
  * A {@link UiEvent} representing a trace that was fetched from a server. This

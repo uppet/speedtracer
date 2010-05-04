@@ -25,7 +25,6 @@ import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.speedtracer.client.model.AggregateTimeVisitor;
-import com.google.speedtracer.client.model.EventRecordType;
 import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.LogMessageVisitor;
 import com.google.speedtracer.client.model.UiEvent;
@@ -172,7 +171,7 @@ public class EventWaterfallRow extends TableRow {
     }
 
     private void addTitle(Element elem) {
-      String title = EventRecordType.typeToDetailedTypeString(event);
+      String title = UiEvent.typeToDetailedTypeString(event);
       Color color = EventRecordColors.getColorForType(event.getType());
       DivElement colorBox = elem.getOwnerDocument().createDivElement();
       colorBox.setClassName(resources.eventWaterfallRowCss().colorBox());
