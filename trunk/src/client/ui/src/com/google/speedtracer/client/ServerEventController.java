@@ -29,6 +29,14 @@ import com.google.speedtracer.client.util.Xhr;
 public class ServerEventController {
 
   /**
+   * Allows callers to present authentication UI when server trace requests are
+   * rejected.
+   */
+  public interface AuthenticationDelegate {
+    void onAuthenticationRequired(String url);
+  }
+
+  /**
    * A callback interface for querying the validity of a trace url.
    * 
    * @see ServerEventController#serverHasValidTrace(NetworkResource,
@@ -50,19 +58,18 @@ public class ServerEventController {
     void onSuccess(ServerEvent event);
   }
 
-  private static class HasTraceHandler implements Xhr.XhrCallback {
+  private class HasTraceHandler implements Xhr.XhrCallback {
     private final HasTraceCallback callback;
     private final String traceUrl;
-    private final JsStringBooleanMap traceValidityByUrl;
 
     private HasTraceHandler(HasTraceCallback callback, String traceUrl,
         JsStringBooleanMap traceValidityByUrl) {
       this.callback = callback;
       this.traceUrl = traceUrl;
-      this.traceValidityByUrl = traceValidityByUrl;
     }
 
     public void onFail(XMLHttpRequest xhr) {
+      // TODO(knorton): Handle authentication.
       respond(false);
     }
 
@@ -87,17 +94,26 @@ public class ServerEventController {
     }
 
     public void onFail(XMLHttpRequest xhr) {
+      // TODO(knorton): Handle authentication.
       callback.onFailure();
     }
 
     public void onSuccess(XMLHttpRequest xhr) {
-      final ServerEvent event = ServerEvent.fromSpringInsightTrace(resource,
+      final ServerEvent event = ServerEvent.fromServerJson(resource,
           JSON.parse(xhr.getResponseText()));
       callback.onSuccess(event);
     }
   }
 
   private final JsStringBooleanMap traceValidityByUrl = JsStringBooleanMap.create();
+
+  // TODO(knorton): Add authentication callbacks.
+  @SuppressWarnings("unused")
+  private final AuthenticationDelegate authDelegate;
+
+  public ServerEventController(AuthenticationDelegate authDelegate) {
+    this.authDelegate = authDelegate;
+  }
 
   /**
    * Requests the {@link ServerEvent} associated with the <code>resource</code>.
