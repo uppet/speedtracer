@@ -20,6 +20,7 @@ import com.google.gwt.coreext.client.DataBag;
 import com.google.gwt.coreext.client.JSOArray;
 import com.google.speedtracer.client.model.ServerEvent.Data;
 import com.google.speedtracer.client.util.Url;
+import com.google.speedtracer.shared.EventRecordType;
 
 /**
  * Transforms JSON from server-side traces into a valid {@link ServerEvent} when

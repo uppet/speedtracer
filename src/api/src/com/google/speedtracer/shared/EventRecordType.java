@@ -46,13 +46,16 @@ public class EventRecordType {
   public static final int RESOURCE_FINISH = 14;
   public static final int JAVASCRIPT_EXECUTION = 15;
   public static final int RESOURCE_DATA_RECEIVED = 16;
-  public static final int GCEvent = 17;
+  public static final int GC_EVENT = 17;
+  public static final int DOM_CONTENT_LOADED = 18;
+  public static final int LOAD_EVENT = 19;
 
   // Speed Tracer Types
   public static final int AGGREGATED_EVENTS = 0x7FFFFFFF;
   public static final int TAB_CHANGED = 0x7FFFFFFE;
   public static final int RESOURCE_UPDATED = 0x7FFFFFFD;
   public static final int PROFILE_DATA = 0x7FFFFFFC;
+  public static final int SERVER_EVENT = 0x7FFFFFFB;
 
   private static final String[] webkitTypeStrings = {
     "Dom Event",                        // 0 DOM_EVENT
@@ -72,7 +75,9 @@ public class EventRecordType {
     "Resource Finish",                  // 14 RESOURCE_FINISH
     "JavaScript Callback",              // 15 JAVASCRIPT_EXECUTION
     "Resource Data Received",           // 16 RESOURCE_DATA_RECEIVED
-    "Garbage Collection",               // 17 GCEvent
+    "Garbage Collection",               // 17 GC_EVENT
+    "DomContentLoaded Event",           // 18 DOM_CONTENT_LOADED
+    "WebKit Load Event",                // 19 LOAD_EVENT
   };
 
   private static final String[] speedTracerTypeStrings = {
@@ -80,6 +85,7 @@ public class EventRecordType {
     "Tab Changed",                      // 0x7FFFFFFE TAB_CHANGED
     "Resource Updated",                 // 0x7FFFFFFD RESOURCE_UPDATED
     "JavaScript CPU profile data",      // 0x7FFFFFFC PROFILE_DATA
+    "An event from a server-side trace.",   // 0x7FFFFFFB SERVER_EVENT
   };
 
   private static final String[] webkitHelpStrings = {
@@ -117,8 +123,12 @@ public class EventRecordType {
     "JavaScript was run in an event dispatch.",
     // 16 RESOURCE_DATA_RECEIVED
     "Processing a file received by the resource loader.",
-    // 17 GCEvent
+    // 17 GC_EVENT
     "The JavaScript engine ran its garbage collector to reclaim memory.",
+    // 18 DOM_CONTENT_LOADED
+    "The DomContentLoaded Event fired meaning all elements in the Document have been parsed and are ready.",
+    // 19 LOAD_EVENT
+    "Event indicating that all elements are loaded and all static resources (like images and CSS) have been downloaded and processed.",
   };
 
   private static final String[] speedTracerHelpStrings = {
@@ -130,6 +140,8 @@ public class EventRecordType {
     "Details about a Network Resource were updated.",
     // 0x7FFFFFFC PROFILE_DATA
     "Contains raw data from the JavaScript engine profiler.",
+    // 0x7FFFFFFB SERVER_EVENT
+    "This happened on the server.",
   };
 
   public static String typeToHelpString(int type) {

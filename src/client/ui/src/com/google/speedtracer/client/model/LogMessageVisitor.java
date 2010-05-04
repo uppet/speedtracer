@@ -18,6 +18,7 @@ package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.JsArrayNumber;
 import com.google.gwt.coreext.client.JSOArray;
+import com.google.speedtracer.shared.EventRecordType;
 
 /**
  * Updates the hasUserLogs flags on a {@link UiEvent}.
