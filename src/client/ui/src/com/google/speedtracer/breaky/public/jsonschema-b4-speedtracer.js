@@ -269,8 +269,8 @@ JSONSchemaValidator = {
     }
     for(i in instance){
       if(instance.hasOwnProperty(i) && !(i.charAt(0) == '_' && i.charAt(1) == '_') && objTypeDef && !objTypeDef[i] && additionalProp===false){
-        errors.push({property:path,message:(typeof value) + "The property " + i +
-            " is not defined in the schema and the schema does not allow additional properties"});
+        errors.push({property:path,message:(typeof value) + " The property \"" + i +
+            "\" is not defined in the schema and the schema does not allow additional properties"});
       }
       var requires = objTypeDef && objTypeDef[i] && objTypeDef[i].requires;
       if(requires && !(requires in instance)){

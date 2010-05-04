@@ -19,7 +19,7 @@ import com.google.gwt.coreext.client.JsIntegerMap;
 import com.google.speedtracer.client.model.DataModel;
 import com.google.speedtracer.client.model.EventRecord;
 import com.google.speedtracer.client.model.HintRecord;
-import com.google.speedtracer.client.model.HintletEngineHost;
+import com.google.speedtracer.client.model.HintletInterface;
 import com.google.speedtracer.client.model.JavaScriptProfile;
 import com.google.speedtracer.client.model.JavaScriptProfileModel;
 import com.google.speedtracer.client.model.UiEvent;
@@ -38,7 +38,7 @@ import java.util.List;
  * state.
  */
 public class SluggishnessModel implements VisualizationModel,
-    UiEventModel.Listener, HintletEngineHost.HintListener {
+    UiEventModel.Listener, HintletInterface.HintListener {
 
   /**
    * Listener that is invoked when an existing event has had a change and the
@@ -263,20 +263,7 @@ public class SluggishnessModel implements VisualizationModel,
     if (!UiEvent.isUiEvent(rec)) {
       return;
     }
-    int value;
-    switch (hintlet.getSeverity()) {
-      case HintRecord.SEVERITY_CRITICAL:
-        value = HighlightModel.HIGHLIGHT_CRITICAL;
-        break;
-      case HintRecord.SEVERITY_WARNING:
-        value = HighlightModel.HIGHLIGHT_WARNING;
-        break;
-      case HintRecord.SEVERITY_INFO:
-        value = HighlightModel.HIGHLIGHT_INFO;
-        break;
-      default:
-        value = HighlightModel.HIGHLIGHT_NONE;
-    }
+    int value = HighlightModel.severityToHighlight(hintlet);
     highlightModel.addData(rec.getTime(), value);
 
     double recTime = rec.getTime();

@@ -91,20 +91,7 @@ public class HintletRecordsTree extends Tree {
       SpanElement labelText = Document.get().createSpanElement();
       getItemLabelElement().appendChild(labelText);
 
-      switch (severity) {
-        case HintRecord.SEVERITY_CRITICAL:
-          labelText.setInnerText(" Critical");
-          break;
-        case HintRecord.SEVERITY_WARNING:
-          labelText.setInnerText(" Warning");
-          break;
-        case HintRecord.SEVERITY_INFO:
-          labelText.setInnerText(" Info");
-          break;
-        default:
-          // Unknown severity!
-          assert (false);
-      }
+      labelText.setInnerText(" " + HintRecord.severityToString(severity));
 
       // Add child nodes.
       for (int i = 0; i < hintletRecords.size(); i++) {
@@ -158,16 +145,22 @@ public class HintletRecordsTree extends Tree {
    * Creates the items in the tree.
    */
   private void buildTree() {
+    boolean hasValidation = false;
     boolean hasCritical = false;
     boolean hasWarning = false;
     boolean hasInfo = false;
+
     int criticalCount = 0;
     int warningCount = 0;
     int infoCount = 0;
+    int validationCount = 0;
 
     // Only build severity nodes we need
     for (int i = 0; i < hintletRecords.size(); i++) {
-      if (hintletRecords.get(i).getSeverity() == HintRecord.SEVERITY_CRITICAL) {
+      if (hintletRecords.get(i).getSeverity() == HintRecord.SEVERITY_VALIDATION) {
+        hasValidation = true;
+        validationCount++;
+      } else if (hintletRecords.get(i).getSeverity() == HintRecord.SEVERITY_CRITICAL) {
         hasCritical = true;
         criticalCount++;
       } else if (hintletRecords.get(i).getSeverity() == HintRecord.SEVERITY_WARNING) {
@@ -179,6 +172,10 @@ public class HintletRecordsTree extends Tree {
       }
     }
 
+    if (hasValidation) {
+      new SeverityItem(this, HintRecord.SEVERITY_VALIDATION, validationCount,
+          hintletRecords);
+    }
     if (hasCritical) {
       new SeverityItem(this, HintRecord.SEVERITY_CRITICAL, criticalCount,
           hintletRecords);

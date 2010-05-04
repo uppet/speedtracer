@@ -17,6 +17,7 @@ package com.google.speedtracer.client.visualizations.model;
 
 import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.HintletEngineHost;
+import com.google.speedtracer.client.model.HintletInterface;
 import com.google.speedtracer.client.timeline.GraphModel;
 import com.google.speedtracer.client.timeline.HighlightModel;
 
@@ -35,7 +36,7 @@ import java.util.TreeMap;
 // subclass?
 public class HintletReportModel implements VisualizationModel {
 
-  private HintletEngineHost.HintListener hintListener = new HintletEngineHost.HintListener() {
+  private HintletInterface.HintListener hintListener = new HintletInterface.HintListener() {
     public void onHint(HintRecord hintlet) {
       hints.add(hintlet);
     }

@@ -83,6 +83,26 @@ public class JsonSchema extends JavaScriptObject {
         return errorStringBuilder.toString();
       }
     }
+    
+    public final String formatResultsText(String objString) {
+      if (isValid()) {
+        return "Valid: " + objString;
+      } else {
+        StringBuilder errorStringBuilder = new StringBuilder();
+        errorStringBuilder.append("INVALID Object <");
+        errorStringBuilder.append(objString);
+        errorStringBuilder.append(">, ");
+        JSOArray<JsonSchemaError> errors = getErrors();
+        for (int i = 0, length = errors.size(); i < length; i++) {
+          errorStringBuilder.append("Property: <");
+          errorStringBuilder.append(errors.get(i).getProperty());
+          errorStringBuilder.append(">, Error: <");
+          errorStringBuilder.append(errors.get(i).getMessage());
+          errorStringBuilder.append(">, ");
+        }
+        return errorStringBuilder.toString();
+      }     
+    }
 
     public final native JSOArray<JsonSchemaError> getErrors() /*-{
       return this.errors || [];
@@ -92,17 +112,6 @@ public class JsonSchema extends JavaScriptObject {
       return this.valid;
     }-*/;
   }
-
-  /**
-   * Normal script injection puts it in $wnd, but in the worker thread there is
-   * no $wnd.
-   * TODO(conroy): nuke this and correctly put the script into global scope
-   * 
-   * @return a handle to the jsonschema-b4 JSONSchema object
-   */
-  private static native JavaScriptObject getJsonSchemaImpl() /*-{
-    return (typeof JSONSchema === 'undefined') ? $wnd.JSONSchema : JSONSchema;
-  }-*/;
 
   protected JsonSchema() {
   }

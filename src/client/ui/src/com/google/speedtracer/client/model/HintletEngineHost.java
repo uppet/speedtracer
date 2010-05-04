@@ -26,6 +26,10 @@ import com.google.gwt.webworker.client.Worker;
 import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.messages.HintMessage;
+import com.google.speedtracer.client.model.DataModel.EventRecordHandler;
+import com.google.speedtracer.client.model.HintletInterface.ExceptionListener;
+import com.google.speedtracer.client.model.HintletInterface.HintListener;
+import com.google.speedtracer.shared.EventRecordType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,20 +39,7 @@ import java.util.List;
  * for providing API for submitting records for analysis and for calling back
  * when a hint fires from a hintlet.
  */
-public class HintletEngineHost {
-  /**
-   * Listener interface for receiving exceptions thrown in hintlets.
-   */
-  public interface ExceptionListener {
-    void onHintletException(HintletException hintletException);
-  }
-
-  /**
-   * Listener interface for receiving hints.
-   */
-  public interface HintListener {
-    void onHint(HintRecord hint);
-  }
+public class HintletEngineHost implements EventRecordHandler {
 
   private final List<ExceptionListener> exceptionListeners = new ArrayList<ExceptionListener>();
   private final Worker hintletEngineWorker;
@@ -68,16 +59,28 @@ public class HintletEngineHost {
     hintListeners.add(listener);
   }
 
-  public void addRecord(EventRecord data) {
-    hintletEngineWorker.postMessage(JSON.stringify(data));
-  }
-
   /**
    * Stops the worker. After calling this function, it is no longer safe to make
    * method calls in this instance - the object should be discarded.
    */
   public void destroy() {
     hintletEngineWorker.terminate();
+  }
+
+  public void onEventRecord(EventRecord data) {
+    if (data.getType() != EventRecordType.PROFILE_DATA) {
+      // The hintlet engine does not like profile data
+      hintletEngineWorker.postMessage(JSON.stringify(data));
+    }
+  }
+
+  /**
+   * A hint record generated outside of the hintlet worker.
+   * 
+   * @param hint
+   */
+  public void onSynthesizedHint(HintRecord hint) {
+    onHint(hint);
   }
 
   public void removeExceptionListener(ExceptionListener listener) {
