@@ -15,10 +15,13 @@
  */
 package com.google.speedtracer.client.visualizations.view;
 
+import com.google.speedtracer.client.SourceViewerServer;
+
 /**
  * Interface for Listening for a click on a source symbol link.
  */
 public interface SourceSymbolClickListener {
-  void onSymbolClicked(String resourceUrl, String sourceViewerServer,
-      int lineNumber, int column, String absoluteFilePath);
+  void onSymbolClicked(String resourceUrl,
+      SourceViewerServer sourceViewerServer, int lineNumber, int column,
+      String absoluteFilePath);
 }

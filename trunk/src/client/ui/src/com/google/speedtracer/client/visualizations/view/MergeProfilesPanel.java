@@ -32,6 +32,7 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.speedtracer.client.MonitorResources;
 import com.google.speedtracer.client.SourceViewer;
+import com.google.speedtracer.client.SourceViewerServer;
 import com.google.speedtracer.client.SymbolServerController;
 import com.google.speedtracer.client.SymbolServerService;
 import com.google.speedtracer.client.SourceViewer.SourcePresenter;
@@ -220,8 +221,9 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
         });
   }
 
-  public void showSource(final String resourceUrl, String sourceViewerServer,
-      final int lineNumber, final int column, String absoluteFilePath) {
+  public void showSource(final String resourceUrl,
+      SourceViewerServer sourceViewerServer, final int lineNumber,
+      final int column, String absoluteFilePath) {
     if (sourceViewer == null) {
       SourceViewer.create(elem, resources,
           new SourceViewerInitializedCallback() {
@@ -273,8 +275,8 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
         new SourceSymbolClickListener() {
 
           public void onSymbolClicked(String resourceUrl,
-              String sourceViewerServer, int lineNumber, int column,
-              String absoluteFilePath) {
+              SourceViewerServer sourceViewerServer, int lineNumber,
+              int column, String absoluteFilePath) {
             showSource(resourceUrl, sourceViewerServer, lineNumber, column,
                 absoluteFilePath);
           }

@@ -63,7 +63,7 @@ public class SymbolServerManifest extends JavaScriptObject {
       return this.sourceServer;
     }-*/;
 
-    public final native String getSourceViewerServer() /*-{
+    public final native SourceViewerServer getSourceViewerServer() /*-{
       return this.sourceViewerServer;
     }-*/;
 

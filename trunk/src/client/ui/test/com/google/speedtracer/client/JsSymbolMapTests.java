@@ -98,7 +98,7 @@ public class JsSymbolMapTests extends GWTTestCase {
    */
   public void testParseCompactGwtSymbolMap() {
     String sourceServer = "http://notrealsourceserver";
-    JsSymbolMap symbolMap = JsSymbolMap.parse(sourceServer, "",
+    JsSymbolMap symbolMap = JsSymbolMap.parse(sourceServer, null,
         JsSymbolMap.COMPACT_GWT_SYMBOL_MAP, testCompactGwtSymbolMapString);
     assertEquals(4, symbolMap.getSymbolCount());
 
@@ -117,7 +117,7 @@ public class JsSymbolMapTests extends GWTTestCase {
    */
   public void testParseGwtSymbolMap() {
     String sourceServer = "http://notrealsourceserver";
-    JsSymbolMap symbolMap = JsSymbolMap.parse(sourceServer, "",
+    JsSymbolMap symbolMap = JsSymbolMap.parse(sourceServer, null,
         JsSymbolMap.GWT_SYMBOL_MAP, testGwtSymbolMapString);
     assertEquals(4, symbolMap.getSymbolCount());
 

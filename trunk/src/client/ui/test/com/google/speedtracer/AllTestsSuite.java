@@ -17,6 +17,7 @@ package com.google.speedtracer;
 
 import com.google.gwt.junit.tools.GWTTestSuite;
 import com.google.speedtracer.client.JsSymbolMapTests;
+import com.google.speedtracer.client.SourceViewerServerTests;
 import com.google.speedtracer.client.SourceViewerTests;
 import com.google.speedtracer.client.SymbolServerControllerTests;
 import com.google.speedtracer.client.WindowChannelTests;
@@ -68,6 +69,7 @@ public class AllTestsSuite extends GWTTestSuite {
     suite.addTestSuite(DevToolsDataInstanceTests.class);
     suite.addTestSuite(UiEventTests.class);
     suite.addTestSuite(HeadlessContentScriptTests.class);
+    suite.addTestSuite(SourceViewerServerTests.class);
     return suite;
   }
 }
