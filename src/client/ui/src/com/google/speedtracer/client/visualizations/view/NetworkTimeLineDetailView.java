@@ -42,7 +42,7 @@ import java.util.List;
  * Shows each requested resource.
  */
 public class NetworkTimeLineDetailView extends DetailView implements
-    ResizeListener {
+    ResizeListener, ServerEventController.AuthenticationDelegate {
 
   /**
    * CSS.
@@ -85,7 +85,8 @@ public class NetworkTimeLineDetailView extends DetailView implements
 
   private boolean shouldFlash = false;
 
-  private final ServerEventController serverEventController = new ServerEventController();
+  private final ServerEventController serverEventController = new ServerEventController(
+      this);
 
   public NetworkTimeLineDetailView(Container parent, NetworkVisualization viz,
       NetworkTimeLineDetailView.Resources resources) {
@@ -136,6 +137,11 @@ public class NetworkTimeLineDetailView extends DetailView implements
 
   public boolean isDirty() {
     return isDirty;
+  }
+
+  public void onAuthenticationRequired(String url) {
+    // TODO(knorton): Add UI to help a user log into the server providing
+    // traces.
   }
 
   public void onResize(ResizeEvent event) {

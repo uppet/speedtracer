@@ -30,7 +30,10 @@ public class ServerEventColors {
     assert event.getType() == EventRecordType.SERVER_EVENT : "event is not a ServerEvent";
     if (colorByTypeString == null) {
       final IterableFastStringMap<Color> map = new IterableFastStringMap<Color>();
+
       map.put("HTTP", Color.ORANGE);
+
+      // Spring Insight only.
       map.put("WEB_REQUEST", Color.BLUEVIOLET);
       map.put("VIEW_RENDER", Color.MIDNIGHT_BLUE);
       map.put("JDBC", Color.INDIAN_RED);
@@ -43,6 +46,9 @@ public class ServerEventColors {
       map.put("LIFECYCLE", Color.DARKBLUE);
       map.put("INIT_BINDER", Color.BROWN);
       map.put("SIMPLE", Color.LIMEGREEN);
+
+      // AppStats only.
+      map.put("API", Color.BLUE);
       colorByTypeString = map;
     }
 
