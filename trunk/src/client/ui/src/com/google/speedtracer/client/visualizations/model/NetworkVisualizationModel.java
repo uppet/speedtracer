@@ -18,7 +18,7 @@ package com.google.speedtracer.client.visualizations.model;
 import com.google.speedtracer.client.model.DataModel;
 import com.google.speedtracer.client.model.EventRecord;
 import com.google.speedtracer.client.model.HintRecord;
-import com.google.speedtracer.client.model.HintletEngineHost;
+import com.google.speedtracer.client.model.HintletInterface;
 import com.google.speedtracer.client.model.NetworkResource;
 import com.google.speedtracer.client.model.NetworkResourceModel;
 import com.google.speedtracer.client.model.ResourceRecord;
@@ -34,7 +34,7 @@ import java.util.List;
  * state.
  */
 public class NetworkVisualizationModel implements VisualizationModel,
-    NetworkResourceModel.Listener, HintletEngineHost.HintListener {
+    NetworkResourceModel.Listener, HintletInterface.HintListener {
 
   /**
    * Invoked when a resource has a change and may need to be refreshed in the
@@ -115,19 +115,7 @@ public class NetworkVisualizationModel implements VisualizationModel,
       return;
     }
     int value;
-    switch (hintlet.getSeverity()) {
-      case HintRecord.SEVERITY_CRITICAL:
-        value = HighlightModel.HIGHLIGHT_CRITICAL;
-        break;
-      case HintRecord.SEVERITY_WARNING:
-        value = HighlightModel.HIGHLIGHT_WARNING;
-        break;
-      case HintRecord.SEVERITY_INFO:
-        value = HighlightModel.HIGHLIGHT_INFO;
-        break;
-      default:
-        value = HighlightModel.HIGHLIGHT_NONE;
-    }
+    value = HighlightModel.severityToHighlight(hintlet);
     highlightModel.addData(rec.getTime(), value);
 
     // Notify any listeners wanting to hear about such changes.

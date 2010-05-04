@@ -37,7 +37,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.speedtracer.client.model.ApplicationState;
 import com.google.speedtracer.client.model.ButtonDescription;
 import com.google.speedtracer.client.model.HintRecord;
-import com.google.speedtracer.client.model.HintletEngineHost;
+import com.google.speedtracer.client.model.HintletInterface;
 import com.google.speedtracer.client.model.Visualization;
 import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.timeline.GraphModel;
@@ -434,7 +434,7 @@ public class MonitorVisualizationsPanel extends Div {
     // Setup the graphs to refresh when hintlet data arrives. Buffer the data
     // so that the screen doesn't jump from rapid hintlet data coming in.
     initialState.getDataModel().getHintletEngineHost().addHintListener(
-        new HintletEngineHost.HintListener() {
+        new HintletInterface.HintListener() {
           boolean queued = false;
 
           public void onHint(HintRecord hintlet) {

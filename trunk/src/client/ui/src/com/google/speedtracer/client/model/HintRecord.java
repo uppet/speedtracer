@@ -25,8 +25,9 @@ import com.google.gwt.coreext.client.JSOArray;
 public class HintRecord extends JavaScriptObject {
   public static final int SEVERITY_CRITICAL = 1;
   public static final int SEVERITY_INFO = 3;
+  public static final int SEVERITY_VALIDATION = 0;
   public static final int SEVERITY_WARNING = 2;
-
+  
   public static native HintRecord create(String hintletRule, double timestamp,
       int severity, String description, int refRecord) /*-{
     return {description: description, hintletRule: hintletRule, 
@@ -49,6 +50,27 @@ public class HintRecord extends JavaScriptObject {
       }
     }
     return maxSeverity;
+  }
+
+  /**
+   * @param severity
+   * @return A string representation of the severity level
+   */
+  public static String severityToString(int severity) {
+    switch (severity) {
+      case HintRecord.SEVERITY_VALIDATION:
+        return "Validation";
+      case HintRecord.SEVERITY_CRITICAL:
+        return "Critical";
+      case HintRecord.SEVERITY_WARNING:
+        return "Warning";
+      case HintRecord.SEVERITY_INFO:
+        return "Info";
+      default:
+        // Unknown severity!
+        assert false : "encountered unknown severity " + severity;
+        return "Unknown Severity!";
+    }
   }
 
   protected HintRecord() {

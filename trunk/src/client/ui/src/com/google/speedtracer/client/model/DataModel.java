@@ -21,7 +21,6 @@ import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.coreext.client.JSON;
 import com.google.gwt.coreext.client.JsIntegerMap;
 import com.google.speedtracer.client.ClientConfig;
-import com.google.speedtracer.shared.EventRecordType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +31,7 @@ import java.util.List;
  * 
  * Also defines Universal base time, which can be calibrated by subclasses only.
  */
-public abstract class DataModel implements HintletEngineHost.HintListener,
+public abstract class DataModel implements HintletInterface.HintListener,
     EventRecordLookup, DataInstance.DataListener {
   /**
    * Wrapper objects to proxy callbacks to correct handler.
@@ -247,7 +246,7 @@ public abstract class DataModel implements HintletEngineHost.HintListener,
   
   protected void initializeWorkers() {
     if (ClientConfig.isDebugMode()) {
-      this.breakyWorkerHost = new BreakyWorkerHost();
+      this.breakyWorkerHost = new BreakyWorkerHost(this, hintletEngineHost);
       // NOTE: the order of adding models matters, some modify the record object
       eventModels.add(0, breakyWorkerHost);
     } 
@@ -260,16 +259,6 @@ public abstract class DataModel implements HintletEngineHost.HintListener,
   }
 
   private void fireOnEventRecordImpl(EventRecord data) {
-
-    // TODO(zundel): When profiling data is sent to the hintlet engine,
-    // we've seen problems with web workers crashing. Until that is resolved,
-    // we'll filter profiling data from being sent there.
-    // TODO(conroy): Make this a standard eventModel
-    if (data.getType() != EventRecordType.PROFILE_DATA) {
-      // Forward to the hintlet engine.
-      hintletEngineHost.addRecord(data);
-    }
-
     for (int i = 0, n = eventModels.size(); i < n; i++) {
       eventModels.get(i).onEventRecord(data);
     }

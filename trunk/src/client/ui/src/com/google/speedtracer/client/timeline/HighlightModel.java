@@ -15,6 +15,8 @@
  */
 package com.google.speedtracer.client.timeline;
 
+import com.google.speedtracer.client.model.HintRecord;
+
 import java.util.Iterator;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -99,16 +101,32 @@ public class HighlightModel {
     }
   }
 
-  public static final Integer HIGHLIGHT_CRITICAL = Integer.valueOf(3);
-  public static final Integer HIGHLIGHT_INFO = Integer.valueOf(1);
-  public static final Integer HIGHLIGHT_NONE = Integer.valueOf(0);
-  public static final Integer HIGHLIGHT_WARNING = Integer.valueOf(2);
+  public static final Integer HIGHLIGHT_CRITICAL = HintRecord.SEVERITY_CRITICAL;
+  public static final Integer HIGHLIGHT_INFO = HintRecord.SEVERITY_INFO;
+  public static final Integer HIGHLIGHT_NONE = Integer.valueOf(-1);
+  public static final Integer HIGHLIGHT_VALIDATION = HintRecord.SEVERITY_VALIDATION;
+  public static final Integer HIGHLIGHT_WARNING = HintRecord.SEVERITY_WARNING;
 
   /**
    * Factory method.
    */
   public static HighlightModel create() {
     return new HighlightModel();
+  }
+
+  public static int severityToHighlight(HintRecord hintlet) {
+    switch (hintlet.getSeverity()) {
+      case HintRecord.SEVERITY_VALIDATION:
+        return HighlightModel.HIGHLIGHT_VALIDATION;
+      case HintRecord.SEVERITY_CRITICAL:
+        return HighlightModel.HIGHLIGHT_CRITICAL;
+      case HintRecord.SEVERITY_WARNING:
+        return HighlightModel.HIGHLIGHT_WARNING;
+      case HintRecord.SEVERITY_INFO:
+       return HighlightModel.HIGHLIGHT_INFO;
+      default:
+        return HighlightModel.HIGHLIGHT_NONE;
+    }
   }
 
   TreeMap<Double, Integer> values = new TreeMap<Double, Integer>();
@@ -148,7 +166,7 @@ public class HighlightModel {
    */
   public double getMaxX() {
     return values.lastKey();
-  };
+  }
 
   /**
    * Returns an iterator that returns aggregated values based on the delta

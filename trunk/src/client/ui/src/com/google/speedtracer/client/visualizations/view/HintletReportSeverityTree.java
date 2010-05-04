@@ -60,21 +60,8 @@ public class HintletReportSeverityTree extends HintletReportTree {
 
       // Rule name
       Div severityNameDiv = new Div(rowContainer);
-      String severityString;
-      switch (severity) {
-        case HintRecord.SEVERITY_CRITICAL:
-          severityString = "Critical";
-          break;
-        case HintRecord.SEVERITY_WARNING:
-          severityString = "Warning";
-          break;
-        case HintRecord.SEVERITY_INFO:
-          severityString = "Info";
-          break;
-        default:
-          severityString = "uNkNoWn";
-      }
-      severityNameDiv.setText(severityString);
+
+      severityNameDiv.setText(HintRecord.severityToString(severity));
       severityNameDiv.setStyleName(css.reportRowNameDiv());
     }
   }

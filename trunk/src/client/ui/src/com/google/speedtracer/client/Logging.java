@@ -17,8 +17,8 @@ package com.google.speedtracer.client;
 
 import com.google.gwt.core.client.GWT;
 import com.google.speedtracer.client.model.DataModel;
-import com.google.speedtracer.client.model.HintletEngineHost;
 import com.google.speedtracer.client.model.HintletException;
+import com.google.speedtracer.client.model.HintletInterface;
 import com.google.speedtracer.client.model.NetworkResource;
 import com.google.speedtracer.client.model.NetworkResourceModel;
 import com.google.speedtracer.client.model.UiEvent;
@@ -36,7 +36,7 @@ public class Logging {
    */
   public static class DebugListenerLogger implements ListenerLogger,
       NetworkResourceModel.Listener, UiEventModel.Listener,
-      HintletEngineHost.ExceptionListener {
+      HintletInterface.ExceptionListener {
 
     private final ZippyLogger zippyLogger;
 
@@ -100,7 +100,7 @@ public class Logging {
    */
   public static class ReleaseListenerLogger implements ListenerLogger,
       NetworkResourceModel.Listener, UiEventModel.Listener,
-      HintletEngineHost.ExceptionListener {
+      HintletInterface.ExceptionListener {
 
     public ReleaseListenerLogger() {
     }

@@ -29,6 +29,7 @@ import com.google.speedtracer.client.timeline.TimeLineGraph;
 import com.google.speedtracer.client.timeline.HighlightModel.HighlightEntry;
 import com.google.speedtracer.client.util.dom.DocumentExt;
 import com.google.speedtracer.client.visualizations.view.CurrentSelectionMarker;
+import com.google.speedtracer.client.visualizations.view.HintletIndicator;
 
 import java.util.Iterator;
 import java.util.List;
@@ -115,27 +116,6 @@ public class MainGraph extends TimeLineGraph {
     yAxisScaleLabel.setInnerHTML("&nbsp;" + (int) value + yAxisUnit);
   }
 
-  // TODO(zundel): Change to HintletIndictator.getSeverityColor() when it
-  // becomes available.
-  private Color getHighlightColor(int severity) {
-    Color color;
-    switch (severity) {
-      case 1:
-        color = Color.GREEN;
-        break;
-      case 2:
-        color = Color.ORANGE;
-        break;
-      case 3:
-        color = Color.RED;
-        break;
-      default:
-        // This color has no business being here.
-        color = Color.CYAN;
-    }
-    return color;
-  }
-
   private void paintGraph(double coordDelta, double leftBound,
       double rightBound, double domainDelta, GraphUiProps graphUiProps,
       GraphModel model) {
@@ -218,7 +198,7 @@ public class MainGraph extends TimeLineGraph {
 
       double xVal = (highlightEntry.getKey() - leftBound) * coordsPerDomain;
       int val = highlightEntry.getValue();
-      Color color = getHighlightColor(val);
+      Color color = new Color(HintletIndicator.getSeverityColor(val));
 
       canvas.beginPath();
       canvas.setStrokeStyle(color);

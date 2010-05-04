@@ -70,7 +70,7 @@ public class EventRecord extends JavaScriptObject {
    * @return the sequence number for the record in this session.
    */
   public final native int getSequence() /*-{
-    return this.sequence;
+    return this.sequence || 0;
   }-*/;
 
   /**
@@ -81,16 +81,16 @@ public class EventRecord extends JavaScriptObject {
    * @return the time for this record.
    */
   public final native double getTime() /*-{
-    return this.time;
+    return this.time || 0;
   }-*/;
 
   /**
    * Gets the numeric type value record.
-   * 
+   * If there is no type, use -1 so that it can propagate to the UI
    * @return the number that represents this type.
    */
   public final native int getType() /*-{
-    return this.type;
+    return this.type || -1;
   }-*/;
 
   /**

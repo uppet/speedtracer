@@ -38,21 +38,25 @@ import com.google.speedtracer.client.model.DataModel.EventRecordHandler;
 public class BreakyWorkerHost implements EventRecordHandler {
 
   private final Worker breakyWorker;
+  private final DataModel dataModel;
+  private final HintletEngineHost hintletHost;
 
-  BreakyWorkerHost() {
+  BreakyWorkerHost(DataModel dataModel, HintletEngineHost hintletHost) {
     breakyWorker = Worker.create("../breakyworker/breakyworker.nocache.js");
+    this.dataModel = dataModel;
+    this.hintletHost = hintletHost;
     init();
   }
 
   /**
-   * Send the raw {@link EventRecord} to the web worker
+   * Send the raw {@link EventRecord} to the web worker.
    */
   public void onEventRecord(EventRecord data) {
     breakyWorker.postMessage(JSON.stringify(data));
   }
 
   /**
-   * Initialize the event handlers for the host
+   * Initialize the event handlers for the host.
    */
   private void init() {
     breakyWorker.setOnError(new ErrorHandler() {
@@ -85,17 +89,26 @@ public class BreakyWorkerHost implements EventRecordHandler {
       }
 
       /**
-       * Handle a breaky message. For now, just log it
-       * TODO(conroy): attach this to the record in the UI
+       * Turn a breaky message into a synthesized hint record.
+       * 
        * @param event breaky message
        */
       private void fireOnBreakyMessage(MessageEvent event) {
-        // TODO(conroy): use event listeners and link errors into records
         JavaScriptObject breakyMessage = event.getDataAsJSO();
         int sequence = DataBag.getIntProperty(breakyMessage, "sequence");
         String message = DataBag.getStringProperty(breakyMessage, "message");
-        if (ClientConfig.isDebugMode()) {
-          Logging.getLogger().logText("Breaky Error:(#" + sequence + ") " + message);
+        Logging.getLogger().logText(
+            "Breaky Error:(#" + sequence + ") " + message);
+
+        EventRecord record = dataModel.findEventRecord(sequence);
+        if (record == null) {
+          Logging.getLogger().logText(
+              "Breaky cannot find record with sequence #" + sequence);
+        } else {
+          HintRecord validationHint = HintRecord.create("Validation Error",
+              record.getTime(), HintRecord.SEVERITY_VALIDATION, message,
+              sequence);
+          hintletHost.onSynthesizedHint(validationHint);
         }
       }
     });

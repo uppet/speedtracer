@@ -41,12 +41,16 @@ public class HintletIndicator extends Div {
     String hintletIndicatorCritical();
 
     String hintletIndicatorInfo();
+    
+    String hintletIndicatorValidation();
 
     String hintletIndicatorWarning();
 
     String hintletSeverityColorCritical();
 
     String hintletSeverityColorInfo();
+    
+    String hintletSeverityColorValidation();
 
     String hintletSeverityColorWarning();
   }
@@ -63,6 +67,8 @@ public class HintletIndicator extends Div {
   public static String getSeverityColor(int severity) {
     Css css = MonitorResources.getResources().hintletIndicatorCss();
     switch (severity) {
+      case HintRecord.SEVERITY_VALIDATION:
+        return css.hintletSeverityColorValidation();
       case HintRecord.SEVERITY_CRITICAL:
         return css.hintletSeverityColorCritical();
       case HintRecord.SEVERITY_WARNING:
@@ -105,11 +111,15 @@ public class HintletIndicator extends Div {
     int criticalCount = 0;
     int warningCount = 0;
     int infoCount = 0;
+    int validationCount = 0;
     int numHints = hintRecords.size();
 
     for (int i = 0; i < numHints; i++) {
       HintRecord rec = hintRecords.get(i);
       switch (rec.getSeverity()) {
+        case HintRecord.SEVERITY_VALIDATION:
+          validationCount++;
+          break;
         case HintRecord.SEVERITY_CRITICAL:
           criticalCount++;
           break;
@@ -129,10 +139,11 @@ public class HintletIndicator extends Div {
     if (infoCount > 0) {
       tooltip += infoCount + " Info";
       numHints = infoCount;
+      maxSeverity = HintRecord.SEVERITY_INFO;
     }
 
     if (warningCount > 0) {
-      if (infoCount > 0) {
+      if (!tooltip.equals("")) {
         tooltip = ", " + tooltip;
       }
       tooltip = warningCount + " Warning" + tooltip;
@@ -141,12 +152,22 @@ public class HintletIndicator extends Div {
     }
 
     if (criticalCount > 0) {
-      if (warningCount > 0 || infoCount > 0) {
+      if (!tooltip.equals("")) {
         tooltip = ", " + tooltip;
       }
       tooltip = criticalCount + " Critical" + tooltip;
       numHints = criticalCount;
       maxSeverity = HintRecord.SEVERITY_CRITICAL;
+    }
+    
+    if (validationCount > 0) {
+      if (!tooltip.equals("")) {
+        tooltip = ", " + tooltip;
+      }
+      
+      tooltip = validationCount + " Validation" + tooltip;
+      numHints = validationCount;
+      maxSeverity = HintRecord.SEVERITY_VALIDATION;
     }
 
     setIndicator(maxSeverity, numHints, tooltip);
@@ -156,6 +177,9 @@ public class HintletIndicator extends Div {
     String className = "";
     Css css = resources.hintletIndicatorCss();
     switch (severity) {
+      case HintRecord.SEVERITY_VALIDATION:
+        className = css.hintletIndicatorValidation();
+        break;
       case HintRecord.SEVERITY_CRITICAL:
         className = css.hintletIndicatorCritical();
         break;

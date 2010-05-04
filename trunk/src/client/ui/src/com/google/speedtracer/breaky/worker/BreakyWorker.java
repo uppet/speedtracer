@@ -33,7 +33,7 @@ public class BreakyWorker extends DedicatedWorkerEntryPoint implements MessageHa
   private DumpValidator validator;
   
   /**
-   * Creates a message to send to the host
+   * Creates a message to send to the host.
    * @param record the raw event record
    * @param message the validation message
    * @return JSO with fields 'sequence' and 'message'
@@ -51,7 +51,7 @@ public class BreakyWorker extends DedicatedWorkerEntryPoint implements MessageHa
     JavaScriptObject record = JSON.parse(event.getDataAsString());
     JsonSchemaResults results = validator.validate(record);
     if (!results.isValid()) {
-      postMessage(JSON.stringify(createMessage(record, results.formatResultsHTML(event.getDataAsString()))));
+      postMessage(JSON.stringify(createMessage(record, results.formatResultsText(event.getDataAsString()))));
     }
   }
   
