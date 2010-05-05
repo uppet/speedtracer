@@ -30,10 +30,12 @@ import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
  * Entry point classes define <code>onModuleLoad()</code>.
  */
 public class LatencyDashboard implements EntryPoint {
-  private final TimelineServiceAsync timelineService = GWT.create(TimelineService.class);
-  private final Button refreshButton = new Button("Refresh");
+  private AggregatedEventTypeChart aggregatedEventTypeChart;
   private RootPanel gwtContainer;
+  private GwtLightweightMetricsChart lightweightMetricsChart;
+  private final Button refreshButton = new Button("Refresh");
   private RootPanel timelineContainer;
+  private final TimelineServiceAsync timelineService = GWT.create(TimelineService.class);
 
   /**
    * This is the entry point method.
@@ -42,6 +44,13 @@ public class LatencyDashboard implements EntryPoint {
     DashboardResources.init();
     WarningPane.init(DashboardResources.getResources());
     createDashboardUi();
+  }
+
+  private void createCharts() {
+    lightweightMetricsChart = new GwtLightweightMetricsChart();
+    gwtContainer.add(lightweightMetricsChart);
+    aggregatedEventTypeChart = new AggregatedEventTypeChart();
+    timelineContainer.add(aggregatedEventTypeChart);
   }
 
   private void createDashboardUi() {
@@ -65,17 +74,6 @@ public class LatencyDashboard implements EntryPoint {
         populateDashboard();
       }
     }, AreaChart.PACKAGE);
-
-  }
-
-  private GwtLightweightMetricsChart lightweightMetricsChart;
-  private AggregatedEventTypeChart aggregatedEventTypeChart;
-
-  private void createCharts() {
-    lightweightMetricsChart = new GwtLightweightMetricsChart();
-    gwtContainer.add(lightweightMetricsChart);
-    aggregatedEventTypeChart = new AggregatedEventTypeChart();
-    timelineContainer.add(aggregatedEventTypeChart);
   }
 
   private void populateDashboard() {

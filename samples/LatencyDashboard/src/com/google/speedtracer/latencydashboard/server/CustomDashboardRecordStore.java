@@ -56,12 +56,19 @@ public class CustomDashboardRecordStore {
     }
   }
 
-  private final static String KIND = "CustomDashboardRecord";
-  private final static String CUSTOM_KEY_PREFIX = "custom_";
+  private static final String CUSTOM_KEY_PREFIX = "custom_";
+  private static final String KEY_PROP_NAME = "name";
 
-  private final static String KEY_PROP_NAME = "name";
-  private final static String KEY_PROP_REVISION = "revision";
-  private final static String KEY_PROP_TIMESTAMP = "timeStamp";
+  private static final String KEY_PROP_REVISION = "revision";
+  private static final String KEY_PROP_TIMESTAMP = "timeStamp";
+  private static final String KIND = "CustomDashboardRecord";
+
+  public static String clear(DatastoreService store, String name) {
+    Transaction tx = store.beginTransaction();
+    store.prepare(new Query(KIND).addFilter("name", FilterOperator.EQUAL, name));
+    tx.commit();
+    return null;
+  }
 
   /**
    * Create an instance of a CustomDashboardRecord given an entity definition.
@@ -113,12 +120,5 @@ public class CustomDashboardRecordStore {
       entity.setProperty(CUSTOM_KEY_PREFIX + key, customMeasures.get(key));
     }
     store.put(entity);
-  }
-
-  public static String clear(DatastoreService store, String name) {
-    Transaction tx = store.beginTransaction();
-    store.prepare(new Query(KIND).addFilter("name", FilterOperator.EQUAL, name));
-    tx.commit();
-    return null;
   }
 }

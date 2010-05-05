@@ -27,11 +27,11 @@ import java.io.StringReader;
  */
 public class SpeedTraceRecord {
 
-  private final long timeStamp;
   private final String name;
-  private final String revision;
   private final String rawData;
   private JsonObject rawDataObject;
+  private final String revision;
+  private final long timeStamp;
 
   public SpeedTraceRecord(String rawData) throws JsonException {
     this.rawData = rawData;
@@ -39,17 +39,6 @@ public class SpeedTraceRecord {
     timeStamp = (long) headerObject.get("timeStamp").asNumber().getDecimal();
     name = headerObject.get("name").asString().getString();
     revision = headerObject.get("revision").asString().getString();
-  }
-
-  public JsonObject getRawDataObject() throws JsonException {
-    if (rawDataObject == null) {
-      try {
-        rawDataObject = JsonObject.parse(new StringReader(rawData));
-      } catch (IOException ex) {
-        throw new RuntimeException("Couldn't parse data", ex);
-      }
-    }
-    return rawDataObject;
   }
 
   public JsonArray getDataObject() throws JsonException {
@@ -62,6 +51,17 @@ public class SpeedTraceRecord {
 
   public String getName() {
     return name;
+  }
+
+  public JsonObject getRawDataObject() throws JsonException {
+    if (rawDataObject == null) {
+      try {
+        rawDataObject = JsonObject.parse(new StringReader(rawData));
+      } catch (IOException ex) {
+        throw new RuntimeException("Couldn't parse data", ex);
+      }
+    }
+    return rawDataObject;
   }
 
   public String getRevision() {

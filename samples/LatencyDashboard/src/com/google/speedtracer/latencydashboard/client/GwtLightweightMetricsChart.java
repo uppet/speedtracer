@@ -15,11 +15,8 @@
  */
 package com.google.speedtracer.latencydashboard.client;
 
-import com.google.gwt.core.client.JsArray;
 import com.google.gwt.visualization.client.DataTable;
-import com.google.gwt.visualization.client.Selection;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
-import com.google.gwt.visualization.client.events.SelectHandler;
 import com.google.gwt.visualization.client.visualizations.AreaChart;
 import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
 
@@ -28,12 +25,7 @@ import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
  */
 public class GwtLightweightMetricsChart extends AreaChart {
 
-  private DashboardRecord[] lastServerData;
-
   public void populateChart(DashboardRecord[] serverData) {
-    // Save the server data for selection callbacks
-    lastServerData = serverData;
-
     DataTable data = DataTable.create();
     data.addColumn(ColumnType.STRING, "Revision");
     data.addColumn(ColumnType.NUMBER, "Bootstrap Duration");
@@ -53,21 +45,6 @@ public class GwtLightweightMetricsChart extends AreaChart {
       data.setCell(length - (i + 1), col++,
           serverData[i].moduleStartupDuration, null, null);
     }
-
-    this.addSelectHandler(new SelectHandler() {
-      @Override
-      public void onSelect(SelectEvent event) {
-        JsArray<Selection> selections = getSelections();
-        if (selections.length() > 0) {
-          Selection selection = selections.get(0);
-          if (selection.isRow() || selection.isCell()) {
-            int row = selection.getRow();
-            DashboardRecord record = lastServerData[row];
-            // TODO(zundel): do something fun with the selection
-          }
-        }
-      }
-    });
 
     Options options = AreaChart.Options.create();
     options.setHeight(275);

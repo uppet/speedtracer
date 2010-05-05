@@ -93,7 +93,7 @@ public class GwtAnalyzer {
   }
 
   private void analyzeLightweightMetric(JsonObject messageObject,
-      double eventTime) throws JsonException {
+      double eventTime) {
     if (isMatchingMetric(messageObject, "startup", "bootstrap", "begin")) {
       this.bootstrapStartTime = eventTime;
     } else if (isMatchingMetric(messageObject, "startup", "bootstrap", "end")) {
@@ -138,11 +138,10 @@ public class GwtAnalyzer {
         }
       }
     }
-
   }
 
   private boolean isMatchingMetric(JsonObject messageObject, String subSystem,
-      String evtGroup, String type) throws JsonException {
+      String evtGroup, String type) {
     String subSystemCmp = messageObject.get("subSystem").asString().getString();
     if (!subSystem.equals(subSystemCmp)) {
       return false;
