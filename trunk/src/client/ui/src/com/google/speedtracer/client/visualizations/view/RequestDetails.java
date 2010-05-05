@@ -230,31 +230,32 @@ public class RequestDetails extends LazilyCreateableElement {
 
     element.appendChild(document.createTextNode("("));
 
-    // Add Application URL
-    if (applicationUrl != null) {
+    // Add Trace URL
+    if (traceViewUrl != null) {
       element.appendChild(createNewTabLink(document, css.springInsightLink(),
-          applicationUrl, "Application"));
+          traceViewUrl, "Trace"));
     }
 
     // Add EndPoint URL
     if (endPointUrl != null) {
       // Is there a previous item?
-      if (applicationUrl != null) {
+      if (traceViewUrl != null) {
         element.appendChild(document.createTextNode(", "));
       }
       element.appendChild(createNewTabLink(document, css.springInsightLink(),
           endPointUrl, "EndPoint"));
     }
-
-    // Add Trace URL
-    if (traceViewUrl != null) {
-      // Are there previous items?
-      if (applicationUrl != null || endPointUrl != null) {
-        element.appendChild(document.createTextNode(", "));
+    
+    // Add Application URL
+    if (applicationUrl != null) {
+      // Is there a previous item?
+      if (traceViewUrl != null || endPointUrl != null) {
+        element.appendChild(document.createTextNode(", "));        
       }
       element.appendChild(createNewTabLink(document, css.springInsightLink(),
-          traceViewUrl, "Trace"));
+          applicationUrl, "Application"));
     }
+
     element.appendChild(document.createTextNode(") "));
     parent.appendChild(element);
   }
