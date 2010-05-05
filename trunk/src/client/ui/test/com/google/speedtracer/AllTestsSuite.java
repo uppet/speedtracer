@@ -31,6 +31,7 @@ import com.google.speedtracer.client.timeline.GraphModelTests;
 import com.google.speedtracer.client.timeline.HighlightModelTests;
 import com.google.speedtracer.client.timeline.ModelDataTests;
 import com.google.speedtracer.client.util.CsvTests;
+import com.google.speedtracer.client.util.MockXhrTests;
 import com.google.speedtracer.client.util.PostMessageChannelTests;
 import com.google.speedtracer.client.util.TimeStampFormatterTests;
 import com.google.speedtracer.client.util.UrlTests;
@@ -53,6 +54,7 @@ public class AllTestsSuite extends GWTTestSuite {
     suite.addTestSuite(GraphModelTests.class);
     suite.addTestSuite(TimeStampFormatterTests.class);
     suite.addTestSuite(HighlightModelTests.class);
+    suite.addTestSuite(MockXhrTests.class);
     suite.addTestSuite(ModelDataTests.class);
     suite.addTestSuite(PostMessageChannelTests.class);
     suite.addTestSuite(EventFilterTests.class);
