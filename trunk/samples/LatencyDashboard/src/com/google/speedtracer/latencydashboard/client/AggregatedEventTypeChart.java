@@ -16,40 +16,103 @@
 package com.google.speedtracer.latencydashboard.client;
 
 import com.google.gwt.visualization.client.DataTable;
+import com.google.gwt.visualization.client.LegendPosition;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.visualizations.AreaChart;
+import com.google.gwt.visualization.client.visualizations.PieChart;
+import com.google.gwt.visualization.client.visualizations.AreaChart.Options;
 import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
 
 /**
  * Shows some of the lightweight metrics in a stacked chart.
  */
-public class AggregatedEventTypeChart extends AreaChart {
+public class AggregatedEventTypeChart extends LatencyDashboardChart {
+  private static final String javaScriptExecutionColor = "#4684ee";
+  private static final String javaScriptExecutionTitle = "Javascript Execution";
+  private static final String layoutColor = "#dc3912";
+  private static final String layoutTitle = "Layout";
+  private static final String recalculateStylesColor = "#ff9900";
+  private static final String recalculateStylesTitle = "Recalculate Styles";
+  private static final String revisionTitle = "Revision";
+
+  private AreaChart leftChart;
+  private Legend legend;
+  private PieChart rightChart;
+
+  public AggregatedEventTypeChart(String title) {
+    super(title);
+    rightChart = new PieChart();
+    chartPanel.addEast(rightChart, chartHeight);
+    leftChart = new AreaChart();
+    chartPanel.add(leftChart);
+  }
+
+  public void addLegend() {
+    if (legend == null) {
+      legend = new Legend();
+      readoutPanel.addEast(legend, 200);
+    }
+    legend.clear();
+    legend.addRow(javaScriptExecutionColor, javaScriptExecutionTitle);
+    legend.addRow(layoutColor, layoutTitle);
+    legend.addRow(recalculateStylesColor, recalculateStylesTitle);
+  }
+
+  public void addRow(DataTable dataTable, int row, DashboardRecord record) {
+    dataTable.setCell(row, 0, record.getRevision(), null, null);
+    dataTable.setCell(row, 1, record.javaScriptExecutionDuration, null, null);
+    dataTable.setCell(row, 2, record.layoutDuration, null, null);
+    dataTable.setCell(row, 3, record.recalculateStyleDuration, null, null);
+  }
 
   public void populateChart(DashboardRecord[] serverData) {
+    addLegend();
+    populateLastData(serverData[0]);
+    populateTimeline(serverData);
+  }
+
+  public void populateLastData(DashboardRecord serverData) {
+    DataTable dataTable = DataTable.create();
+    dataTable.addColumn(ColumnType.STRING, "Type");
+    dataTable.addColumn(ColumnType.NUMBER, "Milliseconds");
+    dataTable.addRows(3);
+    int row = 0;
+    dataTable.setCell(row, 0, javaScriptExecutionTitle, null, null);
+    dataTable.setCell(row++, 1, serverData.javaScriptExecutionDuration, null,
+        null);
+    dataTable.setCell(row, 0, layoutTitle, null, null);
+    dataTable.setCell(row++, 1, serverData.layoutDuration, null, null);
+    dataTable.setCell(row, 0, recalculateStylesTitle, null, null);
+    dataTable.setCell(row++, 1, serverData.recalculateStyleDuration, null, null);
+
+    PieChart.Options options = PieChart.Options.create();
+    options.setLegend(LegendPosition.NONE);
+    options.setHeight(chartHeight);
+    options.setColors(javaScriptExecutionColor, layoutColor,
+        recalculateStylesColor);
+    rightChart.draw(dataTable, options);
+  }
+
+  public void populateTimeline(DashboardRecord[] serverData) {
     DataTable data = DataTable.create();
-    data.addColumn(ColumnType.STRING, "Revision");
-    data.addColumn(ColumnType.NUMBER, "Javascript Execution");
-    data.addColumn(ColumnType.NUMBER, "Layout");
-    data.addColumn(ColumnType.NUMBER, "Recalculate Styles");
+    data.addColumn(ColumnType.STRING, revisionTitle);
+    data.addColumn(ColumnType.NUMBER, javaScriptExecutionTitle);
+    data.addColumn(ColumnType.NUMBER, layoutTitle);
+    data.addColumn(ColumnType.NUMBER, recalculateStylesTitle);
 
     int length = serverData.length;
     data.addRows(length);
     for (int i = 0; i < length; ++i) {
-
-      int col = 0;
-      data.setCell(length - (i + 1), col++, serverData[i].getRevision(), null,
-          null);
-      data.setCell(length - (i + 1), col++,
-          serverData[i].javaScriptExecutionDuration, null, null);
-      data.setCell(length - (i + 1), col++, serverData[i].layoutDuration, null,
-          null);
-      data.setCell(length - (i + 1), col++,
-          serverData[i].recalculateStyleDuration, null, null);
+      addRow(data, length - (i + 1), serverData[i]);
     }
 
+    leftChart.setHeight(chartHeight + "px");
     Options options = AreaChart.Options.create();
     options.setHeight(275);
+    options.setLegend(LegendPosition.NONE);
     options.setStacked(true);
-    draw(data, options);
+    options.setColors(javaScriptExecutionColor, layoutColor,
+        recalculateStylesColor);
+    leftChart.draw(data, options);
   }
 }

@@ -16,39 +16,93 @@
 package com.google.speedtracer.latencydashboard.client;
 
 import com.google.gwt.visualization.client.DataTable;
+import com.google.gwt.visualization.client.LegendPosition;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.visualizations.AreaChart;
+import com.google.gwt.visualization.client.visualizations.PieChart;
 import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
 
 /**
  * Shows some of the lightweight metrics in a stacked chart.
  */
-public class GwtLightweightMetricsChart extends AreaChart {
+public class GwtLightweightMetricsChart extends LatencyDashboardChart {
+  private static final String bootstrapDurationColor = "#4684ee";
+  private static final String bootstrapDurationTitle = "Bootstrap Duration";
+  private static final String loadExternalRefsColor = "#dc3912";
+  private static final String loadExternalRefsTitle = "Load External Refs";
+  private static final String moduleStartupColor = "#ff9900";
+  private static final String moduleStartupTitle = "Module Startup";
+  private static final String revisionTitle = "Revision";
+  private AreaChart leftChart;
+  private Legend legend;
+  private PieChart rightChart;
+
+  public GwtLightweightMetricsChart(String title) {
+    super(title);
+    rightChart = new PieChart();
+    chartPanel.addEast(rightChart, chartHeight);
+    leftChart = new AreaChart();
+    chartPanel.add(leftChart);
+  }
+
+  public void addLegend() {
+    if (legend == null) {
+      legend = new Legend();
+      readoutPanel.addEast(legend, 200);
+    }
+    legend.clear();
+    legend.addRow(bootstrapDurationColor, bootstrapDurationTitle);
+    legend.addRow(loadExternalRefsColor, loadExternalRefsTitle);
+    legend.addRow(moduleStartupColor, moduleStartupTitle);
+  }
+
+  public void addRow(DataTable dataTable, int row, DashboardRecord record) {
+    dataTable.setCell(row, 0, record.getRevision(), null, null);
+    dataTable.setCell(row, 1, record.bootstrapDuration, null, null);
+    dataTable.setCell(row, 2, record.loadExternalRefsDuration, null, null);
+    dataTable.setCell(row, 3, record.moduleStartupDuration, null, null);
+  }
 
   public void populateChart(DashboardRecord[] serverData) {
-    DataTable data = DataTable.create();
-    data.addColumn(ColumnType.STRING, "Revision");
-    data.addColumn(ColumnType.NUMBER, "Bootstrap Duration");
-    data.addColumn(ColumnType.NUMBER, "Load External Refs");
-    data.addColumn(ColumnType.NUMBER, "Module Startup");
+    addLegend();
+    populateLastData(serverData[0]);
+    populateTimeline(serverData);
+  }
 
+  public void populateLastData(DashboardRecord serverData) {
+    DataTable dataTable = DataTable.create();
+    dataTable.addColumn(ColumnType.STRING, "Type");
+    dataTable.addColumn(ColumnType.NUMBER, "Milliseconds");
+    dataTable.addRows(3);
+    int row = 0;
+    dataTable.setCell(row, 0, bootstrapDurationTitle, null, null);
+    dataTable.setCell(row++, 1, serverData.bootstrapDuration, null, null);
+    dataTable.setCell(row, 0, loadExternalRefsTitle, null, null);
+    dataTable.setCell(row++, 1, serverData.loadExternalRefsDuration, null, null);
+    dataTable.setCell(row, 0, moduleStartupTitle, null, null);
+    dataTable.setCell(row++, 1, serverData.moduleStartupDuration, null, null);
+    PieChart.Options options = PieChart.Options.create();
+    options.setLegend(LegendPosition.NONE);
+    options.setHeight(chartHeight);
+    rightChart.draw(dataTable, options);
+  }
+
+  public void populateTimeline(DashboardRecord[] serverData) {
+    DataTable dataTable = DataTable.create();
+    dataTable.addColumn(ColumnType.STRING, revisionTitle);
+    dataTable.addColumn(ColumnType.NUMBER, bootstrapDurationTitle);
+    dataTable.addColumn(ColumnType.NUMBER, loadExternalRefsTitle);
+    dataTable.addColumn(ColumnType.NUMBER, moduleStartupTitle);
     int length = serverData.length;
-    data.addRows(length);
+    dataTable.addRows(length);
     for (int i = 0; i < length; ++i) {
-      int col = 0;
-      data.setCell(length - (i + 1), col++, serverData[i].getRevision(), null,
-          null);
-      data.setCell(length - (i + 1), col++, serverData[i].bootstrapDuration,
-          null, null);
-      data.setCell(length - (i + 1), col++,
-          serverData[i].loadExternalRefsDuration, null, null);
-      data.setCell(length - (i + 1), col++,
-          serverData[i].moduleStartupDuration, null, null);
+      addRow(dataTable, length - (i + 1), serverData[i]);
     }
 
-    Options options = AreaChart.Options.create();
+    AreaChart.Options options = AreaChart.Options.create();
+    options.setLegend(LegendPosition.NONE);
     options.setHeight(275);
     options.setStacked(true);
-    draw(data, options);
+    leftChart.draw(dataTable, options);
   }
 }

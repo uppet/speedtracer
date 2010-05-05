@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module rename-to='latencydashboard'>
-  
+
   <!-- Inherit the core Web Toolkit stuff.                        -->
-  <inherits name='com.google.gwt.user.User'/>
+  <inherits name='com.google.gwt.user.User' />
   <inherits name='com.google.gwt.resources.Resources' />
-  <inherits name='com.google.gwt.user.theme.standard.Standard'/>
+  <inherits name='com.google.gwt.user.theme.standard.Standard' />
 
   <!-- Other module inherits                                      -->
   <inherits name='com.google.gwt.visualization.Visualization' />
-  
+
   <!-- Specify the app entry point class.                         -->
-  <entry-point class='com.google.speedtracer.latencydashboard.client.LatencyDashboard'/>
+  <entry-point class='com.google.speedtracer.latencydashboard.client.LatencyDashboard' />
 
   <!-- Specify the paths for translatable code                    -->
-  <source path='client'/>
-  <source path='shared'/>
+  <source path='client' />
+  <source path='shared' />
+
+  <!--  debugging stuff -->
+  <set-configuration-property name="CssResource.style"
+    value="pretty" />
 </module>

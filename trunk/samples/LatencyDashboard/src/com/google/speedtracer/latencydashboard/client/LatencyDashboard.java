@@ -17,8 +17,12 @@ package com.google.speedtracer.latencydashboard.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -31,10 +35,8 @@ import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
  */
 public class LatencyDashboard implements EntryPoint {
   private AggregatedEventTypeChart aggregatedEventTypeChart;
-  private RootPanel gwtContainer;
   private GwtLightweightMetricsChart lightweightMetricsChart;
   private final Button refreshButton = new Button("Refresh");
-  private RootPanel timelineContainer;
   private final TimelineServiceAsync timelineService = GWT.create(TimelineService.class);
 
   /**
@@ -47,22 +49,22 @@ public class LatencyDashboard implements EntryPoint {
   }
 
   private void createCharts() {
-    lightweightMetricsChart = new GwtLightweightMetricsChart();
-    gwtContainer.add(lightweightMetricsChart);
-    aggregatedEventTypeChart = new AggregatedEventTypeChart();
-    timelineContainer.add(aggregatedEventTypeChart);
+    lightweightMetricsChart = new GwtLightweightMetricsChart(
+        "GWT Lightweight Metrics - Page Load");
+    RootPanel.get().add(lightweightMetricsChart);
+    aggregatedEventTypeChart = new AggregatedEventTypeChart(
+        "Page Load breakdown by Event");
+    RootPanel.get().add(aggregatedEventTypeChart);
   }
 
   private void createDashboardUi() {
-    gwtContainer = RootPanel.get("gwtContainer");
-    timelineContainer = RootPanel.get("timeLineContainer");
+    refreshButton.getElement().getStyle().setMarginLeft(3, Unit.EM);
     refreshButton.setEnabled(false);
     refreshButton.addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent event) {
         populateDashboard();
       }
     });
-    RootPanel.get().add(refreshButton);
 
     VisualizationUtils.loadVisualizationApi(new Runnable() {
       /**
@@ -72,6 +74,14 @@ public class LatencyDashboard implements EntryPoint {
         refreshButton.setEnabled(true);
         createCharts();
         populateDashboard();
+        RootPanel.get().add(refreshButton);
+        Window.addResizeHandler(new ResizeHandler() {
+
+          public void onResize(ResizeEvent event) {
+            populateDashboard();
+          }
+
+        });
       }
     }, AreaChart.PACKAGE);
   }
@@ -90,5 +100,4 @@ public class LatencyDashboard implements EntryPoint {
           }
         });
   }
-
 }
