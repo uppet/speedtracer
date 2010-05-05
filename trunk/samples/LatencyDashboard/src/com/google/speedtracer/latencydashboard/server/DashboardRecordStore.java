@@ -50,35 +50,26 @@ public class DashboardRecordStore {
     }
   }
 
-  private final static String KEY_PROP_NAME = "name";
-  private final static String KEY_PROP_REVISION = "revision";
-  private final static String KEY_PROP_TIMESTAMP = "timeStamp";
+  private static final String KEY_PROP_NAME = "name";
+  private static final String KEY_PROP_REVISION = "revision";
+  private static final String KEY_PROP_TIMESTAMP = "timeStamp";
 
-  private final static String KIND = "DashboardRecord";
+  private static final String KIND = "DashboardRecord";
 
-  private final static String PROP_BOOTSTRAP_DURATION = "bootstrap_duration";
-  private final static String PROP_BOOTSTRAP_START_TIME = "bootstrap_start_time";
-  private final static String PROP_DOM_CONTENT_LOADED_TIME = "dom_content_loaded_time";
-  private final static String PROP_JAVASCRIPT_EXECUTION_DURATION = "javascript_execution_duration";
-  private final static String PROP_LAYOUT_DURATION = "layout_duration";
-  private final static String PROP_LOAD_EXTERNAL_REFS_DURATION = "load_external_refs_duration";
-  private final static String PROP_LOAD_EXTERNAL_REFS_TIME = "load_external_refs_time";
-  private final static String PROP_MAIN_RESOURCE_REQUEST_TIME = "main_resource_request_time";
-  private final static String PROP_MAIN_RESOURCE_RESPONSE_TIME = "main_resource_response_time";
-  private final static String PROP_MODULE_EVAL_DURATION = "module_eval_duration";
-  private final static String PROP_MODULE_RECALCULATE_STYLE_DURATION = "recalculate_style_duration";
-  private final static String PROP_MODULE_STARTUP_DURATION = "module_startup_duration";
+  private static final String PROP_BOOTSTRAP_DURATION = "bootstrap_duration";
+  private static final String PROP_BOOTSTRAP_START_TIME = "bootstrap_start_time";
+  private static final String PROP_DOM_CONTENT_LOADED_TIME = "dom_content_loaded_time";
+  private static final String PROP_JAVASCRIPT_EXECUTION_DURATION = "javascript_execution_duration";
+  private static final String PROP_LAYOUT_DURATION = "layout_duration";
+  private static final String PROP_LOAD_EXTERNAL_REFS_DURATION = "load_external_refs_duration";
+  private static final String PROP_LOAD_EXTERNAL_REFS_TIME = "load_external_refs_time";
+  private static final String PROP_MAIN_RESOURCE_REQUEST_TIME = "main_resource_request_time";
+  private static final String PROP_MAIN_RESOURCE_RESPONSE_TIME = "main_resource_response_time";
+  private static final String PROP_MODULE_EVAL_DURATION = "module_eval_duration";
+  private static final String PROP_MODULE_RECALCULATE_STYLE_DURATION = "recalculate_style_duration";
+  private static final String PROP_MODULE_STARTUP_DURATION = "module_startup_duration";
 
-  private final static String PROP_MODULE_STARTUP_TIME = "module_startup_time";
-
-  private static double getDoubleProperty(Map<String, Object> properties,
-      String key) {
-    Double value = (Double) properties.get(key);
-    if (value != null) {
-      return value;
-    }
-    return Double.NaN;
-  }
+  private static final String PROP_MODULE_STARTUP_TIME = "module_startup_time";
 
   public static DashboardRecord get(Entity entity) {
     Map<String, Object> properties = entity.getProperties();
@@ -159,5 +150,14 @@ public class DashboardRecordStore {
         dashboardRecord.moduleStartupDuration);
 
     store.put(entity);
+  }
+
+  private static double getDoubleProperty(Map<String, Object> properties,
+      String key) {
+    Double value = (Double) properties.get(key);
+    if (value != null) {
+      return value;
+    }
+    return Double.NaN;
   }
 }

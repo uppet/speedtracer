@@ -19,11 +19,14 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.resources.client.CssResource;
 
-/*
- * Top level Client Bundle for the Dashboard
+/**
+ * Top level Client Bundle for the Dashboard.
  */
 public class DashboardResources {
 
+  /**
+   * Css defs for this UI component.
+   */
   public interface Css extends CssResource {
     String graphOuterDiv();
   }

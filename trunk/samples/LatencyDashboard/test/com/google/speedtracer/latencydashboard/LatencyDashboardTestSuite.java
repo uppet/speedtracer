@@ -21,6 +21,9 @@ import com.google.speedtracer.latencydashboard.shared.CustomDashboardRecordTests
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
+/**
+ * LatencyDashboard tests.
+ */
 public class LatencyDashboardTestSuite extends TestSuite {
   public static Test suite() {
     final TestSuite suite = new TestSuite("All Tests");

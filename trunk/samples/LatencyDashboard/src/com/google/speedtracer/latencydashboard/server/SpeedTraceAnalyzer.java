@@ -42,7 +42,7 @@ public class SpeedTraceAnalyzer {
 
   private double styleRecalculationDuration;
 
-  public SpeedTraceAnalyzer(JsonArray recordsJsonArray) throws JsonException {
+  public SpeedTraceAnalyzer(JsonArray recordsJsonArray) {
     this.records = recordsJsonArray;
   }
 
@@ -151,7 +151,7 @@ public class SpeedTraceAnalyzer {
     }
   }
 
-  private double findMainResourceResponseTime() throws JsonException {
+  private double findMainResourceResponseTime() {
     for (int i = this.mainResourceStartIndex, length = records.getLength(); i < length; ++i) {
       JsonObject topLevelRec = records.get(i).asObject();
       long type = topLevelRec.get("type").asNumber().getInteger();
@@ -164,7 +164,7 @@ public class SpeedTraceAnalyzer {
               "Expected data object in RESOURCE_RECEIVE_RESPONSE");
         }
         long identifier = data.get("identifier").asNumber().getInteger();
-        if (this.mainResourceIdentfier== identifier) {
+        if (this.mainResourceIdentfier == identifier) {
           return topLevelRec.get("time").asNumber().getDecimal();
         }
       }
@@ -174,7 +174,7 @@ public class SpeedTraceAnalyzer {
             + this.mainResourceStartIndex + " and " + records.getLength() + ".");
   }
 
-  private int findMainResourceStartTime() throws JsonException {
+  private int findMainResourceStartTime() {
     for (int i = 0, length = records.getLength(); i < length; ++i) {
       JsonObject topLevelRec = records.get(i).asObject();
       long type = topLevelRec.get("type").asNumber().getInteger();

@@ -15,10 +15,6 @@
  */
 package com.google.speedtracer.latencydashboard.client;
 
-/**
- * Flashes an error at the top of the screen, then transitions itself away if
- * you click the 'x' button.
- */
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ClientBundle;
@@ -27,18 +23,28 @@ import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 
+/**
+ * Flashes an error at the top of the screen, then transitions itself away if
+ * you click the 'x' button.
+ */
 public class WarningPane {
 
+  /**
+   * Css definitions for this UI component.
+   */
   public interface Css extends CssResource {
-    public String warningCloseIcon();
+    String warningCloseIcon();
 
-    public String warningPaneInner();
+    String warningPaneInner();
 
-    public String warningPaneOuter();
+    String warningPaneOuter();
 
-    public String warningPaneText();
+    String warningPaneText();
   }
 
+  /**
+   * ClientBundle definitions for this UI component.
+   */
   public interface Resources extends ClientBundle {
     @Source("resources/WarningPane.css")
     Css warningPaneCss();
@@ -56,9 +62,9 @@ public class WarningPane {
     }
   }
 
+  private final Label closeIconElement;
   private final DockPanel outerElement;
   private final Label textElement;
-  private final Label closeIconElement;
 
   private WarningPane(Resources resources) {
     this.outerElement = new DockPanel();
@@ -67,6 +73,15 @@ public class WarningPane {
 
     createUi(resources);
     RootPanel.get().add(outerElement);
+  }
+
+  public void hide() {
+    outerElement.setVisible(false);
+  }
+
+  public void show(String message) {
+    textElement.setText(message);
+    outerElement.setVisible(true);
   }
 
   private void createUi(Resources resources) {
@@ -90,15 +105,5 @@ public class WarningPane {
       }
     });
     innerElement.add(closeIconElement, DockPanel.EAST);
-
-  }
-
-  public void hide() {
-    outerElement.setVisible(false);
-  }
-
-  public void show(String message) {
-    textElement.setText(message);
-    outerElement.setVisible(true);
   }
 }

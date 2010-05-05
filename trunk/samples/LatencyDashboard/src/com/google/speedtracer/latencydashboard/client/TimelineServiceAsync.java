@@ -18,6 +18,9 @@ package com.google.speedtracer.latencydashboard.client;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
 
+/**
+ * RPC definition for retrieving data from the Datastore.
+ */
 public interface TimelineServiceAsync {
 
   void getDashboardLatestRecords(int n,
