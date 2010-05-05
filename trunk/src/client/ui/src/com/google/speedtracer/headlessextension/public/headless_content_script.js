@@ -47,6 +47,8 @@ var contentScriptEvent = document.createEvent('Event');
 contentScriptEvent.initEvent(EVENT_NAME, true, true);
 var eventRecordData = [];
 var toDispatch = [];
+var xhrUrl;
+var xhrTime = 10000; //default time to send dump is 10 seconds
 
 // Optional debug loggging
 var loggingEnabled = false;
@@ -179,37 +181,86 @@ function parseQueryString(originalUrl, queryString) {
 }
 
 // Take a string like this 
-// SppedTracer=monitor,header(foo:bar),xhr(http://nowhere.com)
+// SppedTracer=monitor,header(foo:bar),xhr(http://nowhere.com),timeout(5000)
 // and parses it
-// SpeedTracer=monitor
+//
+// values:
+// -monitor
 //   Turns on monitoring when the content script is loaded.  After the 
 //   ack for turning on monitoring is received, the current URL minus the 
 //   arguments parsed are used to reload the page.  
+// -header(name:value)
+//  Sets a name/value pair for a header to send in the xhr. Multiple headers can
+//  be set by using multiple instances (e.g.
+//  SpeedTracer=header(foo:bar),header(blah:asdf)
+// -xhr(url)
+//  Sets where the dump XHR should go
+// -timeout(value)
+//  Sets the timeout to send the dump to value ms
+//
 function parseSpeedTracerQueryString(originalUrl, queryArg) {
+  var header = {name:'', revision:''};
   var turnOnMonitoring = false;
-  var header = {};
-  
+  var persistentValues = [];
   var values=queryArg.substring(12).split(",");
+
   for (var i = 0; i < values.length; ++i) {
     var value = values[i];
-    if (value.toLowerCase() === "monitor") {
+    if (!value) {
+      // handle empty value strings
+      continue;
+    }
+
+    var lcValue = value.toLowerCase();
+    if (lcValue === "monitor") {
       turnOnMonitoring = true;
-    } else if (value.toLowerCase().search(/^header\(/) == 0) {
+    } else if (lcValue.search(/^header\(/) == 0) {
       var headerPair = value.substr(7, value.length - 8);
       var pair = headerPair.split(":");
       if (pair.length === 2) {
         header[pair[0]]=pair[1];
       }
+      persistentValues.push(value);
+    } else if (lcValue.search(/^xhr\(/) == 0) {
+      xhrUrl = value.substr(4, value.length - 5);
+      persistentValues.push(value);
+    } else if (lcValue.search(/^timeout\(/) == 0) {
+      xhrTime = value.substr(8, value.length - 9);
+      persistentValues.push(value);
+    } else {
+      log("unknown parameter: " + value);
     }
   }
 
   if (turnOnMonitoring) {
-    var newUrl = removeQuerySubString(originalUrl, queryArg);
-    log("Turning on monitoring and setting to reload: " + newUrl);
+    var newUrl = "";
+    if (persistentValues.length == 0) {
+      newUrl = removeQuerySubString(originalUrl, queryArg);
+    } else {
+      var startIndex = originalUrl.indexOf(queryArg);
+      var prefix = originalUrl.slice(0, startIndex);
+      var suffix = originalUrl.slice(startIndex + queryArg.length);
+      var persistentValuesString = "";
+      for(var i = 0, n = persistentValues.length; i < n; i++) {
+        persistentValuesString += persistentValues[i];
+        if (i + 1 < n) {
+          persistentValuesString += ",";
+        }
+      }
+      newUrl = prefix + "SpeedTracer=" + persistentValuesString + suffix;
+    }
+    log("Turning on monitoring and setting to reload:" + newUrl);
     sendMsgToBackground({'type':PORT_HEADLESS_MONITORING_ON, 
-        'options':{'clearData':true,'reload':newUrl,'header':header}});
+      'options':{'clearData':true,'reload':newUrl, 'header':{}}});
+  } else if (xhrUrl) {
+    setTimeout(function(xhrUrl, header) {
+      log("sending xhr to " + xhrUrl);
+      sendMsgToBackground({'type':PORT_HEADLESS_SEND_DUMP,
+        'url':xhrUrl, 'header':header});
+      //turn off monitoring since we're done
+      sendMsgToBackground({'type':PORT_HEADLESS_MONITORING_OFF});
+    }, xhrTime, xhrUrl, header);
   }
-
 }
 
 // Removes 'querySubString' from the middle of 'queryString'
@@ -230,7 +281,7 @@ function removeQuerySubString(queryString, querySubString) {
     }
     return prefix + suffix;
   }
-  
+
   throw new Error("Couldn't find query substring " + querySubString + " to extract");
 }
 
