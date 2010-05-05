@@ -296,7 +296,7 @@ public class EventRecordType {
     if (type < 0 || type >= webkitHelpStrings.length) {
       // Normalize to speed tracer range types.
       int speedTracerType = Integer.MAX_VALUE - type;
-      if (speedTracerType < 0 || type >= speedTracerHelpStrings.length) {
+      if (speedTracerType < 0 || speedTracerType >= speedTracerHelpStrings.length) {
         return "(Unknown Event Type: " + type + ")";
       }
       
@@ -309,7 +309,7 @@ public class EventRecordType {
     if (type < 0 || type >= webkitTypeStrings.length) {
       // Normalize to speed tracer range types.
       int speedTracerType = Integer.MAX_VALUE - type;
-      if (speedTracerType < 0 || type >= speedTracerTypeStrings.length) {
+      if (speedTracerType < 0 || speedTracerType >= speedTracerTypeStrings.length) {
         return "(Unknown Event Type: " + type + ")";
       }
       
