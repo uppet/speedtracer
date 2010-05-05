@@ -155,10 +155,51 @@ public class HeadlessContentScriptTests extends GWTTestCase {
             "?foo=good&SpeedTracer=monitor");
         assertTrue("callback invoked", postMessageCallbackInvoked);
       }
-
     });
   }
-
+  
+  public void testParseQueryStringPersistent() {
+    postMessageMethod = new PostMessageCallback() {
+      public void postMessage(JavaScriptObject message) {
+        DataBag messageBag = message.cast();
+        assertEquals("type", 103, messageBag.getIntProperty("type"));
+        JavaScriptObject options = messageBag.getJSObjectProperty("options");
+        assertNotNull("options", options);
+        DataBag optionsBag = options.cast();
+        assertEquals("reload url", "http://foo.com?foo=good&SpeedTracer=xhr(http://hiddenmonitor.com),header(header:monitor),timeout(10)&speed=ludicrous",
+            optionsBag.getStringProperty("reload"));
+      }
+    };
+    doInjectedTest(new Method() {
+      public void execute() {
+        nativeParseQueryString("http://foo.com?foo=good&SpeedTracer=xhr(http://hiddenmonitor.com),header(header:monitor),monitor,blah,timeout(10)&speed=ludicrous",
+            "?foo=good&SpeedTracer=xhr(http://hiddenmonitor.com),header(header:monitor),monitor,blah,timeout(10)");
+        assertTrue("callback invoked", postMessageCallbackInvoked);
+      }
+    });
+  }
+  
+  public void testParseQueryStringAfter() {
+    postMessageMethod = new PostMessageCallback() {
+      public void postMessage(JavaScriptObject message) {
+        DataBag messageBag = message.cast();
+        assertEquals("type", 103, messageBag.getIntProperty("type"));
+        JavaScriptObject options = messageBag.getJSObjectProperty("options");
+        assertNotNull("options", options);
+        DataBag optionsBag = options.cast();
+        assertEquals("reload url", "http://foo.com?foo=SpeedTracer,asdf&speed=ludicrous",
+            optionsBag.getStringProperty("reload"));
+      }
+    };
+    doInjectedTest(new Method() {
+      public void execute() {
+        nativeParseQueryString("http://foo.com?foo=SpeedTracer,asdf&SpeedTracer=monitor,blah&speed=ludicrous",
+            "?foo=SpeedTracer,asdf&SpeedTracer=monitor,blah&speed=ludicrous");
+        assertTrue("callback invoked", postMessageCallbackInvoked);
+      }
+    });
+  }
+  
   public void testRemoveQuerySubString() {
     doInjectedTest(new Method() {
       public void execute() {
