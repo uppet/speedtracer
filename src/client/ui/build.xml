@@ -60,6 +60,15 @@
   <property name="wardir" location="${intdir}/war" />
   <property name="classdir" location="${intdir}/classes" />
 
+  <fileset id="inputfiles" dir="../../">
+    <patternset>
+      <include name="api/src/**"/>
+      <include name="client/ui/src/**" />
+      <include name="third_party/gwt/gwt-dev.jar" />
+      <include name="third_party/gwt/gwt-user.jar" />
+    </patternset>
+  </fileset>
+
   <path id="classpath">
     <pathelement path="src" />
     <pathelement path="../../api/src" />
@@ -106,7 +115,7 @@
   <target name="monitor.build">
     <uptodate property="speedtracer.monitor.updated"
         targetfile="${destdir}/monitor/monitor.nocache.js">
-      <srcfiles dir="src" includes="**/**" />
+      <srcfiles refid="inputfiles" />
     </uptodate>
     <antcall target="monitor.${config}.build" />
   </target>
@@ -136,7 +145,7 @@
   <target name="extension.build">
     <uptodate property="speedtracer.extension.updated"
         targetfile="${destdir}/extension.html">
-      <srcfiles dir="src" includes="**/**" />
+      <srcfiles refid="inputfiles" />
     </uptodate>
     <antcall target="extension.build.run" />
   </target>
@@ -144,7 +153,7 @@
   <target name="headless.extension.build">
     <uptodate property="headless.extension.updated"
         targetfile="${headless.destdir}/speedtracerheadless.html">
-      <srcfiles dir="src" includes="**/**" />
+      <srcfiles refid="inputfiles" />
     </uptodate>
     <antcall target="headless.extension.build.run" />
   </target>
@@ -174,7 +183,7 @@
   <target name="hintletengine.build">
     <uptodate property="speedtracer.hintletengine.updated"
         targetfile="${destdir}/hintletengine/hintletengine.nocache.js">
-      <srcfiles dir="src" includes="**/**" />
+      <srcfiles refid="inputfiles" />
     </uptodate>
     <antcall target="hintletengine.build.run" />
   </target>
@@ -194,7 +203,7 @@
   <target name="breakyworker.build">
     <uptodate property="speedtracer.breakyworker.updated"
       targetfile="${destdir}/breakyworker/breakyworker.nocache.js">
-      <srcfiles dir="src" includes="**/**" />
+      <srcfiles refid="inputfiles" />
     </uptodate>
     <antcall target="breakyworker.build.run" />
   </target>
