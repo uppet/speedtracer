@@ -112,6 +112,26 @@ public class NetworkResource {
 
   private final String url;
 
+  /**
+   * Used for testing only. This constructor allows for creating mock network
+   * resources. If you use it for anything else, zundel will punish you with the
+   * electric plunger.
+   */
+  protected NetworkResource(double startTime, int identifier, String url,
+      boolean isMainResource, String httpMethod, HeaderMap requestHeaders,
+      int status, HeaderMap responseHeaders) {
+    this.startTime = startTime;
+    this.identifier = identifier;
+    this.url = url;
+    this.isMainResource = isMainResource;
+    this.httpMethod = httpMethod;
+    this.requestHeaders = requestHeaders;
+    this.statusCode = status;
+    this.responseHeaders = responseHeaders;
+
+    this.startEvent = null;
+  }
+
   public NetworkResource(ResourceWillSendEvent startEvent) {
     this.startTime = startEvent.getTime();
     this.identifier = startEvent.getIdentifier();
