@@ -55,6 +55,7 @@ public class DataModel implements HintletInterface.HintListener,
     public static DataModel createModel(TabDescription tabDescription,
         DataInstance dataInstance) {
       final DataModel model = new DataModel(dataInstance);
+      dataInstance.load(model);
       model.setTabDescription(tabDescription);
       model.initialize();
       return model;

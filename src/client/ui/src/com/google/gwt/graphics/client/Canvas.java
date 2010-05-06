@@ -474,7 +474,7 @@ public class Canvas {
    * @param styleString String representing the stroke style
    */
   public native void setStrokeStyle(String styleString) /*-{
-    (this.@com.google.gwt.graphics.client.Canvas::canvasContext).strokeStyle = colorStr;
+    (this.@com.google.gwt.graphics.client.Canvas::canvasContext).strokeStyle = styleString;
   }-*/;
 
   /**
