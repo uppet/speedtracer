@@ -36,7 +36,6 @@ import com.google.speedtracer.client.messages.ResetBaseTimeMessage;
 import com.google.speedtracer.client.model.ApplicationState;
 import com.google.speedtracer.client.model.DataInstance;
 import com.google.speedtracer.client.model.DataModel;
-import com.google.speedtracer.client.model.MockDataModel;
 import com.google.speedtracer.client.model.NoDataNotifier;
 import com.google.speedtracer.client.model.TabChange;
 import com.google.speedtracer.client.model.TabChangeModel;
@@ -69,6 +68,8 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
    * request.
    */
   private static class MockUtils {
+    private static final int MOCK_TABID = 0;
+
     private static native DataInstance createMockDataInstance() /*-{
       return  { 
         Load: function(callback) {       
@@ -104,7 +105,7 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
             // TabDescription.
             final DataInstance dataInstance = createMockDataInstance();
             final TabDescription tabDescription = createTabDescription(
-                MockDataModel.MOCK_TABID, "http://mock.com/", "Mock web site");
+                MOCK_TABID, "http://mock.com/", "Mock web site");
 
             public void onChannelClosed(Client channel) {
             }
