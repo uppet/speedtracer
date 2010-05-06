@@ -96,8 +96,8 @@ public class MainGraph extends TimeLineGraph {
       Visualization<?, ?> viz = visualizations.get(i);
       // Render the background graphs with lower opacity.
       canvas.setGlobalAlpha(0.25);
-      paintGraph(coordDelta, leftBound, rightBound, domainDelta, viz.getGraphUiProps(),
-          viz.getModel().getGraphModel());
+      paintGraph(coordDelta, leftBound, rightBound, domainDelta,
+          viz.getGraphUiProps(), viz.getModel().getGraphModel());
       paintHighlights(coordDelta, leftBound, rightBound, domainDelta,
           viz.getModel().getHighlightModel());
     }
@@ -198,10 +198,9 @@ public class MainGraph extends TimeLineGraph {
 
       double xVal = (highlightEntry.getKey() - leftBound) * coordsPerDomain;
       int val = highlightEntry.getValue();
-      Color color = new Color(HintletIndicator.getSeverityColor(val));
 
       canvas.beginPath();
-      canvas.setStrokeStyle(color);
+      canvas.setStrokeStyle(HintletIndicator.getSeverityColor(val));
       canvas.setLineWidth(2);
       canvas.moveTo(xVal, COORD_Y_HEIGHT);
       canvas.lineTo(xVal, COORD_Y_HEIGHT * .8);

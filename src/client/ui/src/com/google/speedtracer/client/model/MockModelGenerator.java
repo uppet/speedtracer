@@ -19,6 +19,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.coreext.client.JSON;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.TextResource;
+import com.google.speedtracer.client.model.DataInstance.DataListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,9 +57,9 @@ public class MockModelGenerator {
    * Base class for generated mock data.
    */
   private static class Generator {
-    private final MockDataModel model;
+    private final DataListener model;
 
-    public Generator(MockDataModel model) {
+    public Generator(DataListener model) {
       this.model = model;
     }
 
@@ -90,7 +91,7 @@ public class MockModelGenerator {
     return events;
   }
   
-  public static void simulateDataSet(MockDataModel mockModel, int dataSetIndex) {
+  public static void simulateDataSet(DataListener mockModel, int dataSetIndex) {
     initializeDataSets();
     TextResource resource = dataSets.get(dataSetIndex).dataSetResource;
     final Generator generator = new Generator(mockModel);

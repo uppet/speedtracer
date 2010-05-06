@@ -28,7 +28,6 @@ import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
-import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.coreext.client.JSON;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 import com.google.speedtracer.client.ClientConfig;
@@ -42,10 +41,8 @@ import com.google.speedtracer.client.messages.HeadlessMonitoringOnMessage;
 import com.google.speedtracer.client.messages.HeadlessSendDataAckMessage;
 import com.google.speedtracer.client.messages.HeadlessSendDataMessage;
 import com.google.speedtracer.client.model.DataInstance;
-import com.google.speedtracer.client.model.DataModel;
 import com.google.speedtracer.client.model.DevToolsDataInstance;
 import com.google.speedtracer.client.model.EventRecord;
-import com.google.speedtracer.client.model.TabDescription;
 import com.google.speedtracer.client.util.Xhr;
 
 import java.util.HashMap;
@@ -74,37 +71,11 @@ public class HeadlessBackgroundPage extends Extension implements
    * Fires when messages are returned from the content script.
    */
   public class MessageHandler implements MessageEvent.Listener {
-    private class HeadlessDataModel extends DataModel {
-      @Override
-      public void bind(TabDescription tabDescription, DataInstance dataInstance) {
-      }
-
-      @Override
-      public void fireOnEventRecord(EventRecord data) {
+    private class HeadlessDataModel implements DataInstance.DataListener {
+      public void onEventRecord(EventRecord event) {
         // Send this message over to the content script
-        String dataString = JSON.stringify(data);
+        String dataString = JSON.stringify(event);
         eventRecordData.push(dataString);
-      }
-
-      /**
-       * Only initialize the data because the headless extension does not use
-       * the workers.
-       */
-      @Override
-      public void initialize() {
-        initializeData();
-      }
-
-      @Override
-      public void resumeMonitoring(int tabId) {
-      }
-
-      @Override
-      public void saveRecords(JSOArray<String> visitedUrls, String version) {
-      }
-
-      @Override
-      public void stopMonitoring() {
       }
     }
 
@@ -219,8 +190,7 @@ public class HeadlessBackgroundPage extends Extension implements
       if (dataInstance == null) {
         dataInstance = DevToolsDataInstance.create(id);
         dataInstances.put(id, dataInstance);
-        DataModel dataModel = new HeadlessDataModel();
-        dataModel.initialize();
+        HeadlessDataModel dataModel = new HeadlessDataModel();        
         dataInstance.load(dataModel);
       }
       return dataInstance;
@@ -252,11 +222,11 @@ public class HeadlessBackgroundPage extends Extension implements
     port.postMessage(message);
   }
 
+  private Console console;
+
   private HashMap<Integer, DataInstance> dataInstances = new HashMap<Integer, DataInstance>();
 
   private final JsArrayString eventRecordData = JsArrayString.createArray().cast();
-
-  private Console console;
 
   @Override
   public String getVersion() {

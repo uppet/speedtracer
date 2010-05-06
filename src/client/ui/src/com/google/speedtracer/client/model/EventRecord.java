@@ -85,12 +85,16 @@ public class EventRecord extends JavaScriptObject {
   }-*/;
 
   /**
-   * Gets the numeric type value record.
-   * If there is no type, use -1 so that it can propagate to the UI
+   * TODO(conroy): Port this class to use DataBag and put the expensive code
+   * path that checks hasOwnProperty() behind the Debug permutation.
+   * 
+   * Gets the numeric type value record. If there is no type, use -1 so that it
+   * can propagate to the UI
+   * 
    * @return the number that represents this type.
    */
   public final native int getType() /*-{
-    return this.type || -1;
+    return this.hasOwnProperty("type") ? this.type : -1;
   }-*/;
 
   /**

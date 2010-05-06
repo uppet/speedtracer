@@ -469,6 +469,15 @@ public class Canvas {
   }
 
   /**
+   * Set the current Stroke Style via a valid Stroke Style String.
+   * 
+   * @param styleString String representing the stroke style
+   */
+  public native void setStrokeStyle(String styleString) /*-{
+    (this.@com.google.gwt.graphics.client.Canvas::canvasContext).strokeStyle = colorStr;
+  }-*/;
+
+  /**
    * Strokes the current path according to the current stroke style.
    */
   public native void stroke() /*-{
@@ -558,9 +567,5 @@ public class Canvas {
   private void setPixelWidth(Element elem, int width) {
     elem.getStyle().setPropertyPx("width", width);
   }
-
-  private native void setStrokeStyle(String colorStr) /*-{
-    (this.@com.google.gwt.graphics.client.Canvas::canvasContext).strokeStyle = colorStr;
-  }-*/;
 
 }

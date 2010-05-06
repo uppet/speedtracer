@@ -31,7 +31,7 @@ import java.util.List;
  * 
  * Also defines Universal base time, which can be calibrated by subclasses only.
  */
-public abstract class DataModel implements HintletInterface.HintListener,
+public class DataModel implements HintletInterface.HintListener,
     EventRecordLookup, DataInstance.DataListener {
   /**
    * Wrapper objects to proxy callbacks to correct handler.
@@ -54,12 +54,9 @@ public abstract class DataModel implements HintletInterface.HintListener,
      */
     public static DataModel createModel(TabDescription tabDescription,
         DataInstance dataInstance) {
-      final DataModel model = ClientConfig.isMockMode() ? new MockDataModel()
-          : new DataModelImpl();
-      model.initialize();
+      final DataModel model = new DataModel(dataInstance);
       model.setTabDescription(tabDescription);
-      model.dataInstance = dataInstance;
-      model.bind(tabDescription, dataInstance);
+      model.initialize();
       return model;
     }
 
@@ -69,26 +66,31 @@ public abstract class DataModel implements HintletInterface.HintListener,
 
   protected JSOArray<String> traceDataCopy = JSOArray.create();
 
-  private BreakyWorkerHost breakyWorkerHost;
-  private DataInstance dataInstance;
+  private final DataInstance dataInstance;
 
   private final List<EventRecordHandler> eventModels = new ArrayList<EventRecordHandler>();
 
   private JsIntegerMap<EventRecord> eventRecordMap = JsIntegerMap.create();
 
-  private HintletEngineHost hintletEngineHost;
+  private final HintletEngineHost hintletEngineHost;
 
-  private NetworkResourceModel networkResourceModel;
+  private final NetworkResourceModel networkResourceModel;
 
-  private JavaScriptProfileModel profileModel;
+  private final JavaScriptProfileModel profileModel;
 
   private TabDescription tabDescription;
 
-  private TabChangeModel tabNavigationModel;
+  private final TabChangeModel tabNavigationModel;
 
-  private UiEventModel uiEventModel;
+  private final UiEventModel uiEventModel;
 
-  protected DataModel() {
+  protected DataModel(DataInstance dataInstance) {
+    this.dataInstance = dataInstance;
+    this.networkResourceModel = new NetworkResourceModel();
+    this.uiEventModel = new UiEventModel();
+    this.tabNavigationModel = new TabChangeModel();
+    this.profileModel = new JavaScriptProfileModel(this);
+    this.hintletEngineHost = new HintletEngineHost();
   }
 
   /**
@@ -180,6 +182,10 @@ public abstract class DataModel implements HintletInterface.HintListener,
     return tabNavigationModel;
   }
 
+  public JSOArray<String> getTraceCopy() {
+    return traceDataCopy;
+  }
+
   /**
    * Gets the sub-model for DOM events.
    * 
@@ -189,15 +195,6 @@ public abstract class DataModel implements HintletInterface.HintListener,
     return uiEventModel;
   }
 
-  /**
-   * Hook up the various models. In the general case, we want all of them, but
-   * subclasses can pick and choose which models make sense for them.
-   */
-  public void initialize() {
-    initializeWorkers();
-    initializeData();
-  }
-  
   /**
    * Data sources that drive the DataModel drive it through this single function
    * which passes in an {@link EventRecord}.
@@ -215,43 +212,32 @@ public abstract class DataModel implements HintletInterface.HintListener,
     saveHintRecord(hintlet);
   }
 
-  public abstract void resumeMonitoring(int tabId);
+  public void resumeMonitoring(int tabId) {
+    getDataInstance().resumeMonitoring();
+  }
 
-  public abstract void saveRecords(JSOArray<String> visitedUrls, String version);
-
-  public abstract void stopMonitoring();
+  public void stopMonitoring() {
+    getDataInstance().stopMonitoring();
+  }
 
   /**
-   * Do not call this directly. Provides an abstract way to tie a tab and an
-   * opaque handle to an instance of a data model.
-   * 
-   * @param tabDescription info about the tab
-   * @param dataInstance an opaque handle containing model specific
-   *          functionality
+   * Hook up the various models. In the general case, we want all of them, but
+   * subclasses can pick and choose which models make sense for them.
    */
-  protected abstract void bind(TabDescription tabDescription,
-      DataInstance dataInstance);
+  protected void initialize() {
+    // Listen to the hintlet engine.
+    hintletEngineHost.addHintListener(this);
 
-  protected void initializeData() {
-    this.networkResourceModel = new NetworkResourceModel();
-    this.uiEventModel = new UiEventModel();
-    this.tabNavigationModel = new TabChangeModel();
-    this.profileModel = new JavaScriptProfileModel(this);
-    
+    // Add models to our dispatch list,.
+    if (ClientConfig.isDebugMode()) {
+      // NOTE: the order of adding models matters, some modify the record object
+      eventModels.add(0, new BreakyWorkerHost(this, hintletEngineHost));
+    }
     eventModels.add(uiEventModel);
     eventModels.add(networkResourceModel);
     eventModels.add(tabNavigationModel);
     eventModels.add(profileModel);
-  }
-  
-  protected void initializeWorkers() {
-    if (ClientConfig.isDebugMode()) {
-      this.breakyWorkerHost = new BreakyWorkerHost(this, hintletEngineHost);
-      // NOTE: the order of adding models matters, some modify the record object
-      eventModels.add(0, breakyWorkerHost);
-    } 
-    this.hintletEngineHost = new HintletEngineHost();
-    this.hintletEngineHost.addHintListener(this);
+    eventModels.add(hintletEngineHost);
   }
 
   protected void setTabDescription(TabDescription tabDescription) {
@@ -262,11 +248,6 @@ public abstract class DataModel implements HintletInterface.HintListener,
     for (int i = 0, n = eventModels.size(); i < n; i++) {
       eventModels.get(i).onEventRecord(data);
     }
-  }
-
-  @SuppressWarnings("unused")
-  private JSOArray<String> getTraceCopy() {
-    return traceDataCopy;
   }
 
   /**

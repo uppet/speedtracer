@@ -15,6 +15,8 @@
  */
 package com.google.speedtracer.client.view;
 
+import com.google.gwt.chrome.crx.client.Tabs;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
@@ -34,6 +36,7 @@ import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.Div;
 import com.google.gwt.topspin.ui.client.Panel;
 import com.google.gwt.topspin.ui.client.Select;
+import com.google.gwt.user.client.Window;
 import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.Monitor;
 import com.google.speedtracer.client.model.DataModel;
@@ -250,9 +253,26 @@ public class Controller extends Panel implements DomainObserver,
     return false;
   }-*/;
 
-  // This field will be null if the setProfilingOptions extensions API does not
-  // exist.
-  private ProfilingOptionsPanel profilingOptions;
+  /**
+   * Hangs an expando on our view that the save data page will use to request
+   * the record data and file information.
+   * 
+   * @param visitedUrls An array of URLs visited in this data set.
+   * @param version The Speed Tracer version.
+   * @param traceData The Speed Tracer data.
+   */
+  private static native void setupViewCallback(JSOArray<String> visitedUrls,
+      String version, JSOArray<String> traceData) /*-{
+    top._onSaveReady = function(doSave) {
+      doSave(version,
+             visitedUrls,
+             traceData);
+    };
+  }-*/;
+
+  private final Container controllerContainer;
+
+  private final Css css;
 
   private final InfoScreen infoScreen;
 
@@ -263,12 +283,12 @@ public class Controller extends Panel implements DomainObserver,
   private final Monitor monitor;
 
   private OverViewTimeLine overviewTimeline;
-
   private final Select pages;
+  // This field will be null if the setProfilingOptions extensions API does not
+  // exist.
+  private ProfilingOptionsPanel profilingOptions;
 
   private final ToggleButton recordStopButton;
-  private final Css css;
-  private final Container controllerContainer;
 
   public Controller(Container parent, DataModel model, final Monitor monitor,
       Resources resources) {
@@ -307,7 +327,8 @@ public class Controller extends Panel implements DomainObserver,
     saveButton.addClickListener(new ClickListener() {
       public void onClick(ClickEvent event) {
         Controller me = Controller.this;
-        me.model.saveRecords(getVisitedUrls(), monitor.getVersion());
+        saveRecords(getVisitedUrls(), monitor.getVersion(),
+            me.model.getTraceCopy());
       }
 
       // TODO(jaimeyap): Revisit this since it is kinda yucky to be using a
@@ -496,6 +517,18 @@ public class Controller extends Panel implements DomainObserver,
       int indexToSelect) /*-{
     return select[indexToSelect];
   }-*/;
+
+  private void saveRecords(JSOArray<String> visitedUrls, String version,
+      JSOArray<String> traceData) {
+    // Create expando on our View so that the tab we create can callback and
+    // receive the record data and file information.
+    setupViewCallback(visitedUrls, version, traceData);
+
+    // Create a new tab at the save data template page. Give it the same query
+    // string as our own.
+    Tabs.create(GWT.getModuleBaseURL() + "SpeedTracerData.html"
+        + Window.Location.getQueryString());
+  }
 
   private void setIsRecordingTitle(boolean isRecording) {
     recordStopButton.getElement().setAttribute("title",
