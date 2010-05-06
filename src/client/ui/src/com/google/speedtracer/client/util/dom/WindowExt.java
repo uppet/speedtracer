@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,13 +27,22 @@ import com.google.gwt.topspin.ui.client.Window;
 public class WindowExt extends Window {
 
   /**
-   * Get an instance of the containing window ($wnd).
+   * Returns the window object from the hosting frame. Also known as $wnd.
    * 
    * @return a reference to $wnd
    */
-  public static final WindowExt get() {
+  public static final WindowExt getHostWindow() {
     return Window.get().cast();
   }
+
+  /**
+   * Returns the original, lexically scoped 'window' object.
+   * 
+   * @return
+   */
+  public static final native WindowExt getLexicalWindow() /*-{
+    return window;
+  }-*/;
 
   protected WindowExt() {
   }

@@ -528,7 +528,7 @@ public abstract class FilteringScrollTable extends Div implements
           }
         });
 
-    WindowExt window = WindowExt.get();
+    WindowExt window = WindowExt.getHostWindow();
     ResizeEvent.addResizeListener(window, window, this);
   }
 
