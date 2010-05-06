@@ -37,8 +37,10 @@ public class GwtLightweightMetricsChart extends LatencyDashboardChart {
   private Legend legend;
   private PieChart rightChart;
 
-  public GwtLightweightMetricsChart(String title) {
-    super(title);
+  public GwtLightweightMetricsChart(LatencyDashboardChart.Resources resources,
+      String title) {
+    super(resources, title);
+
     rightChart = new PieChart();
     chartPanel.addEast(rightChart, chartHeight);
     leftChart = new AreaChart();
@@ -67,6 +69,26 @@ public class GwtLightweightMetricsChart extends LatencyDashboardChart {
     addLegend();
     populateLastData(serverData[0]);
     populateTimeline(serverData);
+    populateIndicator(serverData);
+  }
+
+  public void populateIndicator(DashboardRecord[] serverData) {
+    if (serverData.length <= 1) {
+      setIndicatorSame();
+      return;
+    }
+    double prev = sumTimes(serverData[1]);
+    double curr = sumTimes(serverData[0]);
+    double diff = prev - curr;
+    if (Math.abs(diff) > (.2 * prev)) {
+      if (diff > 0) {
+        setIndicatorWorse();
+      } else {
+        setIndicatorBetter();
+      }
+      return;
+    }
+    setIndicatorSame();
   }
 
   public void populateLastData(DashboardRecord serverData) {
@@ -101,8 +123,13 @@ public class GwtLightweightMetricsChart extends LatencyDashboardChart {
 
     AreaChart.Options options = AreaChart.Options.create();
     options.setLegend(LegendPosition.NONE);
-    options.setHeight(275);
+    options.setHeight(chartHeight);
     options.setStacked(true);
     leftChart.draw(dataTable, options);
+  }
+
+  public double sumTimes(DashboardRecord serverData) {
+    return serverData.bootstrapDuration + serverData.loadExternalRefsDuration
+        + serverData.moduleStartupDuration;
   }
 }

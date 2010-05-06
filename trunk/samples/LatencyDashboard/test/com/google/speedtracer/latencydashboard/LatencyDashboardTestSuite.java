@@ -18,14 +18,13 @@ package com.google.speedtracer.latencydashboard;
 import com.google.speedtracer.latencydashboard.server.CustomDashboardRecordStoreTests;
 import com.google.speedtracer.latencydashboard.shared.CustomDashboardRecordTests;
 
-import junit.framework.Test;
 import junit.framework.TestSuite;
 
 /**
  * LatencyDashboard tests.
  */
 public class LatencyDashboardTestSuite extends TestSuite {
-  public static Test suite() {
+  public static TestSuite suite() {
     final TestSuite suite = new TestSuite("All Tests");
     suite.addTestSuite(CustomDashboardRecordTests.class);
     suite.addTestSuite(CustomDashboardRecordStoreTests.class);
