@@ -35,7 +35,8 @@ public class DashboardResources {
    * Aggregated CSS and Image Resources into an inner class for the different UI
    * components, then make sure that this interface extends all of them.
    */
-  public interface Resources extends WarningPane.Resources {
+  public interface Resources extends WarningPane.Resources,
+      LatencyDashboardChart.Resources {
     @Source("resources/Dashboard.css")
     Css dashboardCss();
   }
@@ -62,6 +63,7 @@ public class DashboardResources {
   public static void init() {
     resources = GWT.create(Resources.class);
     StyleInjector.inject(resources.dashboardCss().getText()
+        + resources.latencyDashboardChartCss().getText()
         + resources.warningPaneCss().getText());
   }
 }

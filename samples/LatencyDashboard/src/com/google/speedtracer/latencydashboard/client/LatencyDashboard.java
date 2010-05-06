@@ -50,10 +50,11 @@ public class LatencyDashboard implements EntryPoint {
 
   private void createCharts() {
     lightweightMetricsChart = new GwtLightweightMetricsChart(
+        DashboardResources.getResources(),
         "GWT Lightweight Metrics - Page Load");
     RootPanel.get().add(lightweightMetricsChart);
     aggregatedEventTypeChart = new AggregatedEventTypeChart(
-        "Page Load breakdown by Event");
+        DashboardResources.getResources(), "Page Load breakdown by Event");
     RootPanel.get().add(aggregatedEventTypeChart);
   }
 

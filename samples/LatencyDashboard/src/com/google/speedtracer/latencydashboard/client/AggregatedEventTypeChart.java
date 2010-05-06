@@ -27,20 +27,28 @@ import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
  * Shows some of the lightweight metrics in a stacked chart.
  */
 public class AggregatedEventTypeChart extends LatencyDashboardChart {
-  private static final String javaScriptExecutionColor = "#4684ee";
+  // See EventRecordColors.java and Color.java in SpeedTracer
+  private static final String javaScriptExecutionColor = "yellow"; // YELLOW
   private static final String javaScriptExecutionTitle = "Javascript Execution";
-  private static final String layoutColor = "#dc3912";
+  private static final String layoutColor = "#8a2be2"; // BLUEVIOLET
   private static final String layoutTitle = "Layout";
-  private static final String recalculateStylesColor = "#ff9900";
+  private static final String recalculateStylesColor = "#52b453"; // DARKGREEN
   private static final String recalculateStylesTitle = "Recalculate Styles";
   private static final String revisionTitle = "Revision";
+
+  // TODO(zundel): Add these 4 types of events to the graph.
+  // *** colorMap.put(PaintEvent.TYPE, Color.MIDNIGHT_BLUE);
+  // *** colorMap.put(ParseHtmlEvent.TYPE, Color.INDIAN_RED);
+  // *** colorMap.put(EvalScript.TYPE, Color.PEACH);
+  // *** colorMap.put(GarbageCollectionEvent.TYPE, Color.BROWN);
 
   private AreaChart leftChart;
   private Legend legend;
   private PieChart rightChart;
 
-  public AggregatedEventTypeChart(String title) {
-    super(title);
+  public AggregatedEventTypeChart(LatencyDashboardChart.Resources resources,
+      String title) {
+    super(resources, title);
     rightChart = new PieChart();
     chartPanel.addEast(rightChart, chartHeight);
     leftChart = new AreaChart();
@@ -69,6 +77,26 @@ public class AggregatedEventTypeChart extends LatencyDashboardChart {
     addLegend();
     populateLastData(serverData[0]);
     populateTimeline(serverData);
+    populateIndicator(serverData);
+  }
+
+  public void populateIndicator(DashboardRecord[] serverData) {
+    if (serverData.length <= 1) {
+      setIndicatorSame();
+      return;
+    }
+    double prev = sumTimes(serverData[1]);
+    double curr = sumTimes(serverData[0]);
+    double diff = prev - curr;
+    if (Math.abs(diff) > (.2 * prev)) {
+      if (diff > 0) {
+        setIndicatorWorse();
+      } else {
+        setIndicatorBetter();
+      }
+      return;
+    }
+    setIndicatorSame();
   }
 
   public void populateLastData(DashboardRecord serverData) {
@@ -88,8 +116,10 @@ public class AggregatedEventTypeChart extends LatencyDashboardChart {
     PieChart.Options options = PieChart.Options.create();
     options.setLegend(LegendPosition.NONE);
     options.setHeight(chartHeight);
+    // TODO(zundel): set 3D colors
     options.setColors(javaScriptExecutionColor, layoutColor,
         recalculateStylesColor);
+
     rightChart.draw(dataTable, options);
   }
 
@@ -108,11 +138,16 @@ public class AggregatedEventTypeChart extends LatencyDashboardChart {
 
     leftChart.setHeight(chartHeight + "px");
     Options options = AreaChart.Options.create();
-    options.setHeight(275);
+    options.setHeight(chartHeight);
     options.setLegend(LegendPosition.NONE);
     options.setStacked(true);
     options.setColors(javaScriptExecutionColor, layoutColor,
         recalculateStylesColor);
     leftChart.draw(data, options);
+  }
+
+  private double sumTimes(DashboardRecord record) {
+    return record.javaScriptExecutionDuration + record.layoutDuration
+        + record.recalculateStyleDuration;
   }
 }
