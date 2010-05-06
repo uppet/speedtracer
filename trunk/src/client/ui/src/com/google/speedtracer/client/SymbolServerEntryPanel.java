@@ -69,7 +69,7 @@ public class SymbolServerEntryPanel extends HotKeyPanel {
     final Url resourceUrl = new Url(tabDescription.getUrl());
     final String applicationUrl = resourceUrl.getApplicationUrl();
     appUrl.setValue(applicationUrl);
-    final LocalStorage storage = WindowExt.get().getLocalStorage();
+    final LocalStorage storage = WindowExt.getHostWindow().getLocalStorage();
     String previousManifestValue = storage.getStringItem(applicationUrl);
     symbolManifestUrl.setValue(previousManifestValue);
 

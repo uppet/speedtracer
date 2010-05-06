@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -98,7 +98,7 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     }-*/;
 
     private static void createMockBackgroundPage() {
-      Server.listen(WindowExt.get(), CHANNEL_NAME, new ServerListener() {
+      Server.listen(WindowExt.getHostWindow(), CHANNEL_NAME, new ServerListener() {
         public void onClientChannelRequested(Request request) {
           request.accept(new WindowChannel.Listener() {
             // We make mock stubs of the DataInstance and the
@@ -512,7 +512,7 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
 
   private void maybeInitializeSymbolServerController(
       TabDescription tabDescription) {
-    LocalStorage storage = WindowExt.get().getLocalStorage();
+    LocalStorage storage = WindowExt.getHostWindow().getLocalStorage();
     Url resourceUrl = new Url(tabDescription.getUrl());
 
     // We are not permitted to do file:// XHRs.
@@ -545,7 +545,7 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     if (channel != null) {
       channel.sendMessage(RequestInitializationMessage.TYPE,
           RequestInitializationMessage.create(getTabId(), getBrowserId(),
-              WindowExt.get()));
+              WindowExt.getHostWindow()));
     }
   }
 

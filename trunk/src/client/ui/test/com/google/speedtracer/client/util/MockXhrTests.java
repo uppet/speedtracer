@@ -95,18 +95,20 @@ public class MockXhrTests extends GWTTestCase {
       }
     };
 
-    MockXhr.Restorer restorer = MockXhr.setDelegate(WindowExt.get(), delegate);
+    MockXhr.Restorer restorer = MockXhr.setDelegate(WindowExt.getHostWindow(),
+        delegate);
     try {
       final boolean[] didFail = new boolean[1];
-      Xhr.post(WindowExt.get(), url, data, contentType, new Xhr.XhrCallback() {
-        public void onFail(XMLHttpRequest xhr) {
-          didFail[0] = true;
-        }
+      Xhr.post(WindowExt.getHostWindow(), url, data, contentType,
+          new Xhr.XhrCallback() {
+            public void onFail(XMLHttpRequest xhr) {
+              didFail[0] = true;
+            }
 
-        public void onSuccess(XMLHttpRequest xhr) {
-          fail("onSuccess should not be called.");
-        }
-      });
+            public void onSuccess(XMLHttpRequest xhr) {
+              fail("onSuccess should not be called.");
+            }
+          });
       assertTrue("onCreate not called", delegate.didCreate);
       assertTrue("onOpen not called", delegate.didOpen);
       assertTrue("onSend not called", delegate.didSend);
@@ -134,11 +136,11 @@ public class MockXhrTests extends GWTTestCase {
       }
     };
 
-    final MockXhr.Restorer restorer = MockXhr.setDelegate(WindowExt.get(),
-        delegate);
+    final MockXhr.Restorer restorer = MockXhr.setDelegate(
+        WindowExt.getHostWindow(), delegate);
     try {
       final boolean[] didSucceed = new boolean[1];
-      Xhr.post(WindowExt.get(), url, data, contentType,
+      Xhr.post(WindowExt.getHostWindow(), url, data, contentType,
           new Xhr.XhrCallback() {
             public void onFail(XMLHttpRequest xhr) {
               fail("onFail should not be called.");
@@ -160,7 +162,7 @@ public class MockXhrTests extends GWTTestCase {
 
     // Setup/Restore one more time to ensure it was properly restored the first
     // time.
-    MockXhr.setDelegate(WindowExt.get(), new MockXhr.Delegate() {
+    MockXhr.setDelegate(WindowExt.getHostWindow(), new MockXhr.Delegate() {
       @Override
       public void onSend(XMLHttpRequest xhr, String data) {
       }

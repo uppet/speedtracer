@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Google Inc.
+ * Copyright 2010 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -137,7 +137,7 @@ public class WindowChannelTests extends GWTTestCase {
    */
   public void testClientConnect() {
     final String channelName = "testConnect";
-    final WindowExt window = WindowExt.get();
+    final WindowExt window = WindowExt.getHostWindow();
     final TestServerListener serverListener = new TestServerListener();
     Server server = Server.listen(window, channelName, serverListener);
 
@@ -170,7 +170,7 @@ public class WindowChannelTests extends GWTTestCase {
    */
   public void testMultiClientConnect() {
     final String channelName = "testMultiConnect";
-    final WindowExt window = WindowExt.get();
+    final WindowExt window = WindowExt.getHostWindow();
     final TestServerListener serverListener = new TestServerListener();
     Server server = Server.listen(window, channelName, serverListener);
 
@@ -219,7 +219,7 @@ public class WindowChannelTests extends GWTTestCase {
   public void testSend() {
     final String channelName = "testSend";
     final int numberOfMessagesToSend = 10;
-    final WindowExt window = WindowExt.get();
+    final WindowExt window = WindowExt.getHostWindow();
     final TestServerListener serverListener = new TestServerListener();
     Server server = Server.listen(window, channelName, serverListener);
 
@@ -285,7 +285,7 @@ public class WindowChannelTests extends GWTTestCase {
 
     final String channelName = "testSendInConnectCallback";
 
-    final WindowExt window = WindowExt.get();
+    final WindowExt window = WindowExt.getHostWindow();
 
     final TestServerListener serverListener = new SendInConnectServerListener();
     Server server = Server.listen(window, channelName, serverListener);
@@ -315,7 +315,7 @@ public class WindowChannelTests extends GWTTestCase {
    */
   public void testServerStartStop() {
     final String channelName = "testStartStop";
-    final WindowExt window = WindowExt.get();
+    final WindowExt window = WindowExt.getHostWindow();
     final TestServerListener serverListener = new TestServerListener();
     WindowChannel.Server server = WindowChannel.Server.listen(window,
         channelName, serverListener);

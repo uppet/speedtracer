@@ -296,8 +296,9 @@ public class EventWaterfallRowDetails extends RowDetails implements
 
     // Ensure that window resizes don't mess up our row size due to text
     // reflow. Things may need to grow or shrink.
-    manageEventListener(ResizeEvent.addResizeListener(WindowExt.get(),
-        WindowExt.get(), new ResizeListener() {
+    manageEventListener(ResizeEvent.addResizeListener(
+        WindowExt.getHostWindow(), WindowExt.getHostWindow(),
+        new ResizeListener() {
           public void onResize(ResizeEvent event) {
             if (heightFixer == null && getParentRow().isExpanded()) {
               heightFixer = new Command.Method() {

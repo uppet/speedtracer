@@ -108,7 +108,7 @@ public class BreakyTest implements EntryPoint {
   }
 
   private static int INITIAL_WALL_COUNT = 100;
-  
+
   private final DivElement statusDiv = Document.get().createDivElement();
 
   private int validationCount = 0;
@@ -182,8 +182,8 @@ public class BreakyTest implements EntryPoint {
    */
   private void reportInvalid(String invalid) {
     log("About to report invalid...");
-    Xhr.post(WindowExt.get(), GWT.getModuleBaseURL() + "invalid", invalid,
-        "text/plain", new XhrCb());
+    Xhr.post(WindowExt.getHostWindow(), GWT.getModuleBaseURL() + "invalid",
+        invalid, "text/plain", new XhrCb());
   }
 
   /**
@@ -191,7 +191,7 @@ public class BreakyTest implements EntryPoint {
    */
   private void reportValid() {
     log("About to report valid..");
-    Xhr.post(WindowExt.get(), GWT.getModuleBaseURL() + "valid", "",
+    Xhr.post(WindowExt.getHostWindow(), GWT.getModuleBaseURL() + "valid", "",
         "text/plain", new XhrCb());
   }
 
@@ -255,7 +255,7 @@ public class BreakyTest implements EntryPoint {
       reportInvalid("Headless API is not loaded!");
       return;
     }
-    
+
     HeadlessApi.MonitoringOnOptions options = HeadlessApi.MonitoringOnOptions.createObject().cast();
     options.clearData();
     log("starting monitoring...");
@@ -277,7 +277,7 @@ public class BreakyTest implements EntryPoint {
     });
     return;
   }
-  
+
   /**
    * Validate a raw dump.
    * 
@@ -312,4 +312,3 @@ public class BreakyTest implements EntryPoint {
     }
   }
 }
-

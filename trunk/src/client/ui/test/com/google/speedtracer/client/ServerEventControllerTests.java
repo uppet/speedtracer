@@ -32,11 +32,6 @@ import com.google.speedtracer.client.util.dom.WindowExt;
  */
 public class ServerEventControllerTests extends GWTTestCase {
 
-  // TODO(knorton): Move into WindowExt.
-  private static native WindowExt getCurrentWindow() /*-{
-    return window;
-  }-*/;
-
   /**
    * Bundles tests data.
    */
@@ -106,10 +101,6 @@ public class ServerEventControllerTests extends GWTTestCase {
     public void onAuthenticationRequired(String url) {
       fail("Authentication should not be required.");
     }
-
-    public void onAuthenticationSucceeded(String url) {
-      fail("Authentication should not be required.");
-    }
   }
 
   /**
@@ -121,8 +112,8 @@ public class ServerEventControllerTests extends GWTTestCase {
     final ServerEventController controller = new ServerEventController(
         new NoAuthentication());
 
-    final MockXhr.Restorer restorer = MockXhr.setDelegate(getCurrentWindow(),
-        new SuccessfulXhr());
+    final MockXhr.Restorer restorer = MockXhr.setDelegate(
+        WindowExt.getLexicalWindow(), new SuccessfulXhr());
     try {
       final boolean[] didSucceed = new boolean[1];
       controller.requestTraceFor(createMockNetworkResource(1,
@@ -150,8 +141,8 @@ public class ServerEventControllerTests extends GWTTestCase {
     final ServerEventController controller = new ServerEventController(
         new NoAuthentication());
 
-    final MockXhr.Restorer restorer = MockXhr.setDelegate(getCurrentWindow(),
-        new FailedXhr(404));
+    final MockXhr.Restorer restorer = MockXhr.setDelegate(
+        WindowExt.getLexicalWindow(), new FailedXhr(404));
     try {
       final boolean[] didFail = new boolean[1];
       controller.requestTraceFor(createMockNetworkResource(1,
@@ -178,8 +169,8 @@ public class ServerEventControllerTests extends GWTTestCase {
   public void testSuccessfulHasTrace() {
     final ServerEventController controller = new ServerEventController(
         new NoAuthentication());
-    final MockXhr.Restorer restorer = MockXhr.setDelegate(getCurrentWindow(),
-        new SuccessfulXhr());
+    final MockXhr.Restorer restorer = MockXhr.setDelegate(
+        WindowExt.getLexicalWindow(), new SuccessfulXhr());
     try {
       final boolean[] didSucceed = new boolean[1];
       controller.serverHasValidTrace(createMockNetworkResource(1,
@@ -204,8 +195,8 @@ public class ServerEventControllerTests extends GWTTestCase {
   public void testFailedHasTrace() {
     final ServerEventController controller = new ServerEventController(
         new NoAuthentication());
-    final MockXhr.Restorer restorer = MockXhr.setDelegate(getCurrentWindow(),
-        new FailedXhr(404));
+    final MockXhr.Restorer restorer = MockXhr.setDelegate(
+        WindowExt.getLexicalWindow(), new FailedXhr(404));
     try {
       final boolean[] didSucceed = new boolean[1];
       controller.serverHasValidTrace(createMockNetworkResource(1,
