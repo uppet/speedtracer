@@ -142,6 +142,9 @@
     </copy>
   </target>
 
+  <target name="speedtracer.ui.build" depends="monitor.build,
+                                               hintletengine.build" />
+
   <target name="extension.build">
     <uptodate property="speedtracer.extension.updated"
         targetfile="${destdir}/extension.html">
@@ -329,9 +332,8 @@
   <target name="test" depends="tests" />
 
   <target name="build" depends="extension.build,
-                                headless.extension.build,
-                                monitor.build,
-                                hintletengine.build" />
+                                speedtracer.ui.build,
+                                headless.extension.build" />
 
   <target name="clean">
     <delete dir="${destdir}" failonerror="false" />

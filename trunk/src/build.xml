@@ -28,9 +28,7 @@
     <taskdef name="svnrev" classname="com.google.speedtracer.ant.SvnRevision"
         classpath="third_party/svnkit/svnkit.jar; ${speedtracer.stools.destdir}" />
     <svnrev property="speedtracer.revision" />
-  </target>
 
-  <target name="build" depends="get-revision-info">
     <!-- version-info.txt is needed by the master to determine the
          revision being built. -->
     <condition property="speedtracer.suffix" value="unknown">
@@ -39,13 +37,21 @@
     <property name="speedtracer.suffix" value="r${speedtracer.revision}" />
     <echo message="${speedtracer.suffix}" 
          file="${speedtracer.destdir}/version-info.txt" />
+  </target>
 
+  <target name="build" depends="get-revision-info">
     <!-- inherits: config, speedtracer.destdir, speedtracer.revision -->
     <ant dir="api" target="build" />
     <ant dir="client" target="build" />
   </target>
 
-  <target name="speedtracer.headless.build">
+  <target name="speedtracer.build" depends="get-revision-info">
+    <ant dir="api" target="build" />
+    <ant dir="client" target="speedtracer.build" />
+  </target>
+
+  <!-- Headless builds don't need to embed the version -->
+  <target name="speedtracer.headless.build" >
     <ant dir="api" target="build" />
     <ant dir="client" target="speedtracer.headless.build" />
   </target>

@@ -77,14 +77,6 @@
     </target>
   
 
-    <target name="speedtracer.headless.build" depends="headless.extension.build,headless.extension.package">
-    </target>
-
-    <target name="speedtracer.breaky.build">
-      <ant dir="ui" target="breaky.build" />
-    </target>
-
-
   <target name="headless.extension.build">
     <ant dir="ui" target="headless.extension.build" />
   </target>
@@ -136,10 +128,29 @@
     <ant dir="ui" target="build" />
   </target>
 
+  <target name="speedtracer.extension.build" >
+    <ant dir="ui" target="speedtracer.ui.build" />
+    <ant dir="ui" target="extension.build" />
+  </target>
+
+  <!-- Top Level Targets-->
   <target name="build" 
           depends="ui.build,extension.package,headless.extension.package" />
 
+  <target name="speedtracer.build"
+    depends="speedtracer.extension.build,extension.package" >
+  </target>
+
+  <target name="speedtracer.headless.build"
+          depends="headless.extension.build,
+                   headless.extension.package">
+  </target>
+
   <target name="test">
     <ant dir="ui" target="test" />
+  </target>
+
+  <target name="speedtracer.breaky.build">
+    <ant dir="ui" target="breaky.build" />
   </target>
 </project>
