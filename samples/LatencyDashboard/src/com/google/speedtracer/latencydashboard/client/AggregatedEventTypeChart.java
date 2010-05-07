@@ -20,27 +20,30 @@ import com.google.gwt.visualization.client.LegendPosition;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.visualizations.AreaChart;
 import com.google.gwt.visualization.client.visualizations.PieChart;
-import com.google.gwt.visualization.client.visualizations.AreaChart.Options;
 import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
 
 /**
  * Shows some of the lightweight metrics in a stacked chart.
  */
 public class AggregatedEventTypeChart extends LatencyDashboardChart {
+  // Color mappings in SpeedTracer defined in Color.java and
+  // EventRecordColors.java
+  private static final String evalScriptColor = "#ffd393";
+  private static final String evalScriptTitle = "Evaluate Script";
+  private static final String garbageCollectionColor = "#ab8f38";
+  private static final String garbageCollectionTitle = "Garbage Collection";
   // See EventRecordColors.java and Color.java in SpeedTracer
   private static final String javaScriptExecutionColor = "yellow"; // YELLOW
   private static final String javaScriptExecutionTitle = "Javascript Execution";
   private static final String layoutColor = "#8a2be2"; // BLUEVIOLET
   private static final String layoutTitle = "Layout";
+  private static final String paintColor = "#7483aa";
+  private static final String paintTitle = "Paint";
+  private static final String parseHtmlColor = "#cd5c5c";
+  private static final String parseHtmlTitle = "Parse HTML";
   private static final String recalculateStylesColor = "#52b453"; // DARKGREEN
   private static final String recalculateStylesTitle = "Recalculate Styles";
   private static final String revisionTitle = "Revision";
-
-  // TODO(zundel): Add these 4 types of events to the graph.
-  // *** colorMap.put(PaintEvent.TYPE, Color.MIDNIGHT_BLUE);
-  // *** colorMap.put(ParseHtmlEvent.TYPE, Color.INDIAN_RED);
-  // *** colorMap.put(EvalScript.TYPE, Color.PEACH);
-  // *** colorMap.put(GarbageCollectionEvent.TYPE, Color.BROWN);
 
   private AreaChart leftChart;
   private Legend legend;
@@ -58,19 +61,31 @@ public class AggregatedEventTypeChart extends LatencyDashboardChart {
   public void addLegend() {
     if (legend == null) {
       legend = new Legend();
-      readoutPanel.addEast(legend, 200);
+      readoutPanel.addEast(legend, 300);
     }
     legend.clear();
-    legend.addRow(javaScriptExecutionColor, javaScriptExecutionTitle);
-    legend.addRow(layoutColor, layoutTitle);
-    legend.addRow(recalculateStylesColor, recalculateStylesTitle);
+    legend.addItem(paintColor, paintTitle);
+    legend.addItem(layoutColor, layoutTitle);
+    legend.addItem(recalculateStylesColor, recalculateStylesTitle);
+    legend.addItem(parseHtmlColor, parseHtmlTitle);
+    legend.addItem(evalScriptColor, evalScriptTitle);
+    legend.addItem(javaScriptExecutionColor, javaScriptExecutionTitle);
+    legend.addItem(garbageCollectionColor, garbageCollectionTitle);
   }
 
   public void addRow(DataTable dataTable, int row, DashboardRecord record) {
-    dataTable.setCell(row, 0, record.getRevision(), null, null);
-    dataTable.setCell(row, 1, record.javaScriptExecutionDuration, null, null);
-    dataTable.setCell(row, 2, record.layoutDuration, null, null);
-    dataTable.setCell(row, 3, record.recalculateStyleDuration, null, null);
+    int column = 0;
+    dataTable.setCell(row, column++, record.getRevision(), null, null);
+    dataTable.setCell(row, column++, record.paintDuration, null, null);
+    dataTable.setCell(row, column++, record.layoutDuration, null, null);
+    dataTable.setCell(row, column++, record.recalculateStyleDuration, null,
+        null);
+    dataTable.setCell(row, column++, record.parseHtmlDuration, null, null);
+    dataTable.setCell(row, column++, record.evalScriptDuration, null, null);
+    dataTable.setCell(row, column++, record.javaScriptExecutionDuration, null,
+        null);
+    dataTable.setCell(row, column++, record.garbageCollectionDuration, null,
+        null);
   }
 
   public void populateChart(DashboardRecord[] serverData) {
@@ -89,7 +104,7 @@ public class AggregatedEventTypeChart extends LatencyDashboardChart {
     double curr = sumTimes(serverData[0]);
     double diff = prev - curr;
     if (Math.abs(diff) > (.2 * prev)) {
-      if (diff > 0) {
+      if (diff < 0) {
         setIndicatorWorse();
       } else {
         setIndicatorBetter();
@@ -103,32 +118,50 @@ public class AggregatedEventTypeChart extends LatencyDashboardChart {
     DataTable dataTable = DataTable.create();
     dataTable.addColumn(ColumnType.STRING, "Type");
     dataTable.addColumn(ColumnType.NUMBER, "Milliseconds");
-    dataTable.addRows(3);
+    dataTable.addRows(7);
     int row = 0;
-    dataTable.setCell(row, 0, javaScriptExecutionTitle, null, null);
-    dataTable.setCell(row++, 1, serverData.javaScriptExecutionDuration, null,
+    dataTable.setCell(row, 0, paintTitle, null, null);
+    dataTable.setCell(row++, 1, clampDatapoint(serverData.paintDuration), null,
         null);
     dataTable.setCell(row, 0, layoutTitle, null, null);
-    dataTable.setCell(row++, 1, serverData.layoutDuration, null, null);
+    dataTable.setCell(row++, 1, clampDatapoint(serverData.layoutDuration),
+        null, null);
     dataTable.setCell(row, 0, recalculateStylesTitle, null, null);
-    dataTable.setCell(row++, 1, serverData.recalculateStyleDuration, null, null);
+    dataTable.setCell(row++, 1,
+        clampDatapoint(serverData.recalculateStyleDuration), null, null);
+    dataTable.setCell(row, 0, parseHtmlTitle, null, null);
+    dataTable.setCell(row++, 1, clampDatapoint(serverData.parseHtmlDuration),
+        null, null);
+    dataTable.setCell(row, 0, evalScriptTitle, null, null);
+    dataTable.setCell(row++, 1, clampDatapoint(serverData.evalScriptDuration),
+        null, null);
+    dataTable.setCell(row, 0, javaScriptExecutionTitle, null, null);
+    dataTable.setCell(row++, 1,
+        clampDatapoint(serverData.javaScriptExecutionDuration), null, null);
+    dataTable.setCell(row, 0, garbageCollectionTitle, null, null);
+    dataTable.setCell(row++, 1,
+        clampDatapoint(serverData.garbageCollectionDuration), null, null);
 
     PieChart.Options options = PieChart.Options.create();
     options.setLegend(LegendPosition.NONE);
-    options.setHeight(chartHeight);
+    options.setHeight((int) (chartHeight * .75));
     // TODO(zundel): set 3D colors
-    options.setColors(javaScriptExecutionColor, layoutColor,
-        recalculateStylesColor);
-
+    options.setColors(paintColor, layoutColor, recalculateStylesColor,
+        parseHtmlColor, evalScriptColor, javaScriptExecutionColor,
+        garbageCollectionColor);
     rightChart.draw(dataTable, options);
   }
 
   public void populateTimeline(DashboardRecord[] serverData) {
     DataTable data = DataTable.create();
     data.addColumn(ColumnType.STRING, revisionTitle);
-    data.addColumn(ColumnType.NUMBER, javaScriptExecutionTitle);
+    data.addColumn(ColumnType.NUMBER, paintTitle);
     data.addColumn(ColumnType.NUMBER, layoutTitle);
     data.addColumn(ColumnType.NUMBER, recalculateStylesTitle);
+    data.addColumn(ColumnType.NUMBER, parseHtmlTitle);
+    data.addColumn(ColumnType.NUMBER, evalScriptTitle);
+    data.addColumn(ColumnType.NUMBER, javaScriptExecutionTitle);
+    data.addColumn(ColumnType.NUMBER, garbageCollectionTitle);
 
     int length = serverData.length;
     data.addRows(length);
@@ -137,17 +170,27 @@ public class AggregatedEventTypeChart extends LatencyDashboardChart {
     }
 
     leftChart.setHeight(chartHeight + "px");
-    Options options = AreaChart.Options.create();
+    AreaChart.Options options = AreaChart.Options.create();
     options.setHeight(chartHeight);
     options.setLegend(LegendPosition.NONE);
     options.setStacked(true);
-    options.setColors(javaScriptExecutionColor, layoutColor,
-        recalculateStylesColor);
+    options.setColors(paintColor, layoutColor, recalculateStylesColor,
+        parseHtmlColor, evalScriptColor, javaScriptExecutionColor,
+        garbageCollectionColor);
     leftChart.draw(data, options);
   }
 
-  private double sumTimes(DashboardRecord record) {
+  public double sumTimes(DashboardRecord record) {
     return record.javaScriptExecutionDuration + record.layoutDuration
-        + record.recalculateStyleDuration;
+        + record.recalculateStyleDuration + record.evalScriptDuration
+        + record.garbageCollectionDuration + record.paintDuration
+        + record.parseHtmlDuration;
+  }
+
+  private double clampDatapoint(double value) {
+    if (value == Double.NaN || value < 0) {
+      return 0;
+    }
+    return value;
   }
 }

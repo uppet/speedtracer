@@ -25,23 +25,30 @@ import com.google.gwt.user.client.ui.Grid;
 public class Legend extends Composite {
   protected static final String legendFontSize = "14px";
   int currentRow = 0;
-  Grid legendTable = new Grid(1, 2);
+  int currentCol = 0;
+  Grid legendTable = new Grid(1, 4);
 
   public Legend() {
     legendTable.getElement().getStyle().setProperty("fontSize", legendFontSize);
     initWidget(legendTable);
   }
 
-  public void addRow(String color, String label) {
-    legendTable.insertRow(currentRow);
-    legendTable.setHTML(currentRow, 0, getColorSquare(color));
-    legendTable.setText(currentRow, 1, label);
-    currentRow++;
+  public void addItem(String color, String label) {
+    if (currentCol == 0) {
+      legendTable.insertRow(currentRow);
+    }
+    legendTable.setHTML(currentRow, currentCol * 2, getColorSquare(color));
+    legendTable.setText(currentRow, (currentCol * 2) + 1, label);
+    currentCol++;
+    if (currentCol > 1) {
+      currentCol = 0;
+      currentRow++;
+    }
   }
 
   public void clear() {
     currentRow = 0;
-    this.legendTable.resize(1, 2);
+    this.legendTable.resize(1, 4);
     this.legendTable.clear();
   }
 

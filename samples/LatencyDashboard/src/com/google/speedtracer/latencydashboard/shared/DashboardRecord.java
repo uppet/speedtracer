@@ -26,21 +26,31 @@ public class DashboardRecord implements Serializable {
 
   /**
    * Milliseconds elapsed between the "bootstrap" "start" gwt metric and
-   * "bootstrap" "end"
+   * "bootstrap" "end".
    */
   public double bootstrapDuration;
 
   /**
    * Milliseconds elapsed since the mainResourceRequest time to the gwt metric
-   * "bootstrap" "start"
+   * "bootstrap" "start".
    */
   public double bootstrapStartTime;
 
   /**
    * Milliseconds elapsed since the mainResourceRequest time to the first DOM
-   * Event of the type "DOMContentLoaded"
+   * Event of the type "DOMContentLoaded".
    */
   public double domContentLoadedTime;
+
+  /**
+   * Milliseconds attributed to Evaluate Script event self times.
+   */
+  public double evalScriptDuration;
+
+  /**
+   * Milliseconds attributed to Garbage Collection event self times.
+   */
+  public double garbageCollectionDuration;
 
   /**
    * Milliseconds attributed to JavaScript Execution event self times.
@@ -54,7 +64,7 @@ public class DashboardRecord implements Serializable {
 
   /**
    * Milliseconds elapsed between the "loadExternalRefs" "start" gwt metric and
-   * "loadExternalRefs" "end"
+   * "loadExternalRefs" "end".
    */
   public double loadExternalRefsDuration;
 
@@ -78,20 +88,31 @@ public class DashboardRecord implements Serializable {
 
   /**
    * Milliseconds elapsed between the "moduleStartup" "moduleEvalStart" gwt
-   * metric and "moduleStartup" "moduleEvalEnd"
+   * metric and "moduleStartup" "moduleEvalEnd".
    */
   public double moduleEvalDuration;
 
   /**
    * Milliseconds elapsed between the "moduleStartup" "moduleRequested" gwt
-   * metric and "moduleStartup" "end"
+   * metric and "moduleStartup" "end".
    */
   public double moduleStartupDuration;
+
   /**
    * Milliseconds elapsed since the mainResourceRequest time to the gwt metric
    * "moduleStartup" "moduleRequested" event.
    */
   public double moduleStartupTime;
+
+  /**
+   * Milliseconds attributed to Paint event self times.
+   */
+  public double paintDuration;
+
+  /**
+   * Milliseconds attributed to Parse Html event self times.
+   */
+  public double parseHtmlDuration;
 
   /**
    * Milliseconds attributed to style recalculation event self times.
@@ -133,6 +154,9 @@ public class DashboardRecord implements Serializable {
     builder.append("bootstrapStartTime = " + bootstrapStartTime + "\n");
     builder.append("bootstrapDuration = " + bootstrapDuration + "\n");
     builder.append("domContentLoadedTime = " + domContentLoadedTime + "\n");
+    builder.append("evalScriptDuration" + evalScriptDuration + "\n");
+    builder.append("garbageCollectionDuration" + garbageCollectionDuration
+        + "\n");
     builder.append("javaScriptExecutionDuration = "
         + javaScriptExecutionDuration + "\n");
     builder.append("layoutDuration = " + layoutDuration + "\n");
@@ -146,6 +170,8 @@ public class DashboardRecord implements Serializable {
     builder.append("moduleEvalDuration = " + moduleEvalDuration + "\n");
     builder.append("moduleStartupDuration = " + moduleStartupDuration + "\n");
     builder.append("moduleStartupTime = " + moduleStartupTime + "\n");
+    builder.append("paintDuration = " + paintDuration + "\n");
+    builder.append("parseHtmlDuration = " + parseHtmlDuration + "\n");
     builder.append("recalculateStyleDuration = " + recalculateStyleDuration
         + "\n");
     return builder.toString();
@@ -173,6 +199,14 @@ public class DashboardRecord implements Serializable {
 
   public void setDomContentLoadedTime(double domContentLoadedTime) {
     this.domContentLoadedTime = domContentLoadedTime;
+  }
+
+  public void setEvalScriptDuration(double evalScriptDuration) {
+    this.evalScriptDuration = evalScriptDuration;
+  }
+
+  public void setGarbageCollectionDuration(double garbageCollectionDuration) {
+    this.garbageCollectionDuration = garbageCollectionDuration;
   }
 
   public void setJavaScriptExecutionDuration(double javaScriptExecutionDuration) {
@@ -209,6 +243,14 @@ public class DashboardRecord implements Serializable {
 
   public void setModuleStartupTime(double moduleStartupTime) {
     this.moduleStartupTime = moduleStartupTime;
+  }
+
+  public void setPaintDuration(double paintDuration) {
+    this.paintDuration = paintDuration;
+  }
+
+  public void setParseHtmlDuration(double parseHtmlDuration) {
+    this.parseHtmlDuration = parseHtmlDuration;
   }
 
   public void setRecalculateStyleDuration(double recalculateStyleDuration) {
