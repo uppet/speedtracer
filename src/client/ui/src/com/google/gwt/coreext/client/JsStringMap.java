@@ -38,6 +38,11 @@ public final class JsStringMap<T> extends JavaScriptObject {
     return JavaScriptObject.createObject().cast();
   }
 
+  public static native int getInteger(JavaScriptObject object, String key) /*-{
+    var p = @com.google.gwt.coreext.client.JsStringMap::getPropertyForKey(Ljava/lang/String;)(key);
+    return object[p]; 
+  }-*/;
+
   static native void erase(JavaScriptObject object, String key) /*-{
     var p = @com.google.gwt.coreext.client.JsStringMap::getPropertyForKey(Ljava/lang/String;)(key);
     delete object[p];
@@ -75,6 +80,11 @@ public final class JsStringMap<T> extends JavaScriptObject {
   }-*/;
 
   static native void put(JavaScriptObject object, String key, boolean value) /*-{
+    var p = @com.google.gwt.coreext.client.JsStringMap::getPropertyForKey(Ljava/lang/String;)(key);
+    object[p] = value;
+  }-*/;
+
+  static native void put(JavaScriptObject object, String key, int value) /*-{
     var p = @com.google.gwt.coreext.client.JsStringMap::getPropertyForKey(Ljava/lang/String;)(key);
     object[p] = value;
   }-*/;

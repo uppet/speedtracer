@@ -24,6 +24,20 @@ import com.google.speedtracer.shared.EventRecordType;
  * Base type for recorded data.
  */
 public class EventRecord extends JavaScriptObject {
+  public static final int INVALID_TYPE = -1;
+  
+  /**
+   * Returns a short user facing string that describes the event associated with
+   * the given type int.
+   */
+  public static String typeToString(int type) {
+    if (CustomEvent.isCustomEvent(type)) {
+      return CustomEvent.getCustomTypeName(type);
+    }
+
+    return EventRecordType.typeToString(type);
+  }
+
   /**
    * The data field in a record. TODO: Type checking on return values. For now
    * the run time errors are still pretty descriptive.
@@ -46,13 +60,28 @@ public class EventRecord extends JavaScriptObject {
   }
 
   /**
+   * Ensures that we have a type value set.
+   */
+  public final native void ensureType() /*-{
+    if (!this.hasOwnProperty("type")) {
+      // Invalid record!
+      this.type = @com.google.speedtracer.client.model.EventRecord::INVALID_TYPE;
+    }
+  }-*/;
+
+  /**
    * Returns a more verbose description of the event than
    * {@link #getTypeString()}.
    * 
    * @return a more verbose description of the event than getString().
    */
   public final String getHelpString() {
-    return EventRecordType.typeToHelpString(getType());
+    int type = getType();
+    if (CustomEvent.isCustomEvent(type)) {
+      return "Custom Event Type: " + typeToString(type);
+    }
+
+    return EventRecordType.typeToHelpString(type);
   }
 
   /**
@@ -85,16 +114,14 @@ public class EventRecord extends JavaScriptObject {
   }-*/;
 
   /**
-   * TODO(conroy): Port this class to use DataBag and put the expensive code
-   * path that checks hasOwnProperty() behind the Debug permutation.
-   * 
    * Gets the numeric type value record. If there is no type, use -1 so that it
    * can propagate to the UI
    * 
    * @return the number that represents this type.
    */
   public final native int getType() /*-{
-    return this.hasOwnProperty("type") ? this.type : -1;
+    // This will always exist. We force it to.
+    return this.type;
   }-*/;
 
   /**
@@ -103,7 +130,7 @@ public class EventRecord extends JavaScriptObject {
    * @return a short user facing string that describes this event type.
    */
   public final String getTypeString() {
-    return EventRecordType.typeToString(getType());
+    return typeToString(getType());
   }
 
   /**

@@ -22,6 +22,14 @@ import com.google.gwt.core.client.JavaScriptObject;
  * can be casted to a DataBag, or you can use it statically.
  */
 public class DataBag extends JavaScriptObject {
+  /**
+   * Callback for iterating through fields. Warning all contents of DataBag
+   * are coerced to String.
+   */
+  public interface IterationCallback {
+    void onIteration(String key, String value);
+  }
+
   /*
    * Static Accessors
    */
@@ -81,5 +89,14 @@ public class DataBag extends JavaScriptObject {
 
   public final native boolean hasOwnProperty(String prop) /*-{
     return this.hasOwnProperty(prop);
+  }-*/;
+
+  public final native void iterate(IterationCallback callback) /*-{
+    for (key in this) {
+      if (this.hasOwnProperty(key)) {
+        callback.@com.google.gwt.coreext.client.DataBag.IterationCallback::onIteration(Ljava/lang/String;Ljava/lang/String;)
+        (key, this[key] + "");
+      }
+    }
   }-*/;
 }

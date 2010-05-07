@@ -801,6 +801,50 @@ public class SpeedtracerSchemas {
        },
        "additionalProperties" : false
      },
+    // CUSTOM EVENTS
+    "CUSTOM_EVENT" : {
+      "description" : "A data-driven, self-describing event.",
+      "id" : "CUSTOM_EVENT",
+      "type" : "object",
+      "properties" : {        
+        // Custom Events have their types calculated on the fly from the
+        // typeName, however, these types must be negative numbers.
+        "type" : {
+           "type" : "integer",
+           "minimum" : -2147483648 ,
+           "maximum" : -2 ,
+           "description" : "A value between -2 and -2147483648"
+        },
+        "time" : {
+           "description" : "Milliseconds since start of session",
+           "type" : "number", "minimum" : 0
+        },
+        "typeName" : {
+          "type" : "string",
+          "description" : "The display name for this custom event"
+        },
+        "color" : {
+          "type" : "string",
+          "description" : "The CSS color to use for displaying this event"
+        },
+        "children" : {
+          "description" : "Child Events.",
+          "type" : "array",
+          "optional" : true,
+        },
+        "data" : {
+          "description" : "String map of key/value pairs",
+          "type" : "object"
+          },
+        "sequence" : {
+          "description" : "Sequence number of this event",
+          "type" : "integer",
+          "minimum" : 0,
+          "optional" : true
+        }
+      },
+      "additionalProperties" : false
+    }
     };
   }-*/;
 

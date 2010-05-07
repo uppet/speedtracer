@@ -40,25 +40,25 @@ public class EventRecordColors {
   private static final Color OTHER_COLOR = Color.LIGHTGREY;
 
   static {
-    colorMap.put(DomEvent.TYPE, Color.ORANGE);
-    colorMap.put(LayoutEvent.TYPE, Color.BLUEVIOLET);
-    colorMap.put(PaintEvent.TYPE, Color.MIDNIGHT_BLUE);
-    colorMap.put(ParseHtmlEvent.TYPE, Color.INDIAN_RED);
-    colorMap.put(LogEvent.TYPE, Color.CYAN);
-    colorMap.put(TimerFiredEvent.TYPE, Color.BLUE);
-    colorMap.put(XhrReadyStateChangeEvent.TYPE, Color.LIGHTGREEN);
-    colorMap.put(RecalcStyleEvent.TYPE, Color.DARKGREEN);
-    colorMap.put(EvalScript.TYPE, Color.PEACH);
-    colorMap.put(JavaScriptExecutionEvent.TYPE, Color.YELLOW);
-    colorMap.put(ResourceDataReceivedEvent.TYPE, Color.DARKBLUE);
-    colorMap.put(GarbageCollectionEvent.TYPE, Color.BROWN);
+    registerColor(DomEvent.TYPE, Color.ORANGE);
+    registerColor(LayoutEvent.TYPE, Color.BLUEVIOLET);
+    registerColor(PaintEvent.TYPE, Color.MIDNIGHT_BLUE);
+    registerColor(ParseHtmlEvent.TYPE, Color.INDIAN_RED);
+    registerColor(LogEvent.TYPE, Color.CYAN);
+    registerColor(TimerFiredEvent.TYPE, Color.BLUE);
+    registerColor(XhrReadyStateChangeEvent.TYPE, Color.LIGHTGREEN);
+    registerColor(RecalcStyleEvent.TYPE, Color.DARKGREEN);
+    registerColor(EvalScript.TYPE, Color.PEACH);
+    registerColor(JavaScriptExecutionEvent.TYPE, Color.YELLOW);
+    registerColor(ResourceDataReceivedEvent.TYPE, Color.DARKBLUE);
+    registerColor(GarbageCollectionEvent.TYPE, Color.BROWN);
 
     // TODO(jaimeyap): Make use of these colors later on.
-    // colorMap.put(MouseHoverStyleEvent.TYPE, Color.LIMEGREEN);
-    // colorMap.put(MouseHoverStyleEvent.TYPE, Color.LIMEGREEN);
-    // colorMap.put(DomEventDispatch.TYPE, Color.YELLOW);
-    // colorMap.put(DomBindingEvent.TYPE, Color.PALE_GREEN);
-    // colorMap.put(JavaScriptCompileEvent.TYPE, Color.CYAN);
+    // registerColor(MouseHoverStyleEvent.TYPE, Color.LIMEGREEN);
+    // registerColor(MouseHoverStyleEvent.TYPE, Color.LIMEGREEN);
+    // registerColor(DomEventDispatch.TYPE, Color.YELLOW);
+    // registerColor(DomBindingEvent.TYPE, Color.PALE_GREEN);
+    // registerColor(JavaScriptCompileEvent.TYPE, Color.CYAN);
   }
 
   public static Color getColorForType(int type) {
@@ -67,5 +67,9 @@ public class EventRecordColors {
     } else {
       return OTHER_COLOR;
     }
+  }
+  
+  public static void registerColor(int type, Color color) {
+    colorMap.put(type, color);
   }
 }

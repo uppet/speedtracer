@@ -18,7 +18,6 @@ package com.google.speedtracer.client.model;
 import com.google.gwt.core.client.JsArrayNumber;
 import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.coreext.client.JsIntegerDoubleMap;
-import com.google.speedtracer.shared.EventRecordType;
 
 import java.util.Comparator;
 
@@ -134,7 +133,7 @@ public class UiEvent extends EventRecord {
         TimerFiredEvent timerEvent = e.cast();
         return "Timer Fire (" + timerEvent.getTimerId() + ")";
       default:
-        return EventRecordType.typeToString(e.getType());
+        return EventRecord.typeToString(e.getType());
     }
   }
 
