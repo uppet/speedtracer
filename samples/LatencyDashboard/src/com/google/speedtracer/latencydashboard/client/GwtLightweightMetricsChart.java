@@ -19,7 +19,6 @@ import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.LegendPosition;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.visualizations.AreaChart;
-import com.google.gwt.visualization.client.visualizations.PieChart;
 import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
 
 /**
@@ -34,28 +33,24 @@ public class GwtLightweightMetricsChart extends LatencyDashboardChart {
   private static final String moduleStartupTitle = "Module Startup";
   private static final String revisionTitle = "Revision";
   private AreaChart leftChart;
-  private Legend legend;
-  private PieChart rightChart;
+  private RightPieChart rightChart;
 
   public GwtLightweightMetricsChart(LatencyDashboardChart.Resources resources,
       String title) {
     super(resources, title);
 
-    rightChart = new PieChart();
-    chartPanel.addEast(rightChart, chartHeight);
+    rightChart = new RightPieChart(resources);
+    chartPanel.addEast(rightChart, CHART_HEIGHT);
     leftChart = new AreaChart();
     chartPanel.add(leftChart);
+    addLegend();
   }
 
   public void addLegend() {
-    if (legend == null) {
-      legend = new Legend();
-      readoutPanel.addEast(legend, 300);
-    }
-    legend.clear();
-    legend.addItem(bootstrapDurationColor, bootstrapDurationTitle);
-    legend.addItem(loadExternalRefsColor, loadExternalRefsTitle);
-    legend.addItem(moduleStartupColor, moduleStartupTitle);
+    rightChart.clear();
+    rightChart.addItem(bootstrapDurationColor, bootstrapDurationTitle);
+    rightChart.addItem(loadExternalRefsColor, loadExternalRefsTitle);
+    rightChart.addItem(moduleStartupColor, moduleStartupTitle);
   }
 
   public void addRow(DataTable dataTable, int row, DashboardRecord record) {
@@ -66,7 +61,6 @@ public class GwtLightweightMetricsChart extends LatencyDashboardChart {
   }
 
   public void populateChart(DashboardRecord[] serverData) {
-    addLegend();
     populateLastData(serverData[0]);
     populateTimeline(serverData);
     populateIndicator(serverData);
@@ -103,10 +97,7 @@ public class GwtLightweightMetricsChart extends LatencyDashboardChart {
     dataTable.setCell(row++, 1, serverData.loadExternalRefsDuration, null, null);
     dataTable.setCell(row, 0, moduleStartupTitle, null, null);
     dataTable.setCell(row++, 1, serverData.moduleStartupDuration, null, null);
-    PieChart.Options options = PieChart.Options.create();
-    options.setLegend(LegendPosition.NONE);
-    options.setHeight((int) (chartHeight * .75));
-    rightChart.draw(dataTable, options);
+    rightChart.draw(dataTable);
   }
 
   public void populateTimeline(DashboardRecord[] serverData) {
@@ -123,7 +114,7 @@ public class GwtLightweightMetricsChart extends LatencyDashboardChart {
 
     AreaChart.Options options = AreaChart.Options.create();
     options.setLegend(LegendPosition.NONE);
-    options.setHeight(chartHeight);
+    options.setHeight(CHART_HEIGHT);
     options.setStacked(true);
     leftChart.draw(dataTable, options);
   }

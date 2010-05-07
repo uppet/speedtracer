@@ -46,7 +46,7 @@ public class LatencyDashboardChart extends Composite {
   /**
    * Resources for Css and Images.
    */
-  public interface Resources extends ClientBundle {
+  public interface Resources extends RightPieChart.Resources, ClientBundle {
 
     @Source("resources/check-48.gif")
     ImageResource getCheck();
@@ -61,13 +61,13 @@ public class LatencyDashboardChart extends Composite {
     Css latencyDashboardChartCss();
   }
 
-  protected static final int chartHeight = 275;
+  public static final int CHART_HEIGHT = 275;
   protected static final int indicatorWidth = 100;
+
   protected final DockLayoutPanel chartPanel = new DockLayoutPanel(Unit.PX);
   protected final Image indicator = new Image();
   protected final SimplePanel indicatorPanel = new SimplePanel();
   protected final DockLayoutPanel outerPanel = new DockLayoutPanel(Unit.PX);
-  protected final DockLayoutPanel readoutPanel = new DockLayoutPanel(Unit.PX);
   private final Resources resources;
 
   public LatencyDashboardChart(Resources resources, String titleText) {
@@ -81,11 +81,10 @@ public class LatencyDashboardChart extends Composite {
     chartPanel.addWest(indicatorPanel, indicatorWidth);
     indicatorPanel.add(indicator);
     outerPanel.setWidth("100%");
-    outerPanel.addNorth(chartPanel, chartHeight + 25);
+    outerPanel.addNorth(chartPanel, CHART_HEIGHT + 25);
 
     outerPanel.insertNorth(title, 40, chartPanel);
-    chartPanel.setHeight((chartHeight + 25) + "px");
-    outerPanel.add(readoutPanel);
+    chartPanel.setHeight((CHART_HEIGHT + 25) + "px");
     initWidget(outerPanel);
     this.addStyleName(css.latencyChart());
   }

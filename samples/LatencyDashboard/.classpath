@@ -10,7 +10,6 @@
 	<classpathentry kind="lib" path="war/WEB-INF/lib/appengine-api-labs-1.3.2.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/appengine-api-1.0-sdk-1.3.2.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/appengine-api-stubs.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/gwt-visualization-noredist.jar"/>
 	<classpathentry kind="lib" path="gwt-visualization.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
