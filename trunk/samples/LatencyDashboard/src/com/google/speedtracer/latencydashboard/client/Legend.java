@@ -48,8 +48,9 @@ public class Legend extends Composite {
 
   public void clear() {
     currentRow = 0;
+    currentCol = 0;
+    this.legendTable.clear(true);
     this.legendTable.resize(1, 4);
-    this.legendTable.clear();
   }
 
   protected String getColorSquare(String colorSpec) {

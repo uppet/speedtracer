@@ -19,7 +19,6 @@ import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.LegendPosition;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.visualizations.AreaChart;
-import com.google.gwt.visualization.client.visualizations.PieChart;
 import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
 
 /**
@@ -46,31 +45,26 @@ public class AggregatedEventTypeChart extends LatencyDashboardChart {
   private static final String revisionTitle = "Revision";
 
   private AreaChart leftChart;
-  private Legend legend;
-  private PieChart rightChart;
+  private RightPieChart rightChart;
 
   public AggregatedEventTypeChart(LatencyDashboardChart.Resources resources,
       String title) {
     super(resources, title);
-    rightChart = new PieChart();
-    chartPanel.addEast(rightChart, chartHeight);
+    rightChart = new RightPieChart(resources);
+    chartPanel.addEast(rightChart, CHART_HEIGHT);
     leftChart = new AreaChart();
     chartPanel.add(leftChart);
   }
 
   public void addLegend() {
-    if (legend == null) {
-      legend = new Legend();
-      readoutPanel.addEast(legend, 300);
-    }
-    legend.clear();
-    legend.addItem(paintColor, paintTitle);
-    legend.addItem(layoutColor, layoutTitle);
-    legend.addItem(recalculateStylesColor, recalculateStylesTitle);
-    legend.addItem(parseHtmlColor, parseHtmlTitle);
-    legend.addItem(evalScriptColor, evalScriptTitle);
-    legend.addItem(javaScriptExecutionColor, javaScriptExecutionTitle);
-    legend.addItem(garbageCollectionColor, garbageCollectionTitle);
+    rightChart.clear();
+    rightChart.addItem(paintColor, paintTitle);
+    rightChart.addItem(layoutColor, layoutTitle);
+    rightChart.addItem(recalculateStylesColor, recalculateStylesTitle);
+    rightChart.addItem(parseHtmlColor, parseHtmlTitle);
+    rightChart.addItem(evalScriptColor, evalScriptTitle);
+    rightChart.addItem(javaScriptExecutionColor, javaScriptExecutionTitle);
+    rightChart.addItem(garbageCollectionColor, garbageCollectionTitle);
   }
 
   public void addRow(DataTable dataTable, int row, DashboardRecord record) {
@@ -141,15 +135,7 @@ public class AggregatedEventTypeChart extends LatencyDashboardChart {
     dataTable.setCell(row, 0, garbageCollectionTitle, null, null);
     dataTable.setCell(row++, 1,
         clampDatapoint(serverData.garbageCollectionDuration), null, null);
-
-    PieChart.Options options = PieChart.Options.create();
-    options.setLegend(LegendPosition.NONE);
-    options.setHeight((int) (chartHeight * .75));
-    // TODO(zundel): set 3D colors
-    options.setColors(paintColor, layoutColor, recalculateStylesColor,
-        parseHtmlColor, evalScriptColor, javaScriptExecutionColor,
-        garbageCollectionColor);
-    rightChart.draw(dataTable, options);
+    rightChart.draw(dataTable);
   }
 
   public void populateTimeline(DashboardRecord[] serverData) {
@@ -168,10 +154,9 @@ public class AggregatedEventTypeChart extends LatencyDashboardChart {
     for (int i = 0; i < length; ++i) {
       addRow(data, length - (i + 1), serverData[i]);
     }
-
-    leftChart.setHeight(chartHeight + "px");
+    leftChart.setHeight(CHART_HEIGHT + "px");
     AreaChart.Options options = AreaChart.Options.create();
-    options.setHeight(chartHeight);
+    options.setHeight(CHART_HEIGHT);
     options.setLegend(LegendPosition.NONE);
     options.setStacked(true);
     options.setColors(paintColor, layoutColor, recalculateStylesColor,

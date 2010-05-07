@@ -64,6 +64,7 @@ public class DashboardResources {
     resources = GWT.create(Resources.class);
     StyleInjector.inject(resources.dashboardCss().getText()
         + resources.latencyDashboardChartCss().getText()
+        + resources.rightPieChartCss().getText()
         + resources.warningPaneCss().getText());
   }
 }
