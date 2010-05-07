@@ -26,11 +26,12 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * Handles persistence for {@link DashboardRecord}
+ * Handles persistence for {@link DashboardRecord}.
  * 
  */
 public class DashboardRecordStore {
-  private static class DashboardRecordIterator implements Iterator<DashboardRecord> {
+  private static class DashboardRecordIterator implements
+      Iterator<DashboardRecord> {
     private final Iterator<Entity> iter;
 
     private DashboardRecordIterator(Iterator<Entity> iter) {
@@ -59,6 +60,8 @@ public class DashboardRecordStore {
   private static final String PROP_BOOTSTRAP_DURATION = "bootstrap_duration";
   private static final String PROP_BOOTSTRAP_START_TIME = "bootstrap_start_time";
   private static final String PROP_DOM_CONTENT_LOADED_TIME = "dom_content_loaded_time";
+  private static final String PROP_EVAL_SCRIPT_DURATION = "eval_script_duration";
+  private static final String PROP_GARBAGE_COLLECTION_DURATION = "garbage_collection_duration";
   private static final String PROP_JAVASCRIPT_EXECUTION_DURATION = "javascript_execution_duration";
   private static final String PROP_LAYOUT_DURATION = "layout_duration";
   private static final String PROP_LOAD_EXTERNAL_REFS_DURATION = "load_external_refs_duration";
@@ -66,10 +69,11 @@ public class DashboardRecordStore {
   private static final String PROP_MAIN_RESOURCE_REQUEST_TIME = "main_resource_request_time";
   private static final String PROP_MAIN_RESOURCE_RESPONSE_TIME = "main_resource_response_time";
   private static final String PROP_MODULE_EVAL_DURATION = "module_eval_duration";
-  private static final String PROP_MODULE_RECALCULATE_STYLE_DURATION = "recalculate_style_duration";
+  private static final String PROP_RECALCULATE_STYLE_DURATION = "recalculate_style_duration";
   private static final String PROP_MODULE_STARTUP_DURATION = "module_startup_duration";
-
   private static final String PROP_MODULE_STARTUP_TIME = "module_startup_time";
+  private static final String PROP_PAINT_DURATION = "paint_duration";
+  private static final String PROP_PARSE_HTML_DURATION = "parse_html_duration";
 
   public static DashboardRecord get(Entity entity) {
     Map<String, Object> properties = entity.getProperties();
@@ -85,6 +89,10 @@ public class DashboardRecordStore {
         PROP_BOOTSTRAP_START_TIME));
     result.setDomContentLoadedTime(getDoubleProperty(properties,
         PROP_DOM_CONTENT_LOADED_TIME));
+    result.setEvalScriptDuration(getDoubleProperty(properties,
+        PROP_EVAL_SCRIPT_DURATION));
+    result.setGarbageCollectionDuration(getDoubleProperty(properties,
+        PROP_GARBAGE_COLLECTION_DURATION));
     result.setJavaScriptExecutionDuration(getDoubleProperty(properties,
         PROP_JAVASCRIPT_EXECUTION_DURATION));
     result.setLayoutDuration(getDoubleProperty(properties, PROP_LAYOUT_DURATION));
@@ -102,8 +110,11 @@ public class DashboardRecordStore {
         PROP_MODULE_STARTUP_TIME));
     result.setModuleStartupDuration(getDoubleProperty(properties,
         PROP_MODULE_STARTUP_DURATION));
+    result.setPaintDuration(getDoubleProperty(properties, PROP_PAINT_DURATION));
+    result.setParseHtmlDuration(getDoubleProperty(properties,
+        PROP_PARSE_HTML_DURATION));
     result.setRecalculateStyleDuration(getDoubleProperty(properties,
-        PROP_MODULE_RECALCULATE_STYLE_DURATION));
+        PROP_RECALCULATE_STYLE_DURATION));
 
     return result;
   }
@@ -129,6 +140,10 @@ public class DashboardRecordStore {
         dashboardRecord.bootstrapStartTime);
     entity.setProperty(PROP_DOM_CONTENT_LOADED_TIME,
         dashboardRecord.domContentLoadedTime);
+    entity.setProperty(PROP_EVAL_SCRIPT_DURATION,
+        dashboardRecord.evalScriptDuration);
+    entity.setProperty(PROP_GARBAGE_COLLECTION_DURATION,
+        dashboardRecord.garbageCollectionDuration);
     entity.setProperty(PROP_JAVASCRIPT_EXECUTION_DURATION,
         dashboardRecord.javaScriptExecutionDuration);
     entity.setProperty(PROP_LAYOUT_DURATION, dashboardRecord.layoutDuration);
@@ -144,11 +159,13 @@ public class DashboardRecordStore {
         dashboardRecord.moduleStartupTime);
     entity.setProperty(PROP_MODULE_EVAL_DURATION,
         dashboardRecord.moduleEvalDuration);
-    entity.setProperty(PROP_MODULE_RECALCULATE_STYLE_DURATION,
-        dashboardRecord.recalculateStyleDuration);
     entity.setProperty(PROP_MODULE_STARTUP_DURATION,
         dashboardRecord.moduleStartupDuration);
-
+    entity.setProperty(PROP_PAINT_DURATION, dashboardRecord.paintDuration);
+    entity.setProperty(PROP_PARSE_HTML_DURATION,
+        dashboardRecord.parseHtmlDuration);
+    entity.setProperty(PROP_RECALCULATE_STYLE_DURATION,
+        dashboardRecord.recalculateStyleDuration);
     store.put(entity);
   }
 

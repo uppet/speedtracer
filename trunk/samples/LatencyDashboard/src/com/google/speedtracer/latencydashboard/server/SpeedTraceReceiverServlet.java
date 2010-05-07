@@ -149,9 +149,13 @@ public class SpeedTraceReceiverServlet extends HttpServlet {
 
     record.setDomContentLoadedTime(analyzer.getDomContentLoadedTime()
         - baseTime);
+    record.setEvalScriptDuration(analyzer.getEvalScriptDuration());
+    record.setGarbageCollectionDuration(analyzer.getGarbageCollectionDuration());
     record.setJavaScriptExecutionDuration(analyzer.getJavaScriptExecutionDuration());
     record.setLayoutDuration(analyzer.getLayoutDuration());
     record.setRecalculateStyleDuration(analyzer.getLayoutDuration());
+    record.setPaintDuration(analyzer.getPaintDuration());
+    record.setParseHtmlDuration(analyzer.getParseHtmlDuration());
 
     // Look for GWT specific statistics.
     GwtAnalyzer gwtAnalyzer = new GwtAnalyzer(analyzer);

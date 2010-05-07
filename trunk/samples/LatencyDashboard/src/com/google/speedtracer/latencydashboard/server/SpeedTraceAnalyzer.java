@@ -30,16 +30,18 @@ import java.util.List;
  * A class that analyzes a SpeedTrace sent from the headless extension via XHR.
  */
 public class SpeedTraceAnalyzer {
-
   private double domContentLoadedTime = 0;
+  private double evalScriptDuration = 0;
+  private double garbageCollectionDuration = 0;
   private double javaScriptExecutionDuration = 0;
   private double layoutDuration = 0;
   private long mainResourceIdentfier;
   private double mainResourceResponseTime = 0;
   private int mainResourceStartIndex = -1;
   private double mainResourceStartTime = 0;
+  private double paintDuration = 0;
+  private double parseHtmlDuration = 0;
   private final JsonArray records;
-
   private double styleRecalculationDuration;
 
   public SpeedTraceAnalyzer(JsonArray recordsJsonArray) {
@@ -68,28 +70,48 @@ public class SpeedTraceAnalyzer {
         }
 
         public void visit(JsonObject node) throws JsonException {
-          long type = node.get("type").asNumber().getInteger();
+          int type = (int) (node.get("type").asNumber().getInteger());
+          switch (type) {
+            // Look for DOMContentLoaded
+            case EventRecordType.DOM_EVENT:
+              JsonObject typeData = node.get("data").asObject();
+              if (typeData.get("type").asString().getString().equals(
+                  "DOMContentLoaded")) {
+                domContentLoadedTime = node.get("time").asNumber().getDecimal();
+              }
+              break;
 
-          // Look for DOMContentLoaded
-          if (type == EventRecordType.DOM_EVENT) {
-            JsonObject typeData = node.get("data").asObject();
-            if (typeData.get("type").asString().getString().equals(
-                "DOMContentLoaded")) {
-              domContentLoadedTime = node.get("time").asNumber().getDecimal();
-            }
-          } else if (type == EventRecordType.JAVASCRIPT_EXECUTION) {
-            // Aggregate JavaScript execution time.
-            javaScriptExecutionDuration += node.get("selfTime").asNumber().getDecimal();
-          } else if (type == EventRecordType.LAYOUT_EVENT) {
-            // Aggregate layout time.
-            layoutDuration += node.get("selfTime").asNumber().getDecimal();
-          } else if (type == EventRecordType.RECALC_STYLE_EVENT) {
-            // Aggregate style recalc time
-            styleRecalculationDuration += node.get("selfTime").asNumber().getDecimal();
+            // Aggregate event type times.
+            case EventRecordType.JAVASCRIPT_EXECUTION:
+              javaScriptExecutionDuration += node.get("selfTime").asNumber().getDecimal();
+              break;
+
+            case EventRecordType.LAYOUT_EVENT:
+              layoutDuration += node.get("selfTime").asNumber().getDecimal();
+              break;
+
+            case EventRecordType.RECALC_STYLE_EVENT:
+              styleRecalculationDuration += node.get("selfTime").asNumber().getDecimal();
+              break;
+
+            case EventRecordType.EVAL_SCRIPT_EVENT:
+              evalScriptDuration += node.get("selfTime").asNumber().getDecimal();
+              break;
+
+            case EventRecordType.GC_EVENT:
+              garbageCollectionDuration += node.get("selfTime").asNumber().getDecimal();
+              break;
+
+            case EventRecordType.PAINT_EVENT:
+              paintDuration += node.get("selfTime").asNumber().getDecimal();
+              break;
+
+            case EventRecordType.PARSE_HTML_EVENT:
+              parseHtmlDuration += node.get("selfTime").asNumber().getDecimal();
+              break;
           }
         }
       };
-
       traverser.traversePreOrder(records.get(i).asObject(), visitor);
     }
   }
@@ -105,6 +127,14 @@ public class SpeedTraceAnalyzer {
 
   public double getDomContentLoadedTime() {
     return domContentLoadedTime;
+  }
+
+  public double getEvalScriptDuration() {
+    return evalScriptDuration;
+  }
+
+  public double getGarbageCollectionDuration() {
+    return garbageCollectionDuration;
   }
 
   public double getJavaScriptExecutionDuration() {
@@ -133,6 +163,14 @@ public class SpeedTraceAnalyzer {
 
   public double getMainResourceStartTime() {
     return mainResourceStartTime;
+  }
+
+  public double getPaintDuration() {
+    return paintDuration;
+  }
+
+  public double getParseHtmlDuration() {
+    return parseHtmlDuration;
   }
 
   public JsonArray getRecords() {
