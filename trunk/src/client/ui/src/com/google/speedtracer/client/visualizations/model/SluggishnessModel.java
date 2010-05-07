@@ -27,7 +27,6 @@ import com.google.speedtracer.client.model.UiEventModel;
 import com.google.speedtracer.client.timeline.GraphModel;
 import com.google.speedtracer.client.timeline.HighlightModel;
 import com.google.speedtracer.client.timeline.ModelData;
-import com.google.speedtracer.shared.EventRecordType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -125,7 +124,7 @@ public class SluggishnessModel implements VisualizationModel,
     // in the Sluggishness view.
     int eventType = e.getType();
     if (typesEncountered.get(eventType) == null) {
-      typesEncountered.put(eventType, EventRecordType.typeToString(eventType));
+      typesEncountered.put(eventType, EventRecord.typeToString(eventType));
     }
   }
 

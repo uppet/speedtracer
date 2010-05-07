@@ -21,6 +21,7 @@ import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.coreext.client.JSON;
 import com.google.gwt.coreext.client.JsIntegerMap;
 import com.google.speedtracer.client.ClientConfig;
+import com.google.speedtracer.client.model.CustomEvent.TypeRegisteringVisitor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,6 +67,8 @@ public class DataModel implements HintletInterface.HintListener,
   }
 
   protected JSOArray<String> traceDataCopy = JSOArray.create();
+
+  private final TypeRegisteringVisitor customTypeVisitor = new TypeRegisteringVisitor();
 
   private final DataInstance dataInstance;
 
@@ -203,6 +206,9 @@ public class DataModel implements HintletInterface.HintListener,
    * @param record the timeline {@link EventRecord}
    */
   public void onEventRecord(EventRecord record) {
+    // Possibly register a new custom type.
+    record.<UiEvent> cast().apply(customTypeVisitor);
+
     // Keep a copy of the String for saving later.
     traceDataCopy.push(JSON.stringify(record));
     eventRecordMap.put(record.getSequence(), record);

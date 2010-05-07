@@ -61,6 +61,12 @@ public class DevToolsDataInstance extends DataInstance {
       }
     }
 
+    private class TypeEnsuringVisitor implements LeafFirstTraversalVoid {
+      public void visit(UiEvent event) {
+        event.ensureType();
+      }
+    }
+
     private double baseTime;
 
     private ResourceWillSendEvent currentPage;
@@ -74,6 +80,8 @@ public class DevToolsDataInstance extends DataInstance {
     private JSOArray<UnNormalizedEventRecord> pendingRecords = JSOArray.create();
 
     private final TimeNormalizingVisitor timeNormalizingVisitor = new TimeNormalizingVisitor();
+
+    private final TypeEnsuringVisitor typeEnsuringVisitor = new TypeEnsuringVisitor();
 
     private final int tabId;
 
@@ -181,8 +189,8 @@ public class DevToolsDataInstance extends DataInstance {
 
       assert (getBaseTime() >= 0) : "Base Time is still not set";
 
-      // Run a visitor to normalize the times for this tree.    
-      record.<UiEvent>cast().apply(timeNormalizingVisitor);
+      // Run a visitor to normalize the times for this tree.
+      record.<UiEvent> cast().apply(timeNormalizingVisitor);
       forwardToDataInstance(record);
     }
 
@@ -200,6 +208,7 @@ public class DevToolsDataInstance extends DataInstance {
     private void onTimeLineRecord(UnNormalizedEventRecord record) {
       assert (dataInstance != null) : "Someone called invoke that wasn't our connect call!";
 
+      record.<UiEvent> cast().apply(typeEnsuringVisitor);
       int type = record.getType();
 
       switch (type) {

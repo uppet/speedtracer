@@ -15,9 +15,11 @@
  */
 package com.google.speedtracer.client.visualizations.view;
 
+import com.google.gwt.coreext.client.DataBag;
 import com.google.gwt.coreext.client.IterableFastStringMap;
 import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.coreext.client.JsIntegerDoubleMap;
+import com.google.gwt.coreext.client.DataBag.IterationCallback;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -45,8 +47,10 @@ import com.google.speedtracer.client.SourceViewer.SourcePresenter;
 import com.google.speedtracer.client.SourceViewer.SourceViewerInitializedCallback;
 import com.google.speedtracer.client.SourceViewer.SourceViewerLoadedCallback;
 import com.google.speedtracer.client.SourceViewerServer.ActionCompletedCallback;
+import com.google.speedtracer.client.model.CustomEvent;
 import com.google.speedtracer.client.model.DataModel;
 import com.google.speedtracer.client.model.EvalScript;
+import com.google.speedtracer.client.model.EventRecord;
 import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.JavaScriptExecutionEvent;
 import com.google.speedtracer.client.model.JavaScriptProfile;
@@ -71,7 +75,6 @@ import com.google.speedtracer.client.visualizations.view.JavaScriptProfileRender
 import com.google.speedtracer.client.visualizations.view.Tree.ExpansionChangeListener;
 import com.google.speedtracer.client.visualizations.view.Tree.Item;
 import com.google.speedtracer.client.visualizations.view.Tree.SelectionChangeListener;
-import com.google.speedtracer.shared.EventRecordType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -585,8 +588,8 @@ public class EventWaterfallRowDetails extends RowDetails implements
 
         public void onIteration(int key, double val) {
           if (val > 0) {
-            data.add(new ColorCodedValue(EventRecordType.typeToString(key),
-                val, EventRecordColors.getColorForType(key)));
+            data.add(new ColorCodedValue(EventRecord.typeToString(key), val,
+                EventRecordColors.getColorForType(key)));
           }
         }
 
@@ -614,7 +617,7 @@ public class EventWaterfallRowDetails extends RowDetails implements
    * @return the details Map for the UiEvent
    */
   private IterableFastStringMap<CellRenderer> getDetailsMapForEvent(UiEvent e) {
-    IterableFastStringMap<CellRenderer> details = new IterableFastStringMap<CellRenderer>();
+    final IterableFastStringMap<CellRenderer> details = new IterableFastStringMap<CellRenderer>();
 
     details.put("Description", new StringCellRenderer(e.getHelpString()));
     details.put("@", new StringCellRenderer(
@@ -717,6 +720,18 @@ public class EventWaterfallRowDetails extends RowDetails implements
     if (e.getOverhead() > 0) {
       details.put("Overhead", new StringCellRenderer(
           TimeStampFormatter.formatMilliseconds(e.getOverhead(), 2)));
+    }
+
+    if (CustomEvent.isCustomEvent(e.getType())) {
+      // Render key-value pairs for the custom event.
+      // Simply iterate over the custom data on the CustomEvent.
+      CustomEvent customEvent = e.cast();
+      DataBag customData = customEvent.getCustomData();
+      customData.iterate(new IterationCallback() {
+        public void onIteration(String key, String value) {
+          details.put(key, new StringCellRenderer(value));
+        }
+      });
     }
 
     return details;
