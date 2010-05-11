@@ -42,7 +42,6 @@ public class AggregatedEventTypeChart extends LatencyDashboardChart {
   private static final String parseHtmlTitle = "Parse HTML";
   private static final String recalculateStylesColor = "#52b453"; // DARKGREEN
   private static final String recalculateStylesTitle = "Recalculate Styles";
-  private static final String revisionTitle = "Revision";
 
   private AreaChart leftChart;
   private RightPieChart rightChart;
@@ -141,7 +140,7 @@ public class AggregatedEventTypeChart extends LatencyDashboardChart {
 
   public void populateTimeline(DashboardRecord[] serverData) {
     DataTable data = DataTable.create();
-    data.addColumn(ColumnType.STRING, revisionTitle);
+    data.addColumn(ColumnType.STRING, REVISION_TITLE);
     data.addColumn(ColumnType.NUMBER, paintTitle);
     data.addColumn(ColumnType.NUMBER, layoutTitle);
     data.addColumn(ColumnType.NUMBER, recalculateStylesTitle);

@@ -54,13 +54,13 @@ public class RightPieChart extends Composite {
   /**
    * Options to pass to the pie chart.
    */
-
   public static PieChart.Options createOptions() {
     Options options = PieChart.Options.create().<Options> cast();
     options.setLegend(LegendPosition.NONE);
     options.setHeight(PIE_CHART_HEIGHT);
     return options;
   }
+
   private Legend legend = new Legend();
   private List<String> legendColors = new ArrayList<String>();
   private int numItems = 0;
@@ -95,7 +95,7 @@ public class RightPieChart extends Composite {
 
   public void draw(DataTable data, Options options) {
     if (options == null) {
-      options = Options.create();
+      options = createOptions();
     }
     String[] colors = new String[numItems];
     options.setColors(legendColors.toArray(colors));
