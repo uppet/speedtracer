@@ -25,6 +25,8 @@ import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
 
+import java.util.Date;
+
 /**
  * A base class for charts to be included in the Dashboard.
  */
@@ -64,10 +66,30 @@ public class LatencyDashboardChart extends Composite {
   public static final int CHART_HEIGHT = 275;
   protected static final int indicatorWidth = 100;
 
+  @SuppressWarnings("deprecation")
+  public static String formatTimestamp(long timestampMsec) {
+    Date timestamp = new Date(timestampMsec);
+    String timestampString = (timestamp.getYear() + 1900) + "0"
+        + timestamp.getMonth() + 1 + "0" + timestamp.getDate() + "";
+    timestampString += format2Digit(timestamp.getHours());
+    timestampString += format2Digit(timestamp.getMinutes());
+    timestampString += format2Digit(timestamp.getSeconds());
+    return timestampString;
+  }
+
+  private static String format2Digit(int val) {
+    if (val > 9) {
+      return "" + val % 100;
+    }
+    return "0" + val;
+  }
+
   protected final DockLayoutPanel chartPanel = new DockLayoutPanel(Unit.PX);
   protected final Image indicator = new Image();
   protected final SimplePanel indicatorPanel = new SimplePanel();
+
   protected final DockLayoutPanel outerPanel = new DockLayoutPanel(Unit.PX);
+
   private final Resources resources;
 
   public LatencyDashboardChart(Resources resources, String titleText) {

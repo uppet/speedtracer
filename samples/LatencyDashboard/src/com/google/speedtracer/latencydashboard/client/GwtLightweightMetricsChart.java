@@ -54,7 +54,8 @@ public class GwtLightweightMetricsChart extends LatencyDashboardChart {
   }
 
   public void addRow(DataTable dataTable, int row, DashboardRecord record) {
-    dataTable.setCell(row, 0, record.getRevision(), null, null);
+    dataTable.setCell(row, 0, record.getRevision() + "-"
+        + formatTimestamp(record.getTimestamp()), null, null);
     dataTable.setCell(row, 1, record.bootstrapDuration, null, null);
     dataTable.setCell(row, 2, record.loadExternalRefsDuration, null, null);
     dataTable.setCell(row, 3, record.moduleStartupDuration, null, null);
