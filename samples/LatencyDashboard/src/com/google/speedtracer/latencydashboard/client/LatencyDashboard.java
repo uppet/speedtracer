@@ -30,14 +30,16 @@ import com.google.gwt.visualization.client.VisualizationUtils;
 import com.google.gwt.visualization.client.visualizations.AreaChart;
 import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
 public class LatencyDashboard implements EntryPoint {
-  private AggregatedEventTypeChart aggregatedEventTypeChart;
-  private GwtLightweightMetricsChart lightweightMetricsChart;
   private final Button refreshButton = new Button("Refresh");
   private final TimelineServiceAsync timelineService = GWT.create(TimelineService.class);
+  private final List<LatencyDashboardChart> charts = new ArrayList<LatencyDashboardChart>();
 
   /**
    * This is the entry point method.
@@ -49,13 +51,17 @@ public class LatencyDashboard implements EntryPoint {
   }
 
   private void createCharts() {
-    lightweightMetricsChart = new GwtLightweightMetricsChart(
+    charts.add(new AggregatedEventTypeChart(DashboardResources.getResources(),
+        "Page Load breakdown by Event"));
+    charts.add(new GwtLightweightMetricsChart(
         DashboardResources.getResources(),
-        "GWT Lightweight Metrics - Page Load");
-    RootPanel.get().add(lightweightMetricsChart);
-    aggregatedEventTypeChart = new AggregatedEventTypeChart(
-        DashboardResources.getResources(), "Page Load breakdown by Event");
-    RootPanel.get().add(aggregatedEventTypeChart);
+        "GWT Lightweight Metrics - Page Load"));
+    charts.add(new LoadEventChart(DashboardResources.getResources(),
+        "Page Load Event times"));
+
+    for (LatencyDashboardChart chart : charts) {
+      RootPanel.get().add(chart);
+    }
   }
 
   private void createDashboardUi() {
@@ -96,8 +102,9 @@ public class LatencyDashboard implements EntryPoint {
           }
 
           public void onSuccess(DashboardRecord[] result) {
-            lightweightMetricsChart.populateChart(result);
-            aggregatedEventTypeChart.populateChart(result);
+            for (LatencyDashboardChart chart : charts) {
+              chart.populateChart(result);
+            }
           }
         });
   }

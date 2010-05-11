@@ -64,6 +64,7 @@ public class DashboardRecordStore {
   private static final String PROP_GARBAGE_COLLECTION_DURATION = "garbage_collection_duration";
   private static final String PROP_JAVASCRIPT_EXECUTION_DURATION = "javascript_execution_duration";
   private static final String PROP_LAYOUT_DURATION = "layout_duration";
+  private static final String PROP_LOAD_EVENT_TIME = "load_event_time";
   private static final String PROP_LOAD_EXTERNAL_REFS_DURATION = "load_external_refs_duration";
   private static final String PROP_LOAD_EXTERNAL_REFS_TIME = "load_external_refs_time";
   private static final String PROP_MAIN_RESOURCE_REQUEST_TIME = "main_resource_request_time";
@@ -96,6 +97,7 @@ public class DashboardRecordStore {
     result.setJavaScriptExecutionDuration(getDoubleProperty(properties,
         PROP_JAVASCRIPT_EXECUTION_DURATION));
     result.setLayoutDuration(getDoubleProperty(properties, PROP_LAYOUT_DURATION));
+    result.setLoadEventTime(getDoubleProperty(properties, PROP_LOAD_EVENT_TIME));
     result.setLoadExternalRefsDuration(getDoubleProperty(properties,
         PROP_LOAD_EXTERNAL_REFS_DURATION));
     result.setLoadExternalRefsTime(getDoubleProperty(properties,
@@ -147,6 +149,7 @@ public class DashboardRecordStore {
     entity.setProperty(PROP_JAVASCRIPT_EXECUTION_DURATION,
         dashboardRecord.javaScriptExecutionDuration);
     entity.setProperty(PROP_LAYOUT_DURATION, dashboardRecord.layoutDuration);
+    entity.setProperty(PROP_LOAD_EVENT_TIME, dashboardRecord.loadEventTime);
     entity.setProperty(PROP_LOAD_EXTERNAL_REFS_DURATION,
         dashboardRecord.loadExternalRefsDuration);
     entity.setProperty(PROP_LOAD_EXTERNAL_REFS_TIME,

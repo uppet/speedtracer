@@ -24,13 +24,14 @@ import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
 
 import java.util.Date;
 
 /**
  * A base class for charts to be included in the Dashboard.
  */
-public class LatencyDashboardChart extends Composite {
+public abstract class LatencyDashboardChart extends Composite {
 
   /**
    * Css definitions for this UI component.
@@ -65,6 +66,7 @@ public class LatencyDashboardChart extends Composite {
 
   public static final int CHART_HEIGHT = 275;
   protected static final int indicatorWidth = 100;
+  protected static final String REVISION_TITLE = "Revision";
 
   @SuppressWarnings("deprecation")
   public static String formatTimestamp(long timestampMsec) {
@@ -110,6 +112,8 @@ public class LatencyDashboardChart extends Composite {
     initWidget(outerPanel);
     this.addStyleName(css.latencyChart());
   }
+
+  public abstract void populateChart(DashboardRecord record[]);
 
   public void setIndicatorBetter() {
     indicator.setResource(resources.getGreenArrow());

@@ -149,6 +149,7 @@ public class SpeedTraceReceiverServlet extends HttpServlet {
 
     record.setDomContentLoadedTime(analyzer.getDomContentLoadedTime()
         - baseTime);
+    record.setLoadEventTime(analyzer.getLoadEventTime() - baseTime);
     record.setEvalScriptDuration(analyzer.getEvalScriptDuration());
     record.setGarbageCollectionDuration(analyzer.getGarbageCollectionDuration());
     record.setJavaScriptExecutionDuration(analyzer.getJavaScriptExecutionDuration());

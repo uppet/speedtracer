@@ -63,6 +63,12 @@ public class DashboardRecord implements Serializable {
   public double layoutDuration;
 
   /**
+   * Milliseconds elapsed since the mainResourceRequest time to the first DOM
+   * Event of the type "pageLoad".
+   */
+  public double loadEventTime;
+
+  /**
    * Milliseconds elapsed between the "loadExternalRefs" "start" gwt metric and
    * "loadExternalRefs" "end".
    */
@@ -160,6 +166,7 @@ public class DashboardRecord implements Serializable {
     builder.append("javaScriptExecutionDuration = "
         + javaScriptExecutionDuration + "\n");
     builder.append("layoutDuration = " + layoutDuration + "\n");
+    builder.append("loadEventTime = " + loadEventTime + "\n");
     builder.append("loadExternalRefsDuration = " + loadExternalRefsDuration
         + "\n");
     builder.append("loadExternalRefsTime = " + loadExternalRefsTime + "\n");
@@ -215,6 +222,10 @@ public class DashboardRecord implements Serializable {
 
   public void setLayoutDuration(double layoutDuration) {
     this.layoutDuration = layoutDuration;
+  }
+
+  public void setLoadEventTime(double loadEventTime) {
+    this.loadEventTime = loadEventTime;
   }
 
   public void setLoadExternalRefsDuration(double loadExternalRefsDuration) {
