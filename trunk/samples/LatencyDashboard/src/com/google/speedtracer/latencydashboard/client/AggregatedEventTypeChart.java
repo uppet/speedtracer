@@ -69,7 +69,8 @@ public class AggregatedEventTypeChart extends LatencyDashboardChart {
 
   public void addRow(DataTable dataTable, int row, DashboardRecord record) {
     int column = 0;
-    dataTable.setCell(row, column++, record.getRevision(), null, null);
+    dataTable.setCell(row, column++, record.getRevision() + "-"
+        + formatTimestamp(record.getTimestamp()), null, null);
     dataTable.setCell(row, column++, record.paintDuration, null, null);
     dataTable.setCell(row, column++, record.layoutDuration, null, null);
     dataTable.setCell(row, column++, record.recalculateStyleDuration, null,
