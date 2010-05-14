@@ -33,24 +33,6 @@ public class TimelineServiceImpl extends RemoteServiceServlet implements
     TimelineService {
 
   /**
-   * Retrieve the latest records from the dashboard in the datastore.
-   */
-  public DashboardRecord[] getDashboardLatestRecords(int n) {
-    Iterator<DashboardRecord> origResults = DashboardRecordStore.getLatest(
-        DatastoreServiceFactory.getDatastoreService(), n);
-    List<DashboardRecord> listResults = new ArrayList<DashboardRecord>();
-    while (origResults.hasNext()) {
-      DashboardRecord item = origResults.next();
-      listResults.add(item);
-    }
-    // Copy the list into an array to pass over RPC
-    DashboardRecord arrayResults[] = null;
-    arrayResults = listResults.toArray(new DashboardRecord[listResults.size()]);
-
-    return arrayResults;
-  }
-  
-  /**
    * Retrieve the latest custom records from the dashboard in the datastore.
    */
   public CustomDashboardRecord[] getCustomDashboardLatestRecords(int n) {
@@ -64,6 +46,24 @@ public class TimelineServiceImpl extends RemoteServiceServlet implements
     // Copy the list into an array to pass over RPC
     CustomDashboardRecord arrayResults[] = null;
     arrayResults = listResults.toArray(new CustomDashboardRecord[listResults.size()]);
+
+    return arrayResults;
+  }
+
+  /**
+   * Retrieve the latest records from the dashboard in the datastore.
+   */
+  public DashboardRecord[] getDashboardLatestRecords(int n) {
+    Iterator<DashboardRecord> origResults = DashboardRecordStore.getLatest(
+        DatastoreServiceFactory.getDatastoreService(), n);
+    List<DashboardRecord> listResults = new ArrayList<DashboardRecord>();
+    while (origResults.hasNext()) {
+      DashboardRecord item = origResults.next();
+      listResults.add(item);
+    }
+    // Copy the list into an array to pass over RPC
+    DashboardRecord arrayResults[] = null;
+    arrayResults = listResults.toArray(new DashboardRecord[listResults.size()]);
 
     return arrayResults;
   }

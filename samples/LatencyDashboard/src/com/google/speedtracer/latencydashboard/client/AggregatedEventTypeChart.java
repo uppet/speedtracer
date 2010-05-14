@@ -83,9 +83,15 @@ public class AggregatedEventTypeChart extends LatencyDashboardChart {
         null);
   }
 
+  @Override
+  public void populateChart(CustomDashboardRecord[] record) {
+  }
+
   public void populateChart(DashboardRecord[] serverData) {
     addLegend();
-    populateLastData(serverData[0]);
+    if (serverData.length > 0) {
+      populateLastData(serverData[0]);
+    }
     populateTimeline(serverData);
     populateIndicator(serverData);
   }
@@ -178,10 +184,5 @@ public class AggregatedEventTypeChart extends LatencyDashboardChart {
       return 0;
     }
     return value;
-  }
-
-  @Override
-  public void populateChart(CustomDashboardRecord[] record) {
-    //Empty impl
   }
 }

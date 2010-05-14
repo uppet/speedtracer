@@ -64,8 +64,14 @@ public class GwtLightweightMetricsChart extends LatencyDashboardChart {
     dataTable.setCell(row, column++, record.moduleStartupDuration, null, null);
   }
 
+  @Override
+  public void populateChart(CustomDashboardRecord[] record) {
+  }
+
   public void populateChart(DashboardRecord[] serverData) {
-    populateLastData(serverData[0]);
+    if (serverData.length > 0) {
+      populateLastData(serverData[0]);
+    }
     populateTimeline(serverData);
     populateIndicator(serverData);
   }
@@ -122,14 +128,9 @@ public class GwtLightweightMetricsChart extends LatencyDashboardChart {
     options.setStacked(true);
     leftChart.draw(dataTable, options);
   }
-
+  
   public double sumTimes(DashboardRecord serverData) {
     return serverData.bootstrapDuration + serverData.loadExternalRefsDuration
         + serverData.moduleStartupDuration;
-  }
-  
-  @Override
-  public void populateChart(CustomDashboardRecord[] record) {
-    //Empty impl
   }
 }
