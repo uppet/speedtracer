@@ -344,7 +344,7 @@ public class DevToolsDataInstance extends DataInstance {
       }
 
       // Nuke the pending records list.
-      pendingRecords = null;
+      pendingRecords = JSOArray.create();
     }
   }
 
