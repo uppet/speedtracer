@@ -23,7 +23,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.speedtracer.latencydashboard.shared.CustomDashboardRecord;
 import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
 
 import java.util.Date;
@@ -67,7 +67,8 @@ public abstract class LatencyDashboardChart extends Composite {
   public static final int CHART_HEIGHT = 275;
   protected static final int indicatorWidth = 100;
   protected static final String REVISION_TITLE = "Revision";
-
+  protected static final int gaugeWidth = 150;
+  protected static final int gaugeHeight = 150;
   @SuppressWarnings("deprecation")
   public static String formatTimestamp(long timestampMsec) {
     Date timestamp = new Date(timestampMsec);
@@ -88,7 +89,7 @@ public abstract class LatencyDashboardChart extends Composite {
 
   protected final DockLayoutPanel chartPanel = new DockLayoutPanel(Unit.PX);
   protected final Image indicator = new Image();
-  protected final SimplePanel indicatorPanel = new SimplePanel();
+  protected final DockLayoutPanel indicatorPanel = new DockLayoutPanel(Unit.PX);
 
   protected final DockLayoutPanel outerPanel = new DockLayoutPanel(Unit.PX);
 
@@ -102,8 +103,9 @@ public abstract class LatencyDashboardChart extends Composite {
     chartPanel.addNorth(title, 10);
     indicatorPanel.addStyleName(css.indicatorPanel());
     indicator.addStyleName(css.indicator());
-    chartPanel.addWest(indicatorPanel, indicatorWidth);
-    indicatorPanel.add(indicator);
+    chartPanel.addWest(indicatorPanel, gaugeWidth + 30);
+    indicatorPanel.addNorth(indicator, indicatorWidth);
+    indicatorPanel.setWidth("100%");
     outerPanel.setWidth("100%");
     outerPanel.addNorth(chartPanel, CHART_HEIGHT + 25);
 
@@ -114,6 +116,7 @@ public abstract class LatencyDashboardChart extends Composite {
   }
 
   public abstract void populateChart(DashboardRecord record[]);
+  public abstract void populateChart(CustomDashboardRecord record[]);
 
   public void setIndicatorBetter() {
     indicator.setResource(resources.getGreenArrow());

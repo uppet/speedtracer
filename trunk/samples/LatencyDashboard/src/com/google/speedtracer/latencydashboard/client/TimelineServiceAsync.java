@@ -16,6 +16,7 @@
 package com.google.speedtracer.latencydashboard.client;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.speedtracer.latencydashboard.shared.CustomDashboardRecord;
 import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
 
 /**
@@ -25,5 +26,8 @@ public interface TimelineServiceAsync {
 
   void getDashboardLatestRecords(int n,
       AsyncCallback<DashboardRecord[]> callback);
+
+  void getCustomDashboardLatestRecords(int n,
+      AsyncCallback<CustomDashboardRecord[]> callback);
 
 }

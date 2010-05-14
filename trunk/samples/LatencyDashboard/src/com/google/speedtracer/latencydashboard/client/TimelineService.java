@@ -17,6 +17,7 @@ package com.google.speedtracer.latencydashboard.client;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+import com.google.speedtracer.latencydashboard.shared.CustomDashboardRecord;
 import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
 
 /**
@@ -26,4 +27,5 @@ import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
 @RemoteServiceRelativePath("timeline")
 public interface TimelineService extends RemoteService {
   DashboardRecord[] getDashboardLatestRecords(int n);
+  CustomDashboardRecord[] getCustomDashboardLatestRecords(int n);
 }

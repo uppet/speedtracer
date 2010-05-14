@@ -19,6 +19,7 @@ import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.LegendPosition;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.visualizations.AreaChart;
+import com.google.speedtracer.latencydashboard.shared.CustomDashboardRecord;
 import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
 
 /**
@@ -177,5 +178,10 @@ public class AggregatedEventTypeChart extends LatencyDashboardChart {
       return 0;
     }
     return value;
+  }
+
+  @Override
+  public void populateChart(CustomDashboardRecord[] record) {
+    //Empty impl
   }
 }
