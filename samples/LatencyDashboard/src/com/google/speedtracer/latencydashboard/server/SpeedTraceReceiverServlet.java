@@ -17,6 +17,7 @@ package com.google.speedtracer.latencydashboard.server;
 
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.json.serialization.JsonException;
+import com.google.speedtracer.latencydashboard.shared.CustomDashboardRecord;
 import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
 
 import java.io.IOException;
@@ -48,9 +49,11 @@ public class SpeedTraceReceiverServlet extends HttpServlet {
    */
   private static final long serialVersionUID = 1549873162336369719L;
 
+  private static final String WAVE_MT_PREFIX = "__Wave_stats_event";
+
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-      throws ServletException, IOException {
+  throws ServletException, IOException {
 
     // Read the SpeedTrace data.
     InputStreamReader reader = new InputStreamReader(req.getInputStream());
@@ -83,12 +86,31 @@ public class SpeedTraceReceiverServlet extends HttpServlet {
     // SpeedTracer later if you want (but its a lot of data).
     // Store.storeEntireTrace(speedTraceRecord);
 
+    SpeedTraceAnalyzer analyzer = null;
+    try {
+      analyzer = new SpeedTraceAnalyzer(
+          speedTraceRecord.getDataObject());
+    } catch (JsonException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+      return;
+    }
+
     // Extract some statistics from the data
     DashboardRecord dashboardRecord = null;
     try {
-      dashboardRecord = processForDashboard(speedTraceRecord);
+      dashboardRecord = processForDashboard(analyzer, speedTraceRecord);
     } catch (JsonException ex) {
       System.err.println("Malformed Json passed to processForDashboards: " + ex);
+      ex.printStackTrace();
+    }
+
+    CustomDashboardRecord customRecord = null;
+    try {
+      customRecord = processCustomForDashBoard(analyzer, speedTraceRecord);
+    } catch (JsonException ex) {
+      System.err.println("Malformed Json passed to custom processForDashboards: "
+          + ex);
       ex.printStackTrace();
     }
 
@@ -96,6 +118,10 @@ public class SpeedTraceReceiverServlet extends HttpServlet {
     if (dashboardRecord != null) {
       DashboardRecordStore.put(DatastoreServiceFactory.getDatastoreService(),
           dashboardRecord);
+    }
+    if (customRecord != null && customRecord.isValid()) {
+      CustomDashboardRecordStore.put(
+          DatastoreServiceFactory.getDatastoreService(), customRecord);
     }
   }
 
@@ -122,6 +148,33 @@ public class SpeedTraceReceiverServlet extends HttpServlet {
   }
 
   /**
+   * @param speedTraceRecord
+   * @return
+   */
+  private CustomDashboardRecord processCustomForDashBoard(SpeedTraceAnalyzer analyzer,
+      SpeedTraceRecord speedTraceRecord) throws JsonException {
+    CustomDashboardRecord customRecord = new CustomDashboardRecord(
+        speedTraceRecord.getTimestamp(), speedTraceRecord.getName(),
+        speedTraceRecord.getRevision());
+
+    MarkTimelineAnalyzer markTimelineAnalyzer = new MarkTimelineAnalyzer(
+        analyzer, WAVE_MT_PREFIX);
+    markTimelineAnalyzer.registerMeasurementSet("client_load");
+    markTimelineAnalyzer.registerMeasurementSet("wave_prefetch_cache_fill");
+    markTimelineAnalyzer.registerMeasurementSet("wave_page");
+    markTimelineAnalyzer.registerMeasurementSet("digests_search");
+    markTimelineAnalyzer.registerMeasurementSet("contact-sort");
+
+    markTimelineAnalyzer.analyze();
+    markTimelineAnalyzer.store(customRecord);
+
+    if (customRecord.isValid()) {
+      System.out.println("Custom Record: " + customRecord.getFormattedRecord());
+    }
+    return customRecord;
+  }
+
+  /**
    * Given a JSON dump of speedtracer data, process the data with the analyzers
    * to produce a record to be stored in the App Engine datastore.
    * 
@@ -131,11 +184,8 @@ public class SpeedTraceReceiverServlet extends HttpServlet {
    * @throws JsonException occurs when a property is missing or an unexpected
    *           type encountered in the JSON dump.
    */
-  private DashboardRecord processForDashboard(SpeedTraceRecord speedTraceRecord)
-      throws JsonException {
-    SpeedTraceAnalyzer analyzer = new SpeedTraceAnalyzer(
-        speedTraceRecord.getDataObject());
-
+  private DashboardRecord processForDashboard(SpeedTraceAnalyzer analyzer,
+      SpeedTraceRecord speedTraceRecord) throws JsonException {
     DashboardRecord record = new DashboardRecord(
         speedTraceRecord.getTimestamp(), speedTraceRecord.getName(),
         speedTraceRecord.getRevision());

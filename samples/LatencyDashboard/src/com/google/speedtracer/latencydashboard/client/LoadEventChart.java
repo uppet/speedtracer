@@ -19,6 +19,7 @@ import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.LegendPosition;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.visualizations.ColumnChart;
+import com.google.speedtracer.latencydashboard.shared.CustomDashboardRecord;
 import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
 
 /**
@@ -113,5 +114,10 @@ public class LoadEventChart extends LatencyDashboardChart {
 
   public double sumTimes(DashboardRecord serverData) {
     return Math.max(serverData.domContentLoadedTime, serverData.loadEventTime);
+  }
+  
+  @Override
+  public void populateChart(CustomDashboardRecord[] record) {
+    //Empty impl
   }
 }

@@ -19,6 +19,7 @@ import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.LegendPosition;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.visualizations.AreaChart;
+import com.google.speedtracer.latencydashboard.shared.CustomDashboardRecord;
 import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
 
 /**
@@ -125,5 +126,10 @@ public class GwtLightweightMetricsChart extends LatencyDashboardChart {
   public double sumTimes(DashboardRecord serverData) {
     return serverData.bootstrapDuration + serverData.loadExternalRefsDuration
         + serverData.moduleStartupDuration;
+  }
+  
+  @Override
+  public void populateChart(CustomDashboardRecord[] record) {
+    //Empty impl
   }
 }

@@ -28,6 +28,10 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.visualization.client.VisualizationUtils;
 import com.google.gwt.visualization.client.visualizations.AreaChart;
+import com.google.gwt.visualization.client.visualizations.Gauge;
+import com.google.gwt.visualization.client.visualizations.LineChart;
+import com.google.gwt.visualization.client.visualizations.PieChart;
+import com.google.speedtracer.latencydashboard.shared.CustomDashboardRecord;
 import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
 
 import java.util.ArrayList;
@@ -37,9 +41,10 @@ import java.util.List;
  * Entry point classes define <code>onModuleLoad()</code>.
  */
 public class LatencyDashboard implements EntryPoint {
+  private final List<LatencyDashboardChart> charts = new ArrayList<LatencyDashboardChart>();
+  private List<MarkTimelineChart> markTimelineCharts = new ArrayList<MarkTimelineChart>();
   private final Button refreshButton = new Button("Refresh");
   private final TimelineServiceAsync timelineService = GWT.create(TimelineService.class);
-  private final List<LatencyDashboardChart> charts = new ArrayList<LatencyDashboardChart>();
 
   /**
    * This is the entry point method.
@@ -58,8 +63,12 @@ public class LatencyDashboard implements EntryPoint {
         "GWT Lightweight Metrics - Page Load"));
     charts.add(new LoadEventChart(DashboardResources.getResources(),
         "Page Load Event times"));
+    createMarkTimelineCharts();
 
     for (LatencyDashboardChart chart : charts) {
+      RootPanel.get().add(chart);
+    }
+    for (MarkTimelineChart chart : markTimelineCharts) {
       RootPanel.get().add(chart);
     }
   }
@@ -90,7 +99,39 @@ public class LatencyDashboard implements EntryPoint {
 
         });
       }
-    }, AreaChart.PACKAGE);
+    }, AreaChart.PACKAGE, LineChart.PACKAGE, PieChart.PACKAGE, Gauge.PACKAGE);
+  }
+
+  private void createMarkTimelineCharts() {
+    String[] clientLoadEvents = {"initial_search_begin", "initial_search_end"};
+    Gauge.Options standardOptions = Gauge.Options.create();
+    standardOptions.setGaugeRange(0, 5000);
+    standardOptions.setGreenRange(0, 2500);
+    standardOptions.setYellowRange(2500, 4000);
+    standardOptions.setRedRange(4000, 5000);
+
+    markTimelineCharts.add(new MarkTimelineChart(
+        DashboardResources.getResources(), "client_load", clientLoadEvents,
+        standardOptions));
+    
+    markTimelineCharts.add(new MarkTimelineChart(
+        DashboardResources.getResources(), "wave_prefetch_cache_fill", null,
+        standardOptions));
+
+    String[] digestsSearchEvents = {
+       "process_results_begin", "render_results_begin",  "update_received"};
+    markTimelineCharts.add(new MarkTimelineChart(
+        DashboardResources.getResources(), "digests_search",
+        digestsSearchEvents, standardOptions));
+    
+    Gauge.Options contactsGaugeOptions = Gauge.Options.create();
+    contactsGaugeOptions.setGaugeRange(0, 100);
+    contactsGaugeOptions.setGreenRange(0, 10);
+    contactsGaugeOptions.setYellowRange(10, 50);
+    contactsGaugeOptions.setRedRange(50, 100);
+    markTimelineCharts.add(new MarkTimelineChart(
+        DashboardResources.getResources(), "contact-sort",
+        null, contactsGaugeOptions));
   }
 
   private void populateDashboard() {
@@ -102,10 +143,36 @@ public class LatencyDashboard implements EntryPoint {
           }
 
           public void onSuccess(DashboardRecord[] result) {
-            for (LatencyDashboardChart chart : charts) {
-              chart.populateChart(result);
+            if (result.length > 0) {
+              for (LatencyDashboardChart chart : charts) {
+                chart.populateChart(result);
+              }
+            } else {
+              WarningPane.get().show(
+                  "Retrieved empty dashboard data. Check the server and try to 'Refresh'");
             }
           }
+        });
+
+    timelineService.getCustomDashboardLatestRecords(15,
+        new AsyncCallback<CustomDashboardRecord[]>() {
+
+          public void onFailure(Throwable caught) {
+            WarningPane.get().show(
+                "Couldn't retrieve dashboard data.  Check the server and try to 'Refresh'");
+          }
+
+          public void onSuccess(CustomDashboardRecord[] result) {
+            if (result.length > 0) {
+              for (LatencyDashboardChart chart : markTimelineCharts) {
+                chart.populateChart(result);
+              }
+            } else {
+              WarningPane.get().show(
+                  "Retrieved empty custom dashboard data. Check the server and try to 'Refresh'");
+            }
+          }
+
         });
   }
 }

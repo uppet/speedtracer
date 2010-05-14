@@ -47,6 +47,11 @@ public class CustomDashboardRecord implements Serializable {
    * data started.
    */
   private long timeStamp;
+  
+  /**
+   * A custom record becomes valid once it has data to store.
+   */
+  private boolean valid = false;
 
   public CustomDashboardRecord() {
   }
@@ -64,9 +69,10 @@ public class CustomDashboardRecord implements Serializable {
    * @param value the datapoint for this metric
    */
   public void addCustomMeasure(String label, Double value) {
+    valid = true;
     customMetrics.put(label, value);
   }
-
+  
   public Map<String, Double> getCustomMetrics() {
     return customMetrics;
   }
@@ -86,6 +92,19 @@ public class CustomDashboardRecord implements Serializable {
     return builder.toString();
   }
 
+  /**
+   * Safe getter for metric values.
+   * @param metric
+   * @return the metric if it exists, 0 otherwise
+   */
+  public Double getMetric(String metric) {
+    Double ret = customMetrics.get(metric);
+    if (ret == null) {
+      return ret = 0d;
+    }
+    return ret;
+  }
+  
   public String getName() {
     return name;
   }
@@ -96,5 +115,9 @@ public class CustomDashboardRecord implements Serializable {
 
   public long getTimestamp() {
     return this.timeStamp;
+  }
+
+  public boolean isValid() {
+    return valid;
   }
 }
