@@ -79,8 +79,9 @@ public class DashboardRecordStore {
   public static DashboardRecord get(Entity entity) {
     Map<String, Object> properties = entity.getProperties();
 
+    Double timestamp = (Double) properties.get(KEY_PROP_TIMESTAMP);
     DashboardRecord result = new DashboardRecord(
-        (Long) properties.get(KEY_PROP_TIMESTAMP),
+        timestamp.longValue(),
         (String) properties.get(KEY_PROP_NAME),
         (String) properties.get(KEY_PROP_REVISION));
 

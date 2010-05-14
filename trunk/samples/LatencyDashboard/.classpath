@@ -7,8 +7,8 @@
 	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
 	<classpathentry kind="lib" path="gwt-visualization.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/appengine-tools-api.jar"/>
 	<classpathentry kind="con" path="com.google.appengine.eclipse.core.GAE_CONTAINER"/>
-	<classpathentry kind="lib" path="/home/conroy/bin/eclipse/plugins/com.google.appengine.eclipse.sdkbundle.1.3.3_1.3.3.v201005070826/appengine-java-sdk-1.3.3.1-dn-1.0.7-rc1/lib/testing/appengine-testing.jar"/>
-	<classpathentry kind="lib" path="/home/conroy/Downloads/gwt-visualization.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/appengine-testing.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

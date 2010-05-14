@@ -50,13 +50,20 @@ public class LoadEventChart extends LatencyDashboardChart {
 
   public void addRow(DataTable dataTable, int row, DashboardRecord record) {
     int column = 0;
-    dataTable.setCell(row, column++, record.getRevision(), null, null);
+    dataTable.setCell(row, column++, record.getRevision() + "-"
+        + formatTimestamp(record.getTimestamp()), null, null);
     dataTable.setCell(row, column++, record.domContentLoadedTime, null, null);
     dataTable.setCell(row, column++, record.loadEventTime, null, null);
   }
 
+  @Override
+  public void populateChart(CustomDashboardRecord[] record) {
+  }
+
   public void populateChart(DashboardRecord[] serverData) {
-    populateLastData(serverData[0]);
+    if (serverData.length > 0) {
+      populateLastData(serverData[0]);
+    }
     populateTimeline(serverData);
     populateIndicator(serverData);
   }
@@ -111,13 +118,8 @@ public class LoadEventChart extends LatencyDashboardChart {
     options.setColors(domContentLoadedColor, pageLoadEventColor);
     leftChart.draw(dataTable, options);
   }
-
+  
   public double sumTimes(DashboardRecord serverData) {
     return Math.max(serverData.domContentLoadedTime, serverData.loadEventTime);
-  }
-  
-  @Override
-  public void populateChart(CustomDashboardRecord[] record) {
-    //Empty impl
   }
 }

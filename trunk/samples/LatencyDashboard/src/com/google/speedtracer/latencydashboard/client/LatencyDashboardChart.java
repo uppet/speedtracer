@@ -100,7 +100,7 @@ public abstract class LatencyDashboardChart extends Composite {
     Css css = resources.latencyDashboardChartCss();
     Label title = new Label(titleText);
     title.addStyleName(css.chartTitle());
-    chartPanel.addNorth(title, 10);
+    chartPanel.addNorth(title, 0);
     indicatorPanel.addStyleName(css.indicatorPanel());
     indicator.addStyleName(css.indicator());
     chartPanel.addWest(indicatorPanel, gaugeWidth + 30);
