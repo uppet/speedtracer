@@ -69,9 +69,10 @@ public abstract class LatencyDashboardChart extends Composite {
   protected static final String REVISION_TITLE = "Revision";
   protected static final int gaugeWidth = 150;
   protected static final int gaugeHeight = 150;
+
   @SuppressWarnings("deprecation")
-  public static String formatTimestamp(long timestampMsec) {
-    Date timestamp = new Date(timestampMsec);
+  public static String formatTimestamp(double timestampMsec) {
+    Date timestamp = new Date((long) timestampMsec);
     String timestampString = (timestamp.getYear() + 1900) + "0"
         + timestamp.getMonth() + 1 + "0" + timestamp.getDate() + "";
     timestampString += format2Digit(timestamp.getHours());
@@ -116,6 +117,7 @@ public abstract class LatencyDashboardChart extends Composite {
   }
 
   public abstract void populateChart(DashboardRecord record[]);
+
   public abstract void populateChart(CustomDashboardRecord record[]);
 
   public void setIndicatorBetter() {

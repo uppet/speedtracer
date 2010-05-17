@@ -138,7 +138,7 @@ public class DashboardRecord implements Serializable {
   /**
    * The time the dump was generated.
    */
-  private long timeStamp;
+  private double timeStamp;
 
   public DashboardRecord() {
   }
@@ -192,7 +192,7 @@ public class DashboardRecord implements Serializable {
     return this.revision;
   }
 
-  public long getTimestamp() {
+  public double getTimestamp() {
     return this.timeStamp;
   }
 
