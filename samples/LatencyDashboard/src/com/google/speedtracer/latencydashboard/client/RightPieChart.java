@@ -39,6 +39,7 @@ public class RightPieChart extends Composite {
    */
   public interface Css extends CssResource {
     String legendWrapper();
+    String gaugeWrapper();
   }
 
   /**

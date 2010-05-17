@@ -23,6 +23,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.speedtracer.latencydashboard.shared.CustomDashboardRecord;
 import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
 
@@ -67,9 +68,6 @@ public abstract class LatencyDashboardChart extends Composite {
   public static final int CHART_HEIGHT = 275;
   protected static final int indicatorWidth = 100;
   protected static final String REVISION_TITLE = "Revision";
-  protected static final int gaugeWidth = 150;
-  protected static final int gaugeHeight = 150;
-
   @SuppressWarnings("deprecation")
   public static String formatTimestamp(double timestampMsec) {
     Date timestamp = new Date((long) timestampMsec);
@@ -90,7 +88,7 @@ public abstract class LatencyDashboardChart extends Composite {
 
   protected final DockLayoutPanel chartPanel = new DockLayoutPanel(Unit.PX);
   protected final Image indicator = new Image();
-  protected final DockLayoutPanel indicatorPanel = new DockLayoutPanel(Unit.PX);
+  protected final SimplePanel indicatorPanel = new SimplePanel();
 
   protected final DockLayoutPanel outerPanel = new DockLayoutPanel(Unit.PX);
 
@@ -104,9 +102,8 @@ public abstract class LatencyDashboardChart extends Composite {
     chartPanel.addNorth(title, 0);
     indicatorPanel.addStyleName(css.indicatorPanel());
     indicator.addStyleName(css.indicator());
-    chartPanel.addWest(indicatorPanel, gaugeWidth + 30);
-    indicatorPanel.addNorth(indicator, indicatorWidth);
-    indicatorPanel.setWidth("100%");
+    indicatorPanel.add(indicator);
+    chartPanel.addWest(indicatorPanel, indicatorWidth);
     outerPanel.setWidth("100%");
     outerPanel.addNorth(chartPanel, CHART_HEIGHT + 25);
 
