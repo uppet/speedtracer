@@ -79,10 +79,24 @@ public class DashboardRecordStore {
   public static DashboardRecord get(Entity entity) {
     Map<String, Object> properties = entity.getProperties();
 
-    Double timestamp = (Double) properties.get(KEY_PROP_TIMESTAMP);
-    DashboardRecord result = new DashboardRecord(
-        timestamp.longValue(),
-        (String) properties.get(KEY_PROP_NAME),
+    Object timestampObj = properties.get(KEY_PROP_TIMESTAMP);
+
+    // Some data got stored as a Double, some as a Long... this works around
+    // exceptions when deployed on AppEngine with a mix loaded in the Datastore.
+    Double timestamp;
+    if (timestampObj instanceof Double) {
+      timestamp = (Double) timestampObj;
+    } else if (timestampObj instanceof Long) {
+      timestamp = (double) (Long) timestampObj;
+    } else {
+      System.err.println("DashboardDataStore.get(): timestamp property has wrong type: "
+          + timestampObj.getClass().getName() + ". Expected Long or Double.");
+      timestamp = Double.valueOf(-1);
+    }
+
+    DashboardRecord result = new DashboardRecord(timestamp.longValue(),
+
+    (String) properties.get(KEY_PROP_NAME),
         (String) properties.get(KEY_PROP_REVISION));
 
     result.setBootstrapDuration(getDoubleProperty(properties,
