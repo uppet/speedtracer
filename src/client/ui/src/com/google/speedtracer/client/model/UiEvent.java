@@ -199,10 +199,6 @@ public class UiEvent extends EventRecord {
     apply(visitor, this);
   }
 
-  public final native String getBackTrace() /*-{
-    return (this.data && this.data.backTrace) ? this.data.backTrace : null;
-  }-*/;
-
   /**
    * Returns the script name for the JS code of the top JS call frame.
    * 
