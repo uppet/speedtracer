@@ -58,6 +58,7 @@ public class LoadEventChart extends LatencyDashboardChart {
 
   @Override
   public void populateChart(CustomDashboardRecord[] record) {
+    // Empty impl
   }
 
   public void populateChart(DashboardRecord[] serverData) {

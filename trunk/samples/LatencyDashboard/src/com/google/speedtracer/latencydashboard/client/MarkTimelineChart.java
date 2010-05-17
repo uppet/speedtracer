@@ -31,12 +31,18 @@ import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
  */
 public class MarkTimelineChart extends LatencyDashboardChart {
 
+  // Default gviz colors
+  private static final String[] COLORS = {
+      "#4684ee", "#dc3912", "#ff9900", "#008000", "#666666", "#4942cc",
+      "#cb4ac5", "#d6ae00", "#336699", "#dd4477", "#aaaa11", "#66aa00",
+      "#888888", "#994499", "#dd5511", "#22aa99", "#999999", "#705770",
+      "#109618", "#a32929"};
   private static final String[] emptyEvents = {};
+  
   private static final String revisionTitle = "Revision";
+  
   private final String[] events;
-  private Gauge gaugeChart;
-
-  private Gauge.Options gaugeOptions;
+  private RightGaugeChart gaugeChart;
   private LineChart leftChart;
   private final String measurementName;
 
@@ -44,12 +50,8 @@ public class MarkTimelineChart extends LatencyDashboardChart {
       String measurementName, String[] events, Gauge.Options gaugeOptions) {
     super(resources, measurementName);
     this.measurementName = measurementName;
-
-    // TODO(conroy): move the guage into the Pie Chart position
-    this.gaugeChart = new Gauge();
-    this.gaugeOptions = gaugeOptions;
-    indicatorPanel.addSouth(gaugeChart, gaugeHeight);
-
+    this.gaugeChart = new RightGaugeChart(resources, gaugeOptions);
+    chartPanel.addEast(gaugeChart, CHART_HEIGHT);
     this.leftChart = new LineChart();
     chartPanel.add(leftChart);
 
@@ -59,9 +61,22 @@ public class MarkTimelineChart extends LatencyDashboardChart {
       this.events = emptyEvents;
     }
   }
-
+  
+  public void addLegend() {
+    int color = 0;
+    gaugeChart.clear();
+    gaugeChart.addItem(COLORS[color++], "Total");
+    for (int i = 0, n = events.length; i < n; i++) {
+      gaugeChart.addItem(COLORS[color++ % COLORS.length],
+          displayEventName(events[i]));
+    }
+  }
+  
   public void populateChart(CustomDashboardRecord[] serverData) {
-    populateLastData(serverData[0]);
+    addLegend();
+    if(serverData.length > 0) {
+      populateLastData(serverData[0]);
+    }
     populateTimeline(serverData);
     populateIndicator(serverData);
   }
@@ -105,10 +120,8 @@ public class MarkTimelineChart extends LatencyDashboardChart {
     dataTable.setCell(0, 0, "Latest", null, null);
     dataTable.setCell(0, 1,
         serverData.getMetric(measurementName + ":total").intValue(), null, null);
-
-    gaugeOptions.setHeight(gaugeHeight);
-    gaugeOptions.setWidth(gaugeWidth);
-    gaugeChart.draw(dataTable, gaugeOptions);
+    
+    gaugeChart.draw(dataTable);
   }
 
   /**
@@ -123,7 +136,7 @@ public class MarkTimelineChart extends LatencyDashboardChart {
     dataTable.addColumn(ColumnType.NUMBER, "Total");
 
     for (String event : events) {
-      dataTable.addColumn(ColumnType.NUMBER, event);
+      dataTable.addColumn(ColumnType.NUMBER, displayEventName(event));
     }
 
     int length = serverData.length;
@@ -134,9 +147,10 @@ public class MarkTimelineChart extends LatencyDashboardChart {
 
     LineChart.Options options = LineChart.Options.create();
     leftChart.getLayoutData();
-    options.setLegend(LegendPosition.RIGHT);
+    options.setLegend(LegendPosition.NONE);
     options.setHeight(CHART_HEIGHT);
     options.setTitleY("milliseconds");
+    options.setColors(COLORS);
     leftChart.draw(dataTable, options);
   }
 
@@ -160,6 +174,10 @@ public class MarkTimelineChart extends LatencyDashboardChart {
           customDashboardRecord.getMetric(measurementName + ":" + event), null,
           null);
     }
+  }
+
+  private String displayEventName(String event) {
+    return event.replaceAll("_", " ");
   }
 
 }
