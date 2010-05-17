@@ -60,6 +60,7 @@ import com.google.speedtracer.client.model.NetworkResourceModel;
 import com.google.speedtracer.client.model.PaintEvent;
 import com.google.speedtracer.client.model.ParseHtmlEvent;
 import com.google.speedtracer.client.model.ResourceDataReceivedEvent;
+import com.google.speedtracer.client.model.StackFrame;
 import com.google.speedtracer.client.model.TimerCleared;
 import com.google.speedtracer.client.model.TimerFiredEvent;
 import com.google.speedtracer.client.model.TimerInstalled;
@@ -629,20 +630,19 @@ public class EventWaterfallRowDetails extends RowDetails implements
 
     String currentAppUrl = eventWaterfall.getVisualization().getModel().getDataModel().getTabDescription().getUrl();
 
-    // This is the backtrace output by our prototype.
-    String backTrace = e.getBackTrace();
-    if (backTrace != null) {
-      details.put("Stack Trace", new StackTraceRenderer(backTrace,
+    // This is the stackTrace output by newer versions of WebKit.
+    JSOArray<StackFrame> stackTrace = e.getStackTrace();
+    if (stackTrace != null) {
+      details.put("Stack Trace", new StackTraceRenderer(stackTrace,
           symbolClickListener, this, currentAppUrl, this, true, resources));
     }
-    // This is the caller location output currently by WebKit.
+    // This is the caller location output by older versions of WebKit.
+    // TODO(jaimeyap): remove this once stack trace API reaches Chromium beta.
     if (e.hasCallLocation()) {
-      // TODO(jaimeyap): figure out what we want to do with our backTrace vs the
-      // stuff landed in WebKit. Can we get symbol names? For now we re-use the
-      // same infrastructure to render this.
-      backTrace = "ignored," + e.getCallerScriptName() + ","
-          + e.getCallerScriptLine() + ",-1,," + e.getCallerFunctionName();
-      details.put("Caused by", new StackTraceRenderer(backTrace,
+      stackTrace = JSOArray.create();
+      stackTrace.push(StackFrame.create(e.getCallerScriptName(),
+          e.getCallerFunctionName(), e.getCallerScriptLine(), 0));
+      details.put("Caused by", new StackTraceRenderer(stackTrace,
           symbolClickListener, this, currentAppUrl, this, true, resources));
     }
 
@@ -695,9 +695,10 @@ public class EventWaterfallRowDetails extends RowDetails implements
         break;
       case JavaScriptExecutionEvent.TYPE:
         JavaScriptExecutionEvent jsExecEvent = e.cast();
-        backTrace = "ignored," + jsExecEvent.getScriptName() + ","
-            + jsExecEvent.getScriptLine() + ",-1,,";
-        details.put("Function Call", new StackTraceRenderer(backTrace,
+        JSOArray<StackFrame> function = JSOArray.create();
+        function.push(StackFrame.create(jsExecEvent.getScriptName(),
+            "[unknown]", jsExecEvent.getScriptLine(), 0));
+        details.put("Function Call", new StackTraceRenderer(function,
             symbolClickListener, this, currentAppUrl, this, true, resources));
         break;
       case ResourceDataReceivedEvent.TYPE:

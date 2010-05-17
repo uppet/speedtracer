@@ -25,7 +25,7 @@ import com.google.speedtracer.shared.EventRecordType;
  */
 public class EventRecord extends JavaScriptObject {
   public static final int INVALID_TYPE = -1;
-  
+
   /**
    * Returns a short user facing string that describes the event associated with
    * the given type int.
@@ -100,6 +100,13 @@ public class EventRecord extends JavaScriptObject {
    */
   public final native int getSequence() /*-{
     return this.sequence || 0;
+  }-*/;
+
+  /**
+   * @return JavaScript stack trace associated with this record.
+   */
+  public final native JSOArray<StackFrame> getStackTrace() /*-{
+    return this.stackTrace;
   }-*/;
 
   /**

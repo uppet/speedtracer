@@ -29,13 +29,12 @@ import com.google.speedtracer.client.SymbolServerService;
 import com.google.speedtracer.client.SourceViewer.SourcePresenter;
 import com.google.speedtracer.client.SymbolServerController.Resymbolizeable;
 import com.google.speedtracer.client.model.JsSymbol;
+import com.google.speedtracer.client.model.StackFrame;
 import com.google.speedtracer.client.util.Url;
-import com.google.speedtracer.client.visualizations.model.JsStackTrace.JsStackFrame;
 
 /**
  * Simple class with utility methods used to create DOM structure to render
- * {@link com.google.speedtracer.client.visualizations.model.JsStackTrace}
- * instances.
+ * {@link com.google.speedtracer.client.model.StackFrame}s.
  * 
  * Supports showing both an obfuscated and a re-symbolized stack trace.
  */
@@ -61,18 +60,18 @@ public class StackFrameRenderer implements Resymbolizeable {
   // Gets initialized when first rendered.
   private Element myElem;
 
-  private final JsStackFrame stackFrame;
+  private final StackFrame stackFrame;
 
   private final StackTraceRenderer stackTraceRenderer;
 
   /**
    * Constructor.
    * 
-   * @param stackFrame the {@link JsStackFrame} that this will render.
+   * @param stackFrame the {@link StackFrame} that this will render.
    * @param stackTraceRenderer the {@link StackTraceRenderer} that is rendering
    *          us.
    */
-  public StackFrameRenderer(JsStackFrame stackFrame,
+  public StackFrameRenderer(StackFrame stackFrame,
       StackTraceRenderer stackTraceRenderer) {
     this.stackFrame = stackFrame;
     this.stackTraceRenderer = stackTraceRenderer;
@@ -84,13 +83,14 @@ public class StackFrameRenderer implements Resymbolizeable {
     myElem = parentElem.getOwnerDocument().createDivElement();
     Document document = myElem.getOwnerDocument();
 
-    String resourceName = stackFrame.getResourceUrl().getLastPathComponent();
-    resourceName = ("".equals(resourceName))
-        ? stackFrame.getResourceUrl().getPath() : resourceName;
+    final Url resource = new Url(stackFrame.getScriptName());
+    String resourceName = resource.getLastPathComponent();
+    resourceName = ("".equals(resourceName)) ? resource.getPath()
+        : resourceName;
 
     // If we still don't have anything, replace with [unknown]
-    String symbolName = (stackFrame.getSymbolName().equals("")) ? "[unknown] "
-        : stackFrame.getSymbolName() + "() ";
+    String symbolName = (stackFrame.getFunctionName().equals(""))
+        ? "[anonymous] " : stackFrame.getFunctionName() + "() ";
 
     myElem.appendChild(document.createTextNode(resourceName + "::"));
     myElem.appendChild(document.createTextNode(symbolName));
@@ -98,8 +98,8 @@ public class StackFrameRenderer implements Resymbolizeable {
     // the Source Viewer when clicked.
     AnchorElement lineLink = document.createAnchorElement();
     lineLink.getStyle().setProperty("whiteSpace", "nowrap");
-    String columnStr = (stackFrame.getColNumber() > 0) ? " Col "
-        + stackFrame.getColNumber() : "";
+    String columnStr = (stackFrame.getColumnOffset() > 0) ? " Col "
+        + stackFrame.getColumnOffset() : "";
     lineLink.setInnerText("Line " + stackFrame.getLineNumber() + columnStr);
     lineLink.setHref("javascript:;");
     myElem.appendChild(lineLink);
@@ -108,8 +108,8 @@ public class StackFrameRenderer implements Resymbolizeable {
         ClickEvent.addClickListener(lineLink, lineLink, new ClickListener() {
           public void onClick(ClickEvent event) {
             stackTraceRenderer.getSourceClickListener().onSymbolClicked(
-                stackFrame.getResourceUrl().getUrl(), null,
-                stackFrame.getLineNumber(), stackFrame.getColNumber(), null);
+                resource.getUrl(), null, stackFrame.getLineNumber(),
+                stackFrame.getColumnOffset(), null);
           }
         }));
 
@@ -122,7 +122,7 @@ public class StackFrameRenderer implements Resymbolizeable {
           stackTraceRenderer.getCurrentAppUrl()));
       if (ssController != null) {
         ssController.attemptResymbolization(
-            stackFrame.getResourceUrl().getUrl(), stackFrame.getSymbolName(),
+            resource.getUrl(), stackFrame.getFunctionName(),
             this, stackTraceRenderer.getSourcePresenter());
       }
     }

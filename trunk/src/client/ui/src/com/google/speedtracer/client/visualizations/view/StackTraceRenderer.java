@@ -15,13 +15,11 @@
  */
 package com.google.speedtracer.client.visualizations.view;
 
+import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.speedtracer.client.SourceViewer.SourcePresenter;
+import com.google.speedtracer.client.model.StackFrame;
 import com.google.speedtracer.client.util.dom.ManagesEventListeners;
-import com.google.speedtracer.client.visualizations.model.JsStackTrace;
-import com.google.speedtracer.client.visualizations.model.JsStackTrace.JsStackFrame;
-
-import java.util.List;
 
 /**
  * Takes in a backtrace String and renders a stack trace to a table cell.
@@ -29,7 +27,7 @@ import java.util.List;
  * TODO (jaimeyap): When we land stack traces, change this to support
  */
 public class StackTraceRenderer implements CellRenderer {
-  private final String backTrace;
+  private final boolean attemptResymbolization;
 
   private final String currentAppUrl;
 
@@ -41,24 +39,20 @@ public class StackTraceRenderer implements CellRenderer {
 
   private final SourcePresenter sourcePresenter;
 
-  private final boolean attemptResymbolization;
+  private final JSOArray<StackFrame> stackTrace;
 
-  StackTraceRenderer(String backTrace,
+  StackTraceRenderer(JSOArray<StackFrame> stackTrace,
       SourceSymbolClickListener sourceClickListener,
       ManagesEventListeners listenerManager, String currentAppUrl,
       SourcePresenter sourcePresenter, boolean attemptResymbolization,
       StackFrameRenderer.Resources resources) {
-    this.backTrace = backTrace;
+    this.stackTrace = stackTrace;
     this.sourceClickListener = sourceClickListener;
     this.listenerManager = listenerManager;
     this.currentAppUrl = currentAppUrl;
     this.sourcePresenter = sourcePresenter;
     this.attemptResymbolization = attemptResymbolization;
     this.resources = resources;
-  }
-
-  public String getBackTrace() {
-    return backTrace;
   }
 
   public String getCurrentAppUrl() {
@@ -81,11 +75,13 @@ public class StackTraceRenderer implements CellRenderer {
     return sourcePresenter;
   }
 
-  public void render(TableCellElement cell) {
-    JsStackTrace stackTrace = JsStackTrace.create(backTrace);
-    List<JsStackFrame> frames = stackTrace.getFrames();
-    for (int i = 0, n = frames.size(); i < n; i++) {
-      final JsStackFrame frame = frames.get(i);
+  public JSOArray<StackFrame> getStackTrace() {
+    return stackTrace;
+  }
+
+  public void render(TableCellElement cell) {    
+    for (int i = 0, n = stackTrace.size(); i < n; i++) {
+      final StackFrame frame = stackTrace.get(i);
       final StackFrameRenderer frameRenderer = new StackFrameRenderer(frame,
           this);
       frameRenderer.render(cell, attemptResymbolization);

@@ -67,6 +67,11 @@ public class SpeedtracerSchemas {
             "requires" : "callerScriptName",
             "optional" : true
          },
+         "stackTrace" : {
+            "type" : "array",
+            "description" : "Array of JavaScript stack frame objects.",
+            "optional" : true
+         },
          "usedHeapSize" : {
            "type" : "integer",
            "description" : "Size in bytes used in the heap",
