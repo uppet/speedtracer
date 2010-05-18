@@ -39,6 +39,7 @@ public class RightPieChart extends Composite {
    */
   public interface Css extends CssResource {
     String legendWrapper();
+
     String gaugeWrapper();
   }
 
@@ -64,7 +65,6 @@ public class RightPieChart extends Composite {
 
   private Legend legend = new Legend();
   private List<String> legendColors = new ArrayList<String>();
-  private int numItems = 0;
   private DockLayoutPanel outerPanel = new DockLayoutPanel(Unit.PX);
   private PieChart pieChart = new PieChart();
 
@@ -79,13 +79,11 @@ public class RightPieChart extends Composite {
   }
 
   public void addItem(String color, String title) {
-    numItems++;
     legend.addItem(color, title);
     legendColors.add(color);
   }
 
   public void clear() {
-    numItems = 0;
     legend.clear();
     legendColors.clear();
   }
@@ -98,7 +96,17 @@ public class RightPieChart extends Composite {
     if (options == null) {
       options = createOptions();
     }
-    String[] colors = new String[numItems];
+
+    // If a datapoint is 0, then it won't consume a color which causes the chart
+    // and the legend to get out of sync, so we need to remove the corresponding
+    // color before drawing.
+    int numRemoved = 0;
+    for (int i = 0, n = data.getNumberOfRows(); i < n; i++) {
+      if (data.getValueDouble(i, 1) == 0) {
+        legendColors.remove(i - numRemoved++);
+      }
+    }
+    String[] colors = new String[legendColors.size()];
     options.setColors(legendColors.toArray(colors));
     pieChart.draw(data, options);
   }
