@@ -41,14 +41,18 @@ public class MarkTimelineChart extends LatencyDashboardChart {
 
   private static final String revisionTitle = "Revision";
 
+  private static String displayEventName(String event) {
+    return event.replaceAll("_", " ").replaceAll("wave", "");
+  }
   private final String[] events;
   private RightGaugeChart gaugeChart;
   private LineChart leftChart;
+
   private final String measurementName;
 
   public MarkTimelineChart(LatencyDashboardChart.Resources resources,
       String measurementName, String[] events, Gauge.Options gaugeOptions) {
-    super(resources, measurementName);
+    super(resources, displayEventName(measurementName));
     this.measurementName = measurementName;
     this.gaugeChart = new RightGaugeChart(resources, gaugeOptions);
     chartPanel.addEast(gaugeChart, CHART_HEIGHT);
@@ -175,10 +179,6 @@ public class MarkTimelineChart extends LatencyDashboardChart {
           customDashboardRecord.getMetric(measurementName + ":" + event), null,
           null);
     }
-  }
-
-  private String displayEventName(String event) {
-    return event.replaceAll("_", " ");
   }
 
 }

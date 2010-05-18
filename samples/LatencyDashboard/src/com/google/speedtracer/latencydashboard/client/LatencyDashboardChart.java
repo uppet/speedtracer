@@ -66,6 +66,7 @@ public abstract class LatencyDashboardChart extends Composite {
   }
 
   public static final int CHART_HEIGHT = 275;
+  public static final int RIGHT_CHART_HEIGHT = 150;
   protected static final int indicatorWidth = 100;
   protected static final String REVISION_TITLE = "Revision";
   @SuppressWarnings("deprecation")
