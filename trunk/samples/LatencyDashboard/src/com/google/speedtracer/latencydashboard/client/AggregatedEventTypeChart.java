@@ -166,6 +166,7 @@ public class AggregatedEventTypeChart extends LatencyDashboardChart {
     AreaChart.Options options = AreaChart.Options.create();
     options.setHeight(CHART_HEIGHT);
     options.setLegend(LegendPosition.NONE);
+    options.setTitleY("milliseconds");
     options.setStacked(true);
     options.setColors(paintColor, layoutColor, recalculateStylesColor,
         parseHtmlColor, evalScriptColor, javaScriptExecutionColor,
