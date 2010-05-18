@@ -51,15 +51,13 @@ public class RightPieChart extends Composite {
     Css rightPieChartCss();
   }
 
-  private static final int PIE_CHART_HEIGHT = (int) (LatencyDashboardChart.CHART_HEIGHT * .75);
-
   /**
    * Options to pass to the pie chart.
    */
   public static PieChart.Options createOptions() {
     Options options = PieChart.Options.create().<Options> cast();
     options.setLegend(LegendPosition.NONE);
-    options.setHeight(PIE_CHART_HEIGHT);
+    options.setHeight(LatencyDashboardChart.RIGHT_CHART_HEIGHT);
     return options;
   }
 
@@ -70,7 +68,7 @@ public class RightPieChart extends Composite {
 
   public RightPieChart(Resources resources) {
     Css css = resources.rightPieChartCss();
-    outerPanel.addNorth(pieChart, PIE_CHART_HEIGHT);
+    outerPanel.addNorth(pieChart, LatencyDashboardChart.RIGHT_CHART_HEIGHT);
     SimplePanel wrapper = new SimplePanel();
     wrapper.addStyleName(css.legendWrapper());
     wrapper.add(legend);

@@ -29,7 +29,6 @@ import java.util.List;
  * Gauge chart that sits to the right of the timeline graph.
  */
 public class RightGaugeChart extends Composite {
-  private static final int GAUGE_HEIGHT = (int) (LatencyDashboardChart.CHART_HEIGHT * .75);
   private Gauge gaugeChart = new Gauge();
   private final Gauge.Options gaugeOptions;
   private Legend legend = new Legend();
@@ -42,8 +41,8 @@ public class RightGaugeChart extends Composite {
     // Center the gauge.
     gaugeWrapper.addStyleName(css.gaugeWrapper());
     gaugeWrapper.add(gaugeChart);
-    gaugeOptions.setHeight(GAUGE_HEIGHT);
-    outerPanel.addNorth(gaugeWrapper, GAUGE_HEIGHT);
+    gaugeOptions.setHeight(LatencyDashboardChart.RIGHT_CHART_HEIGHT);
+    outerPanel.addNorth(gaugeWrapper, LatencyDashboardChart.RIGHT_CHART_HEIGHT);
     
     SimplePanel wrapper = new SimplePanel();
     wrapper.addStyleName(css.legendWrapper());
