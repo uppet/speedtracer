@@ -71,16 +71,20 @@ public class AggregatedEventTypeChart extends LatencyDashboardChart {
     int column = 0;
     dataTable.setCell(row, column++, record.getRevision() + "-"
         + formatTimestamp(record.getTimestamp()), null, null);
-    dataTable.setCell(row, column++, record.paintDuration, null, null);
-    dataTable.setCell(row, column++, record.layoutDuration, null, null);
-    dataTable.setCell(row, column++, record.recalculateStyleDuration, null,
-        null);
-    dataTable.setCell(row, column++, record.parseHtmlDuration, null, null);
-    dataTable.setCell(row, column++, record.evalScriptDuration, null, null);
-    dataTable.setCell(row, column++, record.javaScriptExecutionDuration, null,
-        null);
-    dataTable.setCell(row, column++, record.garbageCollectionDuration, null,
-        null);
+    dataTable.setCell(row, column++, clampDatapoint(record.paintDuration),
+        null, null);
+    dataTable.setCell(row, column++, clampDatapoint(record.layoutDuration),
+        null, null);
+    dataTable.setCell(row, column++,
+        clampDatapoint(record.recalculateStyleDuration), null, null);
+    dataTable.setCell(row, column++, clampDatapoint(record.parseHtmlDuration),
+        null, null);
+    dataTable.setCell(row, column++, clampDatapoint(record.evalScriptDuration),
+        null, null);
+    dataTable.setCell(row, column++,
+        clampDatapoint(record.javaScriptExecutionDuration), null, null);
+    dataTable.setCell(row, column++,
+        clampDatapoint(record.garbageCollectionDuration), null, null);
   }
 
   @Override
