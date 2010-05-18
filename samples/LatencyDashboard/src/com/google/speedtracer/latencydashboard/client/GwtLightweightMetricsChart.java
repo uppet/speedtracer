@@ -126,6 +126,7 @@ public class GwtLightweightMetricsChart extends LatencyDashboardChart {
     AreaChart.Options options = AreaChart.Options.create();
     options.setLegend(LegendPosition.NONE);
     options.setHeight(CHART_HEIGHT);
+    options.setTitleY("milliseconds");
     options.setStacked(true);
     leftChart.draw(dataTable, options);
   }

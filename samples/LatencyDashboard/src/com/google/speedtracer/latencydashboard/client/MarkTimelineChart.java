@@ -38,9 +38,9 @@ public class MarkTimelineChart extends LatencyDashboardChart {
       "#888888", "#994499", "#dd5511", "#22aa99", "#999999", "#705770",
       "#109618", "#a32929"};
   private static final String[] emptyEvents = {};
-  
+
   private static final String revisionTitle = "Revision";
-  
+
   private final String[] events;
   private RightGaugeChart gaugeChart;
   private LineChart leftChart;
@@ -61,7 +61,7 @@ public class MarkTimelineChart extends LatencyDashboardChart {
       this.events = emptyEvents;
     }
   }
-  
+
   public void addLegend() {
     int color = 0;
     gaugeChart.clear();
@@ -71,10 +71,10 @@ public class MarkTimelineChart extends LatencyDashboardChart {
           displayEventName(events[i]));
     }
   }
-  
+
   public void populateChart(CustomDashboardRecord[] serverData) {
     addLegend();
-    if(serverData.length > 0) {
+    if (serverData.length > 0) {
       populateLastData(serverData[0]);
     }
     populateTimeline(serverData);
@@ -109,6 +109,7 @@ public class MarkTimelineChart extends LatencyDashboardChart {
 
   /**
    * Populate the gauge indicator with the most recent record.
+   * 
    * @param serverData
    */
   public void populateLastData(CustomDashboardRecord serverData) {
@@ -120,7 +121,7 @@ public class MarkTimelineChart extends LatencyDashboardChart {
     dataTable.setCell(0, 0, "Latest", null, null);
     dataTable.setCell(0, 1,
         serverData.getMetric(measurementName + ":total").intValue(), null, null);
-    
+
     gaugeChart.draw(dataTable);
   }
 

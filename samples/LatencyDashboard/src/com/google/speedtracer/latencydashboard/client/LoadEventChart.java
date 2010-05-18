@@ -115,7 +115,7 @@ public class LoadEventChart extends LatencyDashboardChart {
     ColumnChart.Options options = ColumnChart.Options.create();
     options.setLegend(LegendPosition.NONE);
     options.setHeight(CHART_HEIGHT);
-    // options.setStacked(true);
+    options.setTitleY("milliseconds");
     options.setColors(domContentLoadedColor, pageLoadEventColor);
     leftChart.draw(dataTable, options);
   }
