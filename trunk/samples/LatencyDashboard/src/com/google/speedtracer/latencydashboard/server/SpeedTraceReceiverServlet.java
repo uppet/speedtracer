@@ -20,9 +20,9 @@ import com.google.json.serialization.JsonException;
 import com.google.speedtracer.latencydashboard.shared.CustomDashboardRecord;
 import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
 
+import org.apache.commons.io.IOUtils;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 
 import javax.servlet.ServletException;
@@ -56,30 +56,19 @@ public class SpeedTraceReceiverServlet extends HttpServlet {
   throws ServletException, IOException {
 
     // Read the SpeedTrace data.
-    InputStreamReader reader = new InputStreamReader(req.getInputStream());
-    StringBuilder builder = new StringBuilder();
-    ByteBuffer buffer = ByteBuffer.allocate(16 * 1024);
-    while (true) {
-      buffer.clear();
-      int result = reader.read(buffer.asCharBuffer());
-      if (result >= 0) {
-        builder.append(buffer.asCharBuffer());
-      } else if (result < 0) {
-        break;
-      }
-    }
+    String rawJson = IOUtils.toString(req.getInputStream(), "UTF8");
 
     // Tuck away the raw data into an internal format.
     SpeedTraceRecord speedTraceRecord = null;
     try {
-      speedTraceRecord = new SpeedTraceRecord(builder.toString());
+      speedTraceRecord = new SpeedTraceRecord(rawJson);
     } catch (JsonException ex) {
-      System.err.println("Bad Json: \n" + format100(builder.toString()));
+      System.err.println("Bad Json: \n" + format100(rawJson));
       throw new RuntimeException(
           "Failure converting Json string to speedTrace record: " + ex, ex);
     }
 
-    System.out.println("Captured timeline record.  " + builder.length()
+    System.out.println("Captured timeline record.  " + rawJson.length()
         + " bytes long.");
 
     // We could store the entire speed trace here. You could pull it up in
