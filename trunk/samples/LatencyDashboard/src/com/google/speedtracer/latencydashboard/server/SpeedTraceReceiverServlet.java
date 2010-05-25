@@ -20,8 +20,6 @@ import com.google.json.serialization.JsonException;
 import com.google.speedtracer.latencydashboard.shared.CustomDashboardRecord;
 import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
 
-import org.apache.commons.io.IOUtils;
-
 import java.io.IOException;
 import java.text.DecimalFormat;
 
@@ -53,10 +51,10 @@ public class SpeedTraceReceiverServlet extends HttpServlet {
 
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-  throws ServletException, IOException {
+      throws ServletException, IOException {
 
     // Read the SpeedTrace data.
-    String rawJson = IOUtils.toString(req.getInputStream(), "UTF8");
+    String rawJson = ServerUtilities.streamToString(req.getInputStream());
 
     // Tuck away the raw data into an internal format.
     SpeedTraceRecord speedTraceRecord = null;
@@ -77,8 +75,7 @@ public class SpeedTraceReceiverServlet extends HttpServlet {
 
     SpeedTraceAnalyzer analyzer = null;
     try {
-      analyzer = new SpeedTraceAnalyzer(
-          speedTraceRecord.getDataObject());
+      analyzer = new SpeedTraceAnalyzer(speedTraceRecord.getDataObject());
     } catch (JsonException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
@@ -140,8 +137,9 @@ public class SpeedTraceReceiverServlet extends HttpServlet {
    * @param speedTraceRecord
    * @return
    */
-  private CustomDashboardRecord processCustomForDashBoard(SpeedTraceAnalyzer analyzer,
-      SpeedTraceRecord speedTraceRecord) throws JsonException {
+  private CustomDashboardRecord processCustomForDashBoard(
+      SpeedTraceAnalyzer analyzer, SpeedTraceRecord speedTraceRecord)
+      throws JsonException {
     CustomDashboardRecord customRecord = new CustomDashboardRecord(
         speedTraceRecord.getTimestamp(), speedTraceRecord.getName(),
         speedTraceRecord.getRevision());
@@ -232,7 +230,7 @@ public class SpeedTraceReceiverServlet extends HttpServlet {
     }
 
     // This bit of debugging is useful just to see that data is getting across.
-    System.out.println("Stats for Dashboard1: " + record.getFormattedRecord());
+    System.out.println("Dashboard Record:\n" + record.getFormattedRecord());
 
     return record;
   }

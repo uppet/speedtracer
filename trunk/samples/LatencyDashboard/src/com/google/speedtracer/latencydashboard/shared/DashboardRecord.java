@@ -160,8 +160,8 @@ public class DashboardRecord implements Serializable {
     builder.append("bootstrapStartTime = " + bootstrapStartTime + "\n");
     builder.append("bootstrapDuration = " + bootstrapDuration + "\n");
     builder.append("domContentLoadedTime = " + domContentLoadedTime + "\n");
-    builder.append("evalScriptDuration" + evalScriptDuration + "\n");
-    builder.append("garbageCollectionDuration" + garbageCollectionDuration
+    builder.append("evalScriptDuration = " + evalScriptDuration + "\n");
+    builder.append("garbageCollectionDuration = " + garbageCollectionDuration
         + "\n");
     builder.append("javaScriptExecutionDuration = "
         + javaScriptExecutionDuration + "\n");
