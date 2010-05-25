@@ -373,8 +373,7 @@ public class SpeedtracerSchemas {
              "url" : {"type" : "string", "description" : "URL Requested"},
              "requestMethod" : {
                "type" : "string",
-               "enum" : ["GET", "POST"],
-               "description" : "Method used to retrieve the resource"
+               "description" : "Method used to retrieve the resource. (e.g. GET/POST)"
              },
              "isMainResource" : {"type" : "boolean", "description"  : "Is this the main resource?" }
            },
@@ -529,7 +528,7 @@ public class SpeedtracerSchemas {
          "type" : {
            "description" : "Speedtracer Type ID",
            "type" : "integer", 
-           "minimum" : 0x7FFFFFFD,
+           "minimum" : 0x7FFFFFFC,
            "maximum" : 0x7FFFFFFE,
          },
          "data"     : {"description" : "A JSON dictionary of data", "type" : "object" },
@@ -632,8 +631,7 @@ public class SpeedtracerSchemas {
              },
              "requestMethod" : {
                "type" : "string",
-               "enum" : ["GET", "POST", ""],
-               "description" : "Method used to retrieve the resource. Empty if cached",
+               "description" : "Method used to retrieve the resource (e.g. GET/POST) Empty if cached",
                "requires" : "didRequestChange",
                "optional" : true
              },
