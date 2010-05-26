@@ -50,7 +50,7 @@ public class Url {
   private final String url;
 
   public Url(String url) {
-    this.url = url;
+    this.url = (url == null) ? "" : url;
   }
 
   /**
