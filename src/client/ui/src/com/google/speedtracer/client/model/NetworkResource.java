@@ -110,7 +110,19 @@ public class NetworkResource {
 
   private int statusCode = -1;
 
+  private String statusText = "";
+
   private final String url;
+
+  public NetworkResource(ResourceWillSendEvent startEvent) {
+    this.startTime = startEvent.getTime();
+    this.identifier = startEvent.getIdentifier();
+    this.url = startEvent.getUrl();
+    this.isMainResource = startEvent.isMainResource();
+    this.httpMethod = startEvent.getHttpMethod();
+    // Cache the ResourceEvent to later pull hintlets.
+    this.startEvent = startEvent;
+  }
 
   /**
    * Used for testing only. This constructor allows for creating mock network
@@ -130,16 +142,6 @@ public class NetworkResource {
     this.responseHeaders = responseHeaders;
 
     this.startEvent = null;
-  }
-
-  public NetworkResource(ResourceWillSendEvent startEvent) {
-    this.startTime = startEvent.getTime();
-    this.identifier = startEvent.getIdentifier();
-    this.url = startEvent.getUrl();
-    this.isMainResource = startEvent.isMainResource();
-    this.httpMethod = startEvent.getHttpMethod();
-    // Cache the ResourceEvent to later pull hintlets.
-    this.startEvent = startEvent;
   }
 
   public String asString() {
@@ -254,6 +256,10 @@ public class NetworkResource {
     return statusCode;
   }
 
+  public String getStatusText() {
+    return statusText;
+  }
+
   public String getUrl() {
     return url;
   }
@@ -299,6 +305,7 @@ public class NetworkResource {
     this.expectedContentLength = responseEvent.getExpectedContentLength();
     this.mimeType = responseEvent.getMimeType();
     this.statusCode = responseEvent.getStatusCode();
+    this.statusText = responseEvent.getStatusText();
     // Cache the ResourceEvent to later pull hintlets.
     this.responseEvent = responseEvent;
   }

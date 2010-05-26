@@ -38,4 +38,8 @@ public class ResourceResponseEvent extends ResourceRecord {
   public final int getStatusCode() {
     return getData().getIntProperty("statusCode");
   }
+
+  public final String getStatusText() {
+    return getData().getStringProperty("statusText");
+  }
 }
