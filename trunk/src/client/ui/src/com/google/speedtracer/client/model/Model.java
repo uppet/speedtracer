@@ -58,7 +58,7 @@ public interface Model {
      * @param browserId the id of the browser group
      * @param tab info about the tab
      * @param dataInstance an opaque handle that can used to create a
-     *          {@link DataModel}
+     *          {@link DataDispatcher}
      */
     void onTabMonitorStarted(int browserId, TabDescription tab,
         DataInstance dataInstance);

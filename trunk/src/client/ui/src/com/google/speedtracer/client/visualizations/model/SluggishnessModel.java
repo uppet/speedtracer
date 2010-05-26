@@ -16,14 +16,14 @@
 package com.google.speedtracer.client.visualizations.model;
 
 import com.google.gwt.coreext.client.JsIntegerMap;
-import com.google.speedtracer.client.model.DataModel;
+import com.google.speedtracer.client.model.DataDispatcher;
 import com.google.speedtracer.client.model.EventRecord;
 import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.HintletInterface;
 import com.google.speedtracer.client.model.JavaScriptProfile;
 import com.google.speedtracer.client.model.JavaScriptProfileModel;
 import com.google.speedtracer.client.model.UiEvent;
-import com.google.speedtracer.client.model.UiEventModel;
+import com.google.speedtracer.client.model.UiEventDispatcher;
 import com.google.speedtracer.client.timeline.GraphModel;
 import com.google.speedtracer.client.timeline.HighlightModel;
 import com.google.speedtracer.client.timeline.ModelData;
@@ -37,7 +37,7 @@ import java.util.List;
  * state.
  */
 public class SluggishnessModel implements VisualizationModel,
-    UiEventModel.Listener, HintletInterface.HintListener {
+    UiEventDispatcher.Listener, HintletInterface.HintListener {
 
   /**
    * Listener that is invoked when an existing event has had a change and the
@@ -45,6 +45,14 @@ public class SluggishnessModel implements VisualizationModel,
    */
   interface EventRefreshListener {
     void onEventRefresh(UiEvent event);
+  }
+
+  /**
+   * Listener that is invoked when we have an event that pops in within our
+   * current window.
+   */
+  interface EventWithinWindowListener {
+    void onEventWithinWindow(UiEvent event);
   }
 
   /**
@@ -56,11 +64,13 @@ public class SluggishnessModel implements VisualizationModel,
 
   private double currentRight = 0;
 
-  private final DataModel dataModel;
+  private final DataDispatcher dataDispatcher;
 
   private final List<UiEvent> eventList = new ArrayList<UiEvent>();
 
-  private List<EventRefreshListener> eventRefreshListeners = new ArrayList<EventRefreshListener>();
+  private EventRefreshListener eventRefreshListener;
+
+  private EventWithinWindowListener eventWithinWindowListener;
 
   private final GraphModel graphModel;
 
@@ -68,12 +78,10 @@ public class SluggishnessModel implements VisualizationModel,
 
   private final UiThreadUtilization sluggishness;
 
-  private final UiEventModel sourceModel;
-
   private final JsIntegerMap<String> typesEncountered = JsIntegerMap.create().cast();
 
-  public SluggishnessModel(DataModel dataModel) {
-    this.dataModel = dataModel;
+  public SluggishnessModel(DataDispatcher dataDispatcher) {
+    this.dataDispatcher = dataDispatcher;
 
     graphModel = GraphModel.createGraphModel(new ModelData(), "", "ms", "",
         "%", false);
@@ -81,14 +89,9 @@ public class SluggishnessModel implements VisualizationModel,
     sluggishness = new UiThreadUtilization(graphModel,
         defaultSluggishnessYScale);
 
-    // Register event listener
-    this.sourceModel = dataModel.getUiEventModel();
-    sourceModel.addListener(this);
-    dataModel.getHintletEngineHost().addHintListener(this);
-  }
-
-  public void addRecordRefreshListener(EventRefreshListener listener) {
-    eventRefreshListeners.add(listener);
+    // Register for relevant events.
+    dataDispatcher.getUiEventDispatcher().addListener(this);
+    dataDispatcher.getHintletEngineHost().addHintListener(this);
   }
 
   /**
@@ -133,8 +136,8 @@ public class SluggishnessModel implements VisualizationModel,
     getGraphModel().clear();
   }
 
-  public void detachFromSourceModel() {
-    sourceModel.removeListener(this);
+  public void detachFromData() {
+    dataDispatcher.getUiEventDispatcher().removeListener(this);
   }
 
   public double getCurrentLeft() {
@@ -145,8 +148,8 @@ public class SluggishnessModel implements VisualizationModel,
     return currentRight;
   }
 
-  public DataModel getDataModel() {
-    return this.dataModel;
+  public DataDispatcher getDataDispatcher() {
+    return dataDispatcher;
   }
 
   public List<UiEvent> getEventList() {
@@ -225,7 +228,7 @@ public class SluggishnessModel implements VisualizationModel,
   }
 
   public JavaScriptProfile getJavaScriptProfileForEvent(UiEvent event) {
-    JavaScriptProfileModel profileModel = dataModel.getJavaScriptProfileModel();
+    JavaScriptProfileModel profileModel = getDataDispatcher().getJavaScriptProfileModel();
     return profileModel.getProfileForEvent(event.getSequence());
   }
 
@@ -239,12 +242,8 @@ public class SluggishnessModel implements VisualizationModel,
    * @return a text representation of the profile intended for debugging
    */
   public String getProfileHtmlForEvent(UiEvent event, int profileType) {
-    JavaScriptProfileModel profileModel = dataModel.getJavaScriptProfileModel();
+    JavaScriptProfileModel profileModel = getDataDispatcher().getJavaScriptProfileModel();
     return profileModel.getProfileHtmlForEvent(event.getSequence(), profileType);
-  }
-
-  public UiEventModel getSourceModel() {
-    return sourceModel;
   }
 
   /**
@@ -258,7 +257,7 @@ public class SluggishnessModel implements VisualizationModel,
   public void onHint(HintRecord hintlet) {
     // Only process hintlet references to a Ui Event
     int refRecord = hintlet.getRefRecord();
-    EventRecord rec = dataModel.findEventRecord(refRecord);
+    EventRecord rec = getDataDispatcher().findEventRecord(refRecord);
     if (!UiEvent.isUiEvent(rec)) {
       return;
     }
@@ -269,7 +268,7 @@ public class SluggishnessModel implements VisualizationModel,
     // See if any record in the current range has been invalidated, if so
     // notify any listeners wanting to hear about such changes.
     if (recTime > getCurrentLeft() && recTime < getCurrentRight()) {
-      fireEventRefreshListeners((UiEvent) rec);
+      fireEventRefresh((UiEvent) rec);
     }
   }
 
@@ -279,6 +278,8 @@ public class SluggishnessModel implements VisualizationModel,
     sluggishness.releaseBlocking(event.getEndTime());
 
     addUiEventToList(event);
+
+    maybeFireEventWithinWindow(event);
   }
 
   public void setCurrentLeft(double currentLeft) {
@@ -289,9 +290,18 @@ public class SluggishnessModel implements VisualizationModel,
     this.currentRight = currentRight;
   }
 
-  private void fireEventRefreshListeners(UiEvent event) {
-    for (int i = 0, l = eventRefreshListeners.size(); i < l; ++i) {
-      eventRefreshListeners.get(i).onEventRefresh(event);
+  public void setEventWithinWindowListener(
+      EventWithinWindowListener eventWithinWindowListener) {
+    this.eventWithinWindowListener = eventWithinWindowListener;
+  }
+
+  public void setRecordRefreshListener(EventRefreshListener listener) {
+    eventRefreshListener = listener;
+  }
+
+  private void fireEventRefresh(UiEvent event) {
+    if (eventRefreshListener != null) {
+      eventRefreshListener.onEventRefresh(event);
     }
   }
 
@@ -312,6 +322,23 @@ public class SluggishnessModel implements VisualizationModel,
       // we hit a node on the head.
       // simply return it
       return insertionPoint;
+    }
+  }
+
+  private void maybeFireEventWithinWindow(UiEvent event) {
+    if (eventWithinWindowListener == null) {
+      return;
+    }
+
+    double dispatchTime = event.getTime();
+    double endTime = event.getEndTime();
+
+    // For initial startup, we want to avoid doing binary searches for within
+    // the window bounds. so we do a quick bounds check and append to the
+    // window
+    // if we need to.
+    if (dispatchTime < currentRight && endTime > currentLeft) {
+      eventWithinWindowListener.onEventWithinWindow(event);
     }
   }
 }

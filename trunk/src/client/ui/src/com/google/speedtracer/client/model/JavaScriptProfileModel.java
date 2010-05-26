@@ -20,7 +20,7 @@ import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.coreext.client.JsIntegerMap;
 import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.Logging;
-import com.google.speedtracer.client.model.DataModel.EventRecordHandler;
+import com.google.speedtracer.client.model.DataDispatcher.EventRecordDispatcher;
 import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.util.WorkQueue;
 
@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Handles profile data records and stores parsed profiles for later retrieval.
  */
-public class JavaScriptProfileModel implements EventRecordHandler {
+public class JavaScriptProfileModel implements EventRecordDispatcher {
   /**
    * A callback object for processing each event contained within a
    * {@link JavaScriptProfileModel}.

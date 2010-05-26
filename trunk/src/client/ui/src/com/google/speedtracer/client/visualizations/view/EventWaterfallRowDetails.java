@@ -48,7 +48,7 @@ import com.google.speedtracer.client.SourceViewer.SourceViewerInitializedCallbac
 import com.google.speedtracer.client.SourceViewer.SourceViewerLoadedCallback;
 import com.google.speedtracer.client.SourceViewerServer.ActionCompletedCallback;
 import com.google.speedtracer.client.model.CustomEvent;
-import com.google.speedtracer.client.model.DataModel;
+import com.google.speedtracer.client.model.DataDispatcher;
 import com.google.speedtracer.client.model.EvalScript;
 import com.google.speedtracer.client.model.EventRecord;
 import com.google.speedtracer.client.model.HintRecord;
@@ -56,7 +56,7 @@ import com.google.speedtracer.client.model.JavaScriptExecutionEvent;
 import com.google.speedtracer.client.model.JavaScriptProfile;
 import com.google.speedtracer.client.model.LogEvent;
 import com.google.speedtracer.client.model.NetworkResource;
-import com.google.speedtracer.client.model.NetworkResourceModel;
+import com.google.speedtracer.client.model.NetworkEventDispatcher;
 import com.google.speedtracer.client.model.PaintEvent;
 import com.google.speedtracer.client.model.ParseHtmlEvent;
 import com.google.speedtracer.client.model.ResourceDataReceivedEvent;
@@ -346,7 +346,7 @@ public class EventWaterfallRowDetails extends RowDetails implements
     // TODO(jaimeyap): This will always return the most recent page we are
     // viewing. This is a bug. We should have ApplicationState know the current
     // TabDescription.
-    String currentAppUrl = eventWaterfall.getVisualization().getModel().getDataModel().getTabDescription().getUrl();
+    String currentAppUrl = eventWaterfall.getVisualization().getModel().getDataDispatcher().getTabDescription().getUrl();
     jsProfileRenderer = new JavaScriptProfileRenderer(
         container,
         resources,
@@ -628,7 +628,7 @@ public class EventWaterfallRowDetails extends RowDetails implements
           TimeStampFormatter.formatMilliseconds(e.getDuration(), 3)));
     }
 
-    String currentAppUrl = eventWaterfall.getVisualization().getModel().getDataModel().getTabDescription().getUrl();
+    String currentAppUrl = eventWaterfall.getVisualization().getModel().getDataDispatcher().getTabDescription().getUrl();
 
     // This is the stackTrace output by newer versions of WebKit.
     JSOArray<StackFrame> stackTrace = e.getStackTrace();
@@ -648,7 +648,7 @@ public class EventWaterfallRowDetails extends RowDetails implements
 
     switch (e.getType()) {
       case TimerFiredEvent.TYPE:
-        TimerInstalled timerData = eventWaterfall.getSourceModel().getTimerMetaData(
+        TimerInstalled timerData = eventWaterfall.getSourceDispatcher().getTimerMetaData(
             e.<TimerInstalled> cast().getTimerId());
         populateDetailsForTimerInstall(timerData, details);
         break;
@@ -703,9 +703,9 @@ public class EventWaterfallRowDetails extends RowDetails implements
         break;
       case ResourceDataReceivedEvent.TYPE:
         ResourceDataReceivedEvent dataRecEvent = e.cast();
-        DataModel dataModel = eventWaterfall.getVisualization().getModel().getDataModel();
-        NetworkResourceModel networkModel = dataModel.getNetworkResourceModel();
-        NetworkResource resource = networkModel.getResource(dataRecEvent.getIdentifier());
+        DataDispatcher dataDispatcher = eventWaterfall.getVisualization().getModel().getDataDispatcher();
+        NetworkEventDispatcher networkDispatcher = dataDispatcher.getNetworkEventDispatcher();
+        NetworkResource resource = networkDispatcher.getResource(dataRecEvent.getIdentifier());
         if (resource != null) {
           String resourceUrlStr = resource.getLastPathComponent();
           resourceUrlStr = "".equals(resourceUrlStr) ? resource.getUrl()

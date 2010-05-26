@@ -28,7 +28,7 @@ public interface VisualizationModel {
    * Implementors should remove themselves from any Models they happen to be
    * listening to. This gets called right before doing an ApplicationState swap.
    */
-  void detachFromSourceModel();
+  void detachFromData();
 
   GraphModel getGraphModel();
 

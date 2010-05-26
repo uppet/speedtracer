@@ -24,7 +24,7 @@ import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
-import com.google.speedtracer.client.model.DataModel;
+import com.google.speedtracer.client.model.DataDispatcher;
 
 /**
  * Panel containing checkboxes to toggle stack trace grabbing and CPU profiling.
@@ -48,8 +48,9 @@ public class ProfilingOptionsPanel {
   private static MyUiBinder uiBinder = GWT.create(MyUiBinder.class);
 
   public static ProfilingOptionsPanel create(Element parent, int startX,
-      int startY, DataModel model) {
-    ProfilingOptionsPanel options = new ProfilingOptionsPanel(parent, model);
+      int startY, DataDispatcher dataDispatcher) {
+    ProfilingOptionsPanel options = new ProfilingOptionsPanel(parent,
+        dataDispatcher);
     options.base.getElement().getStyle().setLeft(startX, Unit.PX);
     options.base.getElement().getStyle().setTop(startY, Unit.PX);
     return options;
@@ -63,19 +64,19 @@ public class ProfilingOptionsPanel {
 
   private final BaseDiv base;
 
-  private final DataModel model;
+  private final DataDispatcher dataDispatcher;
 
-  protected ProfilingOptionsPanel(Element parent, DataModel model) {
+  protected ProfilingOptionsPanel(Element parent, DataDispatcher dataDispatcher) {
     DivElement baseElement = uiBinder.createAndBindUi(this);
     parent.appendChild(baseElement);
     this.base = new BaseDiv(baseElement);
-    this.model = model;
+    this.dataDispatcher = dataDispatcher;
     sinkEvents();
   }
 
   public void sendProfilingOptions() {
-    model.getDataInstance().setProfilingOptions(stackTraceCheckbox.isChecked(),
-        cpuProfilingCheckbox.isChecked());
+    dataDispatcher.getDataInstance().setProfilingOptions(
+        stackTraceCheckbox.isChecked(), cpuProfilingCheckbox.isChecked());
   }
 
   public void show() {

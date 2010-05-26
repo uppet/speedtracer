@@ -15,12 +15,12 @@
  */
 package com.google.speedtracer.client.visualizations.model;
 
-import com.google.speedtracer.client.model.DataModel;
+import com.google.speedtracer.client.model.DataDispatcher;
 import com.google.speedtracer.client.model.EventRecord;
 import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.HintletInterface;
 import com.google.speedtracer.client.model.NetworkResource;
-import com.google.speedtracer.client.model.NetworkResourceModel;
+import com.google.speedtracer.client.model.NetworkEventDispatcher;
 import com.google.speedtracer.client.model.ResourceRecord;
 import com.google.speedtracer.client.timeline.GraphModel;
 import com.google.speedtracer.client.timeline.HighlightModel;
@@ -34,7 +34,7 @@ import java.util.List;
  * state.
  */
 public class NetworkVisualizationModel implements VisualizationModel,
-    NetworkResourceModel.Listener, HintletInterface.HintListener {
+    NetworkEventDispatcher.Listener, HintletInterface.HintListener {
 
   /**
    * Invoked when a resource has a change and may need to be refreshed in the
@@ -44,7 +44,7 @@ public class NetworkVisualizationModel implements VisualizationModel,
     void onResourceRefresh(NetworkResource resource);
   }
 
-  private final DataModel dataModel;
+  private final DataDispatcher dataDispatcher;
 
   private final GraphModel graphModel;
 
@@ -59,17 +59,17 @@ public class NetworkVisualizationModel implements VisualizationModel,
    */
   private final List<NetworkResource> sortedResources = new ArrayList<NetworkResource>();
 
-  private final NetworkResourceModel sourceModel;
+  private final NetworkEventDispatcher sourceDispatcher;
 
-  public NetworkVisualizationModel(DataModel dataModel) {
-    this.dataModel = dataModel;
+  public NetworkVisualizationModel(DataDispatcher dataDispatcher) {
+    this.dataDispatcher = dataDispatcher;
     graphModel = GraphModel.createGraphModel(new ModelData(), "", "ms", "",
         " requests", true);
 
     // Register for source events
-    this.sourceModel = dataModel.getNetworkResourceModel();
-    sourceModel.addListener(this);
-    dataModel.getHintletEngineHost().addHintListener(this);
+    this.sourceDispatcher = dataDispatcher.getNetworkEventDispatcher();
+    sourceDispatcher.addListener(this);
+    dataDispatcher.getHintletEngineHost().addHintListener(this);
   }
 
   public void addResourceRefreshListener(ResourceRefreshListener listener) {
@@ -80,8 +80,8 @@ public class NetworkVisualizationModel implements VisualizationModel,
     sortedResources.clear();
   }
 
-  public void detachFromSourceModel() {
-    sourceModel.removeListener(this);
+  public void detachFromData() {
+    sourceDispatcher.removeListener(this);
   }
 
   public GraphModel getGraphModel() {
@@ -100,7 +100,7 @@ public class NetworkVisualizationModel implements VisualizationModel,
    * @return returns the {@link NetworkResource}
    */
   public NetworkResource getResource(int id) {
-    return sourceModel.getResource(id);
+    return sourceDispatcher.getResource(id);
   }
 
   public List<NetworkResource> getSortedResources() {
@@ -110,7 +110,7 @@ public class NetworkVisualizationModel implements VisualizationModel,
   public void onHint(HintRecord hintlet) {
     // Only process hintlet references to a Ui Event
     int refRecord = hintlet.getRefRecord();
-    EventRecord rec = dataModel.findEventRecord(refRecord);
+    EventRecord rec = dataDispatcher.findEventRecord(refRecord);
     if (!ResourceRecord.isResourceRecord(rec)) {
       return;
     }

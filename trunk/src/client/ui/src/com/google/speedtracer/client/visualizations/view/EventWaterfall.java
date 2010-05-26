@@ -30,7 +30,7 @@ import com.google.speedtracer.client.SymbolServerService;
 import com.google.speedtracer.client.model.ButtonDescription;
 import com.google.speedtracer.client.model.LogEvent;
 import com.google.speedtracer.client.model.UiEvent;
-import com.google.speedtracer.client.model.UiEventModel;
+import com.google.speedtracer.client.model.UiEventDispatcher;
 import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.util.Url;
 import com.google.speedtracer.client.visualizations.model.SluggishnessModel;
@@ -229,20 +229,20 @@ public class EventWaterfall extends FilteringScrollTable {
 
   private RowListener rowListener;
 
-  private final UiEventModel sourceModel;
+  private final UiEventDispatcher sourceDispatcher;
 
   private final SluggishnessVisualization visualization;
 
   private final Presenter presenter = new Presenter();
 
   public EventWaterfall(Container container, EventWaterfallFilter filter,
-      final SluggishnessVisualization visualization, UiEventModel sourceModel,
-      EventWaterfall.Resources resources) {
+      final SluggishnessVisualization visualization,
+      UiEventDispatcher sourceDispatcher, EventWaterfall.Resources resources) {
     super(container, filter, resources);
 
     this.resources = resources;
     this.visualization = visualization;
-    this.sourceModel = sourceModel;
+    this.sourceDispatcher = sourceDispatcher;
 
     rowListener = new RowListener() {
       public void onClick(ClickEvent event) {
@@ -306,8 +306,8 @@ public class EventWaterfall extends FilteringScrollTable {
     return row;
   }
 
-  public UiEventModel getSourceModel() {
-    return sourceModel;
+  public UiEventDispatcher getSourceDispatcher() {
+    return sourceDispatcher;
   }
 
   public SluggishnessVisualization getVisualization() {
@@ -379,7 +379,7 @@ public class EventWaterfall extends FilteringScrollTable {
 
   private SymbolServerController getCurrentSymbolServerController() {
     SluggishnessModel sModel = (SluggishnessModel) getVisualization().getModel();
-    String resourceUrl = sModel.getDataModel().getTabDescription().getUrl();
+    String resourceUrl = sModel.getDataDispatcher().getTabDescription().getUrl();
     return SymbolServerService.getSymbolServerController(new Url(resourceUrl));
   }
 }

@@ -22,7 +22,7 @@ import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.gwt.topspin.ui.client.MouseOutEvent;
 import com.google.gwt.topspin.ui.client.MouseOutListener;
 import com.google.speedtracer.client.model.UiEvent;
-import com.google.speedtracer.client.model.UiEventModel;
+import com.google.speedtracer.client.model.UiEventDispatcher;
 import com.google.speedtracer.client.view.DetailView;
 import com.google.speedtracer.client.visualizations.model.SluggishnessModel;
 import com.google.speedtracer.client.visualizations.model.SluggishnessVisualization;
@@ -72,7 +72,7 @@ public class SluggishnessDetailView extends DetailView {
   private final SluggishnessDetailView.Css css;
 
   public SluggishnessDetailView(Container parent,
-      SluggishnessVisualization viz, UiEventModel sourceModel,
+      SluggishnessVisualization viz, UiEventDispatcher sourceDispatcher,
       final SluggishnessDetailView.Resources resources) {
     super(parent, viz);
     css = resources.sluggishnessDetailViewCss();
@@ -82,7 +82,8 @@ public class SluggishnessDetailView extends DetailView {
     EventWaterfallFilter filter = new EventWaterfallFilter(
         TOP_LEVEL_FILTER_THRESHOLD);
     contentTable = new EventWaterfall(new DefaultContainerImpl(elem), filter,
-        (SluggishnessVisualization) getVisualization(), sourceModel, resources);
+        (SluggishnessVisualization) getVisualization(), sourceDispatcher,
+        resources);
 
     // Add a mouse out listener to turn off the current event marker when
     // the cursor leaves the detail view.

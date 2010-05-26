@@ -38,7 +38,7 @@ import com.google.speedtracer.client.SymbolServerService;
 import com.google.speedtracer.client.SourceViewer.SourcePresenter;
 import com.google.speedtracer.client.SourceViewer.SourceViewerInitializedCallback;
 import com.google.speedtracer.client.SourceViewer.SourceViewerLoadedCallback;
-import com.google.speedtracer.client.model.DataModel;
+import com.google.speedtracer.client.model.DataDispatcher;
 import com.google.speedtracer.client.model.JavaScriptProfile;
 import com.google.speedtracer.client.model.JavaScriptProfileModel;
 import com.google.speedtracer.client.model.LogEvent;
@@ -153,7 +153,7 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
         final LogEvent log = event.cast();
         if (log.getMessage().matches(regexp)) {
           found = true;
-          matchingProfiles.push(dataModel.getJavaScriptProfileModel().getProfileForEvent(
+          matchingProfiles.push(dataDispatcher.getJavaScriptProfileModel().getProfileForEvent(
               sequence));
         }
       }
@@ -180,7 +180,7 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
   @UiField
   InputElement searchButton;
 
-  private final DataModel dataModel;
+  private final DataDispatcher dataDispatcher;
 
   private final Element elem;
 
@@ -194,9 +194,9 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
 
   private SourceViewer sourceViewer;
 
-  public MergeProfilesPanel(DataModel dataModel,
+  public MergeProfilesPanel(DataDispatcher dataDispatcher,
       MonitorResources.Resources resources) {
-    this.dataModel = dataModel;
+    this.dataDispatcher = dataDispatcher;
     this.resources = resources;
     this.elem = uiBinder.createAndBindUi(this);
 
@@ -215,8 +215,9 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
             if (null == regexpInput.getValue()) {
               return;
             }
-            search(regexpInput.getValue(),
-                MergeProfilesPanel.this.dataModel.getJavaScriptProfileModel());
+            search(
+                regexpInput.getValue(),
+                MergeProfilesPanel.this.dataDispatcher.getJavaScriptProfileModel());
           }
         });
   }
@@ -251,7 +252,7 @@ public class MergeProfilesPanel extends HotKeyPanel implements SourcePresenter {
   }
 
   private SymbolServerController getSymbolServerController() {
-    String url = dataModel.getTabDescription().getUrl();
+    String url = dataDispatcher.getTabDescription().getUrl();
     return SymbolServerService.getSymbolServerController(new Url(url));
   }
 

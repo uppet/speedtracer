@@ -16,13 +16,13 @@
 package com.google.speedtracer.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.speedtracer.client.model.DataModel;
+import com.google.speedtracer.client.model.DataDispatcher;
 import com.google.speedtracer.client.model.HintletException;
 import com.google.speedtracer.client.model.HintletInterface;
+import com.google.speedtracer.client.model.NetworkEventDispatcher;
 import com.google.speedtracer.client.model.NetworkResource;
-import com.google.speedtracer.client.model.NetworkResourceModel;
 import com.google.speedtracer.client.model.UiEvent;
-import com.google.speedtracer.client.model.UiEventModel;
+import com.google.speedtracer.client.model.UiEventDispatcher;
 import com.google.speedtracer.client.view.ZippyLogger;
 
 /**
@@ -35,7 +35,7 @@ public class Logging {
    * implement the listener to get debug output.
    */
   public static class DebugListenerLogger implements ListenerLogger,
-      NetworkResourceModel.Listener, UiEventModel.Listener,
+      NetworkEventDispatcher.Listener, UiEventDispatcher.Listener,
       HintletInterface.ExceptionListener {
 
     private final ZippyLogger zippyLogger;
@@ -44,10 +44,10 @@ public class Logging {
       zippyLogger = ZippyLogger.get();
     }
 
-    public void listenTo(DataModel model) {
-      model.getNetworkResourceModel().addListener(this);
-      model.getUiEventModel().addListener(this);
-      model.getHintletEngineHost().addExceptionHandler(this);
+    public void listenTo(DataDispatcher dispatcher) {
+      dispatcher.getNetworkEventDispatcher().addListener(this);
+      dispatcher.getUiEventDispatcher().addListener(this);
+      dispatcher.getHintletEngineHost().addExceptionHandler(this);
     }
 
     public void logHtml(String html) {
@@ -87,7 +87,7 @@ public class Logging {
    * Shared Interface type for deferred binding.
    */
   public interface ListenerLogger {
-    void listenTo(DataModel model);
+    void listenTo(DataDispatcher dispatcher);
 
     void logHtml(String html);
 
@@ -99,13 +99,13 @@ public class Logging {
    * release build.
    */
   public static class ReleaseListenerLogger implements ListenerLogger,
-      NetworkResourceModel.Listener, UiEventModel.Listener,
+      NetworkEventDispatcher.Listener, UiEventDispatcher.Listener,
       HintletInterface.ExceptionListener {
 
     public ReleaseListenerLogger() {
     }
 
-    public void listenTo(DataModel model) {
+    public void listenTo(DataDispatcher dispatcher) {
     }
 
     public void logHtml(String html) {

@@ -30,7 +30,7 @@ import com.google.speedtracer.client.visualizations.view.HintletReport;
  * This class contains the state of all of visualizations.
  */
 public class ApplicationState {
-  private final DataModel dataModel;
+  private final DataDispatcher dataDispatcher;
 
   private double firstDomainValue;
 
@@ -38,27 +38,27 @@ public class ApplicationState {
 
   private final IterableFastStringMap<VisualizationModel> visualizationModelMap;
 
-  public ApplicationState(DataModel sourceModel) {
-    this.dataModel = sourceModel;
+  public ApplicationState(DataDispatcher dataDispatcher) {
+    this.dataDispatcher = dataDispatcher;
     visualizationModelMap = new IterableFastStringMap<VisualizationModel>();
     firstDomainValue = 0;
     // this defaults to Constants.DEFAULT_GRAPH_WINDOW_SIZE in the future
     lastDomainValue = Constants.DEFAULT_GRAPH_WINDOW_SIZE; // endTime;
-    populateVisualizationModelMap(sourceModel);
+    populateVisualizationModelMap(dataDispatcher);
   }
 
-  public void detachFromSourceModels() {
+  public void detachModelsFromDispatchers() {
     visualizationModelMap.iterate(new IterationCallBack<VisualizationModel>() {
 
       public void onIteration(String key, VisualizationModel vModel) {
-        vModel.detachFromSourceModel();
+        vModel.detachFromData();
       }
 
     });
   }
 
-  public DataModel getDataModel() {
-    return dataModel;
+  public DataDispatcher getDataDispatcher() {
+    return dataDispatcher;
   }
 
   public double getFirstDomainValue() {
@@ -91,15 +91,15 @@ public class ApplicationState {
   /**
    * Populates our VisualizationModel map with all known VisualizationModels.
    * 
-   * @param sourceModel the {@link DataModel} that all the
+   * @param dataDispatcher the {@link DataDispatcher} that all the
    *          {@link VisualizationModel}s register to
    */
-  private void populateVisualizationModelMap(DataModel sourceModel) {
+  private void populateVisualizationModelMap(DataDispatcher dataDispatcher) {
     visualizationModelMap.put(SluggishnessVisualization.TITLE,
-        new SluggishnessModel(sourceModel));
+        new SluggishnessModel(dataDispatcher));
     visualizationModelMap.put(NetworkVisualization.TITLE,
-        new NetworkVisualizationModel(sourceModel));
+        new NetworkVisualizationModel(dataDispatcher));
     visualizationModelMap.put(HintletReport.TITLE, new HintletReportModel(
-        sourceModel.getHintletEngineHost()));
+        dataDispatcher.getHintletEngineHost()));
   }
 }

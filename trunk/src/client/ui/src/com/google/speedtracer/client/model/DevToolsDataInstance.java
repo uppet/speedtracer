@@ -237,7 +237,7 @@ public class DevToolsDataInstance extends DataInstance {
               // We synthesize the page transition if currentPage is not set, or
               // the IDs dont match.
               currentPage = start;
-              normalizeAndDispatchEventRecord(TabChange.createUnNormalized(
+              normalizeAndDispatchEventRecord(PageTransition.createUnNormalized(
                   record.getStartTime(), start.getUrl()));
             } else if (currentPage.getIdentifier() == start.getIdentifier()) {
               // IDs get recycled across pages. So remember to null out the

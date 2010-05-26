@@ -20,30 +20,31 @@ import com.google.speedtracer.shared.EventRecordType;
 /**
  * EventRecord indicating a page transition.
  */
-public class TabChange extends EventRecord {
+public class PageTransition extends EventRecord {
   public static final int TYPE = EventRecordType.TAB_CHANGED;
 
-  public static native TabChange create(double time, String newUrl) /*-{
+  public static native PageTransition create(double time, String newUrl) /*-{
     return {
       time: time,
-      type: @com.google.speedtracer.client.model.TabChange::TYPE,
+      type: @com.google.speedtracer.client.model.PageTransition::TYPE,
       data: {
         url: newUrl
       }
     };
   }-*/;
-  
-  public static native UnNormalizedEventRecord createUnNormalized(double startTime, String newUrl) /*-{
+
+  public static native UnNormalizedEventRecord createUnNormalized(
+      double startTime, String newUrl) /*-{
     return {
       startTime: startTime,
-      type: @com.google.speedtracer.client.model.TabChange::TYPE,
+      type: @com.google.speedtracer.client.model.PageTransition::TYPE,
       data: {
         url: newUrl
       }
     };
   }-*/;
-  
-  protected TabChange() {
+
+  protected PageTransition() {
   }
 
   public final String getUrl() {
