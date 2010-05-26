@@ -39,7 +39,7 @@ import com.google.gwt.topspin.ui.client.Select;
 import com.google.gwt.user.client.Window;
 import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.Monitor;
-import com.google.speedtracer.client.model.DataModel;
+import com.google.speedtracer.client.model.DataDispatcher;
 import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.timeline.DomainObserver;
 import com.google.speedtracer.client.timeline.TimeLineModel.WindowBoundsObserver;
@@ -278,7 +278,7 @@ public class Controller extends Panel implements DomainObserver,
 
   private MainTimeLine mainTimeline;
 
-  private final DataModel model;
+  private final DataDispatcher dataDispatcher;
 
   private final Monitor monitor;
 
@@ -290,10 +290,10 @@ public class Controller extends Panel implements DomainObserver,
 
   private final ToggleButton recordStopButton;
 
-  public Controller(Container parent, DataModel model, final Monitor monitor,
-      Resources resources) {
+  public Controller(Container parent, DataDispatcher dataDispatcher,
+      final Monitor monitor, Resources resources) {
     super(parent);
-    this.model = model;
+    this.dataDispatcher = dataDispatcher;
     this.monitor = monitor;
 
     controllerContainer = getContainer();
@@ -328,7 +328,7 @@ public class Controller extends Panel implements DomainObserver,
       public void onClick(ClickEvent event) {
         Controller me = Controller.this;
         saveRecords(getVisitedUrls(), monitor.getVersion(),
-            me.model.getTraceCopy());
+            me.dataDispatcher.getTraceCopy());
       }
 
       // TODO(jaimeyap): Revisit this since it is kinda yucky to be using a
@@ -379,7 +379,7 @@ public class Controller extends Panel implements DomainObserver,
       settingsButton.getElement().setAttribute("title", "Set Profiling Options");
       profilingOptions = ProfilingOptionsPanel.create(getElement(),
           settingsButton.getAbsoluteLeft() + 10,
-          settingsButton.getOffsetHeight(), model);
+          settingsButton.getOffsetHeight(), dataDispatcher);
       settingsButton.addClickListener(new ClickListener() {
         public void onClick(ClickEvent event) {
           profilingOptions.show();
@@ -439,8 +439,8 @@ public class Controller extends Panel implements DomainObserver,
     Controller.this.monitor.resetApplicationStates();
   }
 
-  public DataModel getModel() {
-    return model;
+  public DataDispatcher getDataDispatcher() {
+    return dataDispatcher;
   }
 
   /**

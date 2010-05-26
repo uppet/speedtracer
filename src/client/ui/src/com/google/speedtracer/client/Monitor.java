@@ -35,10 +35,10 @@ import com.google.speedtracer.client.messages.ResendProfilingOptions;
 import com.google.speedtracer.client.messages.ResetBaseTimeMessage;
 import com.google.speedtracer.client.model.ApplicationState;
 import com.google.speedtracer.client.model.DataInstance;
-import com.google.speedtracer.client.model.DataModel;
+import com.google.speedtracer.client.model.DataDispatcher;
 import com.google.speedtracer.client.model.NoDataNotifier;
-import com.google.speedtracer.client.model.TabChange;
-import com.google.speedtracer.client.model.TabChangeModel;
+import com.google.speedtracer.client.model.PageTransition;
+import com.google.speedtracer.client.model.TabChangeDispatcher;
 import com.google.speedtracer.client.model.TabDescription;
 import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.util.Url;
@@ -60,7 +60,7 @@ import java.util.List;
  * EntryPoint class for Speed Tracer's monitor.
  */
 public class Monitor implements EntryPoint, WindowChannel.Listener,
-    TabChangeModel.Listener {
+    TabChangeDispatcher.Listener {
 
   /**
    * Utilities to allow debugging the Monitor in dev mode. This will create a
@@ -186,7 +186,7 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
 
   private HintletReportDialog hintletReportDialog;
 
-  private DataModel model;
+  private DataDispatcher dataDispatcher;
 
   private MonitorVisualizationsPanel monitorVisualizationsPanel;
 
@@ -250,7 +250,7 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
 
   public void onChannelClosed(Client channel) {
     pageStates.clear();
-    model.clear();
+    dataDispatcher.clear();
   }
 
   public void onChannelConnected(Client channel) {
@@ -334,7 +334,7 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
    * NetworkResources from the previous NetworkModel, add them to the new
    * Application State. The Swap it in.
    */
-  public void onTabChanged(TabChange nav) {
+  public void onPageTransition(PageTransition nav) {
     // We should never get a page transition before initialize!!
     assert (pageStates != null && pageStates.size() > 0) : "We should never get a page transition before initialize";
 
@@ -342,16 +342,16 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     String newUrl = getUrlWithoutHash(nav.getUrl());
     if (!oldUrl.equals(newUrl)) {
       // update tab description.
-      model.getTabDescription().updateUrl(newUrl);
+      dataDispatcher.getTabDescription().updateUrl(newUrl);
 
       // Create the ApplicationState with some initial guesses for bounds
-      ApplicationState newState = new ApplicationState(model);
+      ApplicationState newState = new ApplicationState(dataDispatcher);
 
       ApplicationState oldState = pageStates.get(pageStates.size() - 1);
       // The current ApplicationState should now be neutered and no longer
       // receive updates. It should also transfer relevant old state to the new
       // ApplicationState.
-      oldState.detachFromSourceModels();
+      oldState.detachModelsFromDispatchers();
 
       newState.setFirstDomainValue(nav.getTime());
       newState.setLastDomainValue(nav.getTime()
@@ -364,7 +364,7 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
       setStateForPageAtIndex(pageIndex);
       controller.setSelectedPage(pageIndex);
       
-      maybeInitializeSymbolServerController(model.getTabDescription());
+      maybeInitializeSymbolServerController(dataDispatcher.getTabDescription());
     }
   }
 
@@ -373,14 +373,14 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
    * page we were monitoring.
    */
   public void resetApplicationStates() {
-    ApplicationState newState = new ApplicationState(model);
+    ApplicationState newState = new ApplicationState(dataDispatcher);
     newState.setFirstDomainValue(0);
     newState.setLastDomainValue(Constants.DEFAULT_GRAPH_WINDOW_SIZE);
     String lastUrl = getUrlWithoutHash(controller.getPageUrlForIndex(pageStates.size() - 1));
 
-    detachApplicationStatesFromSourceModels();
+    detachApplicationStates();
     pageStates.clear();
-    model.clear();
+    dataDispatcher.clear();
 
     // Tell the controller to clean up its drop down menu.
     controller.resetPageStates();
@@ -429,9 +429,9 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     hintletReportDialog.setVisible(true);
   }
 
-  private void detachApplicationStatesFromSourceModels() {
+  private void detachApplicationStates() {
     for (int i = 0, length = pageStates.size(); i < length; ++i) {
-      pageStates.get(i).detachFromSourceModels();
+      pageStates.get(i).detachModelsFromDispatchers();
     }
   }
 
@@ -463,18 +463,18 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     final Resources resources = MonitorResources.getResources();
     // Create our collection for ApplicationStates.
     pageStates = new ArrayList<ApplicationState>();
-    // Create our backing Model which provides our event stream.
-    model = DataModel.Provider.createModel(tabDescription, handle);
+    // Create our backing DataDispatcher which provides our event stream.
+    dataDispatcher = DataDispatcher.create(tabDescription, handle);
     
-    // setup debug logger as soon as we create the model
-    Logging.getLogger().listenTo(model);
+    // setup debug logger.
+    Logging.getLogger().listenTo(dataDispatcher);
     
-    model.getTabNavigationModel().addListener(this);
+    dataDispatcher.getTabChangeDispatcher().addListener(this);
     // The top Controller bar for our top level actions.
-    controller = new Controller(Root.getContainer(), model, this, resources);
+    controller = new Controller(Root.getContainer(), dataDispatcher, this, resources);
 
     // Create the initial ApplicationState.
-    addPageState(tabDescription.getUrl(), new ApplicationState(model));
+    addPageState(tabDescription.getUrl(), new ApplicationState(dataDispatcher));
 
     // The Panel that contains the Visualizations.
     monitorVisualizationsPanel = new MonitorVisualizationsPanel(
@@ -490,14 +490,14 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     HotKey.register('B', new BuildInfoView(version),
         "Show revision information.");
 
-    HotKey.register('M', new SymbolServerEntryPanel(model.getTabDescription()),
+    HotKey.register('M', new SymbolServerEntryPanel(dataDispatcher.getTabDescription()),
         "UI for configuring the SymbolMap manifest location.");
 
-    HotKey.register('1', new MergeProfilesPanel(model, resources),
+    HotKey.register('1', new MergeProfilesPanel(dataDispatcher, resources),
         "Search for JavaScript profiles with the same Log entry and merge");
 
     // Start fetching the symbol manifest if it is available.
-    maybeInitializeSymbolServerController(model.getTabDescription());
+    maybeInitializeSymbolServerController(dataDispatcher.getTabDescription());
 
     // Attach the notification widget.
     MonitorVisualizationsPanel.Css css = MonitorResources.getResources().monitorVisualizationsPanelCss();

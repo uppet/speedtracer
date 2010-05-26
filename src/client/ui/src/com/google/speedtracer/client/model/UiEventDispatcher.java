@@ -16,19 +16,18 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.coreext.client.JsIntegerMap;
-import com.google.speedtracer.client.model.DataModel.EventRecordHandler;
+import com.google.speedtracer.client.model.DataDispatcher.EventRecordDispatcher;
 import com.google.speedtracer.client.model.UiEvent.LeafFirstTraversalVoid;
-import com.google.speedtracer.shared.EventRecordType;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Model that dispatches UiEvents to the UI.
+ * Dispatches Ui/DOM Events.
  */
-public class UiEventModel implements EventRecordHandler {
+public class UiEventDispatcher implements EventRecordDispatcher {
   /**
-   * Listener interface for handling UiEventModel events.
+   * Listener interface for handling UiEventDispatcher events.
    */
   public interface Listener {
     void onUiEventFinished(UiEvent event);
@@ -50,50 +49,31 @@ public class UiEventModel implements EventRecordHandler {
    * This sets up the function routing for EventRecord TYPES corresponding to
    * top level events that we want to special case.
    * 
-   * @param model
+   * @param dispatcher
    * @param typeMap
    */
-  private static void setSpecialCasedEventCallbacks(final UiEventModel model,
-      JsIntegerMap<EventRecordHandler> typeMap) {
+  private static void setSpecialCasedEventCallbacks(
+      final UiEventDispatcher dispatcher, JsIntegerMap<EventRecordDispatcher> typeMap) {
 
-    typeMap.put(EventRecordType.TIMER_CLEARED, new EventRecordHandler() {
+    typeMap.put(TimerCleared.TYPE, new EventRecordDispatcher() {
       public void onEventRecord(EventRecord data) {
-        model.onTimerCleared(data.<TimerCleared> cast());
+        dispatcher.onTimerCleared(data.<TimerCleared> cast());
       }
     });
 
-    typeMap.put(EventRecordType.TIMER_INSTALLED, new EventRecordHandler() {
+    typeMap.put(TimerInstalled.TYPE, new EventRecordDispatcher() {
       public void onEventRecord(EventRecord data) {
-        model.onTimerInstalled(data.<TimerInstalled> cast());
+        dispatcher.onTimerInstalled(data.<TimerInstalled> cast());
       }
     });
 
-    // TODO(jaimeyap): We should eventually make InspectorResourceConverter use
-    // these types instead of our own record types. For now we simply ignore
-    // these webkit style network resource checkpoints.
-    typeMap.put(EventRecordType.RESOURCE_SEND_REQUEST,
-        new EventRecordHandler() {
-          public void onEventRecord(EventRecord data) {
-            // Special cased to do nothing for now.
-          }
-        });
-
-    typeMap.put(EventRecordType.RESOURCE_RECEIVE_RESPONSE,
-        new EventRecordHandler() {
-          public void onEventRecord(EventRecord data) {
-            // Special cased to do nothing for now.
-          }
-        });
-
-    typeMap.put(EventRecordType.RESOURCE_FINISH, new EventRecordHandler() {
+    typeMap.put(ResourceResponseEvent.TYPE, new EventRecordDispatcher() {
       public void onEventRecord(EventRecord data) {
-        // Special cased to do nothing for now.
-      }
-    });
-
-    typeMap.put(EventRecordType.RESOURCE_UPDATED, new EventRecordHandler() {
-      public void onEventRecord(EventRecord data) {
-        // Special cased to do nothing for now.
+        // TODO(jaimeyap): For now we ignore this event. But this event seems to
+        // measure things coming out of Application cache, and possibly XHR
+        // callbacks coming out of memory cache. We should try to show this
+        // properly on the sluggishness view without confusing it with Resource
+        // Data Received events.
       }
     });
   }
@@ -102,11 +82,11 @@ public class UiEventModel implements EventRecordHandler {
 
   private final JsIntegerMap<TimerInstalled> timerMetaData = JsIntegerMap.create();
 
-  private final JsIntegerMap<EventRecordHandler> specialCasedTypeMap = JsIntegerMap.create();
+  private final JsIntegerMap<EventRecordDispatcher> specialCasedTypeMap = JsIntegerMap.create();
 
   private final TimerInstallationVisitor timerInstallationVisitor = new TimerInstallationVisitor();
 
-  UiEventModel() {
+  UiEventDispatcher() {
     setSpecialCasedEventCallbacks(this, specialCasedTypeMap);
   }
 
@@ -124,7 +104,7 @@ public class UiEventModel implements EventRecordHandler {
    * UiEvent dispatch proxy.
    */
   public void onEventRecord(EventRecord data) {
-    final EventRecordHandler specialHandler = specialCasedTypeMap.get(data.getType());
+    final EventRecordDispatcher specialHandler = specialCasedTypeMap.get(data.getType());
     if (specialHandler != null) {
       specialHandler.onEventRecord(data);
     } else if (UiEvent.isUiEvent(data)) {
@@ -140,8 +120,8 @@ public class UiEventModel implements EventRecordHandler {
     // TODO (jaimeyap): handle this.
   }
 
-  // This does not dispatch to the model listener. All we need to do here
-  // is bookkeep the Timer Data.
+  // This does not dispatch to the listener. All we need to do here is book keep
+  // the Timer Data.
   private void onTimerInstalled(TimerInstalled timerData) {
     assert (!Double.isNaN(timerData.getTime()));
     timerMetaData.put(timerData.getTimerId(), timerData);

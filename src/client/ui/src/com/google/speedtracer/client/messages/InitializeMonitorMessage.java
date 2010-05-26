@@ -33,7 +33,7 @@ public class InitializeMonitorMessage extends WindowChannel.Message {
    * 
    * @param tabDescription information about the tab that is initializing
    * @param handle an opaque handle to a
-   *          {@link com.google.speedtracer.client.model.DataModel}
+   *          {@link com.google.speedtracer.client.model.DataDispatcher}
    * @return a message that can be sent with
    *         {@link WindowChannel.Client#sendMessage(int, WindowChannel.Message)}
    */
@@ -47,7 +47,7 @@ public class InitializeMonitorMessage extends WindowChannel.Message {
 
   /**
    * Gets an opaque handle to a
-   * {@link com.google.speedtracer.client.model.DataModel}.
+   * {@link com.google.speedtracer.client.model.DataDispatcher}.
    * 
    * @return a handle
    */

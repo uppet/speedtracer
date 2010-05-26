@@ -15,7 +15,7 @@
  */
 package com.google.speedtracer.client.model;
 
-import com.google.speedtracer.client.model.DataModel.EventRecordHandler;
+import com.google.speedtracer.client.model.DataDispatcher.EventRecordDispatcher;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,13 +24,13 @@ import java.util.List;
  * Provides a data model for tab navigation events. Logically these are separate
  * from UI and network events although they have a very similar format.
  */
-public class TabChangeModel implements EventRecordHandler {
+public class TabChangeDispatcher implements EventRecordDispatcher {
 
   /**
    * Listener interface for handling TabNavigationModel events.
    */
   public interface Listener {
-    void onTabChanged(TabChange change);
+    void onPageTransition(PageTransition change);
   }
 
   private final List<Listener> listeners = new ArrayList<Listener>();
@@ -40,9 +40,9 @@ public class TabChangeModel implements EventRecordHandler {
   }
 
   public void onEventRecord(EventRecord data) {
-    if (TabChange.TYPE == data.getType()) {
+    if (PageTransition.TYPE == data.getType()) {
       for (int i = 0, n = listeners.size(); i < n; i++) {
-        listeners.get(i).onTabChanged(data.<TabChange> cast());
+        listeners.get(i).onPageTransition(data.<PageTransition> cast());
       }
     }
   }

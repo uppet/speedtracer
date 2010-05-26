@@ -55,7 +55,7 @@ public class HintletReportModel implements VisualizationModel {
     hints.clear();
   }
 
-  public void detachFromSourceModel() {
+  public void detachFromData() {
     hintletEngine.removeHintListener(hintListener);
   }
 

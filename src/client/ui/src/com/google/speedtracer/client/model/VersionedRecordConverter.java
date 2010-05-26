@@ -208,12 +208,12 @@ public abstract class VersionedRecordConverter {
 
     private void handlePageTransition(DataInstance dataInstance,
         EventRecord record) {
-      TabChange pageTransition = record.cast();
+      PageTransition pageTransition = record.cast();
       OldStart mainResourceStart = networkStartUrlMap.get(
           pageTransition.getUrl()).cast();
       if (mainResourceStart != null) {
         // Send the page transition.
-        dataInstance.onEventRecord(TabChange.create(
+        dataInstance.onEventRecord(PageTransition.create(
             mainResourceStart.getTime(), pageTransition.getUrl()));
 
         sendStart(mainResourceStart, dataInstance);

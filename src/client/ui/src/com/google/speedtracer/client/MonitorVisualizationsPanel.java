@@ -418,9 +418,8 @@ public class MonitorVisualizationsPanel extends Div {
     // Sluggishness
     SluggishnessModel sluggishnessModel = (SluggishnessModel) initialState.getVisualizationModel(SluggishnessVisualization.TITLE);
     SluggishnessVisualization sluggishnessVisualization = new SluggishnessVisualization(
-        mainTimeLine, sluggishnessModel,
-        initialState.getDataModel().getUiEventModel(),
-        detailsViewPanel.getContainer(), resources);
+        mainTimeLine, sluggishnessModel, detailsViewPanel.getContainer(),
+        resources);
 
     // Network Visualization
     NetworkVisualizationModel networkModel = (NetworkVisualizationModel) initialState.getVisualizationModel(NetworkVisualization.TITLE);
@@ -433,7 +432,7 @@ public class MonitorVisualizationsPanel extends Div {
 
     // Setup the graphs to refresh when hintlet data arrives. Buffer the data
     // so that the screen doesn't jump from rapid hintlet data coming in.
-    initialState.getDataModel().getHintletEngineHost().addHintListener(
+    initialState.getDataDispatcher().getHintletEngineHost().addHintListener(
         new HintletInterface.HintListener() {
           boolean queued = false;
 

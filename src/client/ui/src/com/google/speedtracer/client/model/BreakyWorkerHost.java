@@ -28,22 +28,22 @@ import com.google.gwt.webworker.client.MessageHandler;
 import com.google.gwt.webworker.client.Worker;
 import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.Logging;
-import com.google.speedtracer.client.model.DataModel.EventRecordHandler;
+import com.google.speedtracer.client.model.DataDispatcher.EventRecordDispatcher;
 
-/** 
- * Pushes raw event records out to the worker and processes any
- * breaky messages about validation errors.
- *
+/**
+ * Pushes raw event records out to the worker and processes any breaky messages
+ * about validation errors.
+ * 
  */
-public class BreakyWorkerHost implements EventRecordHandler {
+public class BreakyWorkerHost implements EventRecordDispatcher {
 
   private final Worker breakyWorker;
-  private final DataModel dataModel;
+  private final DataDispatcher dataDispatcher;
   private final HintletEngineHost hintletHost;
 
-  BreakyWorkerHost(DataModel dataModel, HintletEngineHost hintletHost) {
+  BreakyWorkerHost(DataDispatcher dataDispatcher, HintletEngineHost hintletHost) {
     breakyWorker = Worker.create("../breakyworker/breakyworker.nocache.js");
-    this.dataModel = dataModel;
+    this.dataDispatcher = dataDispatcher;
     this.hintletHost = hintletHost;
     init();
   }
@@ -100,7 +100,7 @@ public class BreakyWorkerHost implements EventRecordHandler {
         Logging.getLogger().logText(
             "Breaky Error:(#" + sequence + ") " + message);
 
-        EventRecord record = dataModel.findEventRecord(sequence);
+        EventRecord record = dataDispatcher.findEventRecord(sequence);
         if (record == null) {
           Logging.getLogger().logText(
               "Breaky cannot find record with sequence #" + sequence);
@@ -117,8 +117,8 @@ public class BreakyWorkerHost implements EventRecordHandler {
   private void onBreakyException(ErrorEvent event) {
     if (ClientConfig.isDebugMode()) {
       Logging.getLogger().logText(
-          "Breaky Exception: " + event.getMessage() + " in " + event.getFilename()
-              + ":" + event.getLineNumber());
+          "Breaky Exception: " + event.getMessage() + " in "
+              + event.getFilename() + ":" + event.getLineNumber());
     }
   }
 

@@ -18,7 +18,7 @@ package com.google.speedtracer.client.model;
 import com.google.gwt.core.client.JavaScriptObject;
 
 /**
- * JSO based API for binding {@link DataModel} to an arbitrary data source.
+ * JSO based API for binding {@link DataDispatcher} to an arbitrary data source.
  */
 public class DataInstance extends JavaScriptObject {
   /**

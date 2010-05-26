@@ -27,7 +27,7 @@ import com.google.gwt.topspin.ui.client.ClickListener;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.gwt.topspin.ui.client.Div;
-import com.google.speedtracer.client.model.DataModel;
+import com.google.speedtracer.client.model.DataDispatcher;
 import com.google.speedtracer.client.model.MockModelGenerator;
 
 import java.util.List;
@@ -80,7 +80,7 @@ public class MockTestDataPanel {
 
   private static final int HIDE_DELAY = 1000;
   private AutoHideDiv base;
-  private DataModel model;
+  private DataDispatcher dataDispatcher;
   private Css css;
   private Container controllerContainer;
   private Controller controller;
@@ -91,7 +91,7 @@ public class MockTestDataPanel {
     StyleInjector.inject(css.getText());
     this.base = new TopDiv(controllerContainer);
     this.base.setStyleName(css.base());
-    this.model = controller.getModel();
+    this.dataDispatcher = controller.getDataDispatcher();
 
     // Add in the menu items
     List<String> menuItems = MockModelGenerator.getDataSetNames();
@@ -103,7 +103,7 @@ public class MockTestDataPanel {
       menuItem.addClickListener(new ClickListener() {
         public void onClick(ClickEvent event) {
           controller.doReset();
-          MockModelGenerator.simulateDataSet(model, dataSetIndex);
+          MockModelGenerator.simulateDataSet(dataDispatcher, dataSetIndex);
         }
       });
     }

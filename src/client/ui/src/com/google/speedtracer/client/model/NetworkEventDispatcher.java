@@ -16,7 +16,7 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.coreext.client.JsIntegerMap;
-import com.google.speedtracer.client.model.DataModel.EventRecordHandler;
+import com.google.speedtracer.client.model.DataDispatcher.EventRecordDispatcher;
 import com.google.speedtracer.client.model.ResourceUpdateEvent.UpdateResource;
 import com.google.speedtracer.shared.EventRecordType;
 
@@ -24,13 +24,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Native model which sources Network Events for the UI. Hooks into underlying
- * DataInstance.
+ * Native dispatcher which sources Network Events for the UI. Hooks into
+ * underlying DataInstance.
  */
-public class NetworkResourceModel implements EventRecordHandler {
+public class NetworkEventDispatcher implements EventRecordDispatcher {
 
   /**
-   * Listener Interface for a NetworkResourceModel.
+   * Listener Interface for a NetworkEventDispatcher.
    */
   public interface Listener {
     void onNetworkResourceRequestStarted(NetworkResource resource,
@@ -47,34 +47,35 @@ public class NetworkResourceModel implements EventRecordHandler {
    * Sets up mapping of NetworkResourceRecord types to their respective
    * handlers.
    * 
-   * @param proxy the {@link NetworkResourceModel}
+   * @param proxy the {@link NetworkEventDispatcher}
    * @param typeMap the {@link FastStringMap}
    */
   private static void setNetworkEventCallbacks(
-      final NetworkResourceModel proxy, JsIntegerMap<EventRecordHandler> typeMap) {
+      final NetworkEventDispatcher proxy,
+      JsIntegerMap<EventRecordDispatcher> typeMap) {
 
     typeMap.put(EventRecordType.RESOURCE_SEND_REQUEST,
-        new EventRecordHandler() {
+        new EventRecordDispatcher() {
           public void onEventRecord(EventRecord data) {
             proxy.onNetworkResourceStarted(data.<ResourceWillSendEvent> cast());
           }
         });
 
     typeMap.put(EventRecordType.RESOURCE_RECEIVE_RESPONSE,
-        new EventRecordHandler() {
+        new EventRecordDispatcher() {
           public void onEventRecord(EventRecord data) {
             proxy.onNetworkResourceResponse(data.<ResourceResponseEvent> cast());
           }
         });
 
-    typeMap.put(EventRecordType.RESOURCE_FINISH, new EventRecordHandler() {
+    typeMap.put(EventRecordType.RESOURCE_FINISH, new EventRecordDispatcher() {
       public void onEventRecord(EventRecord data) {
         ResourceFinishEvent finish = data.cast();
         proxy.onNetworkResourceFinished(finish);
       }
     });
 
-    typeMap.put(EventRecordType.RESOURCE_UPDATED, new EventRecordHandler() {
+    typeMap.put(EventRecordType.RESOURCE_UPDATED, new EventRecordDispatcher() {
       public void onEventRecord(EventRecord data) {
         proxy.onNetworkResourceUpdated(data.<ResourceUpdateEvent> cast());
       }
@@ -91,9 +92,9 @@ public class NetworkResourceModel implements EventRecordHandler {
    */
   private final JsIntegerMap<NetworkResource> resourceStore = JsIntegerMap.create();
 
-  private final JsIntegerMap<EventRecordHandler> typeMap = JsIntegerMap.create();
+  private final JsIntegerMap<EventRecordDispatcher> typeMap = JsIntegerMap.create();
 
-  NetworkResourceModel() {
+  NetworkEventDispatcher() {
     setNetworkEventCallbacks(this, typeMap);
   }
 
@@ -113,7 +114,7 @@ public class NetworkResourceModel implements EventRecordHandler {
   }
 
   public void onEventRecord(EventRecord data) {
-    final EventRecordHandler handler = typeMap.get(data.getType());
+    final EventRecordDispatcher handler = typeMap.get(data.getType());
     if (handler != null) {
       handler.onEventRecord(data);
     }

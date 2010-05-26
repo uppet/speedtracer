@@ -18,7 +18,6 @@ package com.google.speedtracer.client.visualizations.model;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.speedtracer.client.model.UiEvent;
-import com.google.speedtracer.client.model.UiEventModel;
 import com.google.speedtracer.client.model.Visualization;
 import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.timeline.GraphUiProps;
@@ -32,7 +31,8 @@ import com.google.speedtracer.client.visualizations.view.TransientMarker;
  */
 public class SluggishnessVisualization extends
     Visualization<SluggishnessDetailView, SluggishnessModel> implements
-    UiEventModel.Listener, SluggishnessModel.EventRefreshListener {
+    SluggishnessModel.EventWithinWindowListener,
+    SluggishnessModel.EventRefreshListener {
 
   /**
    * Resources for children of {@link SluggishnessVisualization}.
@@ -64,12 +64,10 @@ public class SluggishnessVisualization extends
    * @param timeline The parent {@link MainTimeLine} for this Visualization.
    * @param sluggishnessModel the backing {@link VisualizationModel} for this
    *          Visualization.
-   * @param sourceModel the {@link UiEventModel} that this Visualization is a
-   *          subscribed to.
    */
   public SluggishnessVisualization(MainTimeLine timeline,
-      SluggishnessModel sluggishnessModel, UiEventModel sourceModel,
-      Container detailsContainer, SluggishnessVisualization.Resources resources) {
+      SluggishnessModel sluggishnessModel, Container detailsContainer,
+      SluggishnessVisualization.Resources resources) {
     super(TITLE, SUBTITLE, sluggishnessModel, createGraphUiProps());
     this.resources = resources;
     this.timeline = timeline;
@@ -87,9 +85,6 @@ public class SluggishnessVisualization extends
 
     });
 
-    // The visualization may choose to update the view outside the model in
-    // append only update cases where our right bound is in the future
-    sourceModel.addListener(this);
     setDetailsView(createDetailsView(detailsContainer, timeline));
     setModel(sluggishnessModel);
   }
@@ -101,7 +96,7 @@ public class SluggishnessVisualization extends
   public SluggishnessDetailView createDetailsView(Container container,
       MainTimeLine timeLine) {
     return new SluggishnessDetailView(container, this,
-        getModel().getSourceModel(), resources);
+        getModel().getDataDispatcher().getUiEventDispatcher(), resources);
   }
 
   public MainTimeLine getTimeline() {
@@ -112,28 +107,10 @@ public class SluggishnessVisualization extends
     this.getDetailsView().refreshRecord(event);
   }
 
-  public void onUiEventFinished(UiEvent event) {
-    // We can update the detail view outside the model itself. We normally
-    // update the model, and then the view queries the model for state. But in
-    // the case where we have data streaming into our current view, we can
-    // short circuit this and just append rows to the detail view.
+  public void onEventWithinWindow(UiEvent event) {
     SluggishnessDetailView details = getDetailsView();
     if (details != null) {
-      SluggishnessModel model = getModel();
-
-      double dispatchTime = event.getTime();
-      double endTime = event.getEndTime();
-
-      double currentRight = model.getCurrentRight();
-      double currentLeft = model.getCurrentLeft();
-
-      // For initial startup, we want to avoid doing binary searches for within
-      // the window bounds. so we do a quick bounds check and append to the
-      // window
-      // if we need to.
-      if (dispatchTime < currentRight && endTime > currentLeft) {
-        details.shortCircuitAddEvent(event);
-      }
+      details.shortCircuitAddEvent(event);
     }
   }
 
@@ -141,6 +118,7 @@ public class SluggishnessVisualization extends
   public void setModel(VisualizationModel model) {
     super.setModel(model);
     SluggishnessModel sModel = (SluggishnessModel) model;
-    sModel.addRecordRefreshListener(this);
+    sModel.setRecordRefreshListener(this);
+    sModel.setEventWithinWindowListener(this);
   }
 }

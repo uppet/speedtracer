@@ -32,38 +32,29 @@ import java.util.List;
  * 
  * Also defines Universal base time, which can be calibrated by subclasses only.
  */
-public class DataModel implements HintletInterface.HintListener,
+public class DataDispatcher implements HintletInterface.HintListener,
     EventRecordLookup, DataInstance.DataListener {
   /**
    * Wrapper objects to proxy callbacks to correct handler.
    */
-  public interface EventRecordHandler {
+  public interface EventRecordDispatcher {
     void onEventRecord(EventRecord data);
   }
 
   /**
-   * Provides a deferred-binding factory for creating a {@link DataModel}.
+   * Creates a {@link DataDispatcher} based on an opaque handle.
+   * 
+   * @param tabDescription info about the tab represented by this model
+   * @param dataInstance an opaque handle to model functionality.
+   * @return a model
    */
-  public static class Provider {
-
-    /**
-     * Creates a {@link DataModel} based on an opaque handle.
-     * 
-     * @param tabDescription info about the tab represented by this model
-     * @param dataInstance an opaque handle to model functionality.
-     * @return a model
-     */
-    public static DataModel createModel(TabDescription tabDescription,
-        DataInstance dataInstance) {
-      final DataModel model = new DataModel(dataInstance);
-      dataInstance.load(model);
-      model.setTabDescription(tabDescription);
-      model.initialize();
-      return model;
-    }
-
-    private Provider() {
-    }
+  public static DataDispatcher create(TabDescription tabDescription,
+      DataInstance dataInstance) {
+    final DataDispatcher dispatcher = new DataDispatcher(dataInstance);
+    dataInstance.load(dispatcher);
+    dispatcher.setTabDescription(tabDescription);
+    dispatcher.initialize();
+    return dispatcher;
   }
 
   protected JSOArray<String> traceDataCopy = JSOArray.create();
@@ -72,27 +63,27 @@ public class DataModel implements HintletInterface.HintListener,
 
   private final DataInstance dataInstance;
 
-  private final List<EventRecordHandler> eventModels = new ArrayList<EventRecordHandler>();
+  private final List<EventRecordDispatcher> eventDispatchers = new ArrayList<EventRecordDispatcher>();
 
   private JsIntegerMap<EventRecord> eventRecordMap = JsIntegerMap.create();
 
   private final HintletEngineHost hintletEngineHost;
 
-  private final NetworkResourceModel networkResourceModel;
+  private final NetworkEventDispatcher networkEventDispatcher;
 
   private final JavaScriptProfileModel profileModel;
 
+  private final TabChangeDispatcher tabChangeDispatcher;
+
   private TabDescription tabDescription;
 
-  private final TabChangeModel tabNavigationModel;
+  private final UiEventDispatcher uiEventDispatcher;
 
-  private final UiEventModel uiEventModel;
-
-  protected DataModel(DataInstance dataInstance) {
+  protected DataDispatcher(DataInstance dataInstance) {
     this.dataInstance = dataInstance;
-    this.networkResourceModel = new NetworkResourceModel();
-    this.uiEventModel = new UiEventModel();
-    this.tabNavigationModel = new TabChangeModel();
+    this.networkEventDispatcher = new NetworkEventDispatcher();
+    this.uiEventDispatcher = new UiEventDispatcher();
+    this.tabChangeDispatcher = new TabChangeDispatcher();
     this.profileModel = new JavaScriptProfileModel(this);
     this.hintletEngineHost = new HintletEngineHost();
   }
@@ -133,9 +124,9 @@ public class DataModel implements HintletInterface.HintListener,
   }
 
   /**
-   * Returns the opaque handle associated with this DataModel.
+   * Returns the opaque handle associated with this DataDispatcher.
    * 
-   * @return the opaque handle associated with this DataModel.
+   * @return the opaque handle associated with this DataDispatcher.
    */
   public DataInstance getDataInstance() {
     return dataInstance;
@@ -164,12 +155,16 @@ public class DataModel implements HintletInterface.HintListener,
   }
 
   /**
-   * Gets the sub-model for network resource related events.
+   * Gets the dispatcher for network resource related events.
    * 
    * @return a model
    */
-  public NetworkResourceModel getNetworkResourceModel() {
-    return networkResourceModel;
+  public NetworkEventDispatcher getNetworkEventDispatcher() {
+    return networkEventDispatcher;
+  }
+
+  public TabChangeDispatcher getTabChangeDispatcher() {
+    return tabChangeDispatcher;
   }
 
   /**
@@ -182,21 +177,15 @@ public class DataModel implements HintletInterface.HintListener,
     return tabDescription;
   }
 
-  public TabChangeModel getTabNavigationModel() {
-    return tabNavigationModel;
-  }
-
   public JSOArray<String> getTraceCopy() {
     return traceDataCopy;
   }
 
   /**
-   * Gets the sub-model for DOM events.
-   * 
-   * @return a model
+   * Gets the dispatcher for DOM events.
    */
-  public UiEventModel getUiEventModel() {
-    return uiEventModel;
+  public UiEventDispatcher getUiEventDispatcher() {
+    return uiEventDispatcher;
   }
 
   /**
@@ -235,16 +224,16 @@ public class DataModel implements HintletInterface.HintListener,
     // Listen to the hintlet engine.
     hintletEngineHost.addHintListener(this);
 
-    // Add models to our dispatch list,.
+    // Add models and dispatchers to our dispatch list,.
     if (ClientConfig.isDebugMode()) {
-      // NOTE: the order of adding models matters, some modify the record object
-      eventModels.add(0, new BreakyWorkerHost(this, hintletEngineHost));
+      // NOTE: the order of adding matters, some modify the record object
+      eventDispatchers.add(0, new BreakyWorkerHost(this, hintletEngineHost));
     }
-    eventModels.add(uiEventModel);
-    eventModels.add(networkResourceModel);
-    eventModels.add(tabNavigationModel);
-    eventModels.add(profileModel);
-    eventModels.add(hintletEngineHost);
+    eventDispatchers.add(uiEventDispatcher);
+    eventDispatchers.add(networkEventDispatcher);
+    eventDispatchers.add(tabChangeDispatcher);
+    eventDispatchers.add(profileModel);
+    eventDispatchers.add(hintletEngineHost);
   }
 
   protected void setTabDescription(TabDescription tabDescription) {
@@ -252,8 +241,8 @@ public class DataModel implements HintletInterface.HintListener,
   }
 
   private void fireOnEventRecordImpl(EventRecord data) {
-    for (int i = 0, n = eventModels.size(); i < n; i++) {
-      eventModels.get(i).onEventRecord(data);
+    for (int i = 0, n = eventDispatchers.size(); i < n; i++) {
+      eventDispatchers.get(i).onEventRecord(data);
     }
   }
 
