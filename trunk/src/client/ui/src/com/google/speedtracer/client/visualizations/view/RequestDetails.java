@@ -245,12 +245,12 @@ public class RequestDetails extends LazilyCreateableElement {
       element.appendChild(createNewTabLink(document, css.springInsightLink(),
           endPointUrl, "EndPoint"));
     }
-    
+
     // Add Application URL
     if (applicationUrl != null) {
       // Is there a previous item?
       if (traceViewUrl != null || endPointUrl != null) {
-        element.appendChild(document.createTextNode(", "));        
+        element.appendChild(document.createTextNode(", "));
       }
       element.appendChild(createNewTabLink(document, css.springInsightLink(),
           applicationUrl, "Application"));
@@ -414,8 +414,10 @@ public class RequestDetails extends LazilyCreateableElement {
     addRowPair(summaryTable, css, iter.next(), "From Cache", info.isCached()
         + "");
     addRowPair(summaryTable, css, iter.next(), "Method", info.getHttpMethod());
+    String statusText = info.getStatusText();
     addRowPair(summaryTable, css, iter.next(), "Http Status",
-        info.getStatusCode() + "");
+        info.getStatusCode()
+            + ((statusText == null) ? "" : " - " + info.getStatusText()));
     addRowPair(summaryTable, css, iter.next(), "Mime-type", info.getMimeType());
 
     String requestTiming, responseTiming, totalTiming;

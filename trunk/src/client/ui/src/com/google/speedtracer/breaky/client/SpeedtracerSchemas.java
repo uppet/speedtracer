@@ -682,6 +682,12 @@ public class SpeedtracerSchemas {
                "requires" : "didResponseChange",
                "optional" : true
              },
+             "statusText" : {
+               "type" : "string",
+               "description" : "The human readable version of the statusCode",
+               "requires" : "statusCode",
+               "optional" : true
+             },
              "responseHeaders" : {
                "type" : "object",
                "description" : "HTTP Headers from the response",
