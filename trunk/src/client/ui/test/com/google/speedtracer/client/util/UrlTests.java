@@ -38,6 +38,8 @@ public class UrlTests extends GWTTestCase {
   private static final Url urlWithQueryAndHash = new Url(
       "https://wave.google.com/a/somedomain.com/?somequery=1#hashmark:foo:blah.baz!w%25stuff");
 
+  private static final Url nullUrl = new Url(null);
+
   @Override
   public String getModuleName() {
     return "com.google.speedtracer.Common";
@@ -85,6 +87,32 @@ public class UrlTests extends GWTTestCase {
 
     applicationUrl = "https://wave.google.com:8080/a/somedomain.com/";
     assertEquals(applicationUrl, urlWithPort.getApplicationUrl());
+
+    assertEquals("", nullUrl.getApplicationUrl());
+  }
+
+  /**
+   * Tests getting the last path component of a Url.
+   */
+  public void testGetLastPathComponent() {
+    String lastPathComponent = "#hashmark:foo:blah.baz!w%25stuff";
+    assertEquals(lastPathComponent, urlWithHash.getLastPathComponent());
+
+    lastPathComponent = "?somequery=1";
+    assertEquals(lastPathComponent, urlWithQuery.getLastPathComponent());
+
+    lastPathComponent = "?somequery=1#hashmark:foo:blah.baz!w%25stuff";
+    assertEquals(lastPathComponent, urlWithQueryAndHash.getLastPathComponent());
+
+    lastPathComponent = "?somequery=1#hashmark:foo:blah.baz!w%25stuff";
+    assertEquals(lastPathComponent, urlWithPort.getLastPathComponent());
+
+    lastPathComponent = "resource.html";
+    assertEquals(lastPathComponent, pathOnlyUrl.getLastPathComponent());
+
+    lastPathComponent = "";
+    assertEquals(lastPathComponent, emptyUrl.getLastPathComponent());
+    assertEquals(lastPathComponent, nullUrl.getLastPathComponent());
   }
 
   /**
@@ -102,9 +130,8 @@ public class UrlTests extends GWTTestCase {
 
     origin = "";
     assertEquals(origin, pathOnlyUrl.getOrigin());
-
-    origin = "";
     assertEquals(origin, emptyUrl.getOrigin());
+    assertEquals(origin, nullUrl.getOrigin());
   }
 
   /**
@@ -128,6 +155,7 @@ public class UrlTests extends GWTTestCase {
 
     urlPath = "";
     assertEquals(urlPath, emptyUrl.getPath());
+    assertEquals(urlPath, nullUrl.getPath());
   }
 
   /**
@@ -138,17 +166,17 @@ public class UrlTests extends GWTTestCase {
     Url http = new Url("http://something");
     Url file = new Url("file://something");
     Url capitalFile = new Url("FILE://something");
-    Url noProto = new Url("noproto");    
-    Url empty = new Url("");
-    
+    Url noProto = new Url("noproto");
+
     assertEquals(Url.SCHEME_HTTPS, https.getScheme());
     assertEquals(Url.SCHEME_HTTP, http.getScheme());
     assertEquals(Url.SCHEME_FILE, file.getScheme());
     assertEquals(Url.SCHEME_FILE, capitalFile.getScheme());
     assertEquals("", noProto.getScheme());
-    assertEquals("", empty.getScheme());
+    assertEquals("", emptyUrl.getScheme());
+    assertEquals("", nullUrl.getScheme());
   }
-  
+
   /**
    * Tests getting the base of the URL, which is the URL minus the last path
    * component.
@@ -167,5 +195,6 @@ public class UrlTests extends GWTTestCase {
 
     urlBase = "";
     assertEquals(urlBase, emptyUrl.getResourceBase());
+    assertEquals(urlBase, nullUrl.getResourceBase());
   }
 }
