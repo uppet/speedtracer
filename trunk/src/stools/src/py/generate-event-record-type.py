@@ -149,7 +149,7 @@ webkitEvents = [
     'value' : 19, 
     'constant' : 'LOAD_EVENT',
     'desc' : 'Window Load Event',
-    'help_text' : 'Event indicating that all static resources (like images and CSS) have been downloaded and loaded.',
+    'help_text' : 'All static resources (like images and CSS) have loaded.',
   }
 ]
 # END INSPECTOR TIMELINE RECORDS.

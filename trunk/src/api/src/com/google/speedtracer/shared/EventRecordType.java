@@ -128,7 +128,7 @@ public class EventRecordType {
     // 18 DOM_CONTENT_LOADED
     "DomContentLoaded event returned from JavaScript, Styles matched, chrome extension content scripts ran, and the HTML parser completed. Ready to layout and do first paint.",
     // 19 LOAD_EVENT
-    "Event indicating that all static resources (like images and CSS) have been downloaded and loaded.",
+    "All static resources (like images and CSS) have loaded.",
   };
 
   private static final String[] speedTracerHelpStrings = {
