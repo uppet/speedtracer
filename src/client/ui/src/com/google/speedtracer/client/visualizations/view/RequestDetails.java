@@ -277,8 +277,6 @@ public class RequestDetails extends LazilyCreateableElement {
    */
   private final NetworkPillBox.Css pbCss;
 
-  private final Element pillBoxContainer;
-
   private final Resources resources;
 
   private final Element parentElem;
@@ -289,13 +287,12 @@ public class RequestDetails extends LazilyCreateableElement {
    * ctor.
    * 
    * @param parentElem what we attach to
-   * @param pb the container element for the pillBox
    * @param networkResource the information about this network request/response
    * @param listenerManager a manager for our event listeners
    * @param resources {@link NetworkPillBox.Resources} that contains relevant
    *          images and Css.
    */
-  public RequestDetails(Element parentElem, Element pb,
+  public RequestDetails(Element parentElem,
       NetworkResource networkResource, ManagesEventListeners listenerManager,
       NetworkPillBox.Resources resources,
       ServerEventController serverEventController) {
@@ -303,7 +300,6 @@ public class RequestDetails extends LazilyCreateableElement {
     this.parentElem = parentElem;
     this.resources = resources;
     this.pbCss = resources.networkPillBoxCss();
-    this.pillBoxContainer = pb;
     this.info = networkResource;
     this.serverEventController = serverEventController;
   }
@@ -341,7 +337,7 @@ public class RequestDetails extends LazilyCreateableElement {
       // Make the element renderable
       getElement().getStyle().setProperty("display", "block");
       fixHeightOfParentRow();
-      pillBoxContainer.setClassName(pbCss.pillBoxWrapperSelected());
+      parentElem.addClassName(pbCss.selected());
       isVisible = true;
     }
     return isVisible;
@@ -367,7 +363,7 @@ public class RequestDetails extends LazilyCreateableElement {
           public void onTransitionEnd(CssTransitionEvent event) {
             if (!isVisible) {
               elem.getStyle().setProperty("display", "none");
-              pillBoxContainer.setClassName(RequestDetails.this.pbCss.pillBoxWrapper());
+              parentElem.removeClassName(RequestDetails.this.pbCss.selected());
             }
           }
         }));

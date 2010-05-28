@@ -76,8 +76,8 @@ public class EventRecordType {
     "JavaScript Callback",              // 15 JAVASCRIPT_EXECUTION
     "Resource Data Received",           // 16 RESOURCE_DATA_RECEIVED
     "Garbage Collection",               // 17 GC_EVENT
-    "DomContentLoaded Event",           // 18 DOM_CONTENT_LOADED
-    "WebKit Load Event",                // 19 LOAD_EVENT
+    "Document Parsing Complete",        // 18 DOM_CONTENT_LOADED
+    "Window Load Event",                // 19 LOAD_EVENT
   };
 
   private static final String[] speedTracerTypeStrings = {
@@ -126,9 +126,9 @@ public class EventRecordType {
     // 17 GC_EVENT
     "The JavaScript engine ran its garbage collector to reclaim memory.",
     // 18 DOM_CONTENT_LOADED
-    "The DomContentLoaded Event fired meaning all elements in the Document have been parsed and are ready.",
+    "DomContentLoaded event returned from JavaScript, Styles matched, chrome extension content scripts ran, and the HTML parser completed. Ready to layout and do first paint.",
     // 19 LOAD_EVENT
-    "Event indicating that all elements are loaded and all static resources (like images and CSS) have been downloaded and processed.",
+    "Event indicating that all static resources (like images and CSS) have been downloaded and loaded.",
   };
 
   private static final String[] speedTracerHelpStrings = {

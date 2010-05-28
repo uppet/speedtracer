@@ -38,7 +38,7 @@ public class ServerEventColors {
       map.put("VIEW_RENDER", Color.MIDNIGHT_BLUE);
       map.put("JDBC", Color.INDIAN_RED);
       map.put("VIEW_RESOLVER", Color.CYAN);
-      map.put("TRANSACTION", Color.BLUE);
+      map.put("TRANSACTION", Color.LIGHT_BLUE);
       map.put("CONTROLLER_METHOD", Color.LIGHTGREEN);
       map.put("MODEL_ATTRIBUTE", Color.DARKGREEN);
       map.put("ANNOTATED_METHOD", Color.PEACH);
@@ -48,7 +48,7 @@ public class ServerEventColors {
       map.put("SIMPLE", Color.LIMEGREEN);
 
       // AppStats only.
-      map.put("API", Color.BLUE);
+      map.put("API", Color.LIGHT_BLUE);
       colorByTypeString = map;
     }
 

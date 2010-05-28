@@ -436,7 +436,7 @@ public class Controller extends Panel implements DomainObserver,
     overviewTimeline.resetDisplayableBounds();
 
     // Nuke our Application states and reset everything.
-    Controller.this.monitor.resetApplicationStates();
+    monitor.resetApplicationStates();
   }
 
   public DataDispatcher getDataDispatcher() {

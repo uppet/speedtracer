@@ -38,6 +38,12 @@
   \-webkit-transition: height 0.3s ease-in-out;
 }
 
+.selected {
+  border-bottom: 1px solid #888;
+  background-color: #e6e6ff;
+  z-index: 30;
+}
+
 .cell {
   position: absolute;
   height: rowHeightMinusPad;

@@ -66,7 +66,7 @@ public class NetworkPillBox extends Div implements OwnsEventListeners {
 
     String pillBoxWrapper();
 
-    String pillBoxWrapperSelected();
+    String selected();
 
     String timeOverlay();
 
@@ -323,7 +323,7 @@ public class NetworkPillBox extends Div implements OwnsEventListeners {
 
     Element elem = getElement();
     elem.setClassName(resources.networkPillBoxCss().pillBoxTimeLine());
-    elem.getStyle().setMarginLeft(Constants.GRAPH_HEADER_WIDTH, Unit.PX);
+    elem.getStyle().setMarginLeft(Constants.GRAPH_PIXEL_OFFSET, Unit.PX);
 
     NetworkPillBox.Css css = resources.networkPillBoxCss();
     this.pillBoxContainer = elem.getOwnerDocument().createDivElement();
@@ -390,8 +390,8 @@ public class NetworkPillBox extends Div implements OwnsEventListeners {
 
     // Create the RequestDetails for this resource. The DOM should be lazily
     // created.
-    details = new RequestDetails(getElement(), pillBoxContainer,
-        networkResource, listenerOwner, resources, serverEventController);
+    details = new RequestDetails(getElement(), networkResource, listenerOwner,
+        resources, serverEventController);
 
     // Add the ClickListener to toggle the visibility
     manageEventListener(ClickEvent.addClickListener(parentRowElement,

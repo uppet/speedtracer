@@ -34,11 +34,11 @@ import com.google.speedtracer.client.messages.RequestInitializationMessage;
 import com.google.speedtracer.client.messages.ResendProfilingOptions;
 import com.google.speedtracer.client.messages.ResetBaseTimeMessage;
 import com.google.speedtracer.client.model.ApplicationState;
-import com.google.speedtracer.client.model.DataInstance;
 import com.google.speedtracer.client.model.DataDispatcher;
+import com.google.speedtracer.client.model.DataInstance;
 import com.google.speedtracer.client.model.NoDataNotifier;
-import com.google.speedtracer.client.model.PageTransition;
 import com.google.speedtracer.client.model.TabChangeDispatcher;
+import com.google.speedtracer.client.model.TabChangeEvent;
 import com.google.speedtracer.client.model.TabDescription;
 import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.util.Url;
@@ -63,12 +63,65 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     TabChangeDispatcher.Listener {
 
   /**
+   * Panel that displays the build info when pressing "V".
+   */
+  private static class BuildInfoView extends HotKeyPanel {
+    private final String version;
+
+    BuildInfoView(String version) {
+      this.version = version;
+    }
+
+    @Override
+    protected Element createContentElement(Document document) {
+      return document.createDivElement();
+    }
+
+    @Override
+    protected void populateContent(Element contentElement) {
+      final BuildInfo info = GWT.create(BuildInfo.class);
+      contentElement.setInnerText("Version: " + version + ", Revision: r"
+          + info.getBuildRevision() + ", Date: " + info.getBuildTime());
+      contentElement.setClassName(MonitorResources.getResources().monitorCss().buildInfoView());
+    }
+  }
+
+  /**
    * Utilities to allow debugging the Monitor in dev mode. This will create a
    * stub background page capable of responding to the Monitor's initialization
    * request.
    */
   private static class MockUtils {
     private static final int MOCK_TABID = 0;
+
+    private static void createMockBackgroundPage() {
+      Server.listen(WindowExt.getHostWindow(), CHANNEL_NAME,
+          new ServerListener() {
+            public void onClientChannelRequested(Request request) {
+              request.accept(new WindowChannel.Listener() {
+                // We make mock stubs of the DataInstance and the
+                // TabDescription.
+                final DataInstance dataInstance = createMockDataInstance();
+                final TabDescription tabDescription = createTabDescription(
+                    MOCK_TABID, "http://mock.com/", "Mock web site");
+
+                public void onChannelClosed(Client channel) {
+                }
+
+                public void onChannelConnected(Client channel) {
+                }
+
+                public void onMessage(Client channel, int type, Message data) {
+                  if (type == RequestInitializationMessage.TYPE) {
+                    channel.sendMessage(InitializeMonitorMessage.TYPE,
+                        InitializeMonitorMessage.create(tabDescription,
+                            dataInstance, "0.0"));
+                  }
+                }
+              });
+            }
+          });
+    }
 
     private static native DataInstance createMockDataInstance() /*-{
       return  { 
@@ -96,58 +149,6 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
         String url, String title) /*-{
       return {id: id, url: url, title: title};
     }-*/;
-
-    private static void createMockBackgroundPage() {
-      Server.listen(WindowExt.getHostWindow(), CHANNEL_NAME, new ServerListener() {
-        public void onClientChannelRequested(Request request) {
-          request.accept(new WindowChannel.Listener() {
-            // We make mock stubs of the DataInstance and the
-            // TabDescription.
-            final DataInstance dataInstance = createMockDataInstance();
-            final TabDescription tabDescription = createTabDescription(
-                MOCK_TABID, "http://mock.com/", "Mock web site");
-
-            public void onChannelClosed(Client channel) {
-            }
-
-            public void onChannelConnected(Client channel) {
-            }
-
-            public void onMessage(Client channel, int type, Message data) {
-              if (type == RequestInitializationMessage.TYPE) {
-                channel.sendMessage(InitializeMonitorMessage.TYPE,
-                    InitializeMonitorMessage.create(tabDescription,
-                        dataInstance, "0.0"));
-              }
-            }
-          });
-        }
-      });
-    }
-  }
-
-  /**
-   * Panel that displays the build info when pressing "V".
-   */
-  private static class BuildInfoView extends HotKeyPanel {
-    private final String version;
-
-    BuildInfoView(String version) {
-      this.version = version;
-    }
-
-    @Override
-    protected Element createContentElement(Document document) {
-      return document.createDivElement();
-    }
-
-    @Override
-    protected void populateContent(Element contentElement) {
-      final BuildInfo info = GWT.create(BuildInfo.class);
-      contentElement.setInnerText("Version: " + version + ", Revision: r"
-          + info.getBuildRevision() + ", Date: " + info.getBuildTime());
-      contentElement.setClassName(MonitorResources.getResources().monitorCss().buildInfoView());
-    }
   }
 
   /**
@@ -184,9 +185,9 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
 
   private Controller controller;
 
-  private HintletReportDialog hintletReportDialog;
-
   private DataDispatcher dataDispatcher;
+
+  private HintletReportDialog hintletReportDialog;
 
   private MonitorVisualizationsPanel monitorVisualizationsPanel;
 
@@ -322,7 +323,8 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
         + resources.javaScriptProfileRendererCss().getText()
         + resources.eventWaterfallRowCss().getText()
         + resources.eventWaterfallRowDetailsCss().getText()
-        + resources.sluggishnessFiletPanelCss().getText(), true);
+        + resources.sluggishnessFiletPanelCss().getText()
+        + resources.timelineMarksCss().getText(), true);
 
     final WindowExt window = getBackgroundView();
     channel = Client.connect(window, CHANNEL_NAME, this);
@@ -334,38 +336,39 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
    * NetworkResources from the previous NetworkModel, add them to the new
    * Application State. The Swap it in.
    */
-  public void onPageTransition(PageTransition nav) {
+  public void onPageTransition(TabChangeEvent nav) {
     // We should never get a page transition before initialize!!
     assert (pageStates != null && pageStates.size() > 0) : "We should never get a page transition before initialize";
 
-    String oldUrl = getUrlWithoutHash(controller.getPageUrlForIndex(pageStates.size() - 1));
-    String newUrl = getUrlWithoutHash(nav.getUrl());
-    if (!oldUrl.equals(newUrl)) {
-      // update tab description.
-      dataDispatcher.getTabDescription().updateUrl(newUrl);
+    // update tab description.
+    dataDispatcher.getTabDescription().updateUrl(
+        Url.getUrlWithoutHash(nav.getUrl()));
 
-      // Create the ApplicationState with some initial guesses for bounds
-      ApplicationState newState = new ApplicationState(dataDispatcher);
+    // Create the ApplicationState with some initial guesses for bounds
+    ApplicationState newState = new ApplicationState(dataDispatcher);
 
-      ApplicationState oldState = pageStates.get(pageStates.size() - 1);
-      // The current ApplicationState should now be neutered and no longer
-      // receive updates. It should also transfer relevant old state to the new
-      // ApplicationState.
-      oldState.detachModelsFromDispatchers();
+    ApplicationState oldState = pageStates.get(pageStates.size() - 1);
+    // The current ApplicationState should now be neutered and no longer
+    // receive updates. It should also transfer relevant old state to the new
+    // ApplicationState.
+    oldState.detachModelsFromDispatchers();
 
-      newState.setFirstDomainValue(nav.getTime());
-      newState.setLastDomainValue(nav.getTime()
-          + Constants.DEFAULT_GRAPH_WINDOW_SIZE);
+    newState.setFirstDomainValue(nav.getTime());
+    newState.setLastDomainValue(nav.getTime()
+        + Constants.DEFAULT_GRAPH_WINDOW_SIZE);
 
-      // Add this new ApplicationState to our collection of states for each page
-      int pageIndex = addPageState(nav.getUrl(), newState);
+    // Add this new ApplicationState to our collection of states for each page
+    int pageIndex = addPageState(nav.getUrl(), newState);
 
-      // Now swap in the page state
-      setStateForPageAtIndex(pageIndex);
-      controller.setSelectedPage(pageIndex);
-      
-      maybeInitializeSymbolServerController(dataDispatcher.getTabDescription());
-    }
+    // Now swap in the page state
+    setStateForPageAtIndex(pageIndex);
+    controller.setSelectedPage(pageIndex);
+
+    maybeInitializeSymbolServerController(dataDispatcher.getTabDescription());
+  }
+
+  public void onRefresh(TabChangeEvent change) {
+    // Only care about page transitions here.
   }
 
   /**
@@ -376,16 +379,16 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     ApplicationState newState = new ApplicationState(dataDispatcher);
     newState.setFirstDomainValue(0);
     newState.setLastDomainValue(Constants.DEFAULT_GRAPH_WINDOW_SIZE);
-    String lastUrl = getUrlWithoutHash(controller.getPageUrlForIndex(pageStates.size() - 1));
 
     detachApplicationStates();
     pageStates.clear();
     dataDispatcher.clear();
+    monitorVisualizationsPanel.clearTimelineMarks();
 
     // Tell the controller to clean up its drop down menu.
     controller.resetPageStates();
 
-    addPageState(lastUrl, newState);
+    addPageState(dataDispatcher.getTabDescription().getUrl(), newState);
 
     // Now swap in the page state
     setStateForPageAtIndex(0);
@@ -451,10 +454,6 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     return $wnd;
   }-*/;
 
-  private String getUrlWithoutHash(String url) {
-    return url.split("#")[0];
-  }
-
   private void initialize(TabDescription tabDescription,
       final DataInstance handle, String version) {
     assert (pageStates == null);
@@ -465,13 +464,14 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     pageStates = new ArrayList<ApplicationState>();
     // Create our backing DataDispatcher which provides our event stream.
     dataDispatcher = DataDispatcher.create(tabDescription, handle);
-    
+
     // setup debug logger.
     Logging.getLogger().listenTo(dataDispatcher);
-    
+
     dataDispatcher.getTabChangeDispatcher().addListener(this);
     // The top Controller bar for our top level actions.
-    controller = new Controller(Root.getContainer(), dataDispatcher, this, resources);
+    controller = new Controller(Root.getContainer(), dataDispatcher, this,
+        resources);
 
     // Create the initial ApplicationState.
     addPageState(tabDescription.getUrl(), new ApplicationState(dataDispatcher));
@@ -490,7 +490,8 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     HotKey.register('B', new BuildInfoView(version),
         "Show revision information.");
 
-    HotKey.register('M', new SymbolServerEntryPanel(dataDispatcher.getTabDescription()),
+    HotKey.register('M', new SymbolServerEntryPanel(
+        dataDispatcher.getTabDescription()),
         "UI for configuring the SymbolMap manifest location.");
 
     HotKey.register('1', new MergeProfilesPanel(dataDispatcher, resources),

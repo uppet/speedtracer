@@ -19,6 +19,7 @@ import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.graphics.client.Color;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.topspin.ui.client.ClickEvent;
 import com.google.gwt.topspin.ui.client.ClickListener;
@@ -36,14 +37,20 @@ import com.google.gwt.topspin.ui.client.Window;
 import com.google.gwt.user.client.Timer;
 import com.google.speedtracer.client.model.ApplicationState;
 import com.google.speedtracer.client.model.ButtonDescription;
+import com.google.speedtracer.client.model.DomContentLoadedEvent;
 import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.HintletInterface;
+import com.google.speedtracer.client.model.TabChangeDispatcher;
+import com.google.speedtracer.client.model.TabChangeEvent;
+import com.google.speedtracer.client.model.UiEventDispatcher;
 import com.google.speedtracer.client.model.Visualization;
+import com.google.speedtracer.client.model.WindowLoadEvent;
 import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.timeline.GraphModel;
 import com.google.speedtracer.client.timeline.TimeLineModel;
 import com.google.speedtracer.client.timeline.fx.Zoom;
 import com.google.speedtracer.client.timeline.fx.Zoom.CallBack;
+import com.google.speedtracer.client.util.Url;
 import com.google.speedtracer.client.util.dom.DocumentExt;
 import com.google.speedtracer.client.util.dom.EventListenerOwner;
 import com.google.speedtracer.client.view.Controller;
@@ -51,14 +58,16 @@ import com.google.speedtracer.client.view.DetailViews;
 import com.google.speedtracer.client.view.MainTimeLine;
 import com.google.speedtracer.client.view.OverViewTimeLine;
 import com.google.speedtracer.client.view.TimeScale;
+import com.google.speedtracer.client.view.TimelineMarks;
 import com.google.speedtracer.client.view.OverViewTimeLine.OverViewTimeLineModel;
-import com.google.speedtracer.client.visualizations.model.NetworkVisualizationModel;
 import com.google.speedtracer.client.visualizations.model.NetworkVisualization;
+import com.google.speedtracer.client.visualizations.model.NetworkVisualizationModel;
 import com.google.speedtracer.client.visualizations.model.SluggishnessModel;
 import com.google.speedtracer.client.visualizations.model.SluggishnessVisualization;
-import com.google.speedtracer.client.visualizations.model.TransientMarkerModel;
 import com.google.speedtracer.client.visualizations.model.VisualizationModel;
+import com.google.speedtracer.client.visualizations.view.EventRecordColors;
 import com.google.speedtracer.client.visualizations.view.HintletReportDialog;
+import com.google.speedtracer.shared.EventRecordType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,7 +76,8 @@ import java.util.List;
  * Panel that contains the main UI components of the Monitor. All the TimeLine
  * and other visualizations get attached here.
  */
-public class MonitorVisualizationsPanel extends Div {
+public class MonitorVisualizationsPanel extends Div implements
+    TabChangeDispatcher.Listener, UiEventDispatcher.LoadEventListener {
 
   /**
    * CSS.
@@ -99,7 +109,7 @@ public class MonitorVisualizationsPanel extends Div {
    */
   public interface Resources extends TimeScale.Resources,
       OverViewTimeLine.Resources, MainTimeLine.Resources,
-      HintletReportDialog.Resources {
+      HintletReportDialog.Resources, TimelineMarks.Resources {
     @Source("resources/MonitorVisualizationsPanel.css")
     MonitorVisualizationsPanel.Css monitorVisualizationsPanelCss();
   }
@@ -251,8 +261,6 @@ public class MonitorVisualizationsPanel extends Div {
               resources.monitorVisualizationsPanelCss().topPadding(), Unit.PX);
         }
 
-        attachTransientMarkers(viz);
-
         ClickEvent.addClickListener(entry, entry, new ClickListener() {
           public void onClick(ClickEvent event) {
             selectTab(entry, viz);
@@ -301,6 +309,8 @@ public class MonitorVisualizationsPanel extends Div {
 
   private Visualization<?, ?> selectedVisualization;
 
+  private final TimelineMarks timelineMarks;
+
   private final List<Visualization<?, ?>> visualizations = new ArrayList<Visualization<?, ?>>();
 
   public MonitorVisualizationsPanel(Container parentContainer,
@@ -309,8 +319,8 @@ public class MonitorVisualizationsPanel extends Div {
     super(parentContainer);
     this.loadedState = initialState;
     this.resources = resources;
-    // TODO(jaimeyap): UiBinder would cut this init code in half. Post release
-    // bug to port all our stuff to use UiBinder. For rizzles.
+
+    // Construct UI.
     final Css css = resources.monitorVisualizationsPanelCss();
     setStyleName(css.visualizationPanel());
     Container container = new DefaultContainerImpl(getElement());
@@ -335,8 +345,10 @@ public class MonitorVisualizationsPanel extends Div {
     Zoom.CallBack transitionCallback = new CallBack() {
       public void onAnimationComplete() {
         fixYAxisLabel();
-        detailsViewPanel.updateCurrentView(mainTimeLineModel.getLeftBound(),
-            mainTimeLineModel.getRightBound());
+        double left = mainTimeLineModel.getLeftBound();
+        double right = mainTimeLineModel.getRightBound();
+        detailsViewPanel.updateCurrentView(left, right);
+        timelineMarks.drawMarksInBounds(left, right);
       }
     };
 
@@ -349,7 +361,16 @@ public class MonitorVisualizationsPanel extends Div {
     this.overViewTimeLine = new OverViewTimeLine(graphContainer, mainTimeLine,
         new OverViewTimeLineModel(), visualizations, resources);
 
+    // Create the DetailViews panel that will contain each DetailView.
     this.detailsViewPanel = new DetailViews(container, resources);
+
+    // Create TimelineMarks for marking the timeline with vertical lines.
+    timelineMarks = new TimelineMarks(detailsViewPanel.getContainer(),
+        mainTimeLineModel.getGraphCalloutModel(), resources);
+    // Subscribe to page refreshes and load events.
+    initialState.getDataDispatcher().getTabChangeDispatcher().addListener(this);
+    initialState.getDataDispatcher().getUiEventDispatcher().addLoadEventListener(
+        this);
 
     controller.observe(mainTimeLine, overViewTimeLine);
 
@@ -366,8 +387,63 @@ public class MonitorVisualizationsPanel extends Div {
     preventNativeSelection(tabList.getElement(), graphContainerElem);
   }
 
+  public void clearTimelineMarks() {
+    timelineMarks.clear();
+  }
+
   public MainTimeLine getMainTimeLine() {
     return mainTimeLine;
+  }
+
+  /**
+   * Mark line on timeline when the DOM content is loaded.
+   */
+  public void onDomContentLoaded(DomContentLoadedEvent event) {
+    timelineMarks.addMark(event.getTime(),
+        EventRecordColors.getColorForType(DomContentLoadedEvent.TYPE),
+        EventRecordType.typeToString(DomContentLoadedEvent.TYPE),
+        EventRecordType.typeToHelpString(DomContentLoadedEvent.TYPE));
+    timelineMarks.drawMarksInBounds(mainTimeLineModel.getLeftBound(),
+        mainTimeLineModel.getRightBound());
+  }
+
+  /**
+   * Page transitions can also be marked so that if we navigate back to a
+   * previous application state, we can see the point at which we tried to
+   * navigate away.
+   */
+  public void onPageTransition(TabChangeEvent change) {
+    Url refresh = new Url(change.getUrl());
+    String resource = refresh.getLastPathComponent();
+    String description = "Navigating to "
+        + (resource.equals("") ? refresh.getUrl() : resource);
+    timelineMarks.addMark(change.getTime(), Color.BLUE, description,
+        description);
+    timelineMarks.drawMarksInBounds(mainTimeLineModel.getLeftBound(),
+        mainTimeLineModel.getRightBound());
+  }
+
+  /**
+   * Mark line on timeline when we refresh a page.
+   */
+  public void onRefresh(TabChangeEvent change) {
+    Url refresh = new Url(change.getUrl());
+    String resource = refresh.getLastPathComponent();
+    String description = "Refresh of "
+        + (resource.equals("") ? refresh.getUrl() : resource);
+    timelineMarks.addMark(change.getTime(), Color.LIGHT_BLUE, description,
+        description);
+    timelineMarks.drawMarksInBounds(mainTimeLineModel.getLeftBound(),
+        mainTimeLineModel.getRightBound());
+  }
+
+  public void onWindowLoad(WindowLoadEvent event) {
+    timelineMarks.addMark(event.getTime(),
+        EventRecordColors.getColorForType(WindowLoadEvent.TYPE),
+        EventRecordType.typeToString(WindowLoadEvent.TYPE),
+        EventRecordType.typeToHelpString(WindowLoadEvent.TYPE));
+    timelineMarks.drawMarksInBounds(mainTimeLineModel.getLeftBound(),
+        mainTimeLineModel.getRightBound());
   }
 
   /**
@@ -395,21 +471,11 @@ public class MonitorVisualizationsPanel extends Div {
         state.getLastDomainValue());
     overViewTimeLine.getModel().updateBounds(state.getFirstDomainValue(),
         state.getLastDomainValue());
+    // Maybe redraw timeline marks.
+    timelineMarks.drawMarksInBounds(state.getFirstDomainValue(),
+        state.getLastDomainValue());
     // Redraw a second frame so that it can rescale correctly
     refresh();
-  }
-
-  /**
-   * Hook up the transient marker models associated with each visualization's
-   * graph UI.
-   */
-  private void attachTransientMarkers(Visualization<?, ?> viz) {
-    // load up any new transient markers in the new visualization.
-    TransientMarkerModel model = viz.getCurrentEventMarkerModel();
-    if (model != null) {
-      model.addModelChangeListener(model.createTransientMarkerInstance(
-          mainTimeLine.getGraphContainerElement(), mainTimeLine, resources));
-    }
   }
 
   private void createVisualizations(ApplicationState initialState,

@@ -24,6 +24,7 @@ import com.google.gwt.topspin.ui.client.MouseOutListener;
 import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.client.model.UiEventDispatcher;
 import com.google.speedtracer.client.view.DetailView;
+import com.google.speedtracer.client.view.GraphCallout;
 import com.google.speedtracer.client.visualizations.model.SluggishnessModel;
 import com.google.speedtracer.client.visualizations.model.SluggishnessVisualization;
 import com.google.speedtracer.client.visualizations.view.FilteringScrollTable.Filter;
@@ -59,7 +60,7 @@ public class SluggishnessDetailView extends DetailView {
   /**
    * Externalized interface.
    */
-  public interface Resources extends CurrentSelectionMarker.Resources,
+  public interface Resources extends GraphCallout.Resources,
       EventWaterfall.Resources {
     @Source("resources/SluggishnessDetailView.css")
     Css sluggishnessDetailViewCss();
@@ -72,7 +73,7 @@ public class SluggishnessDetailView extends DetailView {
   private final SluggishnessDetailView.Css css;
 
   public SluggishnessDetailView(Container parent,
-      SluggishnessVisualization viz, UiEventDispatcher sourceDispatcher,
+      final SluggishnessVisualization viz, UiEventDispatcher sourceDispatcher,
       final SluggishnessDetailView.Resources resources) {
     super(parent, viz);
     css = resources.sluggishnessDetailViewCss();
@@ -90,12 +91,13 @@ public class SluggishnessDetailView extends DetailView {
     MouseOutEvent.addMouseOutListener(this, this.getElement(),
         new MouseOutListener() {
           public void onMouseOut(MouseOutEvent event) {
-            getVisualization().getCurrentEventMarkerModel().setNoSelection();
+            viz.getTimeline().getModel().getGraphCalloutModel().setSelected(
+                false);
           }
         });
 
     // Start with the selection hidden.
-    getVisualization().getCurrentEventMarkerModel().setNoSelection();
+    viz.getTimeline().getModel().getGraphCalloutModel().setSelected(false);
   }
 
   public void refreshRecord(UiEvent uiEvent) {

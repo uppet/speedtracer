@@ -35,7 +35,7 @@ public class Logging {
    * implement the listener to get debug output.
    */
   public static class DebugListenerLogger implements ListenerLogger,
-      NetworkEventDispatcher.Listener, UiEventDispatcher.Listener,
+      NetworkEventDispatcher.Listener, UiEventDispatcher.UiEventListener,
       HintletInterface.ExceptionListener {
 
     private final ZippyLogger zippyLogger;
@@ -46,7 +46,7 @@ public class Logging {
 
     public void listenTo(DataDispatcher dispatcher) {
       dispatcher.getNetworkEventDispatcher().addListener(this);
-      dispatcher.getUiEventDispatcher().addListener(this);
+      dispatcher.getUiEventDispatcher().addUiEventListener(this);
       dispatcher.getHintletEngineHost().addExceptionHandler(this);
     }
 
@@ -99,7 +99,7 @@ public class Logging {
    * release build.
    */
   public static class ReleaseListenerLogger implements ListenerLogger,
-      NetworkEventDispatcher.Listener, UiEventDispatcher.Listener,
+      NetworkEventDispatcher.Listener, UiEventDispatcher.UiEventListener,
       HintletInterface.ExceptionListener {
 
     public ReleaseListenerLogger() {

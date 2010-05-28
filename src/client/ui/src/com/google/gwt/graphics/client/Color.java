@@ -28,7 +28,8 @@ public class Color {
    */
   public static final Color GREEN = new Color("#23ef24");
   public static final Color RED = new Color("#ff0000");
-  public static final Color BLUE = new Color("#318ce0");
+  public static final Color LIGHT_BLUE = new Color("#318ce0");
+  public static final Color BLUE = new Color("blue");
   public static final Color BLACK = new Color("#000000");
   public static final Color ORANGE = new Color("#f88247");
   public static final Color GREY = new Color("#a9a9a9");
@@ -51,6 +52,7 @@ public class Color {
   public static final Color BROWN = new Color("#ab8f38");
   public static final Color CHROME_BLUE = new Color("#eeeeff");
   public static final Color DARKBLUE = new Color("#5eb9f8");
+  public static final Color PURPLE = new Color("purple");
 
   private String colorStr = "";
 

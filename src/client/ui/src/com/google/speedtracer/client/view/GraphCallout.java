@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.speedtracer.client.visualizations.view;
+package com.google.speedtracer.client.view;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
@@ -22,9 +22,10 @@ import com.google.gwt.graphics.client.Color;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.topspin.ui.client.Window;
+import com.google.speedtracer.client.model.GraphCalloutModel;
+import com.google.speedtracer.client.timeline.TimeLineModel;
+import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.util.dom.DocumentExt;
-import com.google.speedtracer.client.view.MainTimeLine;
-import com.google.speedtracer.client.visualizations.model.TransientMarkerModel;
 
 /**
  * Marker that represents the current selection.
@@ -34,7 +35,7 @@ import com.google.speedtracer.client.visualizations.model.TransientMarkerModel;
  * label points toward the right. If the value being annotated is too high, the
  * label is drawn over the bottom of the map instead of over the top.
  */
-public class CurrentSelectionMarker extends TransientMarker {
+public class GraphCallout implements GraphCalloutModel.ChangeListener {
   /**
    * CSS.
    */
@@ -58,68 +59,78 @@ public class CurrentSelectionMarker extends TransientMarker {
    * Externalized interface.
    */
   public interface Resources extends ClientBundle {
-    @Source("resources/CurrentSelectionMarker.css")
-    CurrentSelectionMarker.Css currentSelectionMarkerCss();
+    @Source("resources/GraphCallout.css")
+    GraphCallout.Css currentSelectionMarkerCss();
   }
 
   private static final int MINIMUM_DURATION_DISPLAY_WIDTH = 1;
+
   private final Canvas canvas;
+
   private final Css css;
-  private final Element duration;
+
+  private final Element element;
+
   private final Element label;
+
   private final int reverseTippingPoint = 250;
 
-  public CurrentSelectionMarker(Element element,
-      TransientMarkerModel markerItem, MainTimeLine mainTimeLine,
-      CurrentSelectionMarker.Resources resources) {
-    super(element, mainTimeLine, markerItem,
-        resources.currentSelectionMarkerCss().icon());
+  private final MainTimeLine mainTimeline;
+
+  private final Element parentElement;
+
+  public GraphCallout(GraphCalloutModel calloutModel,
+      MainTimeLine mainTimeline, GraphCallout.Resources resources) {
     this.css = resources.currentSelectionMarkerCss();
+    this.mainTimeline = mainTimeline;
+    this.parentElement = mainTimeline.getGraphContainerElement();
+
+    // Create a canvas to draw the leader.
     canvas = new Canvas(css.leadWidth(), css.leadHeight());
     canvas.getElement().setClassName(css.lead());
-    label = DocumentExt.get().createDivWithClassName(css.label());
-    duration = DocumentExt.get().createDivWithClassName(css.duration());
-    duration.appendChild(canvas.getElement());
-    duration.appendChild(label);
 
-    element.appendChild(duration);
+    // Add containers for the label text and the duration box.
+    DocumentExt document = parentElement.getOwnerDocument().cast();
+    label = document.createDivWithClassName(css.label());
+    element = document.createDivWithClassName(css.duration());
+    element.appendChild(canvas.getElement());
+    element.appendChild(label);
+    parentElement.appendChild(element);
+
+    calloutModel.addModelChangeListener(this);
   }
 
-  @Override
-  public void destroy() {
-    getParentElement().removeChild(duration);
-    super.destroy();
-  }
-
-  @Override
-  public void onModelChange(TransientMarkerModel m) {
-    super.onModelChange(m);
+  public void onModelChange(GraphCalloutModel m) {
     canvas.clear();
-    if (isVisible() && !m.isNoSelection()) {
+    if (m.isSelected()) {
+      TimeLineModel timelineModel = mainTimeline.getModel();
+      double pixelsPerDomain = mainTimeline.getCurrentGraphWidth()
+          / (timelineModel.getRightBound() - timelineModel.getLeftBound());
+      int xPosition = (int) ((m.getStartTime() - timelineModel.getLeftBound()) * pixelsPerDomain);
       // Compute the duration as pixels, and only display the
       // duration block if it exceeds a minimum size.
       double durationPixels = m.getDuration() * pixelsPerDomain;
-      paint((int) durationPixels);
-      label.setInnerHTML(m.getDescription());
-
+      label.setInnerHTML(m.getDescription() + " @"
+          + TimeStampFormatter.format(m.getStartTime()));
+      paint(xPosition, (int) durationPixels);      
     } else {
       label.setInnerHTML("");
-      duration.getStyle().setProperty("display", "none");
+      element.getStyle().setProperty("display", "none");
     }
   }
 
-  private void paint(int durationPixels) {
+  private void paint(int xPosition, int durationPixels) {
     canvas.setStrokeStyle(Color.BLACK);
     canvas.setLineWidth(2.0);
     canvas.beginPath();
 
     // Determine which horizontal direction the leader should be drawn.
     int distanceFromRight = Window.getInnerWidth()
-        - (getParentElement().getAbsoluteLeft() + xPosition);
+        - (parentElement.getAbsoluteLeft() + xPosition);
     boolean reverseLeader = distanceFromRight < reverseTippingPoint;
     Style canvasStyle = canvas.getElement().getStyle();
     Style labelStyle = label.getStyle();
-    Style durationStyle = duration.getStyle();
+    Style durationStyle = element.getStyle();
 
     // If the duration div runs off of the left, it overwrites the
     // title, so fix that up.

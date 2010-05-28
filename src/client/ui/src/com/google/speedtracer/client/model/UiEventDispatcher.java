@@ -27,9 +27,18 @@ import java.util.List;
  */
 public class UiEventDispatcher implements EventRecordDispatcher {
   /**
-   * Listener interface for handling UiEventDispatcher events.
+   * Listener interface for handling load events.
    */
-  public interface Listener {
+  public interface LoadEventListener {
+    void onDomContentLoaded(DomContentLoadedEvent event);
+
+    void onWindowLoad(WindowLoadEvent event);
+  }
+
+  /**
+   * Listener interface for handling UiEvent events.
+   */
+  public interface UiEventListener {
     void onUiEventFinished(UiEvent event);
   }
 
@@ -53,7 +62,8 @@ public class UiEventDispatcher implements EventRecordDispatcher {
    * @param typeMap
    */
   private static void setSpecialCasedEventCallbacks(
-      final UiEventDispatcher dispatcher, JsIntegerMap<EventRecordDispatcher> typeMap) {
+      final UiEventDispatcher dispatcher,
+      JsIntegerMap<EventRecordDispatcher> typeMap) {
 
     typeMap.put(TimerCleared.TYPE, new EventRecordDispatcher() {
       public void onEventRecord(EventRecord data) {
@@ -76,22 +86,47 @@ public class UiEventDispatcher implements EventRecordDispatcher {
         // Data Received events.
       }
     });
+
+    typeMap.put(WindowLoadEvent.TYPE, new EventRecordDispatcher() {
+      public void onEventRecord(EventRecord data) {
+        List<LoadEventListener> listeners = dispatcher.loadEventListeners;
+        for (int i = 0, n = listeners.size(); i < n; i++) {
+          listeners.get(i).onWindowLoad(data.<WindowLoadEvent> cast());
+        }
+      }
+    });
+
+    typeMap.put(DomContentLoadedEvent.TYPE, new EventRecordDispatcher() {
+      public void onEventRecord(EventRecord data) {
+        List<LoadEventListener> listeners = dispatcher.loadEventListeners;
+        for (int i = 0, n = listeners.size(); i < n; i++) {
+          listeners.get(i).onDomContentLoaded(
+              data.<DomContentLoadedEvent> cast());
+        }
+      }
+    });
   }
 
-  private final List<Listener> listeners = new ArrayList<Listener>();
-
-  private final JsIntegerMap<TimerInstalled> timerMetaData = JsIntegerMap.create();
+  private final List<LoadEventListener> loadEventListeners = new ArrayList<LoadEventListener>();
 
   private final JsIntegerMap<EventRecordDispatcher> specialCasedTypeMap = JsIntegerMap.create();
 
   private final TimerInstallationVisitor timerInstallationVisitor = new TimerInstallationVisitor();
 
+  private final JsIntegerMap<TimerInstalled> timerMetaData = JsIntegerMap.create();
+
+  private final List<UiEventListener> uiEventListeners = new ArrayList<UiEventListener>();
+
   UiEventDispatcher() {
     setSpecialCasedEventCallbacks(this, specialCasedTypeMap);
   }
 
-  public void addListener(Listener listener) {
-    listeners.add(listener);
+  public void addLoadEventListener(LoadEventListener listener) {
+    loadEventListeners.add(listener);
+  }
+
+  public void addUiEventListener(UiEventListener listener) {
+    uiEventListeners.add(listener);
   }
 
   public TimerInstalled getTimerMetaData(int timerId) {
@@ -112,8 +147,12 @@ public class UiEventDispatcher implements EventRecordDispatcher {
     }
   }
 
-  public void removeListener(Listener listener) {
-    listeners.remove(listener);
+  public void removeLoadEventListener(LoadEventListener listener) {
+    loadEventListeners.remove(listener);
+  }
+
+  public void removeUiEventListener(UiEventListener listener) {
+    uiEventListeners.remove(listener);
   }
 
   private void onTimerCleared(TimerCleared event) {
@@ -133,8 +172,8 @@ public class UiEventDispatcher implements EventRecordDispatcher {
     // Run some visitors here to extract Timer Installations.
     event.apply(timerInstallationVisitor);
 
-    for (int i = 0, n = listeners.size(); i < n; i++) {
-      Listener listener = listeners.get(i);
+    for (int i = 0, n = uiEventListeners.size(); i < n; i++) {
+      UiEventListener listener = uiEventListeners.get(i);
       listener.onUiEventFinished(event);
     }
   }

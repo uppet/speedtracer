@@ -15,16 +15,13 @@
  */
 package com.google.speedtracer.client.visualizations.model;
 
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.client.model.Visualization;
 import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.timeline.GraphUiProps;
 import com.google.speedtracer.client.view.MainTimeLine;
-import com.google.speedtracer.client.visualizations.view.CurrentSelectionMarker;
 import com.google.speedtracer.client.visualizations.view.SluggishnessDetailView;
-import com.google.speedtracer.client.visualizations.view.TransientMarker;
 
 /**
  * Monitors Sluggishness.
@@ -71,19 +68,6 @@ public class SluggishnessVisualization extends
     super(TITLE, SUBTITLE, sluggishnessModel, createGraphUiProps());
     this.resources = resources;
     this.timeline = timeline;
-
-    // Add the Transient Markers for page boundaries and current event
-    // selection.
-    setCurrentEventMarkerModel(new TransientMarkerModel() {
-
-      @Override
-      public TransientMarker createTransientMarkerInstance(Element element,
-          MainTimeLine mainTimeLine, CurrentSelectionMarker.Resources resources) {
-        return new CurrentSelectionMarker(element, this, mainTimeLine,
-            resources);
-      }
-
-    });
 
     setDetailsView(createDetailsView(detailsContainer, timeline));
     setModel(sluggishnessModel);
