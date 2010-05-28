@@ -299,6 +299,8 @@ public abstract class FilteringScrollTable extends Div implements
 
     int rowHeight();
 
+    String selected();
+
     String tableContent();
   }
 
@@ -370,7 +372,6 @@ public abstract class FilteringScrollTable extends Div implements
    * A row in the table.
    */
   public class TableRow extends Row {
-    private static final String selectedColor = "#e6e6ff";
     public final double filterValue;
     private final List<Cell> cells = new ArrayList<Cell>();
     private RowDetails details;
@@ -414,15 +415,11 @@ public abstract class FilteringScrollTable extends Div implements
                 + css.rowHeight();
 
             if (isExpanded()) {
-              getElement().getStyle().setProperty("backgroundColor", "");
-              getElement().getStyle().setProperty("borderBottom", "");
+              getElement().removeClassName(css.selected());
               getElement().getStyle().setPropertyPx("height", css.rowHeight());
               isExpanded = false;
             } else {
-              getElement().getStyle().setProperty("backgroundColor",
-                  selectedColor);
-              getElement().getStyle().setProperty("borderBottom",
-                  "1px solid #888");
+              getElement().addClassName(css.selected());
               getElement().getStyle().setPropertyPx("height", targetHeight);
               isExpanded = true;
             }
@@ -495,11 +492,11 @@ public abstract class FilteringScrollTable extends Div implements
 
   private final FilteringScrollTable.Css css;
 
-  private final EventListenerOwner listenerOwner = new EventListenerOwner();
-
   private final Filter filter;
 
   private final FilterPanel filterPanel;
+
+  private final EventListenerOwner listenerOwner = new EventListenerOwner();
 
   private final Container myContainer;
 

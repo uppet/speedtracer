@@ -142,14 +142,14 @@ webkitEvents = [
   { 
     'value' : 18, 
     'constant' : 'DOM_CONTENT_LOADED',
-    'desc' : 'DomContentLoaded Event',
-    'help_text' : 'The DomContentLoaded Event fired meaning all elements in the Document have been parsed and are ready.',
+    'desc' : 'Document Parsing Complete',
+    'help_text' : 'DomContentLoaded event returned from JavaScript, Styles matched, chrome extension content scripts ran, and the HTML parser completed. Ready to layout and do first paint.',
   },
   { 
     'value' : 19, 
     'constant' : 'LOAD_EVENT',
-    'desc' : 'WebKit Load Event',
-    'help_text' : 'Event indicating that all elements are loaded and all static resources (like images and CSS) have been downloaded and processed.',
+    'desc' : 'Window Load Event',
+    'help_text' : 'Event indicating that all static resources (like images and CSS) have been downloaded and loaded.',
   }
 ]
 # END INSPECTOR TIMELINE RECORDS.

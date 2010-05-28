@@ -40,6 +40,10 @@ public class Url {
     }
   }
 
+  public static String getUrlWithoutHash(String url) {
+    return url.split("#")[0];
+  }
+
   private String applicationUrl;
 
   // We cache this because this is queried a crap ton during CPU profiling.
@@ -128,6 +132,10 @@ public class Url {
 
   public String getUrl() {
     return url;
+  }
+
+  public String getUrlWithoutHash() {
+    return getUrlWithoutHash(url);
   }
 
   private native String extractOriginImpl(String url) /*-{

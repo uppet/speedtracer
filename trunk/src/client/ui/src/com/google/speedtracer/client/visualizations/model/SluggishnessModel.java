@@ -37,7 +37,7 @@ import java.util.List;
  * state.
  */
 public class SluggishnessModel implements VisualizationModel,
-    UiEventDispatcher.Listener, HintletInterface.HintListener {
+    UiEventDispatcher.UiEventListener, HintletInterface.HintListener {
 
   /**
    * Listener that is invoked when an existing event has had a change and the
@@ -90,7 +90,7 @@ public class SluggishnessModel implements VisualizationModel,
         defaultSluggishnessYScale);
 
     // Register for relevant events.
-    dataDispatcher.getUiEventDispatcher().addListener(this);
+    dataDispatcher.getUiEventDispatcher().addUiEventListener(this);
     dataDispatcher.getHintletEngineHost().addHintListener(this);
   }
 
@@ -137,7 +137,7 @@ public class SluggishnessModel implements VisualizationModel,
   }
 
   public void detachFromData() {
-    dataDispatcher.getUiEventDispatcher().removeListener(this);
+    dataDispatcher.getUiEventDispatcher().removeUiEventListener(this);
   }
 
   public double getCurrentLeft() {

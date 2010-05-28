@@ -21,7 +21,6 @@ import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.timeline.GraphUiProps;
 import com.google.speedtracer.client.view.DetailView;
 import com.google.speedtracer.client.view.MainTimeLine;
-import com.google.speedtracer.client.visualizations.model.TransientMarkerModel;
 import com.google.speedtracer.client.visualizations.model.VisualizationModel;
 
 /**
@@ -35,11 +34,6 @@ import com.google.speedtracer.client.visualizations.model.VisualizationModel;
 public abstract class Visualization<V extends DetailView, M extends VisualizationModel> {
 
   private final JSOArray<ButtonDescription> buttons = JSOArray.create();
-
-  /**
-   * Optional field for placing transient overlays on the graph.
-   */
-  private TransientMarkerModel currentEventMarkerModel;
 
   /**
    * The View into our visualization that appears in the details view panel.
@@ -79,10 +73,6 @@ public abstract class Visualization<V extends DetailView, M extends Visualizatio
 
   public JSOArray<ButtonDescription> getButtons() {
     return buttons;
-  }
-
-  public TransientMarkerModel getCurrentEventMarkerModel() {
-    return currentEventMarkerModel;
   }
 
   public V getDetailsView() {
@@ -127,10 +117,6 @@ public abstract class Visualization<V extends DetailView, M extends Visualizatio
    */
   protected abstract V createDetailsView(Container container,
       MainTimeLine timeLine);
-
-  protected void setCurrentEventMarkerModel(TransientMarkerModel markerModel) {
-    this.currentEventMarkerModel = markerModel;
-  }
 
   protected void setDetailsView(V detailsView) {
     this.detailView = detailsView;

@@ -50,6 +50,8 @@ public class NetworkTimeLineDetailView extends DetailView implements
   public interface Css extends CssResource {
     String content();
 
+    String contentWrapper();
+
     String heightFiller();
 
     String resourcePanel();
@@ -67,9 +69,7 @@ public class NetworkTimeLineDetailView extends DetailView implements
     ImageResource scaleLine();
   }
 
-  private final Container container;
-
-  private final Element contentPanel;
+  private final DefaultContainerImpl contentContainer;
 
   private final List<ResourceRow> displayed;
 
@@ -83,10 +83,10 @@ public class NetworkTimeLineDetailView extends DetailView implements
 
   private final NetworkTimeLineDetailView.Resources resources;
 
-  private boolean shouldFlash = false;
-
   private final ServerEventController serverEventController = new ServerEventController(
       this);
+
+  private boolean shouldFlash = false;
 
   public NetworkTimeLineDetailView(Container parent, NetworkVisualization viz,
       NetworkTimeLineDetailView.Resources resources) {
@@ -98,16 +98,18 @@ public class NetworkTimeLineDetailView extends DetailView implements
     elem.getStyle().setProperty("backgroundPosition",
         Constants.GRAPH_PIXEL_OFFSET + "px 0");
     displayed = new ArrayList<ResourceRow>();
-    contentPanel = DocumentExt.get().createDivWithClassName(css.content());
-    container = new DefaultContainerImpl(contentPanel);
+    DocumentExt document = elem.getOwnerDocument().cast();
+    Element contentWrapper = document.createDivWithClassName(css.contentWrapper());
+    Element contentElement = document.createDivWithClassName(css.content());
+    contentWrapper.appendChild(contentElement);
+    contentContainer = new DefaultContainerImpl(contentElement);
 
     // nice border going the height of the element
-    Element filler = DocumentExt.get().createDivWithClassName(
-        css.heightFiller());
-    filler.getStyle().setPropertyPx("width", Constants.GRAPH_HEADER_WIDTH);
+    Element filler = document.createDivWithClassName(css.heightFiller());
+    filler.getStyle().setPropertyPx("width", Constants.GRAPH_PIXEL_OFFSET);
 
     elem.appendChild(filler);
-    elem.appendChild(contentPanel);
+    elem.appendChild(contentWrapper);
 
     ResizeEvent.addResizeListener(this, Window.get(), this);
   }
@@ -123,8 +125,8 @@ public class NetworkTimeLineDetailView extends DetailView implements
     shouldFlash = true;
   }
 
-  public Container getContainer() {
-    return container;
+  public Container getContentContainer() {
+    return contentContainer;
   }
 
   public int getRowCount() {
@@ -205,7 +207,7 @@ public class NetworkTimeLineDetailView extends DetailView implements
 
     // blank the resource Panel
     displayed.clear();
-    getContentPanel().setInnerHTML("");
+    getContentElement().setInnerHTML("");
 
     // We do a naive linear search until the kinks can be ironed
     // out of more sophisticated search.
@@ -232,8 +234,9 @@ public class NetworkTimeLineDetailView extends DetailView implements
         String fileExtension = (dotIndex < 0) ? ".html"
             : lastPathComponent.substring(dotIndex);
 
-        final ResourceRow row = new ResourceRow(getContainer(), resource,
-            fileExtension, left, right, this, resources, serverEventController);
+        final ResourceRow row = new ResourceRow(getContentContainer(),
+            resource, fileExtension, left, right, this, resources,
+            serverEventController);
 
         displayed.add(row);
       }
@@ -246,8 +249,8 @@ public class NetworkTimeLineDetailView extends DetailView implements
     isDirty = false;
   }
 
-  private Element getContentPanel() {
-    return contentPanel;
+  private Element getContentElement() {
+    return contentContainer.getElement();
   }
 
   private NetworkVisualizationModel getModel() {

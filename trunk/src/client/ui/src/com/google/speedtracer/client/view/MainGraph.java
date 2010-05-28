@@ -17,6 +17,7 @@ package com.google.speedtracer.client.view;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.graphics.client.Color;
+import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.ImageResource.ImageOptions;
@@ -28,7 +29,6 @@ import com.google.speedtracer.client.timeline.HighlightModel;
 import com.google.speedtracer.client.timeline.TimeLineGraph;
 import com.google.speedtracer.client.timeline.HighlightModel.HighlightEntry;
 import com.google.speedtracer.client.util.dom.DocumentExt;
-import com.google.speedtracer.client.visualizations.view.CurrentSelectionMarker;
 import com.google.speedtracer.client.visualizations.view.HintletIndicator;
 
 import java.util.Iterator;
@@ -52,7 +52,7 @@ public class MainGraph extends TimeLineGraph {
   /**
    * Resources for {@link TimeLineGraph}.
    */
-  public interface Resources extends CurrentSelectionMarker.Resources {
+  public interface Resources extends ClientBundle {
     @Source("resources/scale_line.png")
     @ImageOptions(repeatStyle = RepeatStyle.Both)
     ImageResource graphScaleLines();

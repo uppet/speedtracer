@@ -49,7 +49,8 @@ public class MainTimeLine extends TimeLine {
   public interface Resources extends DetailViews.Resources,
       MainGraph.Resources, OverViewGraph.Resources,
       TransientGraphSelection.Resources, NetworkVisualization.Resources,
-      SluggishnessVisualization.Resources, JavaScriptProfileRenderer.Resources {
+      SluggishnessVisualization.Resources, JavaScriptProfileRenderer.Resources,
+      GraphCallout.Resources {
     @Source("resources/MainTimeLine.css")
     MainTimeLine.Css mainTimeLineCss();
   }
@@ -63,8 +64,10 @@ public class MainTimeLine extends TimeLine {
     this.transition = new Zoom(this);
     transition.setCallBack(cb);
     addGraph(new MainGraph(this, visualizations, resources));
-    // Create the BlockingTransientSelection. It installs itself.
+    // Create the Draggable selection widget.
     new TransientGraphSelection(this, resources);
+    // Add graph callout widget.
+    new GraphCallout(timeLineModel.getGraphCalloutModel(), this, resources);
   }
 
   public boolean isAnimating() {

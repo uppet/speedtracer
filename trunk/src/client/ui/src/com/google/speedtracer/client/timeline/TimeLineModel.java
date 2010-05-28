@@ -16,6 +16,7 @@
 package com.google.speedtracer.client.timeline;
 
 import com.google.gwt.user.client.Timer;
+import com.google.speedtracer.client.model.GraphCalloutModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,6 +70,9 @@ public class TimeLineModel implements DomainObserver, Boundable {
 
   private final List<DomainObserver> domainObservers = new ArrayList<DomainObserver>();
 
+  private final GraphCalloutModel graphCalloutModel = new GraphCalloutModel(0,
+      0, "", 0);
+
   private boolean isDirty = false;
 
   private double leftBound;
@@ -110,6 +114,10 @@ public class TimeLineModel implements DomainObserver, Boundable {
       observer.onWindowBoundsChange(start, end);
     }
     isDirty = false;
+  }
+
+  public GraphCalloutModel getGraphCalloutModel() {
+    return graphCalloutModel;
   }
 
   public int getGraphCount() {

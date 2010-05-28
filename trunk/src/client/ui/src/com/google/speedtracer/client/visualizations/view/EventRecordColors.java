@@ -17,6 +17,7 @@ package com.google.speedtracer.client.visualizations.view;
 
 import com.google.gwt.coreext.client.JsIntegerMap;
 import com.google.gwt.graphics.client.Color;
+import com.google.speedtracer.client.model.DomContentLoadedEvent;
 import com.google.speedtracer.client.model.DomEvent;
 import com.google.speedtracer.client.model.EvalScript;
 import com.google.speedtracer.client.model.GarbageCollectionEvent;
@@ -28,6 +29,7 @@ import com.google.speedtracer.client.model.ParseHtmlEvent;
 import com.google.speedtracer.client.model.RecalcStyleEvent;
 import com.google.speedtracer.client.model.ResourceDataReceivedEvent;
 import com.google.speedtracer.client.model.TimerFiredEvent;
+import com.google.speedtracer.client.model.WindowLoadEvent;
 import com.google.speedtracer.client.model.XhrReadyStateChangeEvent;
 
 /**
@@ -45,13 +47,15 @@ public class EventRecordColors {
     registerColor(PaintEvent.TYPE, Color.MIDNIGHT_BLUE);
     registerColor(ParseHtmlEvent.TYPE, Color.INDIAN_RED);
     registerColor(LogEvent.TYPE, Color.CYAN);
-    registerColor(TimerFiredEvent.TYPE, Color.BLUE);
+    registerColor(TimerFiredEvent.TYPE, Color.LIGHT_BLUE);
     registerColor(XhrReadyStateChangeEvent.TYPE, Color.LIGHTGREEN);
     registerColor(RecalcStyleEvent.TYPE, Color.DARKGREEN);
     registerColor(EvalScript.TYPE, Color.PEACH);
     registerColor(JavaScriptExecutionEvent.TYPE, Color.YELLOW);
     registerColor(ResourceDataReceivedEvent.TYPE, Color.DARKBLUE);
     registerColor(GarbageCollectionEvent.TYPE, Color.BROWN);
+    registerColor(DomContentLoadedEvent.TYPE, Color.PURPLE);
+    registerColor(WindowLoadEvent.TYPE, Color.RED);
 
     // TODO(jaimeyap): Make use of these colors later on.
     // registerColor(MouseHoverStyleEvent.TYPE, Color.LIMEGREEN);

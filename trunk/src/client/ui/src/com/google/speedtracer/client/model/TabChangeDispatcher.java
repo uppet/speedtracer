@@ -16,6 +16,7 @@
 package com.google.speedtracer.client.model;
 
 import com.google.speedtracer.client.model.DataDispatcher.EventRecordDispatcher;
+import com.google.speedtracer.client.util.Url;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,13 +26,16 @@ import java.util.List;
  * from UI and network events although they have a very similar format.
  */
 public class TabChangeDispatcher implements EventRecordDispatcher {
-
   /**
-   * Listener interface for handling TabNavigationModel events.
+   * Listener interface for handling page transitions.
    */
   public interface Listener {
-    void onPageTransition(PageTransition change);
+    void onPageTransition(TabChangeEvent change);
+
+    void onRefresh(TabChangeEvent change);
   }
+
+  private String currentUrl = "";
 
   private final List<Listener> listeners = new ArrayList<Listener>();
 
@@ -40,14 +44,26 @@ public class TabChangeDispatcher implements EventRecordDispatcher {
   }
 
   public void onEventRecord(EventRecord data) {
-    if (PageTransition.TYPE == data.getType()) {
+    if (TabChangeEvent.TYPE == data.getType()) {
+      // These should only be fired when there is a main resource request
+      // (redirects should already be accounted for).
+      TabChangeEvent e = data.cast();
+      String newUrl = Url.getUrlWithoutHash(e.getUrl());
+
       for (int i = 0, n = listeners.size(); i < n; i++) {
-        listeners.get(i).onPageTransition(data.<PageTransition> cast());
+        Listener listener = listeners.get(i);
+        if (!currentUrl.equals(newUrl)) {
+          listener.onPageTransition(e);
+        } else {
+          listener.onRefresh(e);
+        }
       }
+
+      currentUrl = newUrl;
     }
   }
 
-  public void removeListener(Listener listener) {
+  public void removePageTransitionListener(Listener listener) {
     listeners.remove(listener);
   }
 }

@@ -18,15 +18,15 @@ package com.google.speedtracer.client.model;
 import com.google.speedtracer.shared.EventRecordType;
 
 /**
- * EventRecord indicating a page transition.
+ * EventRecord indicating a page transition or a page refresh.
  */
-public class PageTransition extends EventRecord {
+public class TabChangeEvent extends EventRecord {
   public static final int TYPE = EventRecordType.TAB_CHANGED;
 
-  public static native PageTransition create(double time, String newUrl) /*-{
+  public static native TabChangeEvent create(double time, String newUrl) /*-{
     return {
       time: time,
-      type: @com.google.speedtracer.client.model.PageTransition::TYPE,
+      type: @com.google.speedtracer.client.model.TabChangeEvent::TYPE,
       data: {
         url: newUrl
       }
@@ -37,14 +37,14 @@ public class PageTransition extends EventRecord {
       double startTime, String newUrl) /*-{
     return {
       startTime: startTime,
-      type: @com.google.speedtracer.client.model.PageTransition::TYPE,
+      type: @com.google.speedtracer.client.model.TabChangeEvent::TYPE,
       data: {
         url: newUrl
       }
     };
   }-*/;
 
-  protected PageTransition() {
+  protected TabChangeEvent() {
   }
 
   public final String getUrl() {
