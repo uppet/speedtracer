@@ -16,9 +16,9 @@ If Speed Tracer supports your symbol map format, the only thing you need to do t
 
 The symbol manifest is a simple JSON structure that maps keys corresponding to the names of the obfuscated JavaScript files you serve in production, to JSON objects (the re-symbolization information) that contain information about how to perform the de-obfuscation.
 
-The Keys corresponding to the obfuscated JavaScript file are URLs that can either be full, origin relative, or resource relative. Resource relative simply means paths relative to where the application host page was served. For example, if you are profiling "http://foo.com/index.html", a resource relative path of "js/myJS.js" would resolve to "http://foo.com/js/myJS.js".
+The keys are URLs for the obfuscated JavaScript that is serve up with your application. These URLs can either be full absolute URLs, origin relative URLs, or resource relative URLs. "Resource relative" simply means paths relative to where the application host page was served. For example, if you are profiling "http://foo.com/index.html", a resource relative path of "js/myJS.js" would resolve to "http://foo.com/js/myJS.js".
 
-By default, Speed Tracer tries to look for a symbol manifest named "symbolmanifest.json" relative to each new page you visit in the browser. For example, if you navigate to "http://foo.com/index.html", Speed Tracer will attempt to fetch a manifest at "http://foo.com/symbolmanifest.json".
+By default, Speed Tracer tries to look for a symbol manifest named *"symbolmanifest.json"* relative to each new page you visit in the browser. For example, if you navigate to "http://foo.com/index.html", Speed Tracer will attempt to fetch a manifest at "http://foo.com/symbolmanifest.json".
 
 If you want to serve your manifest at a different location, simply press "CTRL+M" in Speed Tracer to bring up the manifest bindings panel. You can associate a manifest with the page you are profiling using this simple UI. Speed Tracer will remember this manifest for you for future profile runs.
 
@@ -52,6 +52,10 @@ The following is an example symbol manifest:
 The "symbols" entry in the re-symbolization information object is a URL that points to the symbol mapping file for that resource. It is currently specified *as a path that is resource relative to the symbol manifest*.
 
 TODO: Make the symbol map path be interpreted similarly to the resource Key, that is, allow origin relative and absolute URLs.
+
+We realize that for users of tools like GWT, building the symbol manifest should be automatable. For GWT users, we will post example code for generating the symbol manifest.
+
+TODO: Post example symbol manifest servlet.
 
 = Serving Source =
 
