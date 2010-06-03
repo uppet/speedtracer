@@ -41,15 +41,18 @@ public abstract class Extension implements EntryPoint {
 
     String name();
 
+    String optionsPage() default NO_OPTIONS_URL;
+    
     String[] permissions();
+
+    String publicKey();
 
     String updateUrl() default NO_UPDATE_URL;
 
     String version();
-
-    String publicKey();
   }
 
+  public static final String NO_OPTIONS_URL = "";
   public static final String NO_UPDATE_URL = "";
 
   public abstract String getVersion();

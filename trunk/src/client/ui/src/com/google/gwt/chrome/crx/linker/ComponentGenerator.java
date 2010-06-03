@@ -48,7 +48,6 @@ public class ComponentGenerator extends Generator {
   private static final String PAGE_USER_TYPE = "com.google.gwt.chrome.crx.client.Page";
   private static final String PAGEACTION_USER_TYPE = "com.google.gwt.chrome.crx.client.PageAction";
   private static final String PLUGIN_USER_TYPE = "com.google.gwt.chrome.crx.client.Plugin";
-  private static final String TOOLSTRIP_USER_TYPE = "com.google.gwt.chrome.crx.client.ToolStrip";
 
   private static String emitBrowserActionCode(TreeLogger logger,
       GeneratorContext context, JClassType userType, String name,
@@ -81,9 +80,6 @@ public class ComponentGenerator extends Generator {
       throws UnableToCompleteException {
     final TypeOracle typeOracle = context.getTypeOracle();
 
-    final JClassType toolStripType = typeOracle.findType(TOOLSTRIP_USER_TYPE);
-    assert toolStripType != null;
-
     final JClassType pageType = typeOracle.findType(PAGE_USER_TYPE);
     assert pageType != null;
 
@@ -101,9 +97,7 @@ public class ComponentGenerator extends Generator {
 
     try {
       final JClassType classType = typeOracle.getType(typeName);
-      if (classType.isAssignableTo(toolStripType)) {
-        return processToolStrip(logger, context, classType);
-      } else if (classType.isAssignableTo(pageType)) {
+      if (classType.isAssignableTo(pageType)) {
         return processPage(logger, context, classType);
       } else if (classType.isAssignableTo(contentScriptType)) {
         processContentScript(logger, context, classType, typeName);
@@ -339,16 +333,6 @@ public class ComponentGenerator extends Generator {
     }
     context.commitArtifact(logger, new PluginArtifact(spec.path(),
         spec.isPublic()));
-  }
-
-  private static String processToolStrip(TreeLogger logger,
-      GeneratorContext context, JClassType userType)
-      throws UnableToCompleteException {
-    String name = userType.getSimpleSourceName();
-    String path = name + ".html";
-    emitComponentPage(logger, context, name, path);
-    context.commitArtifact(logger, new ToolStripArtifact(path));
-    return emitComponentPageCode(logger, context, userType);
   }
 
   @Override
