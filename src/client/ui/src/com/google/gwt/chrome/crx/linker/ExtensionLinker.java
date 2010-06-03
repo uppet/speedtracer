@@ -34,7 +34,6 @@ import com.google.json.serialization.JsonValue;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Collection;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.Map.Entry;
@@ -121,15 +120,6 @@ public class ExtensionLinker extends AbstractLinker {
       pluginsArray.add(pluginObject);
     }
     return pluginsArray;
-  }
-
-  private static JsonArray createToolStripsArray(
-      Set<ToolStripArtifact> toolstrips) {
-    final JsonArray array = JsonArray.create();
-    for (ToolStripArtifact toolstrip : toolstrips) {
-      array.add(toolstrip.getPath());
-    }
-    return array;
   }
 
   private static CompilationResult findCompilation(TreeLogger logger,
@@ -226,9 +216,6 @@ public class ExtensionLinker extends AbstractLinker {
     // Retrieve the BrowserAction (should be a collection of size one).
     final SortedSet<BrowserActionArtifact> browserActions = artifacts.find(BrowserActionArtifact.class);
 
-    // Retrieve the ToolStrips.
-    final SortedSet<ToolStripArtifact> toolStrips = artifacts.find(ToolStripArtifact.class);
-
     // Retrieve the ContentScripts
     final SortedSet<ContentScriptArtifact> contentScripts = artifacts.find(ContentScriptArtifact.class);
 
@@ -242,7 +229,7 @@ public class ExtensionLinker extends AbstractLinker {
     return addArtifacts(artifacts, emitString(logger, generateHtmlContents(
         logger, compilation), backgroundPageFileName), emitString(logger,
         generateManifestContents(logger, backgroundPageFileName, extension,
-            pageActions, browserActions, toolStrips, contentScripts, plugins),
+            pageActions, browserActions, contentScripts, plugins),
         "manifest.json"));
   }
 
@@ -273,7 +260,6 @@ public class ExtensionLinker extends AbstractLinker {
       String backgroundPageFileName, ExtensionArtifact extension,
       SortedSet<PageActionArtifact> pageActions,
       SortedSet<BrowserActionArtifact> browserActions,
-      SortedSet<ToolStripArtifact> toolStrips,
       SortedSet<ContentScriptArtifact> contentScripts,
       SortedSet<PluginArtifact> plugins) throws UnableToCompleteException {
     final JsonObject config = JsonObject.create();
@@ -290,9 +276,6 @@ public class ExtensionLinker extends AbstractLinker {
     }
     if (backgroundPageFileName.length() > 0) {
       config.put("background_page", backgroundPageFileName);
-    }
-    if (toolStrips.size() > 0) {
-      config.put("toolstrips", createToolStripsArray(toolStrips));
     }
     if (contentScripts.size() > 0) {
       config.put("content_scripts", createContentScriptsArray(contentScripts));

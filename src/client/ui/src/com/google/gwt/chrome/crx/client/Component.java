@@ -16,7 +16,7 @@
 package com.google.gwt.chrome.crx.client;
 
 /**
- * A component of a chrome extension (ContentScripts, ToolStrips, and Bundled
+ * A component of a chrome extension (ContentScripts, BrowserActions and Bundled
  * Pages).
  */
 public interface Component {
