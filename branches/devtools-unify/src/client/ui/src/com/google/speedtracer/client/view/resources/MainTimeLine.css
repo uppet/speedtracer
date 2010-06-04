@@ -1,0 +1,10 @@
+/**
+ * Annotated CSS for default styles for MainTimeLine.java.
+ */
+.mainTimeLine {
+  /* The height of the TimeScale + borders*/
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid #aaa;
+  overflow: visible;
+}

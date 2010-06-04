@@ -1,0 +1,4 @@
+{"hintletRule":"Total Bytes Downloaded","timestamp":14999.004000008106,"description":"More than 500000 bytes downloaded.","refRecord":3,"severity":3}
+{"hintletRule":"Total Bytes Downloaded","timestamp":14999.004000008106,"description":"More than 2000000 bytes downloaded.","refRecord":5,"severity":2}
+{"hintletRule":"Total Bytes Downloaded","timestamp":14999.004000008106,"description":"More than 10000000 bytes downloaded.","refRecord":6,"severity":1}
+{"hintletRule":"Total Bytes Downloaded","timestamp":14999.004000008106,"description":"More than 500000 bytes downloaded.","refRecord":8,"severity":3}

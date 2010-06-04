@@ -1,0 +1,38 @@
+hintlet_static_no_cookie.js
+
+# Input Record 1
+# Expected: none
+# Should *not* fire the rule - no 'Cookie' header
+{"data":{"headers":{"Accept-Ranges":"bytes","Content-Length":"6436","Content-Type":"image/png","Date":"Mon, 07 Sep 1998 00:00:00 GMT","Last-Modified":"Mon, 06 Sep 1998 15:36:22 GMT","Server":"Apache/1.3.41 (Unix)"},"resourceId":"0NetworkResourceEvent31","responseCode":200,"url":"http://example.org/foo.html"},"time":5630.783999998122,"type":23}
+
+# Input Record 2
+# Expected: HINTLET RECORD
+# Cookie Header and type is image.
+{"data":{"headers":{"Cookie":"TESTCOOKIE","Accept-Ranges":"bytes","Content-Length":"6436","Content-Type":"image/png","Date":"Mon, 07 Sep 1998 00:00:00 GMT","Last-Modified":"Mon, 06 Sep 1998 15:36:22 GMT","Server":"Apache/1.3.41 (Unix)"},"resourceId":"0NetworkResourceEvent32","responseCode":200,"url":"http://example.org/foo.png"},"time":5630.783999998122,"type":23}
+
+
+# Input Record: 3
+# Expected: Hintlet
+# Do not fire - Cookie Header but type is plain html
+{"data":{"headers":{"Cookie":"TESTCOOKIE","Accept-Ranges":"bytes","Content-Length":"6436","Content-Type":"text/html","Date":"Mon, 07 Sep 1998 00:00:00 GMT","Last-Modified":"Mon, 06 Sep 1998 15:36:22 GMT","Server":"Apache/1.3.41 (Unix)"},"resourceId":"0NetworkResourceEvent33","responseCode":200,"url":"http://example.org/foo.png"},"time":5630.783999998122,"type":23}
+
+# Input Record 4
+# Expected: none
+# Do not fire: not an image
+{"data":{"domain":"www.example.com","headers":{"Set-Cookie":"TESTCOOKIE","Referer":"http://www.example.com/bcvideo/1.0/iframe/bcHomeIframe.html?z=0&playlistId=1194811622188","User-Agent":"Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/530.11 (KHTML, like Gecko) Chrome/2.0.182.0 Safari/530.11"},"httpMethod":"GET","isCached":false,"lastPathComponent":"5608_1_poguepalmpre_75x50.jpg","mimeType":"mime_type","resourceId":"0NetworkResourceEvent34","url":"http://www.example.com/images/5608_1_poguepalmpre_75x50.html"},"time":14999.004000008106,"type":24}
+
+# Input Record 5
+# Expected: HINTLET RECORD
+# *** Set-cookie header in start record for an image should trigger a hintlet,
+# but so far, we don't classify a document type unless the Content-Type 
+# header is present.  In the start network request, we don't know the 
+# mime type yet, so the document is classified as 'other'  But we can save
+# this for the corresponding response and analyze then.
+{"data":{"domain":"www.example.com","headers":{"Set-Cookie":"TESTCOOKIE","Referer":"http://www.example.com/bcvideo/1.0/iframe/bcHomeIframe.html?z=0&playlistId=1194811622188","User-Agent":"Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/530.11 (KHTML, like Gecko) Chrome/2.0.182.0 Safari/530.11"},"httpMethod":"GET","isCached":false,"lastPathComponent":"5608_1_poguepalmpre_75x50.jpg","mimeType":"mime_type","resourceId":"0NetworkResourceEvent99","url":"http://www.example.com/images/5608_1_poguepalmpre_75x50.jpg"},"time":14999.004000008106,"type":24}
+
+# Input Record 6
+# Expected: none... but triggers a hintlet for record 5
+# This will spit out a hintlet becaue the network request matches record 5.
+# This record provides the mime-type needed to analyze record 5.
+{"data":{"domain":"www.example.com","headers":{"User-Agent":"Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/530.11 (KHTML, like Gecko) Chrome/2.0.182.0 Safari/530.11","Content-Type":"image/jpeg"},"resourceId":"0NetworkResourceEvent99","url":"http://www.example.com/images/5608_1_poguepalmpre_75x50.jpg"},"time":14999.004000008106,"type":23}
+

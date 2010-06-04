@@ -1,0 +1,154 @@
+{
+  "trace": {
+    "date": 1268967930664, 
+    "application": "insight", 
+    "range": {
+      "duration": 2374, 
+      "start": 1268967930664, 
+      "end": 1268967933038
+    }, 
+    "id": "11", 
+    "frameStack": {
+      "range": {
+        "duration": 2374, 
+        "start": 1268967930664, 
+        "end": 1268967933038
+      }, 
+      "id": "0", 
+      "operation": {
+        "type": "HTTP", 
+        "label": "GET /insight/traces/windows/20100319030427204/20100319030527204"
+      }, 
+      "children": [
+        {
+          "range": {
+            "duration": 2367, 
+            "start": 1268967930670, 
+            "end": 1268967933038
+          }, 
+          "id": "1", 
+          "operation": {
+            "sourceCodeLocation": {
+              "className": "org.springframework.web.servlet.DispatcherServlet", 
+              "methodName": "doService", 
+              "lineNumber": 688
+            }, 
+            "type": "WEB_REQUEST", 
+            "label": "Spring Web Dispatch"
+          }, 
+          "children": [
+            {
+              "range": {
+                "duration": 79, 
+                "start": 1268967930674, 
+                "end": 1268967930754
+              }, 
+              "id": "2", 
+              "operation": {
+                "sourceCodeLocation": {
+                  "className": "com.springsource.insight.dashboard.traces.TracesController", 
+                  "methodName": "traceWindow", 
+                  "lineNumber": 90
+                }, 
+                "type": "CONTROLLER_METHOD", 
+                "label": "TracesController#traceWindow(Model,Date,Date,String,String,boolean)"
+              }, 
+              "children": [
+                {
+                  "range": {
+                    "duration": 0, 
+                    "start": 1268967930674, 
+                    "end": 1268967930674
+                  }, 
+                  "id": "3", 
+                  "operation": {
+                    "sourceCodeLocation": {
+                      "className": "com.springsource.insight.repo.trace.impl.MemoryTraceRepo", 
+                      "methodName": "getSummaries", 
+                      "lineNumber": 127
+                    }, 
+                    "type": "ANNOTATED_METHOD", 
+                    "label": "TraceRepo:  getSummaries"
+                  }, 
+                  "children": []
+                }, 
+                {
+                  "range": {
+                    "duration": 79, 
+                    "start": 1268967930675, 
+                    "end": 1268967930754
+                  }, 
+                  "id": "4", 
+                  "operation": {
+                    "sourceCodeLocation": {
+                      "className": "com.springsource.insight.dashboard.util.Sorter", 
+                      "methodName": "sort", 
+                      "lineNumber": 23
+                    }, 
+                    "type": "METHOD", 
+                    "label": "Sorter#sort(List,String,boolean)"
+                  }, 
+                  "children": []
+                }
+              ]
+            }, 
+            {
+              "range": {
+                "duration": 0, 
+                "start": 1268967930754, 
+                "end": 1268967930754
+              }, 
+              "id": "5", 
+              "operation": {
+                "sourceCodeLocation": {
+                  "className": "org.springframework.web.servlet.view.BeanNameViewResolver", 
+                  "methodName": "resolveViewName", 
+                  "lineNumber": 70
+                }, 
+                "type": "VIEW_RESOLVER", 
+                "label": "Resolve view \"traces/window\""
+              }, 
+              "children": []
+            }, 
+            {
+              "range": {
+                "duration": 0, 
+                "start": 1268967930754, 
+                "end": 1268967930755
+              }, 
+              "id": "6", 
+              "operation": {
+                "sourceCodeLocation": {
+                  "className": "org.springframework.web.servlet.view.AbstractCachingViewResolver", 
+                  "methodName": "resolveViewName", 
+                  "lineNumber": 68
+                }, 
+                "type": "VIEW_RESOLVER", 
+                "label": "Resolve view \"traces/window\""
+              }, 
+              "children": []
+            }, 
+            {
+              "range": {
+                "duration": 2283, 
+                "start": 1268967930755, 
+                "end": 1268967933038
+              }, 
+              "id": "7", 
+              "operation": {
+                "sourceCodeLocation": {
+                  "className": "org.springframework.web.servlet.view.AbstractView", 
+                  "methodName": "render", 
+                  "lineNumber": 231
+                }, 
+                "type": "VIEW_RENDER", 
+                "label": "Render view \"traces/window\""
+              }, 
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

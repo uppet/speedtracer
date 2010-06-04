@@ -1,0 +1,8 @@
+<!DOCTYPE document SYSTEM
+    "http://google-web-toolkit.googlecode.com/svn/releases/1.7/distro-source/core/src/gwt-module.dtd">
+<module>
+  <inherits name="com.google.speedtracer.Common" />
+  <inherits name="com.google.speedtracer.HeadlessApi" />
+  <entry-point class="com.google.speedtracer.headlessextension.client.HeadlessBackgroundPage" />
+  <add-linker name="crx" />
+</module>

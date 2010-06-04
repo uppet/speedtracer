@@ -1,0 +1,125 @@
+/**
+ * Annotated CSS for FilteringScrollTable.java.
+ */
+ @def rowHeight 20px;
+ @def rowHeightMinusPad 17px;
+ @def rowPadTop 3px;
+ @def rowCellPadding 5px;
+ @def filterPanelHeight 30px;
+
+.filteringScrollTable {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+@sprite .details {
+  gwt-image: "detailsBg";
+  margin-top: rowHeight;
+  padding-bottom: rowHeight;
+  min-height: 120px;
+  border-top: 1px solid #888;
+  background-color: #fff;
+  overflow: visible;
+  position:relative;
+}
+
+.row {
+  position: relative;
+  left: 0;
+  right: 0;
+  height: rowHeight;
+  font-size: 80%;
+  cursor: default;
+  border-bottom: 1px solid #ddd;
+  overflow: hidden;
+  \-webkit-transition: height 0.3s ease-in-out;
+}
+
+.selected {
+  border-bottom: 1px solid #888;
+  background-color: #e6e6ff;
+  z-index: 30;
+}
+
+.cell {
+  position: absolute;
+  height: rowHeightMinusPad;
+  padding-top: rowPadTop;
+  padding-left: rowCellPadding;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.filterPanel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  padding-top: 2px;
+  height: filterPanelHeight;
+  display: none;
+  border-bottom: 1px solid #444;
+  background-color: #fbf793;
+  padding-left: 5px;
+}
+
+@sprite .filterPanelClose {
+  gwt-image: "filterPanelClose";
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 10px;
+  height: 10px;
+}
+
+.tableContent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+  \-webkit-transition: top ease-in .15s;
+}
+
+.coalescedRow {
+  position: relative;
+  font-face: Verdana;
+  left: 0;
+  right: 0;
+  color: #777;
+  background-color: #eef;
+}
+
+@sprite .filterBar {
+  gwt-image: "filterBarBg";
+  position: relative;
+  left: 0;
+  right: 0;
+  color: #888;
+  font-size: 7pt;
+  text-align: center;
+  border-bottom: 1px solid #ccc;
+  padding: 2px 0;
+}
+
+.filterBar:hover {
+  color: #555;
+}
+
+.filterBar a {
+  visibility: hidden;
+  margin: 0 10px;
+}
+
+.filterBar:hover a {
+  visibility: visible;
+  color: #708ab2;
+}
+
+.filterLabel {
+  background-color: #eee;
+  \-webkit-border-radius: 5px;
+}

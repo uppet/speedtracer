@@ -1,0 +1,23 @@
+/* Annoted CSS for TimelineMarks.java */
+
+.base{
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  margin-left: 1px;
+}
+
+.mark {
+  position: absolute;
+  opacity: 0.3;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  z-index: 20;
+  border-left: 1px solid;
+}
+
+.mark:hover {
+  border-left: 3px solid;
+}

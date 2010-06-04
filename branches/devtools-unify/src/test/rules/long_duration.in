@@ -1,0 +1,22 @@
+hintlet_long_duration.js
+
+# Input Record 1
+# Expected: none
+# Shouldn't trigger a rule - too short.
+{"children":[{"children":[],"data":{},"duration":0.9620,"time":5088.605999998748,"type":2}],"data":{"timerId":"0TimerEvent28"},"duration":1.024,"time":1.,"type":12}
+
+# Input Record 2
+# Expected: HINTLET RECORD
+# Should trigger a rule w/ warning severity.
+{"children":[{"children":[],"data":{},"duration":50.9,"time":5088.605999998748,"type":2}],"data":{"timerId":"0TimerEvent28"},"duration":500.9,"time":2.,"type":12}
+
+# Input Record 3
+# Expected: HINTLET RECORD
+# Should trigger a critical alarm.
+{"children":[{"children":[],"data":{},"duration":30.9,"time":5088.605999998748,"type":2}],"data":{"timerId":"0TimerEvent28"},"duration":3000.2,"time":3.,"type":12}
+
+# Input Record 4
+# Expected: none
+# Shouldn't trigger a rule.
+# Included because it doesn't contain a duration field.
+{"data":{"interval":100.0,"singleShot":true,"timerId":"0TimerEvent31"},"time":5089.548000000417,"type":13}

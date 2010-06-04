@@ -1,0 +1,40 @@
+/**
+ * Annotated CSS for HintletIndicator.java.
+ */
+ 
+ @def hintletSeverityColorCritical #df2d2d;
+ @def hintletSeverityColorInfo #88d489;
+ @def hintletSeverityColorWarning #f89326;
+ @def hintletSeverityColorValidation #ff00ff;
+ 
+.hintletIndicator {
+  font-size: 10px;
+  padding-left: 5px;
+  padding-right: 5px;
+  /*border: 1px solid #000;*/
+  \-webkit-border-radius: 7px;
+  display: inline-block;
+  height: 14px;
+  min-width: 8px;
+  text-align: center;
+}
+
+.hintletIndicatorCritical {
+  background-color: hintletSeverityColorCritical;
+  color: #fff;
+}
+
+.hintletIndicatorInfo {
+  background-color: hintletSeverityColorInfo;
+  color: #fff;
+}
+
+.hintletIndicatorWarning {
+  background-color: hintletSeverityColorWarning;
+  color: #fff;
+}
+
+.hintletIndicatorValidation {
+  background-color: hintletSeverityColorValidation;
+  color: #fff;
+}

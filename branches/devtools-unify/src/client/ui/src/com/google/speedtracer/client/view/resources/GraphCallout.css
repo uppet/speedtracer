@@ -1,0 +1,39 @@
+/**
+ * Annotated CSS for GraphCallout.java.
+ */
+ @def labelHeight 15px;
+ @def leadWidth 15px;
+ @def leadHeight 10px;
+ 
+.icon {
+  position: absolute;
+  top: 0px;
+  width: 0px;
+  height: 0px;
+}
+
+.lead {
+  position: absolute;
+  top: -10px;
+  width: leadWidth;
+  height: 10px;
+}
+
+.label {
+  position: absolute;
+  top: -15px;
+  left: leadWidth;
+  height: labelHeight;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.duration {
+  \-webkit-box-sizing: border-box;
+  display: none;
+  position: absolute;
+  top:0;
+  background-color: rgba(128,10,10,.2);
+  height: 100%;
+  z-index: 27;
+}
