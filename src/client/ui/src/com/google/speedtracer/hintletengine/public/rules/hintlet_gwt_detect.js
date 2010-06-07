@@ -39,7 +39,7 @@ function initHintletData() {
 var hintletData = initHintletData();
 
 function analyzeNoCacheRecord() {
-  var resourceData = hintletData.resourceData;  
+  var resourceData = hintletData.noCacheRecord;  
   if (!cache_lib.isExplicitlyNonCacheable(resourceData.responseHeaders,
 		  resourceData.url, resourceData.statusCode)) {
     hintlet.addHint(HINTLET_NAME, resourceData.responseReceivedTime,
