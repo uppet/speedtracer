@@ -1,3 +1,7 @@
 #summary Answers to some frequently asked questions
 
 See the Speed Tracer Documentation [http://code.google.com/webtoolkit/speedtracer/faq.html FAQ].
+
+= What browsers does Speed Tracer support? =
+
+Speed Tracer only supports the Chrome browser at this time.
