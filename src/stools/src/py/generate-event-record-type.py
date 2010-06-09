@@ -150,6 +150,12 @@ webkitEvents = [
     'constant' : 'LOAD_EVENT',
     'desc' : 'Window Load Event',
     'help_text' : 'All static resources (like images and CSS) have loaded.',
+  },
+  {
+    'value' : 20,
+    'constant' : 'SCHEDULE_RESOURCE_REQUEST',
+    'desc' : 'Schedule Resource Request',
+    'help_text' : 'A resource request was scheduled to be added to the network queue.',
   }
 ]
 # END INSPECTOR TIMELINE RECORDS.
