@@ -23,6 +23,8 @@ import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.Div;
+import com.google.gwt.topspin.ui.client.DoubleClickEvent;
+import com.google.gwt.topspin.ui.client.DoubleClickListener;
 import com.google.gwt.topspin.ui.client.MouseOutEvent;
 import com.google.gwt.topspin.ui.client.MouseOutListener;
 import com.google.gwt.topspin.ui.client.MouseOverEvent;
@@ -87,6 +89,14 @@ public class TimelineMarks extends Div {
               calloutModel.update(offset, 0, shortDescription, 0, true);
             }
           }));
+
+      listenerOwner.manageEventListener(DoubleClickEvent.addDoubleClickListener(
+          this, markElem, new DoubleClickListener() {
+            public void onDoubleClick(DoubleClickEvent event) {
+              mainTimeline.transitionTo(mainTimeline.getModel().getLeftBound(),
+                  offset);
+            }
+          }));
     }
   }
 
@@ -96,13 +106,16 @@ public class TimelineMarks extends Div {
 
   private JSOArray<Mark> marks = JSOArray.create();
 
+  private final MainTimeLine mainTimeline;
+
   private final Resources resources;
 
   public TimelineMarks(Container container, GraphCalloutModel calloutModel,
-      Resources resources) {
+      MainTimeLine mainTimeline, Resources resources) {
     super(container);
     this.resources = resources;
     this.calloutModel = calloutModel;
+    this.mainTimeline = mainTimeline;
     setStyleName(resources.timelineMarksCss().base());
     getElement().getStyle().setLeft(Constants.GRAPH_PIXEL_OFFSET, Unit.PX);
     sinkEvents();

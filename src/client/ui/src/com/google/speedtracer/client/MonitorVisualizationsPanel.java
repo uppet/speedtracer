@@ -366,7 +366,7 @@ public class MonitorVisualizationsPanel extends Div implements
 
     // Create TimelineMarks for marking the timeline with vertical lines.
     timelineMarks = new TimelineMarks(detailsViewPanel.getContainer(),
-        mainTimeLineModel.getGraphCalloutModel(), resources);
+        mainTimeLineModel.getGraphCalloutModel(), mainTimeLine, resources);
     // Subscribe to page refreshes and load events.
     initialState.getDataDispatcher().getTabChangeDispatcher().addListener(this);
     initialState.getDataDispatcher().getUiEventDispatcher().addLoadEventListener(
