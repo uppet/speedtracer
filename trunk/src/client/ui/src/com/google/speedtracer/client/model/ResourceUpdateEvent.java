@@ -120,6 +120,10 @@ public class ResourceUpdateEvent extends ResourceRecord {
     public final native int getStatusCode() /*-{
       return this.statusCode || -1;
     }-*/;
+    
+    public final native String getStatusText() /*-{
+      return this.statusText || "";
+    }-*/;
 
     public final native String getUrl() /*-{
       return this.url;

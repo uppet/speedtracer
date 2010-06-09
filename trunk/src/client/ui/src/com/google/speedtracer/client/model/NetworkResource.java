@@ -305,7 +305,6 @@ public class NetworkResource {
     this.expectedContentLength = responseEvent.getExpectedContentLength();
     this.mimeType = responseEvent.getMimeType();
     this.statusCode = responseEvent.getStatusCode();
-    this.statusText = responseEvent.getStatusText();
     // Cache the ResourceEvent to later pull hintlets.
     this.responseEvent = responseEvent;
   }
@@ -332,6 +331,7 @@ public class NetworkResource {
 
       if (this.statusCode < 0) {
         this.statusCode = update.getStatusCode();
+        this.statusText = update.getStatusText();
       }
     }
 
