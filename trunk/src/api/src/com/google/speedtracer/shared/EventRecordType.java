@@ -49,6 +49,7 @@ public class EventRecordType {
   public static final int GC_EVENT = 17;
   public static final int DOM_CONTENT_LOADED = 18;
   public static final int LOAD_EVENT = 19;
+  public static final int SCHEDULE_RESOURCE_REQUEST = 20;
 
   // Speed Tracer Types
   public static final int AGGREGATED_EVENTS = 0x7FFFFFFF;
@@ -78,6 +79,7 @@ public class EventRecordType {
     "Garbage Collection",               // 17 GC_EVENT
     "Document Parsing Complete",        // 18 DOM_CONTENT_LOADED
     "Window Load Event",                // 19 LOAD_EVENT
+    "Schedule Resource Request",        // 20 SCHEDULE_RESOURCE_REQUEST
   };
 
   private static final String[] speedTracerTypeStrings = {
@@ -129,6 +131,8 @@ public class EventRecordType {
     "DomContentLoaded event returned from JavaScript, Styles matched, chrome extension content scripts ran, and the HTML parser completed. Ready to layout and do first paint.",
     // 19 LOAD_EVENT
     "All static resources (like images and CSS) have loaded.",
+    // 20 SCHEDULE_RESOURCE_REQUEST
+    "A resource request was scheduled to be added to the network queue.",
   };
 
   private static final String[] speedTracerHelpStrings = {

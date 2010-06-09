@@ -27,6 +27,7 @@ public class ResourceRecord extends EventRecord {
       case EventRecordType.RESOURCE_RECEIVE_RESPONSE:
       case EventRecordType.RESOURCE_FINISH:
       case EventRecordType.RESOURCE_UPDATED:
+      case EventRecordType.SCHEDULE_RESOURCE_REQUEST:
         return true;
     }
     return false;

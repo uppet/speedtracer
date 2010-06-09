@@ -42,7 +42,7 @@ public class SpeedtracerSchemas {
            "description" : "Speedtracer Type ID",
            "type" : "integer", 
            "minimum" : 0,
-           "maximum" : 19
+           "maximum" : 20
          },
          "time"     : {
            "description" : "Milliseconds since start of session",
@@ -512,6 +512,24 @@ public class SpeedtracerSchemas {
          "data" : {
            "type" : "object",
            "properties" : {
+           },
+           "additionalProperties" : false,
+           "optional" : true
+         },
+         "additionalProperties" : false
+       }
+     },
+     "SCHEDULE_RESOURCE_REQUEST" : {
+       "description" : "A resource request was scheduled to be added to the network queue.",
+       "id" : "SCHEDULE_RESOURCE_REQUEST",
+       "type" : "object",
+       "extends" : {"$ref" : "TIMELINE_EVENT_MARK" },
+       "properties" : {
+         "type" : {"type" : "integer", "minimum" : 20, "maximum" : 20},
+         "data" : {
+           "type" : "object",
+           "properties" : {
+             "url" : {"type" : "string", "description" : "URL Requested"},
            },
            "additionalProperties" : false,
            "optional" : true

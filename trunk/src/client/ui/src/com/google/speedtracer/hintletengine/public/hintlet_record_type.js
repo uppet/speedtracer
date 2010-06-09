@@ -40,6 +40,7 @@ hintlet.types = {
   'GC_EVENT' : 17,
   'DOM_CONTENT_LOADED' : 18,
   'LOAD_EVENT' : 19,
+  'SCHEDULE_RESOURCE_REQUEST' : 20,
   'AGGREGATED_EVENTS' : 2147483647,
   'TAB_CHANGED' : 2147483646,
   'RESOURCE_UPDATED' : 2147483645,
@@ -68,6 +69,7 @@ hintlet.webkitTypeList = [
   'GC_EVENT',                          // 17
   'DOM_CONTENT_LOADED',                // 18
   'LOAD_EVENT',                        // 19
+  'SCHEDULE_RESOURCE_REQUEST',         // 20
 ];
 
 hintlet.speedTracerTypeList = [
