@@ -383,7 +383,7 @@ public class JavaScriptProfileRenderer {
         break;
       default:
         if (ClientConfig.isDebugMode()) {
-          Logging.getLogger().logText("Unknown Profile type: " + profileType);
+          Logging.getLogger().logTextError("Unknown Profile type: " + profileType);
         }
         assert false : "Unknown profile type: " + profileType;
     }
