@@ -130,7 +130,7 @@ public class HintletEngineHost implements EventRecordDispatcher {
           if (msg.isLog()) {
             Logging.getLogger().logText(msg.getLog());
           } else {
-            Logging.getLogger().logText(
+            Logging.getLogger().logTextError(
                 "Unknown message type from hintlet engine: " + msg.getType());
             assert false;
           }

@@ -17,6 +17,7 @@ package com.google.speedtracer.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.StyleInjector;
@@ -275,10 +276,23 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
         assert false : "Unhandled Message";
     }
   }
+  
+  /**
+   * Log uncaught exceptions in Debug Mode.
+   */
+  private class DebugUeh implements UncaughtExceptionHandler {
+    public void onUncaughtException(Throwable e) {
+      Logging.getLogger().logTextError(e.toString());      
+    }
+  }
 
   public void onModuleLoad() {
     if (ClientConfig.isMockMode()) {
       MockUtils.createMockBackgroundPage();
+    }
+    
+    if (ClientConfig.isDebugMode()) {
+      GWT.setUncaughtExceptionHandler(new DebugUeh());
     }
 
     browserId = getIdParameter("browserId");

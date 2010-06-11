@@ -25,3 +25,30 @@
   font-size: 60%;
   font-weight: bold;
 }
+
+.labelError {
+  background-color: #990000;
+  color: #fff;
+  padding: 4px;
+  cursor: pointer;
+  font-size: 60%;
+  font-weight: bold;
+}
+
+.evenError {
+  background-color: #ef9292;
+  font-size: 80%;
+}
+
+.evenError:hover {
+  background-color: #ffe6e6;
+}
+
+.oddError {
+  background-color: #d37c76;
+  font-size: 80%;
+}
+
+.oddError:hover {
+  background-color: #ffe6e6;
+}

@@ -97,12 +97,12 @@ public class BreakyWorkerHost implements EventRecordDispatcher {
         JavaScriptObject breakyMessage = event.getDataAsJSO();
         int sequence = DataBag.getIntProperty(breakyMessage, "sequence");
         String message = DataBag.getStringProperty(breakyMessage, "message");
-        Logging.getLogger().logText(
+        Logging.getLogger().logTextError(
             "Breaky Error:(#" + sequence + ") " + message);
 
         EventRecord record = dataDispatcher.findEventRecord(sequence);
         if (record == null) {
-          Logging.getLogger().logText(
+          Logging.getLogger().logTextError(
               "Breaky cannot find record with sequence #" + sequence);
         } else {
           HintRecord validationHint = HintRecord.create("Validation Error",
@@ -116,7 +116,7 @@ public class BreakyWorkerHost implements EventRecordDispatcher {
 
   private void onBreakyException(ErrorEvent event) {
     if (ClientConfig.isDebugMode()) {
-      Logging.getLogger().logText(
+      Logging.getLogger().logTextError(
           "Breaky Exception: " + event.getMessage() + " in "
               + event.getFilename() + ":" + event.getLineNumber());
     }

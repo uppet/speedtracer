@@ -54,15 +54,25 @@ public class Logging {
       zippyLogger.logHtml(html);
       GWT.log(html, null);
     }
+    
+    public void logHtmlError(String html) {
+      zippyLogger.logHtmlError(html);
+      GWT.log(html, null);
+    }
 
     public void logText(String text) {
       zippyLogger.logText(text);
       GWT.log(text, null);
     }
 
+    public void logTextError(String text) {
+      zippyLogger.logTextError(text);
+      GWT.log(text, null);
+    }
+    
     public void onHintletException(HintletException hintletException) {
       String text = "HintletEngine: " + hintletException.getException();
-      logText(text);
+      logTextError(text);
       GWT.log(text, null);
     }
 
@@ -90,8 +100,10 @@ public class Logging {
     void listenTo(DataDispatcher dispatcher);
 
     void logHtml(String html);
+    void logHtmlError(String html);
 
     void logText(String text);
+    void logTextError(String text);
   }
 
   /**
@@ -110,8 +122,14 @@ public class Logging {
 
     public void logHtml(String html) {
     }
+    
+    public void logHtmlError(String html) {
+    }
 
     public void logText(String text) {
+    }
+    
+    public void logTextError(String text) {
     }
 
     public void onHintletException(HintletException hintletException) {

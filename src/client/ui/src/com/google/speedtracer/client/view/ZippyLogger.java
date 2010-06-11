@@ -40,8 +40,14 @@ public class ZippyLogger extends Div {
    */
   public interface Css extends CssResource {
     String entries();
-
+    
+    String evenError();
+    
     String label();
+
+    String labelError();
+    
+    String oddError();
 
     String zippyLogger();
   }
@@ -57,6 +63,7 @@ public class ZippyLogger extends Div {
   // TODO (knorton): Refactor to topspin ScrollPanel.
   private class Entries extends Div {
     private int counter = 0;
+    private int errorCounter = 0;
 
     public Entries() {
       super(getContainer());
@@ -67,6 +74,17 @@ public class ZippyLogger extends Div {
     Element createEntry() {
       final String className = (((counter++) & 1) == 1) ? commonCss.even()
           : commonCss.odd();
+      final Element elem = Document.get().createElement("div");
+      elem.setClassName(className);
+      elem.getStyle().setPropertyPx("padding", 4);
+      Element thisElem = getElement();
+      thisElem.insertBefore(elem, thisElem.getFirstChild());
+      return elem;
+    }
+    
+    Element createErrorEntry() {
+      final String className = (((errorCounter++) & 1) == 1) ? css.evenError()
+          : css.oddError();
       final Element elem = Document.get().createElement("div");
       elem.setClassName(className);
       elem.getStyle().setPropertyPx("padding", 4);
@@ -105,16 +123,17 @@ public class ZippyLogger extends Div {
 
   private final CommonCss commonCss;
   private final ZippyLogger.Css css;
-
   private final Entries entries;
 
   private boolean expanded = false;
+
+  private final Label label;
 
   private ZippyLogger(ZippyLogger.Css css, CommonCss commonCss) {
     super(Root.getContainer());
     this.css = css;
     this.commonCss = commonCss;
-    new Label();
+    label = new Label();
     entries = new Entries();
     setStyleName(css.zippyLogger());
     setExpanded(expanded);
@@ -126,8 +145,18 @@ public class ZippyLogger extends Div {
     entries.createEntry().setInnerHTML(html);
   }
 
+  public void logHtmlError(String html) {
+    entries.createErrorEntry().setInnerHTML(html);
+    label.setStyleName(css.labelError());
+  }
+  
   public void logText(String text) {
     entries.createEntry().setInnerText(text);
+  }
+  
+  public void logTextError(String text) {
+    entries.createErrorEntry().setInnerText(text);
+    label.setStyleName(css.labelError());
   }
 
   private Container getContainer() {
