@@ -413,7 +413,7 @@ public class RequestDetails extends LazilyCreateableElement {
     String statusText = info.getStatusText();
     addRowPair(summaryTable, css, iter.next(), "Http Status",
         info.getStatusCode()
-            + ((statusText == null) ? "" : " - " + info.getStatusText()));
+            + ((statusText.equals("")) ? "" : " - " + info.getStatusText()));
     addRowPair(summaryTable, css, iter.next(), "Mime-type", info.getMimeType());
 
     String requestTiming, responseTiming, totalTiming;
