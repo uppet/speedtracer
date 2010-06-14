@@ -18,4 +18,4 @@ First of all, make sure you are running a release of Chrome that supports Speed 
 
 If all that looks good, make sure all Chrome windows are closed and try restarting.
 
-If that didn't work either, their may be a Chrome process still running without a visible window.  Use the Windows Task Manager or equivalent to find the process and stop it.
+If that didn't work either, there may be a Chrome process still running without a visible window.  Use the Windows Task Manager or equivalent to find the process and stop it.
