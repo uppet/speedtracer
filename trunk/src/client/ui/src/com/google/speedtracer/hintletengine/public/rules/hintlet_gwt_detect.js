@@ -29,7 +29,8 @@ var CODE_SPLIT_CRITICAL_SIZE_THRESHOLD = 1000000;
 function initHintletData() {
   var data = new Object();
   data.isGWT = false;
-  data.noCacheRecord = undefined;
+  data.noCacheDataRecord = undefined;
+  data.noCacheResourceData = undefined;
   data.resourceData = undefined;
   data.resourceId = undefined;
   data.analyzedNoCache = false;
@@ -39,12 +40,13 @@ function initHintletData() {
 var hintletData = initHintletData();
 
 function analyzeNoCacheRecord() {
-  var resourceData = hintletData.noCacheRecord;  
+  var dataRecord = hintletData.noCacheDataRecord;
+  var resourceData = hintletData.noCacheResourceData;
   if (!cache_lib.isExplicitlyNonCacheable(resourceData.responseHeaders,
 		  resourceData.url, resourceData.statusCode)) {
     hintlet.addHint(HINTLET_NAME, resourceData.responseReceivedTime,
       "GWT selection script '.nocache.js' file should be set as non-cacheable",
-      hintletData.noCacheRecord.sequence, hintlet.SEVERITY_CRITICAL);
+      dataRecord.sequence, hintlet.SEVERITY_CRITICAL);
   }
 }
 
@@ -101,11 +103,12 @@ hintlet.register(HINTLET_NAME, function(dataRecord){
   // The first file loaded should be the .nocache.js file - the selection 
   // script
   if (url.search("\\.nocache\\.js$") >= 0) {
-    hintletData.noCacheRecord = dataRecord;
+    hintletData.noCacheDataRecord = dataRecord;
+    hintletData.noCacheResourceData = resourceData;
     return;
   }
 
-  if (hintletData.isGWT || !hintletData.noCacheRecord) {
+  if (hintletData.isGWT || !hintletData.noCacheDataRecord) {
     // Either we've already processed this page, or haven't seen the
     // selection script yet.
     return;
