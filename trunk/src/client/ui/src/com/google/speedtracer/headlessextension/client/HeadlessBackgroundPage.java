@@ -59,6 +59,12 @@ import java.util.HashMap;
  * 
  * TODO(conroy): remove this once the reliance on the chrome extension ID is
  * resolved.
+ * 
+ * TODO(zundel): Before this can move into production, we need some kind of
+ * security precautions against the dump feature being used by untrustworthy
+ * websites. The current idea is to use a whitelist to configure sites that can
+ * access the headless API and sites that can be a target of the XHR when run
+ * from the query string. See {@link HeadlessOptionsPage}
  */
 @Extension.ManifestInfo(name = "Speed Tracer - headless (by Google)", description = "Get insight into the performance of your web applications.", version = ClientConfig.VERSION, permissions = {
     "tabs", "http://*/*", "https://*/*"}, icons = {
@@ -73,6 +79,7 @@ public class HeadlessBackgroundPage extends Extension implements
   public class MessageHandler implements MessageEvent.Listener {
     private class HeadlessDataModel implements DataInstance.DataListener {
       private int sequence = 0;
+
       public void onEventRecord(EventRecord event) {
         event.setSequence(sequence++);
         // Send this message over to the content script
@@ -192,7 +199,7 @@ public class HeadlessBackgroundPage extends Extension implements
       if (dataInstance == null) {
         dataInstance = DevToolsDataInstance.create(id);
         dataInstances.put(id, dataInstance);
-        HeadlessDataModel dataModel = new HeadlessDataModel();        
+        HeadlessDataModel dataModel = new HeadlessDataModel();
         dataInstance.load(dataModel);
       }
       return dataInstance;
