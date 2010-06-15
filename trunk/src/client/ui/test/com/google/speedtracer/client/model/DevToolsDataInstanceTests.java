@@ -34,6 +34,7 @@ public class DevToolsDataInstanceTests extends GWTTestCase {
    * {@link com.google.speedtracer.client.model.DataInstance.DataProxy}.
    */
   static class MockDataListener implements DataListener {
+    private int sequenceNumber = 0;
     private int currentExpectedRecord = 0;
     private List<String> expectedRecords = new ArrayList<String>();
 
@@ -42,6 +43,7 @@ public class DevToolsDataInstanceTests extends GWTTestCase {
      */
     public void onEventRecord(EventRecord record) {
       assert (currentExpectedRecord < expectedRecords.size()) : "Received a record without a corresponding expected record to compare against";
+      record.setSequence(sequenceNumber++);
       String recordStr = getSanitizedString(record);
       String expectedRecordStr = expectedRecords.get(currentExpectedRecord);
       assertEquals(expectedRecordStr, recordStr);

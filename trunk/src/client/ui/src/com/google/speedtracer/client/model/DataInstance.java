@@ -95,8 +95,6 @@ public class DataInstance extends JavaScriptObject {
         proxy.@com.google.speedtracer.client.model.DataInstance.DataProxy::setProfilingOptions(ZZ)(enableStackTraces, enableCpuProfiling);
       }
     };
-    // Initialize the sequence number count to 0
-    dataInstance.seqCount = 0;
     return dataInstance;
   }-*/;
 
@@ -126,9 +124,6 @@ public class DataInstance extends JavaScriptObject {
       // This gets called from the plugin.
       onEventRecordString: function(sequence, recordString) {
         var data = JSON.parse(recordString);
-        // Populate the sequence field in the record so that we don't have
-        // to keep passing it out of band along with the record.
-        data.sequence = sequence;
         model.@com.google.speedtracer.client.model.DataInstance$DataListener::onEventRecord(Lcom/google/speedtracer/client/model/EventRecord;)(data);
       }
     };
@@ -142,9 +137,7 @@ public class DataInstance extends JavaScriptObject {
    * @param record
    */
   public final native void onEventRecord(EventRecord record) /*-{
-    record.sequence = this.seqCount;
-    this._callback.onEventRecord(record);    
-    this.seqCount = this.seqCount + 1;
+    this._callback.onEventRecord(record);
   }-*/;
 
   public final native void resumeMonitoring() /*-{

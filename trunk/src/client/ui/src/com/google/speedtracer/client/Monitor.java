@@ -49,9 +49,6 @@ import com.google.speedtracer.client.view.Controller;
 import com.google.speedtracer.client.view.HotKeyPanel;
 import com.google.speedtracer.client.view.HoveringPopup;
 import com.google.speedtracer.client.view.InlineMenu;
-import com.google.speedtracer.client.visualizations.model.HintletReportModel;
-import com.google.speedtracer.client.visualizations.view.HintletReport;
-import com.google.speedtracer.client.visualizations.view.HintletReportDialog;
 import com.google.speedtracer.client.visualizations.view.MergeProfilesPanel;
 
 import java.util.ArrayList;
@@ -187,8 +184,6 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
   private Controller controller;
 
   private DataDispatcher dataDispatcher;
-
-  private HintletReportDialog hintletReportDialog;
 
   private MonitorVisualizationsPanel monitorVisualizationsPanel;
 
@@ -442,10 +437,6 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     }
   }
 
-  public void showHintletReport() {
-    hintletReportDialog.setVisible(true);
-  }
-
   private void detachApplicationStates() {
     for (int i = 0, length = pageStates.size(); i < length; ++i) {
       pageStates.get(i).detachModelsFromDispatchers();
@@ -496,10 +487,6 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
 
     // Create the reusable hovering popup once (invisible until we need it)
     popup = new HoveringPopup(Root.getContainer(), resources);
-
-    hintletReportDialog = new HintletReportDialog(
-        (HintletReportModel) pageStates.get(0).getVisualizationModel(
-            HintletReport.TITLE), resources);
 
     HotKey.register('B', new BuildInfoView(version),
         "Show revision information.");
@@ -566,6 +553,5 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
 
   private void setApplicationState(ApplicationState state) {
     monitorVisualizationsPanel.setApplicationState(state);
-    hintletReportDialog.setHintletReportModel((HintletReportModel) state.getVisualizationModel(HintletReport.TITLE));
   }
 }

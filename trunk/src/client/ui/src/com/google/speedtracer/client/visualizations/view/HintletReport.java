@@ -20,8 +20,11 @@ import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.gwt.topspin.ui.client.Div;
+import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.view.SortableTableHeader;
 import com.google.speedtracer.client.visualizations.model.HintletReportModel;
+
+import java.util.List;
 
 /**
  * Presents the hintlets in their own view.
@@ -98,19 +101,15 @@ public class HintletReport extends Div {
     super(parentContainer);
     this.resources = resources;
     this.reportModel = reportModel;
-    css = resources.hintletReportCss();
+    this.css = resources.hintletReportCss();
+    this.reportContainer = new DefaultContainerImpl(getElement());
     setStyleName(css.reportOuterDiv());
-    reportContainer = new DefaultContainerImpl(getElement());
     setType(reportType);
   }
 
-  public void refresh() {
+  public void refresh(List<HintRecord> hints) {
+    reportModel.setHints(hints);
     reportTree.refresh();
-  }
-
-  public void setReportModel(HintletReportModel reportModel) {
-    this.reportModel = reportModel;
-    reportTree.setReportModel(reportModel);
   }
 
   public void setType(int reportType) {

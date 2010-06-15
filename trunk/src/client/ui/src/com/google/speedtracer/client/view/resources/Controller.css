@@ -191,11 +191,11 @@
 }
 
 .infoScreenZoomLabel {
-  left: 103px;
+  left: 12px;
 }
 
 .infoScreenTotalLabel {
-  left: 12px;
+  left: 190px;
 }
 
 .infoScreenZoom, .infoScreenTotal {
@@ -206,11 +206,11 @@
 }
 
 .infoScreenTotal {
-  left: 12px;
+  left: 190px;
 }
 
 .infoScreenZoom {
-  left: 103px;
+  left: 12px;
 }
 
 .pageSelect {

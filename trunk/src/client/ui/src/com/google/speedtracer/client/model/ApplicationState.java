@@ -18,13 +18,11 @@ package com.google.speedtracer.client.model;
 import com.google.gwt.coreext.client.IterableFastStringMap;
 import com.google.gwt.coreext.client.IterableFastStringMap.IterationCallBack;
 import com.google.speedtracer.client.timeline.Constants;
-import com.google.speedtracer.client.visualizations.model.HintletReportModel;
-import com.google.speedtracer.client.visualizations.model.NetworkVisualizationModel;
 import com.google.speedtracer.client.visualizations.model.NetworkVisualization;
+import com.google.speedtracer.client.visualizations.model.NetworkVisualizationModel;
 import com.google.speedtracer.client.visualizations.model.SluggishnessModel;
 import com.google.speedtracer.client.visualizations.model.SluggishnessVisualization;
 import com.google.speedtracer.client.visualizations.model.VisualizationModel;
-import com.google.speedtracer.client.visualizations.view.HintletReport;
 
 /**
  * This class contains the state of all of visualizations.
@@ -99,7 +97,5 @@ public class ApplicationState {
         new SluggishnessModel(dataDispatcher));
     visualizationModelMap.put(NetworkVisualization.TITLE,
         new NetworkVisualizationModel(dataDispatcher));
-    visualizationModelMap.put(HintletReport.TITLE, new HintletReportModel(
-        dataDispatcher.getHintletEngineHost()));
   }
 }

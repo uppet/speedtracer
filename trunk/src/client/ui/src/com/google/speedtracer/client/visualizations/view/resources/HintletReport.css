@@ -11,7 +11,7 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: 25px;
+  top: 50px;
   bottom: 10px;
   border: 1px solid black;
   overflow-y: auto;
@@ -20,7 +20,6 @@
 
 .reportTree {
   position: relative;
-  width: 100%;
 }
 
 .reportRowSummaryDiv {

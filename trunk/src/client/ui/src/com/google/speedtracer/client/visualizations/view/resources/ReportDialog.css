@@ -27,21 +27,18 @@
   z-index: 101;
 }
 
-.reportTitle {
-  position: absolute;
-  top: 15px;
-  left: 25px;
-  right: 25px;
+.reportTitle {  
   font-size: 20px;
   font-weight: bold;	
 }
 
 .reportPaneInner {
   position: absolute;
-  top: 50px;
-  left: 25px;
-  right: 25px;
-  bottom: 25px;
+  margin: 25px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
 }
 
 @sprite .reportClose {

@@ -20,11 +20,58 @@ import com.google.gwt.coreext.client.DataBag;
 import com.google.gwt.coreext.client.JSOArray;
 import com.google.speedtracer.shared.EventRecordType;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 /**
  * Base type for recorded data.
  */
 public class EventRecord extends JavaScriptObject {
+  /**
+   * Comparator object for comparing UiEvent objects.
+   */
+  public static final class EventRecordComparator implements
+      Comparator<EventRecord> {
+    public int compare(EventRecord first, EventRecord second) {
+      return Double.compare(first.getTime(), second.getTime());
+    }
+  }
+
   public static final int INVALID_TYPE = -1;
+
+  private static EventRecordComparator comparatorInstance;
+
+  /**
+   * Singleton getter for our comparator.
+   * 
+   * @return
+   */
+  public static final EventRecordComparator getComparator() {
+    if (comparatorInstance == null) {
+      comparatorInstance = new EventRecordComparator();
+    }
+    return comparatorInstance;
+  }
+
+  public static int getIndexOfRecord(List<? extends EventRecord> eventList,
+      double keyValue) {
+    return getIndexOfRecord(eventList, createKey(keyValue));
+  }
+
+  public static int getIndexOfRecord(List<? extends EventRecord> eventList,
+      EventRecord key) {
+    int insertionPoint = Collections.binarySearch(eventList, key,
+        EventRecord.getComparator());
+    // Should almost always be an insertionPoint
+    if (insertionPoint < 0) {
+      return (-insertionPoint) - 1;
+    } else {
+      // we hit a node on the head.
+      // simply return it
+      return insertionPoint;
+    }
+  }
 
   /**
    * Returns a short user facing string that describes the event associated with
@@ -37,6 +84,10 @@ public class EventRecord extends JavaScriptObject {
 
     return EventRecordType.typeToString(type);
   }
+
+  private static native EventRecord createKey(double keyValue) /*-{
+    return {time: keyValue};
+  }-*/;
 
   /**
    * The data field in a record. TODO: Type checking on return values. For now
@@ -150,19 +201,19 @@ public class EventRecord extends JavaScriptObject {
   }-*/;
 
   /**
+   * Setter for installing the sequence number for a record.
+   */
+  public final native void setSequence(int seq) /*-{
+    this.sequence = seq;
+  }-*/;
+
+  /**
    * This is callable only by derived classes. Getter for the data bag.
    * 
    * @return the data bag for this record.
    */
   protected final native DataBag getData() /*-{
     return this.data || {};
-  }-*/;
-
-  /**
-   * Setter for installing the sequence number for a record.
-   */
-  final native void setSequence(int seq) /*-{
-    this.sequence = seq;
   }-*/;
 
   /**
