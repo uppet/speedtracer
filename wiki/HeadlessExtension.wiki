@@ -1,0 +1,108 @@
+#summary Documentation for using the Headless Extension
+
+= Introduction = 
+
+The Speed Tracer Headless Extension is a version of the Speed Tracer extension that has all the user interface removed.  Instead, it supports a JavaScript API that the application can interact with to create and retrieve trace data into the page, or send a trace to a remote server.  The extension can also be controlled without writing any JavaScript by adding special parameters to any URL's query string.
+
+= Security Implications =
+
+The Speed Tracer Headless extension is experimental software.  Due to security concerns, limit its use to testing machines.  Do not install the extension and use it in an installation where you perform regular browsing.  No attempt has been made to limit the access of unauthorized sites to the trace information that can be gathered by the extension and its APIs.
+
+== Use Cases ==
+
+ * Measuring start-up latency of a page
+ * Measuring latency of a particular operation
+ * Capturing Speed Tracer data as a part of an automated test
+ 
+= Building the Headless Extension =
+
+Compile the Speed Tracer project as you normally would.  In the target directory, you will find a file named `speedtracerheadless.crx`
+
+= Installing the Headless Extension =
+
+Install the headless extension `.crx` file into your browser by navigating to the `speedtracerheadless.crx` file on your local filesystem.  Once installed, there are no configuration settings for the Headless Extension.
+
+= Configuring an Application for the Headless Extension =
+
+For measuring page startup latency, there is only one change you need to make to your application.  Add the following script tag to the head part of your main document:
+
+{{{
+   <script language="javascript" 
+           src="chrome-extension://jolleknjmmglebfldiogepklbacoohni/headless_api.js">
+}}}
+
+You will need to replace the long string of alphabetic characters with the correct ID: for the extension you just compiled.  You can find the value of the `ID:` field of the extension in the `chrome://extensions` status page. 
+
+It is safe to add this script tag into any application.  The user will see no changes in behavior if a user is not using the Chrome browser or does not have the Speed Tracer headless extension installed.
+
+= Using the query string to activate the extension =
+
+The headless extension installs a content script on each page that looks for special parameters passed on the URL query string.
+
+ * monitor
+   Turns on monitoring of this tab and reloads the current page.  The current URL minus the 'monitor' argument is used to reload the page.  
+ * header(name:value)
+  Sets a custom name/value pair for a header to send in the xhr. Multiple headers can be set by using multiple instances (e.g. SpeedTracer=header(foo:bar),header(blah:asdf)
+ * xhr(url)
+  Sets where the JSON formatted data should be sent via XHR.
+ * timeout(value)
+  Sets the timeout to send the dump to.  The value specified is in milliseconds.
+
+Consider the following URL:
+
+{{{
+  http://example.com/mypage.html?args=123&SpeedTracer=monitor,header(foo:bar),xhr(http://nowhere.com),timeout(5000)
+}}}
+
+The `SpeedTracer=` parameters would be parsed as arguments to the headless extension.  The `monitor` argument tells the extension to turn on monitoring and then reload the page.  The URL to be reloaded would be stripped of the `monitor` argument to prevent an infinite loop.  After the page were reloaded, a JSON payload would be constructed from the SpeedTrace data and sent via XHR to the URL http://nowhere.com/ after five seconds.  A property named 'foo' with the value 'bar' would be added to the header of the payload.
+
+= API =
+
+Adding the `<script>` tag mentioned above to your page makes the following API available to your application.
+
+ * speedtracer.clearData();
+   Clears out data from previous monitoring sessions.  useful after re-running a test on the same page.
+ * speedtracer.startMonitoring({name:value, ...}, function callback);
+   Tells the browser to start sending monitoring data. 
+   * Valid properties for options:
+     * clearData: clears any previously recorded timeline data if true
+     *  reload: a url to load in this tab after turning monitoring on
+   * callback: optional function to be called after monitoring has been enabled
+ * speedtracer.stopMonitoring(function callback);
+   Stops sending monitoring data.
+   * callback: optional function to be called after monitoring has been disabled
+ * speedTracer.getDump(function callback);
+   Returns the dump as a string.
+   * callback(String data): optional function to be invoked when the data is ready.
+ * speedtracer.sendDump(String url, Object header, function callback);
+    Sends the data to the specified URL using XHR. 
+   * url:  The URL to send the dump to. Cross site is OK.
+   * header: An object that will be added as the 'header' property to the dump.
+   * callback: optional function to be invoked when the transmission is completed.
+
+= Headless Speed Tracer Dump Format =
+
+The format of the JSON structure emitted by the getDump() and sendDump() API methods is as follows:
+
+{{{
+
+{
+  header: {
+    timeStamp:<time in ms since 1970>,
+    name:<name or "">,
+    revision:<revision as a string or "">,
+    ... custom header properties ...
+  },
+  data: {
+    [ {... speedtrace record ...},
+      {... speedtrace record ...},
+      ... 
+    ]
+  }
+}
+
+}}}
+
+The 'header' field is intended to assist in supplying metadata to automated testing datastores.  
+
+See the [http://code.google.com/webtoolkit/speedtracer/data-dump-format.html Data Dump Format] for the speedtrace record definition details.
