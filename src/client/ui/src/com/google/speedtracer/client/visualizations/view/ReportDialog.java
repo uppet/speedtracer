@@ -175,14 +175,15 @@ public class ReportDialog {
     }
 
     // TODO(jaimeyap): Collect summary aggregate stats.
-
-    // Collect hints.
     List<HintRecord> hints = new ArrayList<HintRecord>();
     EventRecord record = dataDispatcher.findEventRecord(index);
     while (record.getTime() < timelineModel.getRightBound() && record != null) {
       JSOArray<HintRecord> hintArray = record.getHintRecords();
-      for (int i = 0, n = hintArray.size(); i < n; i++) {
-        hints.add(hintArray.get(i));
+      if (hintArray != null) {
+        // Collect hints.
+        for (int i = 0, n = hintArray.size(); i < n; i++) {
+          hints.add(hintArray.get(i));
+        }
       }
       record = dataDispatcher.findEventRecord(++index);
     }
