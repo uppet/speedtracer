@@ -16,11 +16,11 @@ The Speed Tracer Headless extension is experimental software.  Due to security c
  
 = Building the Headless Extension =
 
-Compile the Speed Tracer project as you normally would.  In the target directory, you will find a file named `speedtracerheadless.crx`
+Compile the Speed Tracer project as you normally would.  In the target directory, you will find a directory  named `speedtracerheadless`.  
 
 = Installing the Headless Extension =
 
-Install the headless extension `.crx` file into your browser by navigating to the `speedtracerheadless.crx` file on your local filesystem.  Once installed, there are no configuration settings for the Headless Extension.
+Using the Chrome Extension page `chrome://extensions`, install the headless extension from the speedtracerheadless directory by clicking the _Load unpacked extension..._ button.  Once installed, there are no further configuration settings for the Headless Extension.
 
 = Configuring an Application for the Headless Extension =
 
@@ -31,7 +31,7 @@ For measuring page startup latency, there is only one change you need to make to
            src="chrome-extension://jolleknjmmglebfldiogepklbacoohni/headless_api.js">
 }}}
 
-You will need to replace the long string of alphabetic characters with the correct ID: for the extension you just compiled.  You can find the value of the `ID:` field of the extension in the `chrome://extensions` status page. 
+  Note: if you choose to make a `.crx`, you will need to replace the long string of alphabetic characters with the correct ID: for the extension you just compiled.  You can find the value of the `ID:` field of the extension in the `chrome://extensions` status page. There is also a setting of the public key field for the manifest in HeadlessBackgroundPage.java that will need updating.  Keep track of the generated .pem file from the first build so you can rebuild with the same key and extension id.
 
 It is safe to add this script tag into any application.  The user will see no changes in behavior if a user is not using the Chrome browser or does not have the Speed Tracer headless extension installed.
 
