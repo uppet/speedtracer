@@ -1,0 +1,16 @@
+.whitelistTable {
+  font-weight: bold;
+  border: 1px #aaa solid;
+  border-collapse: collapse;
+  margin: 10px;
+}
+
+.whitelistTableDataEntry {
+  border: 1px #aaa solid;
+  padding: 2px 5px 2px 5px;
+}
+
+.whitelistTableHeader {
+  border: 1px #aaa solid;
+  padding: 2px 5px 2px 5px;
+}

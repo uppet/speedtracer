@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<module rename-to="headlessoptions">
+  <inherits name="com.google.speedtracer.Common" />
+  <entry-point class="com.google.speedtracer.headlessextension.client.HeadlessOptionsPage" />
+  
+  <!--  for debugging -->
+  <set-configuration-property name="CssResource.style" value="pretty" />
+  <set-property name="speedtracer.use_debug_mode" value="please" />  
+</module>

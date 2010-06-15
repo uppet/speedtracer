@@ -32,7 +32,7 @@ public class LocalStorage extends JavaScriptObject {
   }-*/;
 
   public final native JavaScriptObject getItem(String key) /*-{
-    return this.getItem(key);
+    return JSON.parse(this.getItem(key));
   }-*/;
 
   public final native String getKey(int index) /*-{
@@ -51,11 +51,12 @@ public class LocalStorage extends JavaScriptObject {
     this.removeItem(key);
   }-*/;
 
-  public final native void setItem(String key, JavaScriptObject data) /*-{
-    return this.setItem(key, data);
+  public final native void setItem(String key, JavaScriptObject dataObject) /*-{
+    // Note, as of FF3.6, gecko does not support storing an object (only strings).
+    return this.setItem(key, JSON.stringify(dataObject));
   }-*/;
 
-  public final native void setStringItem(String key, String data) /*-{
-    return this.setItem(key, data);
+  public final native void setStringItem(String key, String dataString) /*-{
+    return this.setItem(key, dataString);
   }-*/;
 }
