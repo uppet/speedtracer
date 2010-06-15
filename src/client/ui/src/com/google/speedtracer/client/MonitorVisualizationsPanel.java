@@ -66,7 +66,6 @@ import com.google.speedtracer.client.visualizations.model.SluggishnessModel;
 import com.google.speedtracer.client.visualizations.model.SluggishnessVisualization;
 import com.google.speedtracer.client.visualizations.model.VisualizationModel;
 import com.google.speedtracer.client.visualizations.view.EventRecordColors;
-import com.google.speedtracer.client.visualizations.view.HintletReportDialog;
 import com.google.speedtracer.shared.EventRecordType;
 
 import java.util.ArrayList;
@@ -109,7 +108,7 @@ public class MonitorVisualizationsPanel extends Div implements
    */
   public interface Resources extends TimeScale.Resources,
       OverViewTimeLine.Resources, MainTimeLine.Resources,
-      HintletReportDialog.Resources, TimelineMarks.Resources {
+      TimelineMarks.Resources {
     @Source("resources/MonitorVisualizationsPanel.css")
     MonitorVisualizationsPanel.Css monitorVisualizationsPanelCss();
   }

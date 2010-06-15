@@ -19,7 +19,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;
 import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.coreext.client.JSON;
-import com.google.gwt.coreext.client.JsIntegerMap;
 import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.model.CustomEvent.TypeRegisteringVisitor;
 
@@ -65,13 +64,15 @@ public class DataDispatcher implements HintletInterface.HintListener,
 
   private final List<EventRecordDispatcher> eventDispatchers = new ArrayList<EventRecordDispatcher>();
 
-  private JsIntegerMap<EventRecord> eventRecordMap = JsIntegerMap.create();
+  private List<EventRecord> eventRecords = new ArrayList<EventRecord>();
 
   private final HintletEngineHost hintletEngineHost;
 
   private final NetworkEventDispatcher networkEventDispatcher;
 
   private final JavaScriptProfileModel profileModel;
+
+  private int sequenceBase = 0;
 
   private final TabChangeDispatcher tabChangeDispatcher;
 
@@ -93,9 +94,10 @@ public class DataDispatcher implements HintletInterface.HintListener,
    * appropriately.
    */
   public void clear() {
+    // Shift the sequence base offset.
+    sequenceBase += eventRecords.size();
     // Replace the existing map.
-    eventRecordMap = JsIntegerMap.create();
-
+    eventRecords = new ArrayList<EventRecord>();
     // Replace the backing String store.
     traceDataCopy = JSOArray.create();
   }
@@ -107,7 +109,14 @@ public class DataDispatcher implements HintletInterface.HintListener,
    * @return the record with the specified sequence number.
    */
   public EventRecord findEventRecord(int sequence) {
-    return eventRecordMap.get(sequence);
+    // Normalize the sequence number.
+    sequence = sequence - sequenceBase;
+    // We assume that a sequence number maps on to an index in the eventRecords
+    // array. Lookups that are out of bounds will just return null.
+    if (sequence < 0 || sequence >= eventRecords.size()) {
+      return null;
+    }
+    return eventRecords.get(sequence);
   }
 
   public void fireOnEventRecord(EventRecord data) {
@@ -132,8 +141,8 @@ public class DataDispatcher implements HintletInterface.HintListener,
     return dataInstance;
   }
 
-  public JsIntegerMap<EventRecord> getEventRecordMap() {
-    return eventRecordMap;
+  public List<EventRecord> getEventRecords() {
+    return eventRecords;
   }
 
   /**
@@ -195,12 +204,13 @@ public class DataDispatcher implements HintletInterface.HintListener,
    * @param record the timeline {@link EventRecord}
    */
   public void onEventRecord(EventRecord record) {
+    record.setSequence(eventRecords.size());
     // Possibly register a new custom type.
     record.<UiEvent> cast().apply(customTypeVisitor);
 
     // Keep a copy of the String for saving later.
     traceDataCopy.push(JSON.stringify(record));
-    eventRecordMap.put(record.getSequence(), record);
+    eventRecords.add(record);
     fireOnEventRecord(record);
   }
 
@@ -255,7 +265,7 @@ public class DataDispatcher implements HintletInterface.HintListener,
     if (sequence < 0) {
       return;
     }
-    EventRecord rec = eventRecordMap.get(sequence);
+    EventRecord rec = findEventRecord(sequence);
     if (rec != null) {
       rec.addHint(hintletRecord);
     }

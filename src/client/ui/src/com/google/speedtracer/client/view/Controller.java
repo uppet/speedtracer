@@ -19,7 +19,6 @@ import com.google.gwt.chrome.crx.client.Tabs;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.dom.client.DivElement;
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.OptionElement;
 import com.google.gwt.dom.client.SelectElement;
@@ -44,6 +43,8 @@ import com.google.speedtracer.client.timeline.Constants;
 import com.google.speedtracer.client.timeline.DomainObserver;
 import com.google.speedtracer.client.timeline.TimeLineModel.WindowBoundsObserver;
 import com.google.speedtracer.client.util.TimeStampFormatter;
+import com.google.speedtracer.client.util.dom.DocumentExt;
+import com.google.speedtracer.client.visualizations.view.ReportDialog;
 
 /**
  * The top panel with top level controls for a Monitor Instance.
@@ -93,7 +94,8 @@ public class Controller extends Panel implements DomainObserver,
   /**
    * Resource declarations for {@link Controller}.
    */
-  public interface Resources extends HoveringPopup.Resources {
+  public interface Resources extends HoveringPopup.Resources,
+      ReportDialog.Resources {
     @Source("resources/controller-background.png")
     @ImageOptions(repeatStyle = RepeatStyle.Horizontal)
     ImageResource controllerBackground();
@@ -202,10 +204,9 @@ public class Controller extends Panel implements DomainObserver,
   }
 
   private static class InfoScreen extends Div {
-    private static DivElement appendDiv(Document document, Element parent,
+    private static DivElement appendDiv(DocumentExt document, Element parent,
         String className) {
-      final DivElement elem = parent.getOwnerDocument().createDivElement();
-      elem.setClassName(className);
+      final DivElement elem = document.createDivWithClassName(className);
       return parent.appendChild(elem);
     }
 
@@ -215,18 +216,19 @@ public class Controller extends Panel implements DomainObserver,
       super(controller.getContainer());
 
       final Element elem = getElement();
-      final Document document = elem.getOwnerDocument();
+      final DocumentExt document = elem.getOwnerDocument().cast();
 
       setStyleName(css.infoScreen());
 
-      totalElem = appendDiv(document, elem, css.infoScreenTotal());
       zoomElem = appendDiv(document, elem, css.infoScreenZoom());
+      totalElem = appendDiv(document, elem, css.infoScreenTotal());
+
+      appendDiv(document, elem, css.infoScreenZoomLabel()).setInnerText("zoom");
       appendDiv(document, elem, css.infoScreenTotalLabel()).setInnerText(
           "total");
-      appendDiv(document, elem, css.infoScreenZoomLabel()).setInnerText("zoom");
 
-      updateTotal(0);
       updateZoomRange(0, 0);
+      updateTotal(0);
     }
 
     public void updateTotal(double time) {
@@ -234,8 +236,8 @@ public class Controller extends Panel implements DomainObserver,
     }
 
     public void updateZoomRange(double start, double end) {
-      zoomElem.setInnerHTML(TimeStampFormatter.formatSeconds(start, 2)
-          + " &ndash; " + TimeStampFormatter.formatSeconds(end, 2));
+      zoomElem.setInnerHTML("@" + TimeStampFormatter.formatSeconds(start, 2)
+          + " for " + TimeStampFormatter.formatSeconds(end - start, 2));
     }
   }
 
@@ -272,17 +274,20 @@ public class Controller extends Panel implements DomainObserver,
 
   private final Container controllerContainer;
 
-  private final Css css;
+  private final Resources resources;
+
+  private final DataDispatcher dataDispatcher;
 
   private final InfoScreen infoScreen;
 
   private MainTimeLine mainTimeline;
 
-  private final DataDispatcher dataDispatcher;
-
   private final Monitor monitor;
 
   private OverViewTimeLine overviewTimeline;
+
+  private ReportDialog reportDialog;
+
   private final Select pages;
   // This field will be null if the setProfilingOptions extensions API does not
   // exist.
@@ -293,11 +298,12 @@ public class Controller extends Panel implements DomainObserver,
   public Controller(Container parent, DataDispatcher dataDispatcher,
       final Monitor monitor, Resources resources) {
     super(parent);
+    this.resources = resources;
     this.dataDispatcher = dataDispatcher;
     this.monitor = monitor;
 
     controllerContainer = getContainer();
-    css = resources.controllerCss();
+    Css css = resources.controllerCss();
 
     setStyleName(css.base());
 
@@ -409,7 +415,7 @@ public class Controller extends Panel implements DomainObserver,
         "Display the Hintlet Report");
     reportButton.addClickListener(new ClickListener() {
       public void onClick(ClickEvent event) {
-        Controller.this.monitor.showHintletReport();
+        reportDialog.setVisible(true);
       }
     });
 
@@ -466,6 +472,11 @@ public class Controller extends Panel implements DomainObserver,
 
     mainTimeline.getModel().addDomainObserver(this);
     mainTimeline.getModel().addWindowBoundsObserver(this);
+
+    // Create the report dialog for analyzing records within the current
+    // timeline window selection.
+    this.reportDialog = new ReportDialog(mainTimeline.getModel(),
+        dataDispatcher, resources);
   }
 
   public void onDomainChange(double newValue) {

@@ -72,7 +72,9 @@ public class HeadlessBackgroundPage extends Extension implements
    */
   public class MessageHandler implements MessageEvent.Listener {
     private class HeadlessDataModel implements DataInstance.DataListener {
+      private int sequence = 0;
       public void onEventRecord(EventRecord event) {
+        event.setSequence(sequence++);
         // Send this message over to the content script
         String dataString = JSON.stringify(event);
         eventRecordData.push(dataString);

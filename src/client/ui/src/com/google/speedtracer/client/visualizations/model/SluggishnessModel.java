@@ -29,7 +29,6 @@ import com.google.speedtracer.client.timeline.HighlightModel;
 import com.google.speedtracer.client.timeline.ModelData;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -108,7 +107,7 @@ public class SluggishnessModel implements VisualizationModel,
     if (lastIndex >= 0 && eventList.get(lastIndex).getTime() > e.getTime()) {
       // note that we already have a function defined that will do what we
       // want in terms of finding our insertion index.
-      int insertionPoint = getIndexOfLastItemInWindow(e.getTime());
+      int insertionPoint = EventRecord.getIndexOfRecord(eventList, e.getTime());
       // So we have an insertion point. We may have events that share the same
       // startTime timer tick, but still have an implicit order.
       // We assume that the out of order event that we are looking to stick in
@@ -190,7 +189,7 @@ public class SluggishnessModel implements VisualizationModel,
     currentLeft = left;
     currentRight = right;
 
-    int endIndex = getIndexOfLastItemInWindow(right);
+    int endIndex = EventRecord.getIndexOfRecord(eventList, right);
 
     // if we get back a negative number, then nothing starts left of
     // right bound.
@@ -302,26 +301,6 @@ public class SluggishnessModel implements VisualizationModel,
   private void fireEventRefresh(UiEvent event) {
     if (eventRefreshListener != null) {
       eventRefreshListener.onEventRefresh(event);
-    }
-  }
-
-  /**
-   * Returns the index of the last item to be in our current window.
-   * 
-   * @param rightBound
-   * @return
-   */
-  private int getIndexOfLastItemInWindow(double rightBound) {
-    UiEvent key = UiEvent.createKey(rightBound);
-    int insertionPoint = Collections.binarySearch(eventList, key,
-        UiEvent.getComparator());
-    // Should almost always be an insertionPoint
-    if (insertionPoint < 0) {
-      return (-insertionPoint) - 1;
-    } else {
-      // we hit a node on the head.
-      // simply return it
-      return insertionPoint;
     }
   }
 

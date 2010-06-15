@@ -19,8 +19,6 @@ import com.google.gwt.core.client.JsArrayNumber;
 import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.coreext.client.JsIntegerDoubleMap;
 
-import java.util.Comparator;
-
 /**
  * Base class for our Overlay types wrapping Event JSO payloads passed up from
  * the plugin.
@@ -80,33 +78,6 @@ public class UiEvent extends EventRecord {
      * @param event the current event/sub-event
      */
     void visit(UiEvent event);
-  }
-
-  /**
-   * Comparator object for comparing UiEvent objects.
-   */
-  public static final class UiEventComparator implements Comparator<UiEvent> {
-    public int compare(UiEvent first, UiEvent second) {
-      return Double.compare(first.getTime(), second.getTime());
-    }
-  }
-
-  private static UiEventComparator comparatorInstance;
-
-  public static final native UiEvent createKey(double keyValue) /*-{
-    return {time: keyValue};
-  }-*/;
-
-  /**
-   * Singleton getter for our comparator.
-   * 
-   * @return
-   */
-  public static final UiEventComparator getComparator() {
-    if (comparatorInstance == null) {
-      comparatorInstance = new UiEventComparator();
-    }
-    return comparatorInstance;
   }
 
   /**

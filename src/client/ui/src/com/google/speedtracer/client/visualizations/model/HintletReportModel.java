@@ -16,10 +16,6 @@
 package com.google.speedtracer.client.visualizations.model;
 
 import com.google.speedtracer.client.model.HintRecord;
-import com.google.speedtracer.client.model.HintletEngineHost;
-import com.google.speedtracer.client.model.HintletInterface;
-import com.google.speedtracer.client.timeline.GraphModel;
-import com.google.speedtracer.client.timeline.HighlightModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,43 +25,13 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Tracks all hintlet records being fired for the Hintlet Report.
- * 
+ * Class responsible for sorting hintlet rules.
  */
-// TODO(zundel): Is this class really best represented as a VisualizationModel
-// subclass?
-public class HintletReportModel implements VisualizationModel {
+public class HintletReportModel {
 
-  private HintletInterface.HintListener hintListener = new HintletInterface.HintListener() {
-    public void onHint(HintRecord hintlet) {
-      hints.add(hintlet);
-    }
-  };
+  private List<HintRecord> hints = new ArrayList<HintRecord>();
 
-  private final HintletEngineHost hintletEngine;
-  // List of all hintlet records encountered so far.
-  private final List<HintRecord> hints = new ArrayList<HintRecord>();
-
-  public HintletReportModel(HintletEngineHost hintletModel) {
-    this.hintletEngine = hintletModel;
-    hintletModel.addHintListener(hintListener);
-  }
-
-  public void clearData() {
-    hints.clear();
-  }
-
-  public void detachFromData() {
-    hintletEngine.removeHintListener(hintListener);
-  }
-
-  public GraphModel getGraphModel() {
-    // Not used for this visualization.
-    return null;
-  }
-
-  public HighlightModel getHighlightModel() {
-    return null;
+  public HintletReportModel() {
   }
 
   /**
@@ -120,6 +86,10 @@ public class HintletReportModel implements VisualizationModel {
     return hints;
   }
 
+  public void setHints(List<HintRecord> hints) {
+    this.hints = hints;
+  }
+
   public void sortByDescription(List<HintRecord> hintList,
       final boolean isAscending) {
     Comparator<HintRecord> comparator = new Comparator<HintRecord>() {
@@ -172,8 +142,7 @@ public class HintletReportModel implements VisualizationModel {
     Collections.sort(hintList, comparator);
   }
 
-  public void sortByTime(List<HintRecord> hintList,
-      final boolean isAscending) {
+  public void sortByTime(List<HintRecord> hintList, final boolean isAscending) {
     Comparator<HintRecord> comparator = new Comparator<HintRecord>() {
       public int compare(HintRecord o1, HintRecord o2) {
         double t1;
