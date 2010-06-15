@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module rename-to='startuplatencydashboard'>
+
+  <!-- Other module inherits                                      -->
+  <inherits name='com.google.speedtracer.latencydashboard.LatencyDashboard' />
+
+  <!-- Specify the app entry point class.                         -->
+  <entry-point class='com.google.speedtracer.latencydashboard.client.StartupLatencyDashboard' />
+
+</module>
