@@ -41,6 +41,8 @@ public class SymbolServerControllerTests extends GWTTestCase {
 
   // Located in the public directory for this test.
   private Url testManifestUrl = new Url("testsymbolmanifest.json");
+  
+  private Url testInvalidManifestUrl = new Url("invalidmanifest.json");
 
   @Override
   public String getModuleName() {
@@ -121,6 +123,29 @@ public class SymbolServerControllerTests extends GWTTestCase {
     });
 
     this.delayTestFinish(TEST_FINISH_DELAY);
+  }
+  
+  /**
+   * Tests that the SymbolServerController correctly deals with an invalid
+   * symbol manifest.
+   */
+  public void testSymbolServerParseFailed() {
+    Url testUrl = new Url(Window.Location.getHref());
+    SymbolServerController ssController = new TestableSymbolServerController(
+        testUrl, testInvalidManifestUrl);
+    String url = testUrl.getResourceBase()
+        + "1587583491351748F4F66117168CA45B.cache.html";
+    ssController.requestSymbolsFor(url, new Callback() {
+      public void onSymbolsFetchFailed(int errorReason) {
+        assertEquals(errorReason,
+            SymbolServerController.ERROR_MANIFEST_NOT_LOADED);
+        finishTest();
+      }
+
+      public void onSymbolsReady(JsSymbolMap symbols) {
+        fail("Got symbols for an invalid symbol manifest");
+      }
+    });
   }
 
   /**

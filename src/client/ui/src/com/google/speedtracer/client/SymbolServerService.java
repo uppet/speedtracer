@@ -47,7 +47,7 @@ public class SymbolServerService {
    */
   public static void registerSymbolServerController(Url resourceUrl,
       Url symbolManifestUrl) {
-    if (symbolManifestUrl != null && !symbolManifestUrl.equals("")) {
+    if (symbolManifestUrl != null && !symbolManifestUrl.getUrl().equals("")) {
       symbolServerControllers.put(resourceUrl.getApplicationUrl(),
           new SymbolServerController(resourceUrl, symbolManifestUrl));
     }

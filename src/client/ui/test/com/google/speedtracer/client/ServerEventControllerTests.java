@@ -67,6 +67,18 @@ public class ServerEventControllerTests extends GWTTestCase {
           resources.appStatsJson().getText());
     }
   }
+  
+  /**
+   * Mock a successful network XHR that returns invalid data.
+   */
+  private static class InvalidXhr extends MockXhr.Delegate {
+    @Override
+    public void onSend(XMLHttpRequest xhr, String data) {
+      final Resources resources = GWT.create(Resources.class);
+      respond(xhr, XMLHttpRequest.DONE, 200, "",
+          "Totally Bogus!");
+    }
+  }
 
   private static native NetworkResource.HeaderMap createResponseHeaders(
       String traceUrl) /*-{
@@ -127,6 +139,30 @@ public class ServerEventControllerTests extends GWTTestCase {
             }
           });
       assertTrue("Trace request should succeed.", didSucceed[0]);
+    } finally {
+      restorer.restore();
+    }
+  }
+  
+  public void testInvalidRequestTrace() {
+    final ServerEventController controller = new ServerEventController(
+        new NoAuthentication());
+
+    final MockXhr.Restorer restorer = MockXhr.setDelegate(
+        WindowExt.getLexicalWindow(), new InvalidXhr());
+    try {
+      final boolean[] didFail = new boolean[1];
+      controller.requestTraceFor(createMockNetworkResource(1,
+          "http://localhost/", "/foo"),
+          new ServerEventController.RequestTraceCallback() {
+            public void onFailure() {
+              didFail[0] = true;
+            }
+
+            public void onSuccess(ServerEvent event) {
+            }
+          });
+      assertTrue("Invalid trace request should fail.", didFail[0]);
     } finally {
       restorer.restore();
     }
