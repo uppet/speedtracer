@@ -49,7 +49,7 @@
 
   <servlet-mapping>
     <servlet-name>timelineServlet</servlet-name>
-    <url-pattern>/latencydashboard/timeline</url-pattern>
+    <url-pattern>/timeline</url-pattern>
   </servlet-mapping>
 
   <!-- Servlet to receive speed trace data from the SpeedTracer Headless Extension -->
@@ -60,7 +60,7 @@
 
   <servlet-mapping>
     <servlet-name>speedTracerReceiver</servlet-name>
-    <url-pattern>/latencydashboard/speedtracereceiver</url-pattern>
+    <url-pattern>/speedtracereceiver</url-pattern>
   </servlet-mapping>
 
 

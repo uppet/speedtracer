@@ -24,7 +24,7 @@ import com.google.speedtracer.latencydashboard.shared.DashboardRecord;
  * GWT RPC definition for retrieving latest {@link DashboardRecord}s from the
  * datastore.
  */
-@RemoteServiceRelativePath("timeline")
+@RemoteServiceRelativePath("../timeline")
 public interface TimelineService extends RemoteService {
   DashboardRecord[] getDashboardLatestRecords(int n);
   CustomDashboardRecord[] getCustomDashboardLatestRecords(int n);

@@ -9,8 +9,7 @@
   <!-- Other module inherits                                      -->
   <inherits name='com.google.gwt.visualization.Visualization' />
 
-  <!-- Specify the app entry point class.                         -->
-  <entry-point class='com.google.speedtracer.latencydashboard.client.LatencyDashboard' />
+  <!-- Let some other module specify the app entry point class.                         -->
 
   <!-- Specify the paths for translatable code                    -->
   <source path='client' />
