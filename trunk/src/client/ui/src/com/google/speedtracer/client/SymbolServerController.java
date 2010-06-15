@@ -17,6 +17,7 @@ package com.google.speedtracer.client;
 
 import com.google.gwt.coreext.client.IterableFastStringMap;
 import com.google.gwt.coreext.client.JSON;
+import com.google.gwt.coreext.client.JSON.JSONParseException;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 import com.google.speedtracer.client.SourceViewer.SourcePresenter;
 import com.google.speedtracer.client.SymbolServerManifest.ResourceSymbolInfo;
@@ -201,11 +202,21 @@ public class SymbolServerController {
       }
 
       public void onSuccess(XMLHttpRequest xhr) {
-        SymbolServerController.this.manifestLoaded = true;
         // TODO (jaimeyap): This needs to be validated... and we should handle
         // any parsing errors as well.
-        SymbolServerController.this.symbolServerManifest = JSON.parse(
-            xhr.getResponseText()).cast();
+        try {
+          SymbolServerController.this.symbolServerManifest = JSON.parse(
+              xhr.getResponseText()).cast();
+        } catch (JSONParseException jpe) {
+          if (ClientConfig.isDebugMode()) {
+            Logging.getLogger().logText(
+                "Unable to parse manifest for " + symbolManifestUrl.getUrl());
+          }
+          onFail(xhr); // Treat an invalid manifest like a network failure.
+          return;
+        }
+        
+        SymbolServerController.this.manifestLoaded = true;
         // Now service all the pending requests.
         while (!pendingRequests.isEmpty()) {
           serviceRequest(pendingRequests.remove(0));
@@ -220,7 +231,7 @@ public class SymbolServerController {
 
   private ResourceSymbolInfo lookupEntryInManifest(String resourceUrl) {
     ResourceSymbolInfo resourceSymbolInfo = null;
-
+    
     // If the resourceUrl begins with a '/' then we assume it is relative to the
     // origin.
     String relativeUrl = "";

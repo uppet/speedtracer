@@ -17,6 +17,7 @@ package com.google.speedtracer.client;
 
 import com.google.gwt.coreext.client.JSON;
 import com.google.gwt.coreext.client.JsStringBooleanMap;
+import com.google.gwt.coreext.client.JSON.JSONParseException;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 import com.google.speedtracer.client.model.NetworkResource;
 import com.google.speedtracer.client.model.ServerEvent;
@@ -99,9 +100,13 @@ public class ServerEventController {
     }
 
     public void onSuccess(XMLHttpRequest xhr) {
-      final ServerEvent event = ServerEvent.fromServerJson(resource,
+      try {
+        final ServerEvent event = ServerEvent.fromServerJson(resource,
           JSON.parse(xhr.getResponseText()));
-      callback.onSuccess(event);
+        callback.onSuccess(event);
+      } catch (JSONParseException jpe) {
+        callback.onFailure();
+      }
     }
   }
 
