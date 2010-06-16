@@ -42,7 +42,7 @@ public class MarkTimelineChart extends LatencyDashboardChart {
   private static final String revisionTitle = "Revision";
 
   private static String displayEventName(String event) {
-    return event.replaceAll("_", " ").replaceAll("wave", "");
+    return event.replaceAll("_", " ");
   }
   private final String[] events;
   private RightGaugeChart gaugeChart;

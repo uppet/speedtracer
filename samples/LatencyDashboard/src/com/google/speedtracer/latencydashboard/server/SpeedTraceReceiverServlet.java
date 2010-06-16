@@ -47,7 +47,7 @@ public class SpeedTraceReceiverServlet extends HttpServlet {
    */
   private static final long serialVersionUID = 1549873162336369719L;
 
-  private static final String WAVE_MT_PREFIX = "__Wave_stats_event";
+  private static final String MARKTIMELINE_PREFIX = "__stats_event";
 
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp)
@@ -145,10 +145,10 @@ public class SpeedTraceReceiverServlet extends HttpServlet {
         speedTraceRecord.getRevision());
 
     MarkTimelineAnalyzer markTimelineAnalyzer = new MarkTimelineAnalyzer(
-        analyzer, WAVE_MT_PREFIX);
+        analyzer, MARKTIMELINE_PREFIX);
     markTimelineAnalyzer.registerMeasurementSet("client_load");
-    markTimelineAnalyzer.registerMeasurementSet("wave_prefetch_cache_fill");
-    markTimelineAnalyzer.registerMeasurementSet("wave_page");
+    markTimelineAnalyzer.registerMeasurementSet("prefetch_cache_fill");
+    markTimelineAnalyzer.registerMeasurementSet("page");
     markTimelineAnalyzer.registerMeasurementSet("digests_search");
     markTimelineAnalyzer.registerMeasurementSet("contact-sort");
 

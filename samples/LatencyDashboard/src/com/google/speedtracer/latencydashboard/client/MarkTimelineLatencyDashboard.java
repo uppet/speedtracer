@@ -102,7 +102,7 @@ public class MarkTimelineLatencyDashboard implements EntryPoint {
         standardOptions));
     
     markTimelineCharts.add(new MarkTimelineChart(
-        DashboardResources.getResources(), "wave_prefetch_cache_fill", null,
+        DashboardResources.getResources(), "prefetch_cache_fill", null,
         standardOptions));
 
     String[] digestsSearchEvents = {
