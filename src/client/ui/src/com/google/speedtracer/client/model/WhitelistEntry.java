@@ -49,12 +49,12 @@ public class WhitelistEntry extends JavaScriptObject {
 
   public final String getValidationErrors() {
     String host = getHost();
-    if (null == host || host.isEmpty()) {
+    if (null == host || host.length() == 0) {
       return ("Host is empty");
     }
 
     String port = getPort();
-    if (null == port || port.isEmpty()) {
+    if (null == port || port.length() == 0) {
       return ("Port is empty");
     }
     if (!port.equals("*") && !port.matches("^\\d+$")) {
