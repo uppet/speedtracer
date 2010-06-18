@@ -147,6 +147,9 @@ public class EventWaterfallRow extends TableRow {
     }
 
     public void refresh() {
+      if (!isCreated()) {
+        return;
+      }
       updateIndicator();
     }
 
