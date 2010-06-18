@@ -1,15 +1,18 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <title>Breaky Test for Speedtracer</title>
+    <title>Breaky Redirect to breakyimpl, for headless race condition on startup</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <script language='javascript' src='chrome-extension://jolleknjmmglebfldiogepklbacoohni/headless_api.js'>
-    </script>
-    <script language='javascript' src='breaky/breaky.nocache.js'>
-  	</script>
   </head>
   <body>
-
-
+  This is a trampoline page for the Breaky Test to give the extension time to initialize if chrome is just launching. Redirecting in just a moment...
   </body>
+  <script language='javascript'>
+    function redirect() {
+      window.location="breakyimpl.html";
+    }
+    
+    //Give the extension some extra time
+    window.setTimeout(redirect, 3000);
+  </script>
 </html>
