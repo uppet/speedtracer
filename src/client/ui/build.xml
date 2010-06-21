@@ -255,7 +255,7 @@
       <fileset dir="${wardir}">
         <include name="breaky/**" />
       </fileset>
-      <fileset dir="war" includes="breaky.html" />
+      <fileset dir="war" includes="breaky*.html" />
     </copy>
   </target>
 
