@@ -846,6 +846,12 @@ public class SpeedtracerSchemas {
            "description" : "Milliseconds since start of session",
            "type" : "number", "minimum" : 0
         },
+        "duration" : {
+           "description" : "Milliseconds this event took",
+           "type" : "number",
+           "minimum" : 0,
+           "optional" : true
+         },
         "typeName" : {
           "type" : "string",
           "description" : "The display name for this custom event"
