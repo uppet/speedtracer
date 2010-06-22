@@ -114,7 +114,7 @@ public class SluggishnessDetailView extends DetailView {
    */
   public void shortCircuitAddEvent(UiEvent event) {
     contentTable.addRowForUiEvent(event, true);
-    contentTable.setEndIndex(getModel().getEventList().size() - 1);
+    contentTable.setEndIndex(contentTable.getSourceDispatcher().getEventList().size() - 1);
     // The row will not be rendered if it is already attached.
     contentTable.renderRow(contentTable.getLastRow());
   }

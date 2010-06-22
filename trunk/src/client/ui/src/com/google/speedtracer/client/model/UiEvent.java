@@ -137,6 +137,13 @@ public class UiEvent extends EventRecord {
   protected UiEvent() {
   }
 
+  public final native void addChild(UiEvent child) /*-{
+    if (!this.children) {
+      this.children = [];
+    }
+    this.children.push(child);
+  }-*/;
+
   /**
    * Applies a {@link LeafFirstTraversal} type visitor to this event and all of
    * its child events.
@@ -320,7 +327,7 @@ public class UiEvent extends EventRecord {
   public final native void setSelfTime(double t) /*-{
     this.selfTime = t;
   }-*/;
-  
+
   /**
    * Caches the durations map on this UiEvent.
    * 
@@ -329,5 +336,5 @@ public class UiEvent extends EventRecord {
   public final native void setTypeDurations(JsIntegerDoubleMap map) /*-{
     this.durationMap = map;
   }-*/;
-  
+
 }

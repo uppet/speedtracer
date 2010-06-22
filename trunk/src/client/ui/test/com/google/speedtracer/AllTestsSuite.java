@@ -37,6 +37,7 @@ import com.google.speedtracer.client.util.PostMessageChannelTests;
 import com.google.speedtracer.client.util.TimeStampFormatterTests;
 import com.google.speedtracer.client.util.UrlTests;
 import com.google.speedtracer.client.util.WorkQueueTests;
+import com.google.speedtracer.client.visualizations.model.ReportDataCollectorTests;
 import com.google.speedtracer.client.visualizations.model.UiThreadUtilizationTests;
 import com.google.speedtracer.client.visualizations.view.EventFilterTests;
 import com.google.speedtracer.headlessextension.client.HeadlessContentScriptTests;
@@ -74,6 +75,7 @@ public class AllTestsSuite extends GWTTestSuite {
     suite.addTestSuite(HeadlessContentScriptTests.class);
     suite.addTestSuite(ServerEventControllerTests.class);
     suite.addTestSuite(SourceViewerServerTests.class);
+    suite.addTestSuite(ReportDataCollectorTests.class);
     return suite;
   }
 }

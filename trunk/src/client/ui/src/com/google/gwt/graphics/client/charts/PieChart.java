@@ -53,11 +53,6 @@ public class PieChart extends SimpleChart {
   private Legend legend;
   private final PieChart.Resources resources;
 
-  public PieChart(Widget parent, List<ColorCodedValue> data,
-      PieChart.Resources resources) {
-    this(new DefaultContainerImpl(parent.getElement()), data, resources);
-  }
-
   public PieChart(Container container, List<ColorCodedValue> data,
       PieChart.Resources resources) {
     super(container, data);
@@ -71,6 +66,33 @@ public class PieChart extends SimpleChart {
     canvas.setLineWidth(1.0);
 
     render();
+  }
+
+  public PieChart(Widget parent, List<ColorCodedValue> data,
+      PieChart.Resources resources) {
+    this(new DefaultContainerImpl(parent.getElement()), data, resources);
+  }
+
+  @Override
+  public void render() {
+    canvas.clear();
+    double lastAngle = 0;
+    double center = CANVAS_COORD_SIZE / 2;
+    List<ColorCodedValue> data = getData();
+    // Draw pie chart
+    for (int i = 0, n = data.size(); i < n; i++) {
+      ColorCodedValue entry = data.get(i);
+      canvas.setFillStyle(entry.labelColor);
+      double arcFraction = entry.value / getDataTotal();
+      double arcAngle = Math.PI * 2 * arcFraction;
+      double newAngle = lastAngle + arcAngle;
+      canvas.beginPath();
+      canvas.moveTo(center, center);
+      canvas.arc(center, center, COORD_RADIUS, lastAngle, newAngle, false);
+      canvas.fill();
+      canvas.stroke();
+      lastAngle = newAngle;
+    }
   }
 
   public void resize(int width, int height) {
@@ -101,28 +123,6 @@ public class PieChart extends SimpleChart {
   protected Legend getLegend() {
     ensureLegend();
     return legend;
-  }
-
-  @Override
-  protected void render() {
-    canvas.clear();
-    double lastAngle = 0;
-    double center = CANVAS_COORD_SIZE / 2;
-    List<ColorCodedValue> data = getData();
-    // Draw pie chart
-    for (int i = 0, n = data.size(); i < n; i++) {
-      ColorCodedValue entry = data.get(i);
-      canvas.setFillStyle(entry.labelColor);
-      double arcFraction = entry.value / getDataTotal();
-      double arcAngle = Math.PI * 2 * arcFraction;
-      double newAngle = lastAngle + arcAngle;
-      canvas.beginPath();
-      canvas.moveTo(center, center);
-      canvas.arc(center, center, COORD_RADIUS, lastAngle, newAngle, false);
-      canvas.fill();
-      canvas.stroke();
-      lastAngle = newAngle;
-    }
   }
 
   private void ensureLegend() {

@@ -39,20 +39,6 @@ public class DevToolsDataInstance extends DataInstance {
    * digestable form, and then forwards it on to the DevToolsDataInstance.
    */
   public static class Proxy implements DataProxy {
-    /**
-     * Simple routing dispatcher used by the DevToolsDataProxy to quickly route.
-     */
-    static native Dispatcher createDispatcher(Proxy delegate) /*-{
-      return {
-        addRecordToTimeline: function(record) {
-          delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onTimeLineRecord(Lcom/google/speedtracer/client/model/UnNormalizedEventRecord;)(record[1]);
-        },
-        updateResource: function(update) {
-          delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onUpdateResource(ILcom/google/gwt/core/client/JavaScriptObject;)(update[1], update[2]);
-        }
-      };
-    }-*/;
-
     private class TimeNormalizingVisitor implements LeafFirstTraversalVoid {
       public void visit(UiEvent event) {
         assert getBaseTime() >= 0 : "baseTime should already be set.";
@@ -67,6 +53,20 @@ public class DevToolsDataInstance extends DataInstance {
       }
     }
 
+    /**
+     * Simple routing dispatcher used by the DevToolsDataProxy to quickly route.
+     */
+    static native Dispatcher createDispatcher(Proxy delegate) /*-{
+      return {
+        addRecordToTimeline: function(record) {
+          delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onTimeLineRecord(Lcom/google/speedtracer/client/model/UnNormalizedEventRecord;)(record[1]);
+        },
+        updateResource: function(update) {
+          delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onUpdateResource(ILcom/google/gwt/core/client/JavaScriptObject;)(update[1], update[2]);
+        }
+      };
+    }-*/;
+
     private double baseTime;
 
     private ResourceWillSendEvent currentPage;
@@ -79,11 +79,13 @@ public class DevToolsDataInstance extends DataInstance {
 
     private JSOArray<UnNormalizedEventRecord> pendingRecords = JSOArray.create();
 
+    private UiEvent previousEvent;
+
+    private final int tabId;
+
     private final TimeNormalizingVisitor timeNormalizingVisitor = new TimeNormalizingVisitor();
 
     private final TypeEnsuringVisitor typeEnsuringVisitor = new TypeEnsuringVisitor();
-
-    private final int tabId;
 
     public Proxy(int tabId) {
       this.baseTime = -1;
@@ -171,6 +173,7 @@ public class DevToolsDataInstance extends DataInstance {
      */
     private void forwardToDataInstance(EventRecord record) {
       assert (!Double.isNaN(record.getTime())) : "Time was not normalized!";
+      previousEvent = record.cast();
       dataInstance.onEventRecord(record);
     }
 
@@ -293,26 +296,26 @@ public class DevToolsDataInstance extends DataInstance {
 
         if (responseTime > 0) {
           update.setResponseReceivedTime(responseTime);
-          updateEvent.setTime(responseTime);
         }
 
         if (loadTime > 0) {
           update.setLoadEventTime(loadTime);
-          updateEvent.setTime(loadTime);
         }
 
         if (domContentEventTime > 0) {
           update.setDomContentEventTime(domContentEventTime);
-          updateEvent.setTime(domContentEventTime);
         }
 
         if (endTime > 0) {
           update.setEndTime(endTime);
-          updateEvent.setTime(endTime);
         }
       }
 
-      forwardToDataInstance(updateEvent);
+      if (previousEvent != null) {
+        updateEvent.setTime(previousEvent.getTime()
+            + previousEvent.getDuration());
+        forwardToDataInstance(updateEvent);
+      }
     }
 
     /**

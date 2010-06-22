@@ -34,6 +34,13 @@ import java.util.List;
 public class DataDispatcher implements HintletInterface.HintListener,
     EventRecordLookup, DataInstance.DataListener {
   /**
+   * EventRecordDispatcher, but with API for clearing state.
+   */
+  public interface DataDispatcherDelegate extends EventRecordDispatcher {
+    void clearData();
+  }
+
+  /**
    * Wrapper objects to proxy callbacks to correct handler.
    */
   public interface EventRecordDispatcher {
@@ -62,11 +69,13 @@ public class DataDispatcher implements HintletInterface.HintListener,
 
   private final DataInstance dataInstance;
 
-  private final List<EventRecordDispatcher> eventDispatchers = new ArrayList<EventRecordDispatcher>();
+  private final List<DataDispatcherDelegate> eventDispatchers = new ArrayList<DataDispatcherDelegate>();
 
   private List<EventRecord> eventRecords = new ArrayList<EventRecord>();
 
-  private final HintletEngineHost hintletEngineHost;
+  // Wants to be final, but we lazily initialize this to make this class play
+  // nice with tests.
+  private HintletEngineHost hintletEngineHost;
 
   private final NetworkEventDispatcher networkEventDispatcher;
 
@@ -86,7 +95,6 @@ public class DataDispatcher implements HintletInterface.HintListener,
     this.uiEventDispatcher = new UiEventDispatcher();
     this.tabChangeDispatcher = new TabChangeDispatcher();
     this.profileModel = new JavaScriptProfileModel(this);
-    this.hintletEngineHost = new HintletEngineHost();
   }
 
   /**
@@ -96,10 +104,14 @@ public class DataDispatcher implements HintletInterface.HintListener,
   public void clear() {
     // Shift the sequence base offset.
     sequenceBase += eventRecords.size();
-    // Replace the existing map.
+    // Replace the existing global event index.
     eventRecords = new ArrayList<EventRecord>();
     // Replace the backing String store.
     traceDataCopy = JSOArray.create();
+    // Clear any state in the event dispatchers;
+    for (int i = 0, n = eventDispatchers.size(); i < n; i++) {
+      eventDispatchers.get(i).clearData();
+    }
   }
 
   /**
@@ -108,15 +120,9 @@ public class DataDispatcher implements HintletInterface.HintListener,
    * @param sequence A sequence number to look for.
    * @return the record with the specified sequence number.
    */
-  public EventRecord findEventRecord(int sequence) {
+  public EventRecord findEventRecordFromSequence(int sequence) {
     // Normalize the sequence number.
-    sequence = sequence - sequenceBase;
-    // We assume that a sequence number maps on to an index in the eventRecords
-    // array. Lookups that are out of bounds will just return null.
-    if (sequence < 0 || sequence >= eventRecords.size()) {
-      return null;
-    }
-    return eventRecords.get(sequence);
+    return getEventRecordAt(sequence - sequenceBase);
   }
 
   public void fireOnEventRecord(EventRecord data) {
@@ -139,6 +145,20 @@ public class DataDispatcher implements HintletInterface.HintListener,
    */
   public DataInstance getDataInstance() {
     return dataInstance;
+  }
+
+  /**
+   * Retrieves an EventRecord by direct index in event list.
+   * 
+   * @param index
+   * @return the record at the specified index number.
+   */
+  public EventRecord getEventRecordAt(int index) {
+    // Lookups that are out of bounds will just return null.
+    if (index < 0 || index >= eventRecords.size()) {
+      return null;
+    }
+    return eventRecords.get(index);
   }
 
   public List<EventRecord> getEventRecords() {
@@ -204,7 +224,7 @@ public class DataDispatcher implements HintletInterface.HintListener,
    * @param record the timeline {@link EventRecord}
    */
   public void onEventRecord(EventRecord record) {
-    record.setSequence(eventRecords.size());
+    record.setSequence(eventRecords.size() + sequenceBase);
     // Possibly register a new custom type.
     record.<UiEvent> cast().apply(customTypeVisitor);
 
@@ -226,28 +246,37 @@ public class DataDispatcher implements HintletInterface.HintListener,
     getDataInstance().stopMonitoring();
   }
 
+  protected void addDispatcher(DataDispatcherDelegate dispatcher) {
+    eventDispatchers.add(dispatcher);
+  }
+
   /**
    * Hook up the various models. In the general case, we want all of them, but
    * subclasses can pick and choose which models make sense for them.
    */
   protected void initialize() {
     // Listen to the hintlet engine.
+    hintletEngineHost = new HintletEngineHost();
     hintletEngineHost.addHintListener(this);
 
     // Add models and dispatchers to our dispatch list,.
     if (ClientConfig.isDebugMode()) {
       // NOTE: the order of adding matters, some modify the record object
-      eventDispatchers.add(0, new BreakyWorkerHost(this, hintletEngineHost));
+      addDispatcherAt(0, new BreakyWorkerHost(this, hintletEngineHost));
     }
-    eventDispatchers.add(uiEventDispatcher);
-    eventDispatchers.add(networkEventDispatcher);
-    eventDispatchers.add(tabChangeDispatcher);
-    eventDispatchers.add(profileModel);
-    eventDispatchers.add(hintletEngineHost);
+    addDispatcher(uiEventDispatcher);
+    addDispatcher(networkEventDispatcher);
+    addDispatcher(tabChangeDispatcher);
+    addDispatcher(profileModel);
+    addDispatcher(hintletEngineHost);
   }
 
   protected void setTabDescription(TabDescription tabDescription) {
     this.tabDescription = tabDescription;
+  }
+
+  private void addDispatcherAt(int index, DataDispatcherDelegate dispatcher) {
+    eventDispatchers.add(index, dispatcher);
   }
 
   private void fireOnEventRecordImpl(EventRecord data) {
@@ -265,7 +294,7 @@ public class DataDispatcher implements HintletInterface.HintListener,
     if (sequence < 0) {
       return;
     }
-    EventRecord rec = findEventRecord(sequence);
+    EventRecord rec = findEventRecordFromSequence(sequence);
     if (rec != null) {
       rec.addHint(hintletRecord);
     }

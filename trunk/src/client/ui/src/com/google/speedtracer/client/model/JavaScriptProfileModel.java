@@ -20,7 +20,7 @@ import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.coreext.client.JsIntegerMap;
 import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.Logging;
-import com.google.speedtracer.client.model.DataDispatcher.EventRecordDispatcher;
+import com.google.speedtracer.client.model.DataDispatcher.DataDispatcherDelegate;
 import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.util.WorkQueue;
 
@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Handles profile data records and stores parsed profiles for later retrieval.
  */
-public class JavaScriptProfileModel implements EventRecordDispatcher {
+public class JavaScriptProfileModel implements DataDispatcherDelegate {
   /**
    * A callback object for processing each event contained within a
    * {@link JavaScriptProfileModel}.
@@ -46,8 +46,8 @@ public class JavaScriptProfileModel implements EventRecordDispatcher {
 
   private class EventProcessorWorker implements WorkQueue.Node {
     public final EventProcessor processor;
-    private final JsArrayNumber eventsWithProfiles;
     private final int currentEventSequence;
+    private final JsArrayNumber eventsWithProfiles;
 
     public EventProcessorWorker(EventProcessor processor,
         JsArrayNumber eventsWithProfiles, int currentEventSequence) {
@@ -59,7 +59,7 @@ public class JavaScriptProfileModel implements EventRecordDispatcher {
     public void execute() {
       for (int i = currentEventSequence, length = eventsWithProfiles.length(); i < length; ++i) {
         int eventSequence = (int) eventsWithProfiles.get(i);
-        UiEvent event = eventRecordLookup.findEventRecord(eventSequence).cast();
+        UiEvent event = eventRecordLookup.findEventRecordFromSequence(eventSequence).cast();
         assert UiEvent.isUiEvent(event);
         assert event.hasJavaScriptProfile();
         processor.process(event);
@@ -103,6 +103,10 @@ public class JavaScriptProfileModel implements EventRecordDispatcher {
 
   JavaScriptProfileModel(final EventRecordLookup eventRecordLookup) {
     this.eventRecordLookup = eventRecordLookup;
+  }
+
+  public void clearData() {
+    // no-op
   }
 
   public String getDebugDumpHtml() {
@@ -163,7 +167,7 @@ public class JavaScriptProfileModel implements EventRecordDispatcher {
       // that were created between events).
       UiEvent rec = null;
       if (!profileData.isOrphaned()) {
-        rec = eventRecordLookup.findEventRecord(profileData.getSequence() - 1).cast();
+        rec = eventRecordLookup.findEventRecordFromSequence(profileData.getSequence() - 1).cast();
       }
       processProfileData(rec, profileData);
     }

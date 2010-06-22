@@ -28,14 +28,14 @@ import com.google.gwt.webworker.client.MessageHandler;
 import com.google.gwt.webworker.client.Worker;
 import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.Logging;
-import com.google.speedtracer.client.model.DataDispatcher.EventRecordDispatcher;
+import com.google.speedtracer.client.model.DataDispatcher.DataDispatcherDelegate;
 
 /**
  * Pushes raw event records out to the worker and processes any breaky messages
  * about validation errors.
  * 
  */
-public class BreakyWorkerHost implements EventRecordDispatcher {
+public class BreakyWorkerHost implements DataDispatcherDelegate {
 
   private final Worker breakyWorker;
   private final DataDispatcher dataDispatcher;
@@ -46,6 +46,10 @@ public class BreakyWorkerHost implements EventRecordDispatcher {
     this.dataDispatcher = dataDispatcher;
     this.hintletHost = hintletHost;
     init();
+  }
+
+  public void clearData() {
+    // no-op
   }
 
   /**
@@ -100,7 +104,7 @@ public class BreakyWorkerHost implements EventRecordDispatcher {
         Logging.getLogger().logTextError(
             "Breaky Error:(#" + sequence + ") " + message);
 
-        EventRecord record = dataDispatcher.findEventRecord(sequence);
+        EventRecord record = dataDispatcher.findEventRecordFromSequence(sequence);
         if (record == null) {
           Logging.getLogger().logTextError(
               "Breaky cannot find record with sequence #" + sequence);

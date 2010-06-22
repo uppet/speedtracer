@@ -28,7 +28,6 @@ import com.google.speedtracer.client.timeline.GraphModel;
 import com.google.speedtracer.client.timeline.HighlightModel;
 import com.google.speedtracer.client.timeline.ModelData;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -65,8 +64,6 @@ public class SluggishnessModel implements VisualizationModel,
 
   private final DataDispatcher dataDispatcher;
 
-  private final List<UiEvent> eventList = new ArrayList<UiEvent>();
-
   private EventRefreshListener eventRefreshListener;
 
   private EventWithinWindowListener eventWithinWindowListener;
@@ -93,45 +90,7 @@ public class SluggishnessModel implements VisualizationModel,
     dataDispatcher.getHintletEngineHost().addHintListener(this);
   }
 
-  /**
-   * Corrects event reentrancy issues with out of order start times. Adds the
-   * UiEvent to the eventList.
-   * 
-   * @param e
-   */
-  public void addUiEventToList(UiEvent e) {
-    int lastIndex = eventList.size() - 1;
-    // If an event comes in with a start time before the last added event, we
-    // have an event reentrancy issue. The list should be sorted up until now,
-    // so add the event in the right place.
-    if (lastIndex >= 0 && eventList.get(lastIndex).getTime() > e.getTime()) {
-      // note that we already have a function defined that will do what we
-      // want in terms of finding our insertion index.
-      int insertionPoint = EventRecord.getIndexOfRecord(eventList, e.getTime());
-      // So we have an insertion point. We may have events that share the same
-      // startTime timer tick, but still have an implicit order.
-      // We assume that the out of order event that we are looking to stick in
-      // should go at the end of the entries with the same startTime.
-      while (insertionPoint < eventList.size()
-          && eventList.get(insertionPoint).getTime() == e.getTime()) {
-        // walk forward
-        insertionPoint++;
-      }
-      eventList.add(insertionPoint, e);
-    } else {
-      eventList.add(e);
-    }
-
-    // Keep track of all types seen in this model for the filtering feature
-    // in the Sluggishness view.
-    int eventType = e.getType();
-    if (typesEncountered.get(eventType) == null) {
-      typesEncountered.put(eventType, EventRecord.typeToString(eventType));
-    }
-  }
-
   public void clearData() {
-    eventList.clear();
     getGraphModel().clear();
   }
 
@@ -149,10 +108,6 @@ public class SluggishnessModel implements VisualizationModel,
 
   public DataDispatcher getDataDispatcher() {
     return dataDispatcher;
-  }
-
-  public List<UiEvent> getEventList() {
-    return eventList;
   }
 
   public GraphModel getGraphModel() {
@@ -189,6 +144,7 @@ public class SluggishnessModel implements VisualizationModel,
     currentLeft = left;
     currentRight = right;
 
+    List<UiEvent> eventList = dataDispatcher.getUiEventDispatcher().getEventList();
     int endIndex = EventRecord.getIndexOfRecord(eventList, right);
 
     // if we get back a negative number, then nothing starts left of
@@ -256,7 +212,7 @@ public class SluggishnessModel implements VisualizationModel,
   public void onHint(HintRecord hintlet) {
     // Only process hintlet references to a Ui Event
     int refRecord = hintlet.getRefRecord();
-    EventRecord rec = getDataDispatcher().findEventRecord(refRecord);
+    EventRecord rec = getDataDispatcher().findEventRecordFromSequence(refRecord);
     if (!UiEvent.isUiEvent(rec)) {
       return;
     }
@@ -276,7 +232,12 @@ public class SluggishnessModel implements VisualizationModel,
     sluggishness.enterBlocking(event.getTime());
     sluggishness.releaseBlocking(event.getEndTime());
 
-    addUiEventToList(event);
+    // Keep track of all types seen in this model for the filtering feature
+    // in the Sluggishness view.
+    int eventType = event.getType();
+    if (typesEncountered.get(eventType) == null) {
+      typesEncountered.put(eventType, EventRecord.typeToString(eventType));
+    }
 
     maybeFireEventWithinWindow(event);
   }
