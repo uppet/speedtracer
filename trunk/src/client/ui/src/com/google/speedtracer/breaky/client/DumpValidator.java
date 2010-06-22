@@ -42,6 +42,12 @@ public class DumpValidator {
    * @return the corresponding {@link JsonSchema}
    */
   public final JsonSchema getSchema(int id) {
+    // Custom Events are special cased here because unlike all other types, they
+    // occupy a range of possible type IDs.
+    if (id < -1) {
+      return getSchema("CUSTOM_EVENT");
+    }
+    
     return idMap.get(id);
   }
 
@@ -57,6 +63,10 @@ public class DumpValidator {
     } else {
       return null;
     }
+  }
+  
+  public final JsonSchema getSchema(String name) {
+    return DataBag.getJSObjectProperty(schemas, name).cast();
   }
 
   /**
