@@ -63,13 +63,15 @@ public class TimelineMarks extends Div {
     final String shortDescription;
     final String longDescription;
     final double offset;
+    final boolean zoomRight;
 
     Mark(double offset, Color color, String shortDescription,
-        String longDescription) {
+        String longDescription, boolean zoomRight) {
       this.offset = offset;
       this.color = color;
       this.shortDescription = shortDescription;
       this.longDescription = longDescription;
+      this.zoomRight = zoomRight;
     }
 
     void render(double left, double right, Element parent) {
@@ -93,8 +95,13 @@ public class TimelineMarks extends Div {
       listenerOwner.manageEventListener(DoubleClickEvent.addDoubleClickListener(
           this, markElem, new DoubleClickListener() {
             public void onDoubleClick(DoubleClickEvent event) {
-              mainTimeline.transitionTo(mainTimeline.getModel().getLeftBound(),
-                  offset);
+              if (zoomRight) {
+                mainTimeline.transitionTo(
+                    mainTimeline.getModel().getLeftBound(), offset);
+              } else {
+                mainTimeline.transitionTo(offset,
+                    mainTimeline.getModel().getRightBound());
+              }
             }
           }));
     }
@@ -122,8 +129,9 @@ public class TimelineMarks extends Div {
   }
 
   public void addMark(double offset, Color color, String shortDescription,
-      String longDescription) {
-    marks.push(new Mark(offset, color, shortDescription, longDescription));
+      String longDescription, boolean zoomRight) {
+    marks.push(new Mark(offset, color, shortDescription, longDescription,
+        zoomRight));
   }
 
   public void clear() {
