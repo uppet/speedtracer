@@ -110,7 +110,7 @@ public class NetworkVisualizationModel implements VisualizationModel,
   public void onHint(HintRecord hintlet) {
     // Only process hintlet references to a Ui Event
     int refRecord = hintlet.getRefRecord();
-    EventRecord rec = dataDispatcher.findEventRecord(refRecord);
+    EventRecord rec = dataDispatcher.findEventRecordFromSequence(refRecord);
     if (!ResourceRecord.isResourceRecord(rec)) {
       return;
     }

@@ -27,8 +27,8 @@ import java.util.List;
  */
 public abstract class SimpleChart extends Div {
   private final List<ColorCodedValue> data = new ArrayList<ColorCodedValue>();
-  private Container myContainer;
   private double dataTotal = 0;
+  private Container myContainer;
 
   /**
    * Creates a new SimpleChart, attaches to the supplied container, and sets the
@@ -41,11 +41,6 @@ public abstract class SimpleChart extends Div {
     super(container);
     myContainer = new DefaultContainerImpl(getElement());
     setData(data);
-  }
-
-  private void addData(ColorCodedValue entry) {
-    dataTotal += entry.value;
-    data.add(new ColorCodedValue(entry.key, entry.value, entry.labelColor));
   }
 
   public Container getContainer() {
@@ -64,6 +59,8 @@ public abstract class SimpleChart extends Div {
     getLegend().setVisible(false);
   }
 
+  public abstract void render();
+
   /**
    * Makes a local copy of the data, and sets this new data as the backing data
    * for the chart.
@@ -71,6 +68,7 @@ public abstract class SimpleChart extends Div {
    * @param data
    */
   public void setData(List<ColorCodedValue> data) {
+    dataTotal = 0;
     this.data.clear();
     for (int i = 0, n = data.size(); i < n; i++) {
       addData(data.get(i));
@@ -90,5 +88,8 @@ public abstract class SimpleChart extends Div {
    */
   protected abstract Legend getLegend();
 
-  protected abstract void render();
+  private void addData(ColorCodedValue entry) {
+    dataTotal += entry.value;
+    data.add(new ColorCodedValue(entry.key, entry.value, entry.labelColor));
+  }
 }

@@ -259,7 +259,6 @@ public class EventWaterfallRowDetails extends RowDetails implements
   protected Element createElement() {
     Element elem = super.createElement();
     Container myContainer = new DefaultContainerImpl(elem);
-    ensureData();
 
     // Now we need to layout the rest of the row details
     Table detailsLayout = new Table(myContainer);
@@ -567,6 +566,7 @@ public class EventWaterfallRowDetails extends RowDetails implements
   }
 
   private PieChart createPieChart(Container parent) {
+    ensureData();
     // We put an extra div in there to center our piechart and to apply
     // the rounded corners and backing layer styles underneath the piechart.
     Div centeringDiv = new Div(parent);
@@ -581,21 +581,18 @@ public class EventWaterfallRowDetails extends RowDetails implements
     if (data == null) {
       data = new ArrayList<ColorCodedValue>();
       UiEvent event = getParentRow().getEvent();
-
       JsIntegerDoubleMap durations = event.getTypeDurations();
+
       assert (durations != null);
 
       durations.iterate(new JsIntegerDoubleMap.IterationCallBack() {
-
         public void onIteration(int key, double val) {
           if (val > 0) {
             data.add(new ColorCodedValue(EventRecord.typeToString(key), val,
                 EventRecordColors.getColorForType(key)));
           }
         }
-
       });
-
       Collections.sort(data);
     }
   }

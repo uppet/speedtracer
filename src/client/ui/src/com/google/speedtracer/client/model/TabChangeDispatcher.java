@@ -15,7 +15,7 @@
  */
 package com.google.speedtracer.client.model;
 
-import com.google.speedtracer.client.model.DataDispatcher.EventRecordDispatcher;
+import com.google.speedtracer.client.model.DataDispatcher.DataDispatcherDelegate;
 import com.google.speedtracer.client.util.Url;
 
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ import java.util.List;
  * Provides a data model for tab navigation events. Logically these are separate
  * from UI and network events although they have a very similar format.
  */
-public class TabChangeDispatcher implements EventRecordDispatcher {
+public class TabChangeDispatcher implements DataDispatcherDelegate {
   /**
    * Listener interface for handling page transitions.
    */
@@ -41,6 +41,10 @@ public class TabChangeDispatcher implements EventRecordDispatcher {
 
   public void addListener(Listener listener) {
     listeners.add(listener);
+  }
+
+  public void clearData() {
+    currentUrl = "";
   }
 
   public void onEventRecord(EventRecord data) {

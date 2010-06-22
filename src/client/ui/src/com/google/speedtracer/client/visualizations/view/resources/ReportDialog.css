@@ -23,29 +23,27 @@
   bottom: 25px;
   background-color: #fff;
   border: 1px solid black;
-  overflow: hidden;
+  overflow: auto;
   z-index: 101;
 }
 
 .reportTitle {  
   font-size: 20px;
-  font-weight: bold;	
+  font-weight: bold;
+  margin-bottom: 10px;
 }
 
 .reportPaneInner {
-  position: absolute;
-  margin: 25px;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  top: 0;
+  position: relative;
+  margin-left: 25px;
+  margin-right: 25px;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 @sprite .reportClose {
   gwt-image: "reportClose";
-  position: absolute;
-  top: 15px;
+  position: fixed;
+  top: 10px;
   right: 15px;
-  width: 15px;
-  height: 15px;
 }

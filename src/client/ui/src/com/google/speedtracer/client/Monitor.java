@@ -286,7 +286,7 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
       MockUtils.createMockBackgroundPage();
     }
     
-    if (ClientConfig.isDebugMode()) {
+    if (ClientConfig.isDebugMode() && GWT.isScript()) {
       GWT.setUncaughtExceptionHandler(new DebugUeh());
     }
 

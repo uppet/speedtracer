@@ -16,6 +16,7 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.coreext.client.JsIntegerMap;
+import com.google.speedtracer.client.model.DataDispatcher.DataDispatcherDelegate;
 import com.google.speedtracer.client.model.DataDispatcher.EventRecordDispatcher;
 import com.google.speedtracer.client.model.UiEvent.LeafFirstTraversalVoid;
 
@@ -25,7 +26,7 @@ import java.util.List;
 /**
  * Dispatches Ui/DOM Events.
  */
-public class UiEventDispatcher implements EventRecordDispatcher {
+public class UiEventDispatcher implements DataDispatcherDelegate {
   /**
    * Listener interface for handling load events.
    */
@@ -107,6 +108,8 @@ public class UiEventDispatcher implements EventRecordDispatcher {
     });
   }
 
+  private final List<UiEvent> eventList = new ArrayList<UiEvent>();
+
   private final List<LoadEventListener> loadEventListeners = new ArrayList<LoadEventListener>();
 
   private final JsIntegerMap<EventRecordDispatcher> specialCasedTypeMap = JsIntegerMap.create();
@@ -127,6 +130,14 @@ public class UiEventDispatcher implements EventRecordDispatcher {
 
   public void addUiEventListener(UiEventListener listener) {
     uiEventListeners.add(listener);
+  }
+
+  public void clearData() {
+    eventList.clear();
+  }
+
+  public List<UiEvent> getEventList() {
+    return eventList;
   }
 
   public TimerInstalled getTimerMetaData(int timerId) {
@@ -150,7 +161,7 @@ public class UiEventDispatcher implements EventRecordDispatcher {
   public void removeLoadEventListener(LoadEventListener listener) {
     loadEventListeners.remove(listener);
   }
-
+  
   public void removeUiEventListener(UiEventListener listener) {
     uiEventListeners.remove(listener);
   }
@@ -171,6 +182,9 @@ public class UiEventDispatcher implements EventRecordDispatcher {
 
     // Run some visitors here to extract Timer Installations.
     event.apply(timerInstallationVisitor);
+    
+    // Keep a copy of the event.
+    eventList.add(event);
 
     for (int i = 0, n = uiEventListeners.size(); i < n; i++) {
       UiEventListener listener = uiEventListeners.get(i);

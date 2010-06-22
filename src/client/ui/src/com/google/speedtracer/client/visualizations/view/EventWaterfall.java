@@ -37,6 +37,8 @@ import com.google.speedtracer.client.visualizations.model.SluggishnessModel;
 import com.google.speedtracer.client.visualizations.model.SluggishnessVisualization;
 import com.google.speedtracer.client.visualizations.view.SluggishnessDetailView.EventWaterfallFilter;
 
+import java.util.List;
+
 /**
  * The waterfall of DOM/UI Events shown on the sluggishness graph.
  */
@@ -258,7 +260,8 @@ public class EventWaterfall extends FilteringScrollTable {
         UiEvent e = (UiEvent) event.getSource();
         assert e != null;
         GraphCalloutModel calloutModel = getVisualization().getTimeline().getModel().getGraphCalloutModel();
-        calloutModel.update(e.getTime(), e.getDuration(), UiEvent.typeToDetailedTypeString(e), 0, true);
+        calloutModel.update(e.getTime(), e.getDuration(),
+            UiEvent.typeToDetailedTypeString(e), 0, true);
       }
     };
 
@@ -344,10 +347,9 @@ public class EventWaterfall extends FilteringScrollTable {
 
     // Clear the map of record number to table rows
     recordMap = JsIntegerMap.createObject().cast();
-
+    List<UiEvent> eventList = sourceDispatcher.getEventList();
     for (int i = beginIndex; i < endIndex; i++) {
-      addRowForUiEvent(getVisualization().getModel().getEventList().get(i),
-          true);
+      addRowForUiEvent(eventList.get(i), true);
     }
 
     // Actually add the rows to the dom.

@@ -27,7 +27,7 @@ public class JavaScriptProfileModelTests extends GWTTestCase {
   private static class Lookup implements EventRecordLookup {
     private JsIntegerMap<EventRecord> eventRecordMap = JsIntegerMap.create();
 
-    public EventRecord findEventRecord(int sequence) {
+    public EventRecord findEventRecordFromSequence(int sequence) {
       return eventRecordMap.get(sequence);
     }
 
@@ -99,8 +99,8 @@ public class JavaScriptProfileModelTests extends GWTTestCase {
     // Wait until processing is done, then run some more checks
     Command.defer(new Command.Method() {
       public void execute() {
-        UiEvent event1 = (UiEvent) lookup.findEventRecord(1);
-        UiEvent event3 = (UiEvent) lookup.findEventRecord(3);
+        UiEvent event1 = (UiEvent) lookup.findEventRecordFromSequence(1);
+        UiEvent event3 = (UiEvent) lookup.findEventRecordFromSequence(3);
         if (event1.hasJavaScriptProfile() && event3.hasJavaScriptProfile()) {
           doTestEventProcessing(profileModel);
         } else {

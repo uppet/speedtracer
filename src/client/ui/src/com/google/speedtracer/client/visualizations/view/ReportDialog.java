@@ -15,8 +15,13 @@
  */
 package com.google.speedtracer.client.visualizations.view;
 
-import com.google.gwt.coreext.client.JSOArray;
+import com.google.gwt.coreext.client.JsIntegerDoubleMap;
+import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.TableCellElement;
+import com.google.gwt.dom.client.TableRowElement;
+import com.google.gwt.graphics.client.charts.ColorCodedValue;
+import com.google.gwt.graphics.client.charts.PieChart;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.topspin.ui.client.ClickEvent;
@@ -25,15 +30,19 @@ import com.google.gwt.topspin.ui.client.Container;
 import com.google.gwt.topspin.ui.client.DefaultContainerImpl;
 import com.google.gwt.topspin.ui.client.Div;
 import com.google.gwt.topspin.ui.client.Root;
+import com.google.gwt.topspin.ui.client.Table;
 import com.google.speedtracer.client.model.DataDispatcher;
 import com.google.speedtracer.client.model.EventRecord;
-import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.timeline.TimeLineModel;
+import com.google.speedtracer.client.util.TimeStampFormatter;
 import com.google.speedtracer.client.view.HoveringPopup;
 import com.google.speedtracer.client.view.SortableTableHeader;
 import com.google.speedtracer.client.visualizations.model.HintletReportModel;
+import com.google.speedtracer.client.visualizations.model.ReportDataCollector;
+import com.google.speedtracer.client.visualizations.model.ReportDataCollector.ReportData;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -62,7 +71,7 @@ public class ReportDialog {
    */
   public interface Resources extends HintletReport.Resources,
       ScopeBar.Resources, SortableTableHeader.Resources,
-      HoveringPopup.Resources {
+      HoveringPopup.Resources, PieChart.Resources {
 
     @Source("resources/ReportDialog.css")
     ReportDialog.Css hintletReportDialogCss();
@@ -71,63 +80,38 @@ public class ReportDialog {
     ImageResource reportClose();
   }
 
-  private final DataDispatcher dataDispatcher;
-
   private final Div glassPane;
 
-  private final HintletReport report;
+  private PieChart pieChart;
+
+  private HintletReport report;
 
   private final Div reportPane;
 
+  private DivElement summaryTitle;
+
   private final TimeLineModel timelineModel;
+
+  private final ReportDataCollector dataCollector;
 
   public ReportDialog(TimeLineModel timelineModel,
       DataDispatcher dataDispatcher, ReportDialog.Resources resources) {
     // Initialize locals.
-    this.dataDispatcher = dataDispatcher;
     this.glassPane = new Div(Root.getContainer());
     this.reportPane = new Div(Root.getContainer());
     this.timelineModel = timelineModel;
+    this.dataCollector = new ReportDataCollector(dataDispatcher);
 
-    // Set style names.
-    ReportDialog.Css css = resources.hintletReportDialogCss();
-    glassPane.setStyleName(css.glassPane());
-    reportPane.setStyleName(css.reportPane());
-
-    // Create the main container for the report pane.
-    Container reportPaneContainer = new DefaultContainerImpl(
-        reportPane.getElement());
-
-    // Create the inner container to hold to hint report.
-    Div reportPaneInner = new Div(reportPaneContainer);
-    reportPaneInner.setStyleName(css.reportPaneInner());
-    Container innerContainer = new DefaultContainerImpl(
-        reportPaneInner.getElement());
-
-    // Create the title for the hint report.
-    Div reportPaneTitle = new Div(innerContainer);
-    reportPaneTitle.setText("Hints");
-    reportPaneTitle.setStyleName(css.reportTitle());
-
-    // Construct the scope bar for selecting different type of hint reports.
-    buildScopeBar(resources, innerContainer);
-
-    // Create the hint report.
-    this.report = new HintletReport(innerContainer, new HintletReportModel(),
-        resources, HintletReport.REPORT_TYPE_SEVERITY);
-
-    // Close button for hiding the report glass panel.
-    Div closeButton = new Div(reportPaneContainer);
-    closeButton.setStyleName(css.reportClose());
-    closeButton.addClickListener(new ClickListener() {
-      public void onClick(ClickEvent event) {
-        setVisible(false);
-      }
-    });
+    // Set style names for the base elements.
+    glassPane.setStyleName(resources.hintletReportDialogCss().glassPane());
+    reportPane.setStyleName(resources.hintletReportDialogCss().reportPane());
 
     // Make sure the dialog is created hidden.
     glassPane.setVisible(false);
     reportPane.setVisible(false);
+
+    // Build the UI for the report dialog.
+    constructReportUi(resources);
   }
 
   /**
@@ -144,7 +128,11 @@ public class ReportDialog {
     }
   }
 
-  private void buildScopeBar(ScopeBar.Resources resources, Container container) {
+  /**
+   * TODO (jaimeyap): This should be moved into the HintletReport class.
+   */
+  private void buildHintReportScopeBar(ScopeBar.Resources resources,
+      Container container) {
     ScopeBar scopeBar = new ScopeBar(container, resources);
     scopeBar.add("All", new ClickListener() {
       public void onClick(ClickEvent event) {
@@ -165,28 +153,108 @@ public class ReportDialog {
     scopeBar.getElement().getStyle().setPropertyPx("marginBottom", 5);
   }
 
-  private void gatherDataWithinWindow() {
-    int numRecords = dataDispatcher.getEventRecords().size();
-    int index = EventRecord.getIndexOfRecord(dataDispatcher.getEventRecords(),
-        timelineModel.getLeftBound());
-    // If we have a bogus insertion index, do nothing.
-    if (index < 0 || index >= numRecords) {
-      return;
-    }
+  private void constructReportUi(Resources resources) {
+    Css css = resources.hintletReportDialogCss();
+    Container reportPaneContainer = new DefaultContainerImpl(
+        reportPane.getElement());
 
-    // TODO(jaimeyap): Collect summary aggregate stats.
-    List<HintRecord> hints = new ArrayList<HintRecord>();
-    EventRecord record = dataDispatcher.findEventRecord(index);
-    while (record.getTime() < timelineModel.getRightBound() && record != null) {
-      JSOArray<HintRecord> hintArray = record.getHintRecords();
-      if (hintArray != null) {
-        // Collect hints.
-        for (int i = 0, n = hintArray.size(); i < n; i++) {
-          hints.add(hintArray.get(i));
+    // Create a container for the summary information.
+    Div summaryInfoDiv = new Div(reportPaneContainer);
+    summaryInfoDiv.setStyleName(css.reportPaneInner());
+    Container summaryInfoContainer = new DefaultContainerImpl(
+        summaryInfoDiv.getElement());
+
+    // Create the title for the summary information.
+    summaryTitle = summaryInfoDiv.getElement().getOwnerDocument().createDivElement();
+    summaryTitle.setClassName(css.reportTitle());
+    updateSummaryTitle();
+    summaryInfoDiv.getElement().appendChild(summaryTitle);
+
+    // Summary info is a 2 column section. PieChart on the left, and the startup
+    // statistics on the right.
+    Table summaryLayout = new Table(summaryInfoContainer);
+    summaryLayout.setFixedLayout(true);
+    TableRowElement row = summaryLayout.insertRow(-1);
+    row.setVAlign("top");
+    TableCellElement leftCell = row.insertCell(-1);
+    Container pieChartContainer = new DefaultContainerImpl(leftCell);
+
+    // Create a piechart with no data initially.
+    this.pieChart = new PieChart(pieChartContainer,
+        new ArrayList<ColorCodedValue>(), resources);
+
+    // TODO (jaimeyap): Add startup statistics to the right of the pie chart.
+    // Things like "time to first paint" or "page load time".
+
+    // Create the inner container to hold to hint report.
+    Div hintReportDiv = new Div(reportPaneContainer);
+    hintReportDiv.setStyleName(css.reportPaneInner());
+    Container hintReportContainer = new DefaultContainerImpl(
+        hintReportDiv.getElement());
+
+    // Create the title for the hint report.
+    DivElement hintTitle = hintReportDiv.getElement().getOwnerDocument().createDivElement();
+    hintTitle.setInnerText("Hints");
+    hintTitle.setClassName(css.reportTitle());
+    hintReportDiv.getElement().appendChild(hintTitle);
+
+    // Construct the scope bar for selecting different type of hint reports.
+    buildHintReportScopeBar(resources, hintReportContainer);
+
+    // Create the hint report.
+    this.report = new HintletReport(hintReportContainer,
+        new HintletReportModel(), resources, HintletReport.REPORT_TYPE_SEVERITY);
+
+    // Close button for hiding the report glass panel.
+    Div closeButton = new Div(reportPaneContainer);
+    closeButton.setStyleName(css.reportClose());
+    closeButton.addClickListener(new ClickListener() {
+      public void onClick(ClickEvent event) {
+        setVisible(false);
+      }
+    });
+  }
+
+  private void gatherDataWithinWindow() {
+    ReportData data = dataCollector.gatherDataWithinWindow(
+        timelineModel.getLeftBound(), timelineModel.getRightBound());
+
+    // Update the report views.
+    updateSummaryTitle();
+    populatePieChart(data.getAggregatedTypeDurations());
+    report.refresh(data.getHints());
+  }
+
+  private void populatePieChart(JsIntegerDoubleMap aggregateTypeDurations) {
+    final List<ColorCodedValue> data = new ArrayList<ColorCodedValue>();
+
+    assert (aggregateTypeDurations != null);
+
+    // Flatten the aggregate map into a sorted list.
+    aggregateTypeDurations.iterate(new JsIntegerDoubleMap.IterationCallBack() {
+      public void onIteration(int key, double val) {
+        if (val > 0) {
+          String typeName = (key == -1) ? "UI Thread Available"
+              : EventRecord.typeToString(key);
+          data.add(new ColorCodedValue(typeName, val,
+              EventRecordColors.getColorForType(key)));
         }
       }
-      record = dataDispatcher.findEventRecord(++index);
-    }
-    report.refresh(hints);
+    });
+
+    Collections.sort(data);
+    // Update the piechart with this data.
+    this.pieChart.setData(data);
+    this.pieChart.render();
+    this.pieChart.showLegend();
+  }
+
+  private void updateSummaryTitle() {
+    double left = timelineModel.getLeftBound();
+    double right = timelineModel.getRightBound();
+    summaryTitle.setInnerText("Summary Report for Selection: "
+        + TimeStampFormatter.format(left) + " - "
+        + TimeStampFormatter.format(right) + " ("
+        + TimeStampFormatter.format(right - left) + ")");
   }
 }

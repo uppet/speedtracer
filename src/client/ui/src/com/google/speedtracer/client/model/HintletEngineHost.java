@@ -26,7 +26,7 @@ import com.google.gwt.webworker.client.Worker;
 import com.google.speedtracer.client.ClientConfig;
 import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.messages.HintMessage;
-import com.google.speedtracer.client.model.DataDispatcher.EventRecordDispatcher;
+import com.google.speedtracer.client.model.DataDispatcher.DataDispatcherDelegate;
 import com.google.speedtracer.client.model.HintletInterface.ExceptionListener;
 import com.google.speedtracer.client.model.HintletInterface.HintListener;
 import com.google.speedtracer.shared.EventRecordType;
@@ -39,7 +39,7 @@ import java.util.List;
  * for providing API for submitting records for analysis and for calling back
  * when a hint fires from a hintlet.
  */
-public class HintletEngineHost implements EventRecordDispatcher {
+public class HintletEngineHost implements DataDispatcherDelegate {
 
   private final List<ExceptionListener> exceptionListeners = new ArrayList<ExceptionListener>();
   private final Worker hintletEngineWorker;
@@ -57,6 +57,10 @@ public class HintletEngineHost implements EventRecordDispatcher {
 
   public void addHintListener(HintListener listener) {
     hintListeners.add(listener);
+  }
+
+  public void clearData() {
+    // no-op
   }
 
   /**

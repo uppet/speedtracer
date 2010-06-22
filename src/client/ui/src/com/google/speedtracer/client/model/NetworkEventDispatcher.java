@@ -16,6 +16,7 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.coreext.client.JsIntegerMap;
+import com.google.speedtracer.client.model.DataDispatcher.DataDispatcherDelegate;
 import com.google.speedtracer.client.model.DataDispatcher.EventRecordDispatcher;
 import com.google.speedtracer.client.model.ResourceUpdateEvent.UpdateResource;
 import com.google.speedtracer.shared.EventRecordType;
@@ -27,7 +28,7 @@ import java.util.List;
  * Native dispatcher which sources Network Events for the UI. Hooks into
  * underlying DataInstance.
  */
-public class NetworkEventDispatcher implements EventRecordDispatcher {
+public class NetworkEventDispatcher implements DataDispatcherDelegate {
 
   /**
    * Listener Interface for a NetworkEventDispatcher.
@@ -84,6 +85,8 @@ public class NetworkEventDispatcher implements EventRecordDispatcher {
 
   private final List<Listener> listeners = new ArrayList<Listener>();
 
+  private final List<ResourceRecord> networkEvents = new ArrayList<ResourceRecord>();
+
   private List<NetworkResource> redirectQueue = new ArrayList<NetworkResource>();
 
   /**
@@ -100,6 +103,15 @@ public class NetworkEventDispatcher implements EventRecordDispatcher {
 
   public void addListener(Listener listener) {
     listeners.add(listener);
+  }
+
+  public void clearData() {
+    redirectQueue.clear();
+    networkEvents.clear();
+  }
+
+  public List<ResourceRecord> getNetworkEvents() {
+    return networkEvents;
   }
 
   /**
@@ -121,6 +133,7 @@ public class NetworkEventDispatcher implements EventRecordDispatcher {
   }
 
   public void onNetworkResourceFinished(ResourceFinishEvent resourceFinish) {
+    networkEvents.add(resourceFinish);
     NetworkResource resource = getResource(resourceFinish.getIdentifier());
     if (resource != null) {
       resource.update(resourceFinish);
@@ -132,6 +145,7 @@ public class NetworkEventDispatcher implements EventRecordDispatcher {
   }
 
   public void onNetworkResourceResponse(ResourceResponseEvent resourceResponse) {
+    networkEvents.add(resourceResponse);
     NetworkResource resource = getResource(resourceResponse.getIdentifier());
     if (resource != null) {
       resource.update(resourceResponse);
@@ -143,6 +157,7 @@ public class NetworkEventDispatcher implements EventRecordDispatcher {
   }
 
   public void onNetworkResourceStarted(ResourceWillSendEvent resourceStart) {
+    networkEvents.add(resourceStart);
     // Check for dupe IDs. If we find one, assume it is a redirect.
     NetworkResource previousResource = getResource(resourceStart.getIdentifier());
     boolean isRedirect = false;

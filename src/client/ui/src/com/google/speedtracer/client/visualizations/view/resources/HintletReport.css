@@ -8,13 +8,7 @@
 
 /* viewport for scrolled area */
 .reportOuterDiv {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50px;
-  bottom: 10px;
-  border: 1px solid black;
-  overflow-y: auto;
+  overflow-y: hidden;
   overflow-x: auto;
 }
 
@@ -41,8 +35,7 @@
 
 .reportRowDetailTable {
   border-collapse: collapse;
-  border: 1px #aaa solid;   
-  width: 100%; 
+  border: 1px #aaa solid;
 }
 
 .reportTableHeader {
