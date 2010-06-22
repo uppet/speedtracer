@@ -401,7 +401,7 @@ public class MonitorVisualizationsPanel extends Div implements
     timelineMarks.addMark(event.getTime(),
         EventRecordColors.getColorForType(DomContentLoadedEvent.TYPE),
         EventRecordType.typeToString(DomContentLoadedEvent.TYPE),
-        EventRecordType.typeToHelpString(DomContentLoadedEvent.TYPE));
+        EventRecordType.typeToHelpString(DomContentLoadedEvent.TYPE), true);
     timelineMarks.drawMarksInBounds(mainTimeLineModel.getLeftBound(),
         mainTimeLineModel.getRightBound());
   }
@@ -417,7 +417,7 @@ public class MonitorVisualizationsPanel extends Div implements
     String description = "Navigating to "
         + (resource.equals("") ? refresh.getUrl() : resource);
     timelineMarks.addMark(change.getTime(), Color.BLUE, description,
-        description);
+        description, true);
     timelineMarks.drawMarksInBounds(mainTimeLineModel.getLeftBound(),
         mainTimeLineModel.getRightBound());
   }
@@ -431,7 +431,7 @@ public class MonitorVisualizationsPanel extends Div implements
     String description = "Refresh of "
         + (resource.equals("") ? refresh.getUrl() : resource);
     timelineMarks.addMark(change.getTime(), Color.LIGHT_BLUE, description,
-        description);
+        description, false);
     timelineMarks.drawMarksInBounds(mainTimeLineModel.getLeftBound(),
         mainTimeLineModel.getRightBound());
   }
@@ -440,7 +440,7 @@ public class MonitorVisualizationsPanel extends Div implements
     timelineMarks.addMark(event.getTime(),
         EventRecordColors.getColorForType(WindowLoadEvent.TYPE),
         EventRecordType.typeToString(WindowLoadEvent.TYPE),
-        EventRecordType.typeToHelpString(WindowLoadEvent.TYPE));
+        EventRecordType.typeToHelpString(WindowLoadEvent.TYPE), true);
     timelineMarks.drawMarksInBounds(mainTimeLineModel.getLeftBound(),
         mainTimeLineModel.getRightBound());
   }
