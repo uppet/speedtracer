@@ -184,7 +184,7 @@ public class EventWaterfallRowDetails extends RowDetails implements
       public void onSymbolClicked(String resourceUrl,
           SourceViewerServer sourceViewerServer, int lineNumber, int column,
           String absoluteFilePath) {
-        showSource(resourceUrl, sourceViewerServer, lineNumber, 0,
+        showSource(resourceUrl, sourceViewerServer, lineNumber, column,
             absoluteFilePath);
       }
     };
