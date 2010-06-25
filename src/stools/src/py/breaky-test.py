@@ -27,6 +27,7 @@ import optparse
 import os
 import platform
 import SimpleHTTPServer
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -136,12 +137,33 @@ class ChromeRunner(object):
   def Stop(self):
     """Kill Chrome!"""
 
+    retcode = 0
     if platform.system() == "Linux" or platform.system() == "Darwin":
-      os.kill(self.chrome_process.pid, 9)
+      try:
+        os.kill(self.chrome_process.pid, 9)
+      except OSError:
+        retcode = 1
     elif platform.system() == "Windows":
       print "Trying to kill chrome PID %s" % (str(self.chrome_process.pid))
-      import win32api
-      win32api.TerminateProcess(self.chrome_process._handle, -1)
+      #force a kill of the process tree via taskkill
+      taskkill_args = ["taskkill",
+                       "/F",
+                       "/T",
+                       "/PID",
+                       str(self.chrome_process.pid)]
+      try:
+        retcode = subprocess.call(taskkill_args)
+      except OSError:
+        retcode = 1
+        print "Cannot kill chrome becasue \"taskkill\" is not available on this system."
+
+    if retcode == 0: 
+      try:
+        shutil.rmtree(self.user_data_dir)
+      except OSError:
+        print "Cannot remove temporary user data dir at %s" % self.user_data_dir
+    else:
+      print "Got an error trying to kill chrome."
     self.thread.join()
 
 
