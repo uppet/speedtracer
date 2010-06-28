@@ -72,6 +72,10 @@ public class RequestDetails extends LazilyCreateableElement {
     String nameValueTable();
 
     String rowEven();
+    
+    String rowFail();
+    
+    String rowRedirect();
 
     String sectionHeader();
 
@@ -154,6 +158,27 @@ public class RequestDetails extends LazilyCreateableElement {
     if (isEven) {
       row.setClassName(css.rowEven());
     }
+
+    final TableCellElement nameCell = row.insertCell(-1);
+    nameCell.setClassName(css.nameCell());
+    nameCell.setInnerText(title);
+
+    final TableCellElement valueCell = row.insertCell(-1);
+    valueCell.setClassName(css.valueCell());
+    valueCell.setInnerText(value);
+  }
+  
+  /**
+   * Appends a TableRowElement and populates it with two cells.
+   * 
+   * @param summaryTable
+   * @param title
+   * @param value
+   */
+  private static void addRowPairByClass(Table dataTable, Css css, String rowClass,
+      String title, String value) {
+    TableRowElement row = dataTable.appendRow();
+    row.setClassName(rowClass);
 
     final TableCellElement nameCell = row.insertCell(-1);
     nameCell.setClassName(css.nameCell());
@@ -270,6 +295,8 @@ public class RequestDetails extends LazilyCreateableElement {
 
   private boolean isVisible = false;
 
+  private final Element parentElem;
+
   /**
    * We need a reference to the styles for our parent Widget because we have
    * some toggles in this class that mutate the styles of the
@@ -278,8 +305,6 @@ public class RequestDetails extends LazilyCreateableElement {
   private final NetworkPillBox.Css pbCss;
 
   private final Resources resources;
-
-  private final Element parentElem;
 
   private final ServerEventController serverEventController;
 
@@ -313,6 +338,11 @@ public class RequestDetails extends LazilyCreateableElement {
       } else {
         hintletTree.refresh(info.getHintRecords());
       }
+    }
+    
+    // Update the content if it's visible.
+    if (isVisible) {
+      populateContent();
     }
   }
 
@@ -406,14 +436,22 @@ public class RequestDetails extends LazilyCreateableElement {
       NetworkResource info) {
     final OddEvenIterator iter = new OddEvenIterator();
 
+    if (ClientConfig.isDebugMode()) {
+      addRowPair(summaryTable, css, iter.next(), "Identifier", info.getIdentifier() + "");
+    }
     addRowPair(summaryTable, css, iter.next(), "URL", info.getUrl());
     addRowPair(summaryTable, css, iter.next(), "From Cache", info.isCached()
         + "");
     addRowPair(summaryTable, css, iter.next(), "Method", info.getHttpMethod());
-    String statusText = info.getStatusText();
-    addRowPair(summaryTable, css, iter.next(), "Http Status",
-        info.getStatusCode()
-            + ((statusText.equals("")) ? "" : " - " + info.getStatusText()));
+    
+    if (info.didFail()) {
+      addRowPairByClass(summaryTable, css, css.rowFail(), "Http Status", info.formatHttpStatus());
+    } else if (info.isRedirect()) {
+      addRowPairByClass(summaryTable, css, css.rowRedirect(), "Http Status", info.formatHttpStatus());
+    } else {
+      addRowPair(summaryTable, css, iter.next(), "Http Status", info.formatHttpStatus());
+    }
+    
     addRowPair(summaryTable, css, iter.next(), "Mime-type", info.getMimeType());
 
     String requestTiming, responseTiming, totalTiming;
