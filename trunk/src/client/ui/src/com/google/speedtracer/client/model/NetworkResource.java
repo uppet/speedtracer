@@ -153,6 +153,14 @@ public class NetworkResource {
     return didFail;
   }
 
+  public String formatHttpStatus() {
+    if (statusCode > 0) {
+      return statusCode + ((statusText.equals("")) ? "" : " - " + statusText);
+    } else {
+      return "No Response";
+    }
+  }
+
   public int getContentLength() {
     return contentLength;
   }

@@ -108,7 +108,7 @@ public class NetworkVisualizationModel implements VisualizationModel,
   }
 
   public void onHint(HintRecord hintlet) {
-    // Only process hintlet references to a Ui Event
+    // Only process hintlet references to a Resource Event
     int refRecord = hintlet.getRefRecord();
     EventRecord rec = dataDispatcher.findEventRecordFromSequence(refRecord);
     if (!ResourceRecord.isResourceRecord(rec)) {
@@ -119,8 +119,11 @@ public class NetworkVisualizationModel implements VisualizationModel,
     highlightModel.addData(rec.getTime(), value);
 
     // Notify any listeners wanting to hear about such changes.
-    NetworkResource res = findResourceForRecord(rec.<ResourceRecord> cast());
-    fireResourceRefreshListeners(res);
+    ResourceRecord resourceRecord = rec.<ResourceRecord> cast();
+    NetworkResource res = findResourceForRecord(resourceRecord);
+    if (res != null) {
+      fireResourceRefreshListeners(res);
+    }
   }
 
   public void onNetworkResourceRequestStarted(NetworkResource resource,
@@ -132,25 +135,32 @@ public class NetworkVisualizationModel implements VisualizationModel,
       openRequests++;
     }
     getGraphModel().addData(resource.getStartTime(), openRequests);
+
     sortedResources.add(resource);
+    fireResourceRefreshListeners(resource);
   }
 
   public void onNetworkResourceResponseFinished(NetworkResource resource) {
     assert (resource != null) : "Resource null in finish!";
     openRequests--;
     getGraphModel().addData(resource.getEndTime(), openRequests);
+    fireResourceRefreshListeners(resource);
   }
 
   public void onNetworkResourceResponseStarted(NetworkResource resource) {
     assert (resource != null) : "Resource null in response!";
+    fireResourceRefreshListeners(resource);
   }
 
   public void onNetworkResourceUpdated(NetworkResource resource) {
     // TODO(jaimeyap): We should check for the load event and the domcontent
     // event here and do something with it.
     assert (resource != null) : "Resource null in update!";
+    fireResourceRefreshListeners(resource);
   }
 
+  // TODO(conroy): optimize this since it gets called on every model for every
+  // hint
   private NetworkResource findResourceForRecord(ResourceRecord rec) {
     // A simple linear scan will suffice - we don't expect this list to get very
     // big.

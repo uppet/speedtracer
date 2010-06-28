@@ -69,6 +69,38 @@
   border-bottom: 1px solid #175094;
 }
 
+.pillBoxLeftFail {
+  float: left;
+  height: pillBoxHeight;
+  background: rgba(205,92,92,0.4);
+  border: 1px solid rgba(172,21,21,0.4);
+}
+
+.pillBoxRightFail {
+  position: relative;
+  height: pillBoxHeight;
+  background: #cd5c5c;
+  border-top: 1px solid #ac1515;
+  border-right: 1px solid #ac1515;
+  border-bottom: 1px solid #ac1515;
+}
+
+.pillBoxLeftRedirect {
+  float: left;
+  height: pillBoxHeight;
+  background: rgba(248,130,71,0.4);
+  border: 1px solid rgba(191,74,16,0.4);
+}
+
+.pillBoxRightRedirect {
+  position: relative;
+  height: pillBoxHeight;
+  background: #f88247;
+  border-top: 1px solid #bf4a10;
+  border-right: 1px solid #bf4a10;
+  border-bottom: 1px solid #bf4a10;
+}
+
 .timeOverlay {
   position: absolute;
   font-size: 0.8em;

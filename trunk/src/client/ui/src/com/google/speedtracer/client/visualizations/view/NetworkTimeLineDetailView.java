@@ -32,8 +32,8 @@ import com.google.speedtracer.client.util.dom.DocumentExt;
 import com.google.speedtracer.client.view.DetailView;
 import com.google.speedtracer.client.view.fx.CssTransitionFloat;
 import com.google.speedtracer.client.view.fx.CssTransitionFloat.CallBack;
-import com.google.speedtracer.client.visualizations.model.NetworkVisualizationModel;
 import com.google.speedtracer.client.visualizations.model.NetworkVisualization;
+import com.google.speedtracer.client.visualizations.model.NetworkVisualizationModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,10 +72,6 @@ public class NetworkTimeLineDetailView extends DetailView implements
   private final DefaultContainerImpl contentContainer;
 
   private final List<ResourceRow> displayed;
-
-  private boolean isBlocked = false;
-
-  private boolean isDirty = false;
 
   private double oldLeft = 0;
 
@@ -133,14 +129,6 @@ public class NetworkTimeLineDetailView extends DetailView implements
     return displayed.size();
   }
 
-  public boolean isBlocked() {
-    return isBlocked;
-  }
-
-  public boolean isDirty() {
-    return isDirty;
-  }
-
   public void onAuthenticationRequired(String url) {
     // TODO(knorton): Add UI to help a user log into the server providing
     // traces.
@@ -154,24 +142,31 @@ public class NetworkTimeLineDetailView extends DetailView implements
   }
 
   public void refreshResource(NetworkResource resource) {
+    // Short circuit if it's not in the window
+    if (!isResourceInWindow(resource, oldLeft, oldRight)) {
+      return;
+    }
+    
+    // Always display if we haven't displayed anything yet.
     if (displayed == null) {
+      displayResource(oldLeft, oldRight, resource);
       return;
     }
 
+    boolean found = false;
     for (int i = 0, l = displayed.size(); i < l; ++i) {
       ResourceRow row = displayed.get(i);
       if (row.getResource().equals(resource)) {
         row.refresh();
+        found = true;
         break;
       }
     }
-  }
-
-  public void responseStarted(NetworkResource resource) {
-  }
-
-  public void setIsBlocked(boolean b) {
-    isBlocked = b;
+    
+    // It's in the window but not yet displayed, so create it
+    if (!found) {
+      displayResource(oldLeft, oldRight, resource);
+    }
   }
 
   public void updateView(double left, double right) {
@@ -180,6 +175,34 @@ public class NetworkTimeLineDetailView extends DetailView implements
     displayResourcesInWindow(left, right);
   }
 
+  /**
+   * Display a resource in the window.
+   * 
+   * @param left the left boundary
+   * @param right the right boundary
+   * @param resource the resource to display
+   */
+  protected void displayResource(double left, double right,
+      NetworkResource resource) {
+    String lastPathComponent = resource.getLastPathComponent();
+    lastPathComponent = (lastPathComponent == null) ? ""
+        : lastPathComponent;
+    int dotIndex = lastPathComponent.lastIndexOf(".");
+    String fileExtension = (dotIndex < 0) ? ".html"
+        : lastPathComponent.substring(dotIndex);
+
+    final ResourceRow row = new ResourceRow(getContentContainer(),
+        resource, fileExtension, left, right, this, resources,
+        serverEventController);
+
+    displayed.add(row);
+  }
+
+  /**
+   * Display all resources that fall in the given window.
+   * @param left the left boundary
+   * @param right the right boundary
+   */
   protected void displayResourcesInWindow(double left, double right) {
     NetworkVisualizationModel model = getModel();
     // We dont need to update if we
@@ -187,14 +210,6 @@ public class NetworkTimeLineDetailView extends DetailView implements
     if ((displayed.size() > 0) && (left == oldLeft) && (right == oldRight)) {
       return;
     } else {
-      // If we are reading the details of a pillBox, we want to stop smooshing
-      // the resource panel with updates.
-      if (isBlocked) {
-        // We need to repaint ourselves.
-        isDirty = true;
-        return;
-      }
-
       oldLeft = left;
       oldRight = right;
     }
@@ -214,31 +229,13 @@ public class NetworkTimeLineDetailView extends DetailView implements
     List<NetworkResource> networkResources = model.getSortedResources();
     for (int i = 0; i < networkResources.size(); i++) {
       NetworkResource resource = networkResources.get(i);
-      double startTime = resource.getStartTime();
-      double endTime = resource.getEndTime();
-
-      // A version we can use to compare to our left bound
-      double comparableEndTime = endTime;
-
-      if (Double.isNaN(endTime)) {
-        // We assume the request simply has not terminated, so we set the
-        // comparable version to something big.
-        comparableEndTime = Double.MAX_VALUE;
+      if (isResourceInWindow(resource, left, right)) {
+        displayResource(left, right, resource);
       }
-
-      if (startTime < right && comparableEndTime > left) {
-        String lastPathComponent = resource.getLastPathComponent();
-        lastPathComponent = (lastPathComponent == null) ? ""
-            : lastPathComponent;
-        int dotIndex = lastPathComponent.lastIndexOf(".");
-        String fileExtension = (dotIndex < 0) ? ".html"
-            : lastPathComponent.substring(dotIndex);
-
-        final ResourceRow row = new ResourceRow(getContentContainer(),
-            resource, fileExtension, left, right, this, resources,
-            serverEventController);
-
-        displayed.add(row);
+      
+      // Bail once we've hit the right edge
+      if (resource.getStartTime() >= right) {
+        break;
       }
     }
 
@@ -246,7 +243,32 @@ public class NetworkTimeLineDetailView extends DetailView implements
       CssTransitionFloat.get().transition(getElement(), "opacity", 0, 1, 200);
       shouldFlash = false;
     }
-    isDirty = false;
+  }
+
+  /**
+   * Check if a resource request/response overlaps with the display window.
+   * If no end time for the resource exists, it is treated as Double.MAX_VALUE
+   * 
+   * @param resource the resource to check
+   * @param left the left boundary of the window
+   * @param right the right boundary of the window
+   * @return true if some portion of the request falls in the window
+   */
+  protected boolean isResourceInWindow(NetworkResource resource, double left,
+      double right) {
+    double startTime = resource.getStartTime();
+    double endTime = resource.getEndTime();
+
+    // A version we can use to compare to our left bound
+    double comparableEndTime = endTime;
+
+    if (Double.isNaN(endTime)) {
+      // We assume the request simply has not terminated, so we set the
+      // comparable version to something big.
+      comparableEndTime = Double.MAX_VALUE;
+    }
+
+    return (startTime < right && comparableEndTime > left);
   }
 
   private Element getContentElement() {

@@ -60,7 +60,15 @@ public class NetworkPillBox extends Div implements OwnsEventListeners {
 
     String pillBoxLeft();
 
+    String pillBoxLeftFail();
+
+    String pillBoxLeftRedirect();
+
     String pillBoxRight();
+
+    String pillBoxRightFail();
+
+    String pillBoxRightRedirect();
 
     String pillBoxTimeLine();
 
@@ -297,6 +305,8 @@ public class NetworkPillBox extends Div implements OwnsEventListeners {
 
   private final NetworkResource networkResource;
 
+  private int lastPanelWidth = 0;
+
   private final Element parentRowElement;
 
   private Element pbLeft;
@@ -338,13 +348,16 @@ public class NetworkPillBox extends Div implements OwnsEventListeners {
   }
 
   public void onResize(int panelWidth) {
-    sizePillBox(networkResource, panelWidth);
+    sizePillBox(panelWidth);
   }
 
   public void refresh() {
     if (details != null) {
       details.refresh();
     }
+
+    stylePillBox();
+    sizePillBox();
   }
 
   public void removeAllEventListeners() {
@@ -381,9 +394,24 @@ public class NetworkPillBox extends Div implements OwnsEventListeners {
     return rtn;
   }
 
+  private void stylePillBox() {
+    NetworkPillBox.Css css = resources.networkPillBoxCss();
+
+    if (networkResource.didFail()) {
+      pbLeft.setClassName(css.pillBoxLeftFail());
+      pbRight.setClassName(css.pillBoxRightFail());
+    } else if (networkResource.isRedirect()) {
+      pbLeft.setClassName(css.pillBoxLeftRedirect());
+      pbRight.setClassName(css.pillBoxRightRedirect());
+    } else {
+      pbLeft.setClassName(css.pillBoxLeft());
+      pbRight.setClassName(css.pillBoxRight());
+    }
+  }
+
   private void createPillBox(NetworkPillBox.Css css) {
-    pbLeft = DocumentExt.get().createDivWithClassName(css.pillBoxLeft());
-    pbRight = DocumentExt.get().createDivWithClassName(css.pillBoxRight());
+    pbLeft = DocumentExt.get().createDivElement();
+    pbRight = DocumentExt.get().createDivElement();
 
     pillBoxContainer.appendChild(pbLeft);
     pillBoxContainer.appendChild(pbRight);
@@ -419,11 +447,15 @@ public class NetworkPillBox extends Div implements OwnsEventListeners {
           }
         }));
 
-    sizePillBox(networkResource, Window.getInnerWidth()
-        - Constants.GRAPH_HEADER_WIDTH);
+    lastPanelWidth = Window.getInnerWidth() - Constants.GRAPH_HEADER_WIDTH;
+    refresh();
   }
 
-  private void sizePillBox(NetworkResource networkResource, int panelWidth) {
+  private void sizePillBox() {
+    sizePillBox(lastPanelWidth);
+  }
+
+  private void sizePillBox(int panelWidth) {
     double domainWidth = domainRight - domainLeft;
     double domainToPixels = (double) panelWidth / domainWidth;
 
@@ -431,6 +463,8 @@ public class NetworkPillBox extends Div implements OwnsEventListeners {
     double start = resourceTimes[START];
     double middle = resourceTimes[MIDDLE];
     double end = resourceTimes[END];
+
+    this.lastPanelWidth = panelWidth;
 
     int leftOffset = (int) ((start - domainLeft) * domainToPixels);
     pillBoxContainer.getStyle().setPropertyPx("left", leftOffset);

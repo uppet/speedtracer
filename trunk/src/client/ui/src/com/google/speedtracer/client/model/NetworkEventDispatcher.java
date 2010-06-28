@@ -216,6 +216,10 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
       ResourceUpdateEvent resourceUpdate) {
     // We have found the redirect.
     redirectCandidate.update(resourceUpdate);
+    for (int i = 0, n = listeners.size(); i < n; i++) {
+      Listener listener = listeners.get(i);
+      listener.onNetworkResourceUpdated(redirectCandidate);
+    }
     // Should not be a concurrent modification, since we now bail out of
     // the loop right after mutating the queue.
     redirectQueue.remove(index);

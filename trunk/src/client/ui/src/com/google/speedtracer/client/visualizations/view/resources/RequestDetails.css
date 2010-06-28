@@ -44,6 +44,14 @@
   background-color: #eee;
 }
 
+.rowFail {
+  background-color: #cd5c5c;
+}
+
+.rowRedirect {
+  background-color: #f88247;
+}
+ 
 .nameCell {
   vertical-align: top;
   width: 150px;
