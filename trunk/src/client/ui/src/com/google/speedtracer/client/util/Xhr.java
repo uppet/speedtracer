@@ -44,9 +44,11 @@ public class Xhr {
       if (xhr.getReadyState() == XMLHttpRequest.DONE) {
         if (xhr.getStatus() == 200) {
           callback.onSuccess(xhr);
+          xhr.clearOnReadyStateChange();
           return;
         }
         callback.onFail(xhr);
+        xhr.clearOnReadyStateChange();
       }
     }
   }
@@ -91,16 +93,28 @@ public class Xhr {
 
   private static void request(XMLHttpRequest xhr, String method, String url,
       String requestData, String contentType, XhrCallback callback) {
-    xhr.setOnReadyStateChange(new Handler(callback));
-    xhr.open(method, url);
-    xhr.setRequestHeader("Content-type", contentType);
-    xhr.send(requestData);
+    try {
+      xhr.setOnReadyStateChange(new Handler(callback));
+      xhr.open(method, url);
+      xhr.setRequestHeader("Content-type", contentType);
+      xhr.send(requestData);
+    } catch (Exception e) {
+      // Just fail.
+      callback.onFail(xhr);
+      xhr.clearOnReadyStateChange();
+    }
   }
 
   private static void request(XMLHttpRequest xhr, String method, String url,
       final XhrCallback callback) {
-    xhr.setOnReadyStateChange(new Handler(callback));
-    xhr.open(method, url);
-    xhr.send();
+    try {
+      xhr.setOnReadyStateChange(new Handler(callback));
+      xhr.open(method, url);
+      xhr.send();
+    } catch (Exception e) {
+      // Just fail.
+      callback.onFail(xhr);
+      xhr.clearOnReadyStateChange();
+    }
   }
 }
