@@ -62,11 +62,23 @@ public class ResourceUpdateEvent extends ResourceRecord {
       return !!this.didTimingChange;
     }-*/;
 
+    public final native int getConnectionID() /*-{
+      return this.connectionID || -1;
+    }-*/;
+
+    public final native boolean getConnectionReused() /*-{
+      return !!this.connectionReused;
+    }-*/;
+
     // TODO (jaimeyap): Follow up to ensure that we display both the transfer
     // size and the uncompressed resource size. The following is just a
     // temporary fix.
     public final native int getContentLength() /*-{
       return this.contentLength || this.resourceSize || 0;
+    }-*/;
+
+    public final native DetailedResponseTiming getDetailedResponseTiming() /*-{
+      return this.timing;
     }-*/;
 
     public final native double getDomContentEventTime() /*-{
@@ -120,7 +132,7 @@ public class ResourceUpdateEvent extends ResourceRecord {
     public final native int getStatusCode() /*-{
       return this.statusCode || -1;
     }-*/;
-    
+
     public final native String getStatusText() /*-{
       return this.statusText || "";
     }-*/;
@@ -142,7 +154,7 @@ public class ResourceUpdateEvent extends ResourceRecord {
     }-*/;
 
     public final native void setLoadEventTime(double normalizedTime) /*-{
-      return this.loadEventTime = normalizedTime;
+      this.loadEventTime = normalizedTime;
     }-*/;
 
     public final native void setResponseReceivedTime(double normalizedTime) /*-{

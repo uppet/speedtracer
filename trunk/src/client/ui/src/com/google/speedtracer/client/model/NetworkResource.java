@@ -62,9 +62,17 @@ public class NetworkResource {
 
   private boolean cached;
 
+  private double connectDuration = -1;
+
+  private int connectionID = 0;
+
+  private boolean connectionReused = false;
+
   private int contentLength = -1;
 
   private boolean didFail;
+
+  private double dnsDuration = -1;
 
   private String domain;
 
@@ -94,7 +102,11 @@ public class NetworkResource {
 
   private String path;
 
+  private double proxyDuration = -1;
+
   private HeaderMap requestHeaders;
+
+  private double requestTime = 0;
 
   // Kept around only because hintlets can be accumulated on it.
   private ResourceResponseEvent responseEvent;
@@ -102,6 +114,10 @@ public class NetworkResource {
   private HeaderMap responseHeaders;
 
   private double responseReceivedTime = Double.NaN;
+
+  private double sendDuration = 0;
+
+  private double sslDuration = -1;
 
   // Kept around only because hintlets can be accumulated on it.
   private final ResourceWillSendEvent startEvent;
@@ -113,6 +129,11 @@ public class NetworkResource {
   private String statusText = "";
 
   private final String url;
+
+  private double waitDuration = 0;
+
+  // This allows us to push detailed timing before it is live in dev channel
+  private boolean hasDetailedTiming = false;
 
   public NetworkResource(ResourceWillSendEvent startEvent) {
     this.startTime = startEvent.getTime();
@@ -161,8 +182,24 @@ public class NetworkResource {
     }
   }
 
+  public double getConnectDuration() {
+    return connectDuration;
+  }
+
+  public int getConnectionID() {
+    return connectionID;
+  }
+
+  public boolean getConnectionReused() {
+    return connectionReused;
+  }
+
   public int getContentLength() {
     return contentLength;
+  }
+
+  public double getDnsDuration() {
+    return dnsDuration;
   }
 
   public String getDomain() {
@@ -222,6 +259,14 @@ public class NetworkResource {
     return mimeType;
   }
 
+  public double getOnlyConnectDuration() {
+    if (dnsDuration > 0) {
+      return connectDuration - dnsDuration;
+    } else {
+      return connectDuration;
+    }
+  }
+
   public double getOtherStartTime() {
     return otherStartTime;
   }
@@ -230,8 +275,16 @@ public class NetworkResource {
     return path;
   }
 
+  public double getProxyDuration() {
+    return proxyDuration;
+  }
+
   public HeaderMap getRequestHeaders() {
     return requestHeaders;
+  }
+
+  public double getRequestTime() {
+    return requestTime;
   }
 
   public HeaderMap getResponseHeaders() {
@@ -240,6 +293,10 @@ public class NetworkResource {
 
   public double getResponseReceivedTime() {
     return responseReceivedTime;
+  }
+
+  public double getSendDuration() {
+    return sendDuration;
   }
 
   /**
@@ -256,6 +313,10 @@ public class NetworkResource {
         + responseHeaders.get(SERVER_TRACE_HEADER_NAME);
   }
 
+  public double getSslDuration() {
+    return sslDuration;
+  }
+
   public double getStartTime() {
     return startTime;
   }
@@ -270,6 +331,19 @@ public class NetworkResource {
 
   public String getUrl() {
     return url;
+  }
+
+  public double getWaitDuration() {
+    return waitDuration;
+  }
+
+  /**
+   * Indicates whether this network resource has detailed timing information.
+   * 
+   * @return
+   */
+  public boolean hasDetailedTiming() {
+    return hasDetailedTiming;
   }
 
   /**
@@ -331,15 +405,47 @@ public class NetworkResource {
       this.path = update.getPath();
       this.lastPathComponent = update.getLastPathComponent();
       this.requestHeaders = update.getRequestHeaders();
-      this.cached = update.wasCached();
     }
 
     if (update.didResponseChange()) {
       this.responseHeaders = update.getResponseHeaders();
+      this.cached = update.wasCached();
+      this.connectionID = update.getConnectionID();
+      this.connectionReused = update.getConnectionReused();
 
       if (this.statusCode < 0) {
         this.statusCode = update.getStatusCode();
         this.statusText = update.getStatusText();
+      }
+
+      DetailedResponseTiming detailedTiming = update.getDetailedResponseTiming();
+      if (detailedTiming != null) {
+        this.hasDetailedTiming = true;
+        this.requestTime = detailedTiming.getRequestTime();
+        this.proxyDuration = detailedTiming.getProxyDuration();
+        if (this.proxyDuration > 0) {
+          this.proxyDuration *= 1000;
+        }
+        this.dnsDuration = detailedTiming.getDnsDuration();
+        if (this.dnsDuration > 0) {
+          this.dnsDuration *= 1000;
+        }
+        this.connectDuration = detailedTiming.getConnectDuration();
+        if (this.connectDuration > 0) {
+          this.connectDuration *= 1000;
+        }
+        this.sendDuration = detailedTiming.getSendDuration();
+        if (this.sendDuration > 0) {
+          this.sendDuration *= 1000;
+        }
+        this.waitDuration = detailedTiming.getWaitDuration();
+        if (this.waitDuration > 0) {
+          this.waitDuration *= 1000;
+        }
+        this.sslDuration = detailedTiming.getSslDuration();
+        if (this.sslDuration > 0) {
+          this.sslDuration *= 1000;
+        }
       }
     }
 
