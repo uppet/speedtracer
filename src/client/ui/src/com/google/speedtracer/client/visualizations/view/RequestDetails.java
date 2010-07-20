@@ -72,9 +72,9 @@ public class RequestDetails extends LazilyCreateableElement {
     String nameValueTable();
 
     String rowEven();
-    
+
     String rowFail();
-    
+
     String rowRedirect();
 
     String sectionHeader();
@@ -167,7 +167,7 @@ public class RequestDetails extends LazilyCreateableElement {
     valueCell.setClassName(css.valueCell());
     valueCell.setInnerText(value);
   }
-  
+
   /**
    * Appends a TableRowElement and populates it with two cells.
    * 
@@ -175,8 +175,8 @@ public class RequestDetails extends LazilyCreateableElement {
    * @param title
    * @param value
    */
-  private static void addRowPairByClass(Table dataTable, Css css, String rowClass,
-      String title, String value) {
+  private static void addRowPairByClass(Table dataTable, Css css,
+      String rowClass, String title, String value) {
     TableRowElement row = dataTable.appendRow();
     row.setClassName(rowClass);
 
@@ -317,8 +317,8 @@ public class RequestDetails extends LazilyCreateableElement {
    * @param resources {@link NetworkPillBox.Resources} that contains relevant
    *          images and Css.
    */
-  public RequestDetails(Element parentElem,
-      NetworkResource networkResource, ManagesEventListeners listenerManager,
+  public RequestDetails(Element parentElem, NetworkResource networkResource,
+      ManagesEventListeners listenerManager,
       NetworkPillBox.Resources resources,
       ServerEventController serverEventController) {
     super(listenerManager, resources.requestDetailsCss().details());
@@ -339,7 +339,7 @@ public class RequestDetails extends LazilyCreateableElement {
         hintletTree.refresh(info.getHintRecords());
       }
     }
-    
+
     // Update the content if it's visible.
     if (isVisible) {
       populateContent();
@@ -437,21 +437,26 @@ public class RequestDetails extends LazilyCreateableElement {
     final OddEvenIterator iter = new OddEvenIterator();
 
     if (ClientConfig.isDebugMode()) {
-      addRowPair(summaryTable, css, iter.next(), "Identifier", info.getIdentifier() + "");
+      addRowPair(summaryTable, css, iter.next(), "Identifier",
+          info.getIdentifier() + "");
     }
     addRowPair(summaryTable, css, iter.next(), "URL", info.getUrl());
+
     addRowPair(summaryTable, css, iter.next(), "From Cache", info.isCached()
         + "");
     addRowPair(summaryTable, css, iter.next(), "Method", info.getHttpMethod());
-    
+
     if (info.didFail()) {
-      addRowPairByClass(summaryTable, css, css.rowFail(), "Http Status", info.formatHttpStatus());
+      addRowPairByClass(summaryTable, css, css.rowFail(), "Http Status",
+          info.formatHttpStatus());
     } else if (info.isRedirect()) {
-      addRowPairByClass(summaryTable, css, css.rowRedirect(), "Http Status", info.formatHttpStatus());
+      addRowPairByClass(summaryTable, css, css.rowRedirect(), "Http Status",
+          info.formatHttpStatus());
     } else {
-      addRowPair(summaryTable, css, iter.next(), "Http Status", info.formatHttpStatus());
+      addRowPair(summaryTable, css, iter.next(), "Http Status",
+          info.formatHttpStatus());
     }
-    
+
     addRowPair(summaryTable, css, iter.next(), "Mime-type", info.getMimeType());
 
     String requestTiming, responseTiming, totalTiming;
@@ -475,6 +480,42 @@ public class RequestDetails extends LazilyCreateableElement {
     addRowPair(summaryTable, css, iter.next(), "Response Timing",
         responseTiming);
     addRowPair(summaryTable, css, iter.next(), "Total Timing", totalTiming);
+
+    // Detailed Timing Breakdown
+    if (info.hasDetailedTiming()) {
+      addRowPair(summaryTable, css, iter.next(), "Blocked",
+          TimeStampFormatter.formatMilliseconds(Math.max(info.getRequestTime()
+              - info.getStartTime(), 0)));
+      if (info.getDnsDuration() >= 0) {
+        addRowPair(summaryTable, css, iter.next(), "DNS Resolution",
+            TimeStampFormatter.formatMilliseconds(info.getDnsDuration()));
+      } else {
+        addRowPair(summaryTable, css, iter.next(), "DNS Resolution",
+            TimeStampFormatter.formatMilliseconds(0) + " (Cached DNS)");
+      }
+      if (info.getConnectDuration() >= 0) {
+        addRowPair(summaryTable, css, iter.next(), "Connecting",
+            TimeStampFormatter.formatMilliseconds(info.getOnlyConnectDuration()));
+      } else {
+        addRowPair(summaryTable, css, iter.next(), "Connecting",
+            TimeStampFormatter.formatMilliseconds(0) + " (Reused)");
+      }
+      addRowPair(summaryTable, css, iter.next(), "Sending Request",
+          TimeStampFormatter.formatMilliseconds(info.getSendDuration()));
+  
+      addRowPair(summaryTable, css, iter.next(), "Waiting for Response",
+          TimeStampFormatter.formatMilliseconds(info.getWaitDuration()));
+  
+      // Only show Proxy or SSL if they apply
+      if (info.getProxyDuration() >= 0) {
+        addRowPair(summaryTable, css, iter.next(), "Proxy",
+            TimeStampFormatter.formatMilliseconds(info.getProxyDuration()));
+      }
+      if (info.getSslDuration() >= 0) {
+        addRowPair(summaryTable, css, iter.next(), "SSL Handshake",
+            TimeStampFormatter.formatMilliseconds(info.getSslDuration()));
+      }
+    }
   }
 
   /**

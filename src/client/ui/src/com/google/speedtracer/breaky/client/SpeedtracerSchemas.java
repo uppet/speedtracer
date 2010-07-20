@@ -659,12 +659,6 @@ public class SpeedtracerSchemas {
                "requires" : "didRequestChange",
                "optional" : true
              },
-             "cached" : {
-               "type" : "boolean",
-               "description" : "True if the request was received from cache",
-               "requires" : "didRequestChange",
-               "optional" : true
-             },
 
              // didResponseChange
              "didResponseChange" : {
@@ -709,7 +703,71 @@ public class SpeedtracerSchemas {
              "responseHeaders" : {
                "type" : "object",
                "description" : "HTTP Headers from the response",
-               "requires" : "didResponseChange", "optional" : true
+               "requires" : "didResponseChange",
+               "optional" : true
+             },
+             "connectionID" : {
+               "type" : "integer",
+               "description" : "ID for the network connection",
+               "requires" : "didResponseChange",
+               "minimum" : 0,
+               "optional" : true
+             },
+             "connectionReused" : {
+               "type" : "boolean",
+               "description" : "Socket reused from a previous connection",
+               "requires" : "didResponseChange",
+               "optional" : true
+             },
+             "cached" : {
+               "type" : "boolean",
+               "description" : "True if the request was received from cache",
+               "requires" : "didResponseChange",
+               "optional" : true
+             },
+             "timing" : {
+               "type" : "object",
+               "description" : "Detailed resource loader network timing info",
+               "requires" : "didResponseChange",
+               "optional" : true,
+               "properties" : {
+                 "requestTime" : {
+                   "type" : "number",
+                   "description" : "Time the network transfer started (the request became unblocked)",
+                   "minimum" : 0
+                 },
+                 "proxyDuration" : {
+                   "type" : "number",
+                   "description" : "Seconds in proxy processing (-1 indicates no proxy)",
+                   "minimum" : -1
+                 },
+                 "dnsDuration" : {
+                   "type" : "number",
+                   "description" : "Seconds resolving DNS (-1 indicates re-used socket)",
+                   "minimum" : -1
+                 },
+                 "connectDuration" : {
+                   "type" : "number",
+                   "description" : "Seconds establishing TCP connection (includes DNS duration, -1 indicates re-used socket)",
+                   "minimum" : -1
+                 },
+                 "sendDuration" : {
+                   "type" : "number",
+                   "description" : "Seconds sending request to server",
+                   "minimum" : 0
+                 },
+                 "waitDuration" : {
+                   "type" : "number",
+                   "description" : "Seconds waiting to start receiving (includes SSL Duration)",
+                   "minimum" : 0
+                 },
+                 "sslDuration" : {
+                   "type" : "number",
+                   "description" : "Seconds of the SSL handshake (-1 indicates no handshake)",
+                   "minimum" : -1
+                 }
+               },
+               "additionalProperties" : false
              },
 
              // didTypeChange

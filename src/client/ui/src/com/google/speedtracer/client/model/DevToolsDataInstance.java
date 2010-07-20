@@ -311,6 +311,16 @@ public class DevToolsDataInstance extends DataInstance {
         }
       }
 
+      if (update.didResponseChange()) {
+        DetailedResponseTiming detailedTiming = update.getDetailedResponseTiming();
+        if (detailedTiming != null) {
+          double requestTime = normalizeTime(detailedTiming.getRequestTime());
+          if (requestTime > 0) {
+            detailedTiming.setRequestTime(requestTime);
+          }
+        }
+      }
+
       if (previousEvent != null) {
         updateEvent.setTime(previousEvent.getTime()
             + previousEvent.getDuration());
