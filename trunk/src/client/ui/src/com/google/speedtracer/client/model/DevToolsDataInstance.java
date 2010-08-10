@@ -370,7 +370,11 @@ public class DevToolsDataInstance extends DataInstance {
     }
 
     final native void invoke(String method, JavaScriptObject payload) /*-{
-      this[method](payload);
+      var dispFunc = this[method];
+      // filter on our end.
+      if (dispFunc) {
+        dispFunc(payload);
+      }
     }-*/;
   }
 
