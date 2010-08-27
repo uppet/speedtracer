@@ -23,39 +23,56 @@ import com.google.gwt.core.client.JavaScriptObject;
  * 
  * Note that these durations are given in units of seconds.
  */
-public class DetailedResponseTiming extends JavaScriptObject {
+public final class DetailedResponseTiming extends JavaScriptObject {
+  /**
+   * Does a paranoid computation of duration given a start time and and end
+   * time. If both values are -1, -1 will be returned as that is used by many
+   * properties to represent special cases. If either of the values is
+   * <code>undefined</code>, 0 will be returned.
+   */
+  private static native double computeDuration(double start, double end) /*-{
+    var duration = (end == -1) ? -1 : end - start;
+    return isNaN(duration) ? 0 : duration;
+  }-*/;
+
   protected DetailedResponseTiming() {
   }
-  
-  public final native double getConnectDuration() /*-{
-    return this.connectDuration || -1;
-  }-*/;
-  
-  public final native double getDnsDuration() /*-{
-    return this.dnsDuration || -1;
+
+  public native double getConnectDuration() /*-{
+    return @com.google.speedtracer.client.model.DetailedResponseTiming::computeDuration(DD)(this.connectStart, this.connectEnd);
   }-*/;
 
-  public final native double getProxyDuration() /*-{
-    return this.proxyDuration || 0;
+  public native double getDnsDuration() /*-{
+    return @com.google.speedtracer.client.model.DetailedResponseTiming::computeDuration(DD)(this.dnsStart, this.dnsEnd);
   }-*/;
 
-  public final native double getRequestTime() /*-{
+  public native double getProxyDuration() /*-{
+    return @com.google.speedtracer.client.model.DetailedResponseTiming::computeDuration(DD)(this.proxyStart, this.proxyEnd);
+  }-*/;
+
+  public native double getRequestTime() /*-{
     return this.requestTime || 0;
   }-*/;
 
-  public final native double getSendDuration() /*-{
-    return this.sendDuration || 0;
+  public native double getSendDuration() /*-{
+    // NOTE: Unlike other durations, this cannot be -1.
+    return @com.google.speedtracer.client.model.DetailedResponseTiming::computeDuration(DD)(this.sendStart, this.sendEnd);
   }-*/;
 
-  public final native double getSslDuration() /*-{
-    return this.sslDuration || 0;
+  public native double getSslDuration() /*-{
+    return @com.google.speedtracer.client.model.DetailedResponseTiming::computeDuration(DD)(this.sslStart, this.sslEnd);
   }-*/;
 
-  public final native double getWaitDuration() /*-{
-    return this.waitDuration || 0;
+  /**
+   * Allow for callers to check for older versions of
+   * {@link DetailedResponseTiming} objects. Older objects used the single
+   * property 'sendDuration'; newer versions use 'sendStart' and 'sendEnd'.
+   */
+  public native boolean isValid() /*-{
+    return this.hasOwnProperty('sendStart') && this.hasOwnProperty('sendEnd');
   }-*/;
 
-  public final native void setRequestTime(double requestTime) /*-{
+  public native void setRequestTime(double requestTime) /*-{
     this.requestTime = requestTime;
   }-*/;
 

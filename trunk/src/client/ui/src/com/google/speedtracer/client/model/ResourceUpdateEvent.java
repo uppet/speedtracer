@@ -30,143 +30,153 @@ public class ResourceUpdateEvent extends ResourceRecord {
    * all the fields we care about for a specific checkpoint event, we shoot it
    * off.
    */
-  public static class UpdateResource extends JavaScriptObject {
+  public static final class UpdateResource extends JavaScriptObject {
     protected UpdateResource() {
     }
 
-    public final native boolean didCompletionChange() /*-{
+    public native boolean didCompletionChange() /*-{
       return !!this.didCompletionChange;
     }-*/;
 
-    public final native boolean didFail() /*-{
+    public native boolean didFail() /*-{
       return !!this.failed;
     }-*/;
 
-    public final native boolean didFinish() /*-{
+    public native boolean didFinish() /*-{
       return !!this.finished;
     }-*/;
 
-    public final native boolean didLengthChange() /*-{
+    public native boolean didLengthChange() /*-{
       return !!this.didLengthChange;
     }-*/;
 
-    public final native boolean didRequestChange() /*-{
+    public native boolean didRequestChange() /*-{
       return !!this.didRequestChange;
     }-*/;
 
-    public final native boolean didResponseChange() /*-{
+    public native boolean didResponseChange() /*-{
       return !!this.didResponseChange;
     }-*/;
 
-    public final native boolean didTimingChange() /*-{
+    public native boolean didTimingChange() /*-{
       return !!this.didTimingChange;
     }-*/;
 
-    public final native int getConnectionID() /*-{
+    public native int getConnectionID() /*-{
       return this.connectionID || -1;
     }-*/;
 
-    public final native boolean getConnectionReused() /*-{
+    public native boolean getConnectionReused() /*-{
       return !!this.connectionReused;
     }-*/;
 
     // TODO (jaimeyap): Follow up to ensure that we display both the transfer
     // size and the uncompressed resource size. The following is just a
     // temporary fix.
-    public final native int getContentLength() /*-{
+    public native int getContentLength() /*-{
       return this.contentLength || this.resourceSize || 0;
     }-*/;
 
-    public final native DetailedResponseTiming getDetailedResponseTiming() /*-{
-      return this.timing;
-    }-*/;
+    /**
+     * Returns the detailed timing info for this request. This method will
+     * return <code>null</code> if there is no timing data or if the timing data
+     * is not valid (i.e. is based on an older schema).
+     */
+    public DetailedResponseTiming getDetailedResponseTiming() {
+      final DetailedResponseTiming timing = getDetailedResponseTimingImpl();
+      return (timing != null && timing.isValid()) ? timing : null;
+    }
 
-    public final native double getDomContentEventTime() /*-{
+    public native double getDomContentEventTime() /*-{
       return this.domContentEventTime || -1;
     }-*/;
 
-    public final native double getEndTime() /*-{
+    public native double getEndTime() /*-{
       return this.endTime || -1;
     }-*/;
 
-    public final native String getHost() /*-{
+    public native String getHost() /*-{
       return this.host;
     }-*/;
 
-    public final native String getLastPathComponent() /*-{
+    public native String getLastPathComponent() /*-{
       return this.lastPathComponent;
     }-*/;
 
-    public final native double getLoadEventTime() /*-{
+    public native double getLoadEventTime() /*-{
       return this.loadEventTime || -1;
     }-*/;
 
-    public final native String getMimeType() /*-{
+    public native String getMimeType() /*-{
       return this.mimeType;
     }-*/;
 
-    public final native String getPath() /*-{
+    public native String getPath() /*-{
       return this.path;
     }-*/;
 
-    public final native HeaderMap getRequestHeaders() /*-{
+    public native HeaderMap getRequestHeaders() /*-{
       return this.requestHeaders;
     }-*/;
 
-    public final native String getRequestMethod() /*-{
+    public native String getRequestMethod() /*-{
       return this.requestMethod;
     }-*/;
 
-    public final native HeaderMap getResponseHeaders() /*-{
+    public native HeaderMap getResponseHeaders() /*-{
       return this.responseHeaders;
     }-*/;
 
-    public final native double getResponseReceivedTime() /*-{
+    public native double getResponseReceivedTime() /*-{
       return this.responseReceivedTime || -1;
     }-*/;
 
-    public final native double getStartTime() /*-{
+    public native double getStartTime() /*-{
       return this.startTime || -1;
     }-*/;
 
-    public final native int getStatusCode() /*-{
+    public native int getStatusCode() /*-{
       return this.statusCode || -1;
     }-*/;
 
-    public final native String getStatusText() /*-{
+    public native String getStatusText() /*-{
       return this.statusText || "";
     }-*/;
 
-    public final native String getUrl() /*-{
+    public native String getUrl() /*-{
       return this.url;
     }-*/;
 
-    public final native boolean isMainResource() /*-{
+    public native boolean isMainResource() /*-{
       return !!this.mainResource;
     }-*/;
 
-    public final native void setDomContentEventTime(double normalizeTime) /*-{
+    public native void setDomContentEventTime(double normalizeTime) /*-{
       return this.domContentEventTime;
     }-*/;
 
-    public final native void setEndTime(double normalizedTime) /*-{
+    public native void setEndTime(double normalizedTime) /*-{
       this.endTime = normalizedTime;
     }-*/;
 
-    public final native void setLoadEventTime(double normalizedTime) /*-{
+    public native void setLoadEventTime(double normalizedTime) /*-{
       this.loadEventTime = normalizedTime;
     }-*/;
 
-    public final native void setResponseReceivedTime(double normalizedTime) /*-{
+    public native void setResponseReceivedTime(double normalizedTime) /*-{
       this.responseReceivedTime = normalizedTime;
     }-*/;
 
-    public final native void setStartTime(double normalizedTime) /*-{
+    public native void setStartTime(double normalizedTime) /*-{
       this.startTime = normalizedTime;
     }-*/;
 
-    public final native boolean wasCached() /*-{
+    public native boolean wasCached() /*-{
       return !!this.cached;
+    }-*/;
+
+    private native DetailedResponseTiming getDetailedResponseTimingImpl() /*-{
+      return this.timing;
     }-*/;
   }
 

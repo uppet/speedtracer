@@ -597,6 +597,8 @@ public class SpeedtracerSchemas {
          "data" : {
            "type" : "object",
            "properties" : {
+             // TODO(knorton): id & identifier are both present in some even though they carry the same data.
+             "id" : { "type" : "number", "description" : "Resource Identifier", "optional" : false},
              "identifier" : {"type" : "integer", "description" : "Integer ID of the resource"},
 
               // didRequestChange
@@ -736,35 +738,60 @@ public class SpeedtracerSchemas {
                    "description" : "Time the network transfer started (the request became unblocked)",
                    "minimum" : 0
                  },
-                 "proxyDuration" : {
+                 "proxyStart" : {
                    "type" : "number",
-                   "description" : "Seconds in proxy processing (-1 indicates no proxy)",
+                   "description" : "Start of proxy processing in milliseconds (-1 indicates no proxy)",
                    "minimum" : -1
                  },
-                 "dnsDuration" : {
+                 "proxyEnd" : {
                    "type" : "number",
-                   "description" : "Seconds resolving DNS (-1 indicates re-used socket)",
+                   "description" : "End of proxy processing in milliseconds (-1 indicates no proxy)",
                    "minimum" : -1
                  },
-                 "connectDuration" : {
+                 "dnsStart" : {
                    "type" : "number",
-                   "description" : "Seconds establishing TCP connection (includes DNS duration, -1 indicates re-used socket)",
+                   "description" : "Start of DNS resolution in milliseconds (-1 indicates re-used socket)",
                    "minimum" : -1
                  },
-                 "sendDuration" : {
+                 "dnsEnd" : {
                    "type" : "number",
-                   "description" : "Seconds sending request to server",
+                   "description" : "End of DNS resolution in milliseconds (-1 indicates re-used socket)",
+                   "minimum" : -1
+                 },
+                 "connectStart" : {
+                   "type" : "number",
+                   "description" : "Start of TCP connection establishment in milliseconds (includes DNS duration, -1 indicates re-used socket)",
+                   "minimum" : -1                   
+                 },
+                 "connectEnd" : {
+                   "type" : "number",
+                   "description" : "End of TCP connection establishment in milliseconds (includes DNS duration, -1 indicates re-used socket)",
+                   "minimum" : -1                   
+                 },                 
+                 "sendStart" : {
+                   "type" : "number",
+                   "description" : "Start sending request to server in milliseconds",
                    "minimum" : 0
                  },
-                 "waitDuration" : {
+                 "sendEnd" : {
                    "type" : "number",
-                   "description" : "Seconds waiting to start receiving (includes SSL Duration)",
+                   "description" : "End sending request to server in milliseconds",
                    "minimum" : 0
                  },
-                 "sslDuration" : {
+                 "sslStart" : {
                    "type" : "number",
-                   "description" : "Seconds of the SSL handshake (-1 indicates no handshake)",
+                   "description" : "Start of the SSL handshake in milliseconds (-1 indicates no handshake)",
                    "minimum" : -1
+                 },
+                 "sslEnd" : {
+                   "type" : "number",
+                   "description" : "End of the SSL handshake in milliseconds (-1 indicates no handshake)",
+                   "minimum" : -1
+                 },
+                 "receiveHeadersEnd" : {
+                   "type" : "number",
+                   "description" : "Time by which HTTP headers have been received in milliseconds",
+                   "minimum" : 0
                  }
                },
                "additionalProperties" : false
