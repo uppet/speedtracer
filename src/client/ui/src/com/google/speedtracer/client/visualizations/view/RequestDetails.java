@@ -502,10 +502,7 @@ public class RequestDetails extends LazilyCreateableElement {
       }
       addRowPair(summaryTable, css, iter.next(), "Sending Request",
           TimeStampFormatter.formatMilliseconds(info.getSendDuration()));
-  
-      addRowPair(summaryTable, css, iter.next(), "Waiting for Response",
-          TimeStampFormatter.formatMilliseconds(info.getWaitDuration()));
-  
+    
       // Only show Proxy or SSL if they apply
       if (info.getProxyDuration() >= 0) {
         addRowPair(summaryTable, css, iter.next(), "Proxy",

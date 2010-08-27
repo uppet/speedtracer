@@ -130,8 +130,6 @@ public class NetworkResource {
 
   private final String url;
 
-  private double waitDuration = 0;
-
   // This allows us to push detailed timing before it is live in dev channel
   private boolean hasDetailedTiming = false;
 
@@ -333,10 +331,6 @@ public class NetworkResource {
     return url;
   }
 
-  public double getWaitDuration() {
-    return waitDuration;
-  }
-
   /**
    * Indicates whether this network resource has detailed timing information.
    * 
@@ -423,29 +417,10 @@ public class NetworkResource {
         this.hasDetailedTiming = true;
         this.requestTime = detailedTiming.getRequestTime();
         this.proxyDuration = detailedTiming.getProxyDuration();
-        if (this.proxyDuration > 0) {
-          this.proxyDuration *= 1000;
-        }
         this.dnsDuration = detailedTiming.getDnsDuration();
-        if (this.dnsDuration > 0) {
-          this.dnsDuration *= 1000;
-        }
         this.connectDuration = detailedTiming.getConnectDuration();
-        if (this.connectDuration > 0) {
-          this.connectDuration *= 1000;
-        }
         this.sendDuration = detailedTiming.getSendDuration();
-        if (this.sendDuration > 0) {
-          this.sendDuration *= 1000;
-        }
-        this.waitDuration = detailedTiming.getWaitDuration();
-        if (this.waitDuration > 0) {
-          this.waitDuration *= 1000;
-        }
         this.sslDuration = detailedTiming.getSslDuration();
-        if (this.sslDuration > 0) {
-          this.sslDuration *= 1000;
-        }
       }
     }
 

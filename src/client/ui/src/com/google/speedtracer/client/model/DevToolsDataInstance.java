@@ -58,11 +58,11 @@ public class DevToolsDataInstance extends DataInstance {
      */
     static native Dispatcher createDispatcher(Proxy delegate) /*-{
       return {
-        addRecordToTimeline: function(record) {
-          delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onTimeLineRecord(Lcom/google/speedtracer/client/model/UnNormalizedEventRecord;)(record[1]);
+        addRecordToTimeline: function(event) {
+          delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::dispatchOnAddRecordToTimeline(Lcom/google/gwt/chrome/crx/client/events/DevToolsPageEvent$PageEvent;)(event);
         },
-        updateResource: function(update) {
-          delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onUpdateResource(ILcom/google/gwt/core/client/JavaScriptObject;)(update[1], update[2]);
+        updateResource: function(event) {
+          delegate.@com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::dispatchOnUpdateResource(Lcom/google/gwt/chrome/crx/client/events/DevToolsPageEvent$PageEvent;)(event);
         }
       };
     }-*/;
@@ -165,6 +165,15 @@ public class DevToolsDataInstance extends DataInstance {
       listenerHandle = null;
     }
 
+    private void dispatchOnAddRecordToTimeline(PageEvent event) {
+      onTimeLineRecord(event.getRecord().<UnNormalizedEventRecord> cast());
+    }
+
+    private void dispatchOnUpdateResource(PageEvent event) {
+      onUpdateResource(event.getResourceId(),
+          event.getResource().<UpdateResource> cast());
+    }
+
     /**
      * Establishes a base time if it has not been set and dispatches the event
      * to the {@link DataInstance}.
@@ -259,8 +268,7 @@ public class DevToolsDataInstance extends DataInstance {
       normalizeAndDispatchEventRecord(record);
     }
 
-    @SuppressWarnings("unused")
-    private void onUpdateResource(int resourceId, JavaScriptObject resource) {
+    private void onUpdateResource(int resourceId, UpdateResource resource) {
       if (getBaseTime() < 0) {
         // We do not allow an updateResource message to set our baseTime. If we
         // get a resource update first, it means that we missed the
@@ -364,17 +372,13 @@ public class DevToolsDataInstance extends DataInstance {
   /**
    * Overlay type for our dispatcher used by {@link Proxy}.
    */
-  private static class Dispatcher extends JavaScriptObject {
+  private static final class Dispatcher extends JavaScriptObject {
     @SuppressWarnings("all")
     protected Dispatcher() {
     }
 
-    final native void invoke(String method, JavaScriptObject payload) /*-{
-      var dispFunc = this[method];
-      // filter on our end.
-      if (dispFunc) {
-        dispFunc(payload);
-      }
+    native void invoke(String method, JavaScriptObject payload) /*-{
+      this[method](payload)
     }-*/;
   }
 
