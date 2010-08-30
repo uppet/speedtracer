@@ -228,10 +228,6 @@ public class DevToolsDataInstance extends DataInstance {
       // WebKit sometimes delivers timeline records with a negative timestamp.
       // We simply discard these until this issue can be resolved upstream.
       if (record.getTime() < 0) {
-        if (ClientConfig.isDebugMode()) {
-          Logging.getLogger().logText(
-              "Record has negative time: " + JSON.stringify(record));
-        }
         return;
       }
 
