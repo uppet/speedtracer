@@ -23,6 +23,9 @@ import com.google.gwt.chrome.crx.client.events.Event.ListenerHandle;
 import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.coreext.client.JSOArray;
+import com.google.gwt.coreext.client.JSON;
+import com.google.speedtracer.client.ClientConfig;
+import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.model.ResourceUpdateEvent.UpdateResource;
 import com.google.speedtracer.client.model.UiEvent.LeafFirstTraversalVoid;
 
@@ -219,6 +222,18 @@ public class DevToolsDataInstance extends DataInstance {
 
     private void onTimeLineRecord(UnNormalizedEventRecord record) {
       assert (dataInstance != null) : "Someone called invoke that wasn't our connect call!";
+
+      // TODO(knorton): Remove this hack.
+      // Workaround for http://code.google.com/p/speedtracer/issues/detail?id=29
+      // WebKit sometimes delivers timeline records with a negative timestamp.
+      // We simply discard these until this issue can be resolved upstream.
+      if (record.getTime() < 0) {
+        if (ClientConfig.isDebugMode()) {
+          Logging.getLogger().logText(
+              "Record has negative time: " + JSON.stringify(record));
+        }
+        return;
+      }
 
       record.<UiEvent> cast().apply(typeEnsuringVisitor);
       int type = record.getType();
