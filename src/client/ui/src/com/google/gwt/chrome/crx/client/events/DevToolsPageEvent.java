@@ -121,8 +121,17 @@ public class DevToolsPageEvent extends Event {
 
   private static native PageEvent upgradeUpdateResourceEvent(
       JavaScriptObject event) /*-{
-    var resource = event[2];
-    resource.id = event[1];
+    var resource;
+    if (event.length == 3) {
+      resource = event[2];
+      resource.id = event[1];
+    } else {
+      // Chrome Linux released to the Dev Channel a version that doesn't have
+      // the resource id as the second element in the array. Instead, it's
+      // already a property on the data object.
+      resource = event[1];
+    }
+
     return { "event" : event[0], "data" : { "resource" :  resource } };
   }-*/;
 
