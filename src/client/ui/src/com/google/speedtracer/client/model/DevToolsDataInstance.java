@@ -23,9 +23,6 @@ import com.google.gwt.chrome.crx.client.events.Event.ListenerHandle;
 import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.coreext.client.JSOArray;
-import com.google.gwt.coreext.client.JSON;
-import com.google.speedtracer.client.ClientConfig;
-import com.google.speedtracer.client.Logging;
 import com.google.speedtracer.client.model.ResourceUpdateEvent.UpdateResource;
 import com.google.speedtracer.client.model.UiEvent.LeafFirstTraversalVoid;
 
