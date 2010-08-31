@@ -300,6 +300,14 @@ public class DevToolsDataInstance extends DataInstance {
         double responseTime = normalizeTime(update.getResponseReceivedTime());
         double endTime = normalizeTime(update.getEndTime());
 
+        // TODO(knorton): There is an awesome Chrome bug where
+        // responseReceivedTime is completely invalid and actually falls before
+        // the startTime. We're still investigating how this happens, but it may
+        // be fixed on the TOT.
+        if (responseTime < startTime) {
+          responseTime = startTime;
+        }
+
         if (startTime > 0) {
           update.setStartTime(startTime);
 
