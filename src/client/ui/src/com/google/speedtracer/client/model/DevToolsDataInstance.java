@@ -182,6 +182,15 @@ public class DevToolsDataInstance extends DataInstance {
      */
     private void forwardToDataInstance(EventRecord record) {
       assert (!Double.isNaN(record.getTime())) : "Time was not normalized!";
+
+      // TODO(jaimeyap/knorton): Remove this hack.
+      // Workaround for http://code.google.com/p/speedtracer/issues/detail?id=29
+      // WebKit sometimes delivers timeline records with a negative timestamp.
+      // We simply discard these until this issue can be resolved upstream.
+      if (record.getTime() < 0) {
+        return;
+      }
+
       previousEvent = record.cast();
       dataInstance.onEventRecord(record);
     }
@@ -219,14 +228,6 @@ public class DevToolsDataInstance extends DataInstance {
 
     private void onTimeLineRecord(UnNormalizedEventRecord record) {
       assert (dataInstance != null) : "Someone called invoke that wasn't our connect call!";
-
-      // TODO(knorton): Remove this hack.
-      // Workaround for http://code.google.com/p/speedtracer/issues/detail?id=29
-      // WebKit sometimes delivers timeline records with a negative timestamp.
-      // We simply discard these until this issue can be resolved upstream.
-      if (record.getTime() < 0) {
-        return;
-      }
 
       record.<UiEvent> cast().apply(typeEnsuringVisitor);
       int type = record.getType();
