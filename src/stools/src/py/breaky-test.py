@@ -21,7 +21,7 @@ This driver does a couple of things:
 2) It starts chrome with the necessary options and kills it when the test is
 over (unless run with --manual_mode)
 """
-
+import atexit
 import BaseHTTPServer
 import optparse
 import os
@@ -33,18 +33,21 @@ import sys
 import tempfile
 import threading
 
-
 BASE = "/breaky"
 VALID = "%s/valid" % BASE
 INVALID = "%s/invalid" % BASE
 
-# Globals to communicate between server and handler
-_keep_going = True
-_exit_code = 0
-
-
 class BreakyHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
   """Handle the results of the test."""
+
+  def do_GET(self):
+    """Handle a GET to the server.
+
+    This handler overrides do_GET only to update the request_count before
+    delegating to SimpleHTTPRequestHandler's do_GET.
+    """
+    self.server.request_count += 1
+    SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
   def do_POST(self):
     """Handle a POST to the server.
@@ -57,9 +60,8 @@ class BreakyHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     We must use globals to communicate with the outer server since
     SimpleHTTPServer is not designed for stateful interaction.
     """
-
-    global _keep_going
-    global _exit_code
+    server = self.server
+    server.request_count += 1
 
     print "========= Got a POST ========="
 
@@ -67,19 +69,19 @@ class BreakyHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
       self.send_response(200)
       print "valid"
       body = "Yay"
-      _exit_code = 0
+      server.exit_code = 0
     elif self.path == INVALID:
       self.send_response(200)
       length = int(self.headers.getheader("content-length"))
       error = self.rfile.read(length)
       print "Error: %s" % error
       body = "Sorry to hear that"
-      _exit_code = 1
+      server.exit_code = 1
     else:
       self.send_response(404)
       body = "WTF? %s (wanted %s or %s)" % (self.path, VALID, INVALID)
       print body
-      _exit_code = 1
+      server.exit_code = 1
 
     self.send_header("Content-Type", "text/plain")
     self.send_header("Content-Length", len(body))
@@ -89,8 +91,19 @@ class BreakyHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     self.end_headers()
 
     self.wfile.write(body)
-    _keep_going = False
+    server.keep_going = False
 
+class BreakyServer(BaseHTTPServer.HTTPServer):
+  def __init__(self, address):
+    self.keep_going = True
+    self.exit_code = 0
+    self.request_count = 0
+
+    # setting timeout asks SocketServer to return from handle_request
+    # if no request has been handled in that amount of time.
+    self.timeout = 10
+
+    BaseHTTPServer.HTTPServer.__init__(self, address, BreakyHandler)
 
 class ChromeRunner(object):
   """Launches chrome in a background thread for the test.
@@ -111,7 +124,7 @@ class ChromeRunner(object):
     self.chrome_path = chrome_path
     self.headless_path = headless_path
     self.url = url
-    self.thread = threading.Timer(1, self._Run)
+    self.thread = None
     self.user_data_dir = None
     self.chrome_process = None
 
@@ -132,11 +145,14 @@ class ChromeRunner(object):
 
     #Make a temp user-data-dir so that we don"t get polluted by any history
     self.user_data_dir = tempfile.mkdtemp()
+    self.thread = threading.Timer(2, self._Run)
     self.thread.start()
 
   def Stop(self):
     """Kill Chrome!"""
 
+    if self.thread is None:
+      return
     retcode = 0
     if platform.system() == "Linux" or platform.system() == "Darwin":
       try:
@@ -165,7 +181,7 @@ class ChromeRunner(object):
     else:
       print "Got an error trying to kill chrome."
     self.thread.join()
-
+    self.thread = None
 
 def main():
   parser = optparse.OptionParser()
@@ -195,8 +211,7 @@ def main():
   else:
     hostname = platform.uname()[1]
 
-  httpd = BaseHTTPServer.HTTPServer((options.bind_address, options.port),
-                                    BreakyHandler)
+  httpd = BreakyServer((options.bind_address, options.port))
   breaky_url = "http://%s:%s/breaky.html" % (hostname, options.port)
   if options.manual_mode:
     print "Manual Mode. Point chrome at %s" % breaky_url
@@ -205,12 +220,17 @@ def main():
                      os.path.abspath(options.headless_path),
                      breaky_url)
     c.Start()
-  while _keep_going or options.manual_mode:
+    atexit.register(c.Stop)
+  while httpd.keep_going or options.manual_mode:
     print "> handle_request"
     httpd.handle_request()
+    if not options.manual_mode and httpd.request_count == 0:
+      print "Chrome is hung ... restarting"
+      c.Stop()
+      c.Start()
 
   c.Stop()
-  sys.exit(_exit_code)
+  sys.exit(httpd.exit_code)
 
 if __name__ == "__main__":
   main()
