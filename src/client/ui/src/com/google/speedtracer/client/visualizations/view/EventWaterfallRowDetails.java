@@ -588,7 +588,8 @@ public class EventWaterfallRowDetails extends RowDetails implements
       durations.iterate(new JsIntegerDoubleMap.IterationCallBack() {
         public void onIteration(int key, double val) {
           if (val > 0) {
-            data.add(new ColorCodedValue(EventRecord.typeToString(key), val,
+            data.add(new ColorCodedValue(EventRecord.typeToString(key)
+                + " (" + TimeStampFormatter.format(val) + ")", val,
                 EventRecordColors.getColorForType(key)));
           }
         }

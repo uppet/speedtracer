@@ -236,6 +236,7 @@ public class ReportDialog {
         if (val > 0) {
           String typeName = (key == -1) ? "UI Thread Available"
               : EventRecord.typeToString(key);
+          typeName += " (" + TimeStampFormatter.format(val) + ")";
           data.add(new ColorCodedValue(typeName, val,
               EventRecordColors.getColorForType(key)));
         }
