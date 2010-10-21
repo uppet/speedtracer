@@ -243,6 +243,8 @@
       <arg value="${stools.pydir}/breaky-test.py" />
       <arg value="--headless_path=${headless.destdir}" />
       <arg value="--chrome_path=${toString:chrome.abs}" />
+      <!-- TODO(knorton): This should be available as an ant property -->
+      <arg value="--port=8080" />
     </exec>
   </target>
 
