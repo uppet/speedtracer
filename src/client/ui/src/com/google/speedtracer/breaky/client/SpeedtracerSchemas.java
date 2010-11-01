@@ -883,6 +883,11 @@ public class SpeedtracerSchemas {
                "requires" : "didTimingChange",
                "optional" : true
              },
+            "localizedFailDescription" : {
+              "type" : "string",
+              "description" : "A description of failure if the resource failed (though the property is present either way)",
+              "optional" : true
+            }
            },
            "additionalProperties" : false
          }
