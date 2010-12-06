@@ -128,7 +128,8 @@ function injectLoadUi() {
 }
 
 function isTrampoline() {
-  return (window.location.href.toLowerCase().indexOf("file://") == 0) &&
+  return ((window.location.href.toLowerCase().indexOf("file://") == 0) ||
+      (window.location.href.toLowerCase().indexOf("http://localhost") == 0)) &&
       (document.documentElement.getAttribute("openSpeedTracer") == "true");
 }
 
