@@ -27,6 +27,9 @@ public class ResourceRecord extends EventRecord {
       case EventRecordType.RESOURCE_RECEIVE_RESPONSE:
       case EventRecordType.RESOURCE_FINISH:
       case EventRecordType.RESOURCE_UPDATED:
+      case EventRecordType.INSPECTOR_WILL_SEND_REQUEST:
+      case EventRecordType.INSPECTOR_DID_RECEIVE_CONTENT_LENGTH:
+      case EventRecordType.INSPECTOR_DID_RECEIVE_RESPONSE:
         return true;
     }
     return false;

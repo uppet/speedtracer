@@ -1,12 +1,12 @@
 /*
  * Copyright 2010 Google Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -19,15 +19,15 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 /**
  * A simple container class for the Speed Tracer schemas
- * 
- * TODO(conroy): make the schema definitions the source of truth for
+ *
+ *  TODO(conroy): make the schema definitions the source of truth for
  * generate-event-record.py, etc..
  */
 public class SpeedtracerSchemas {
   /**
    * Native method to return a JSON Dictionary of all the speedtracer schema
    * types.
-   * 
+   *
    * @return
    */
   public static final native JavaScriptObject getSchemas() /*-{
@@ -546,7 +546,7 @@ public class SpeedtracerSchemas {
          "type" : {
            "description" : "Speedtracer Type ID",
            "type" : "integer", 
-           "minimum" : 0x7FFFFFFC,
+           "minimum" : 0x7FFFFFF8,
            "maximum" : 0x7FFFFFFE,
          },
          "data"     : {"description" : "A JSON dictionary of data", "type" : "object" },
@@ -581,318 +581,191 @@ public class SpeedtracerSchemas {
        },
        "additionalProperties" : false
      },
-     "NETWORK_RESOURCE_UPDATE" : {
-       "description" : "Intermittent update messages sent as the laoder learns more information about a given network resource",
-       "id" : "NETWORK_RESOURCE_UPDATE",
+     "RESPONSE_DATA" : {
+       "description" : "Response information for this request.",       
+       "id" : "RESPONSE_DATA",
+       "type" : "object",
+       "properties" : {
+         "url" : {
+           "type" : "string",
+           "description" : "The URL of the resource",           
+           "optional" : true
+         },
+         "connectionID" : {
+           "type" : "integer",
+           "description" : "ID for the network connection",           
+           "minimum" : 0,
+           "optional" : true
+         },
+         "connectionReused" : {
+           "type" : "boolean",
+           "description" : "Socket reused from a previous connection",           
+           "optional" : true
+         },
+         "wasCached" : {
+           "type" : "boolean",
+           "description" : "True if the request was received from cache",           
+           "optional" : true
+         },
+         "httpStatusCode" : {
+           "type" : "integer",
+           "description" : "HTTP Status Code",
+           "minimum" : 0,
+           "maximum" : 599,           
+           "optional" : true
+         },
+         "httpStatusText" : {
+           "type" : "string",
+           "description" : "The human readable version of the statusCode",
+           "requires" : "httpStatusCode",
+           "optional" : true
+         },
+         "httpHeaderFields" : {"type" : "object", "description" : "Request Headers", "optional" : true},
+         "timing" : {
+           "type" : "object",
+           "description" : "Detailed resource loader network timing info",
+           "optional" : true,
+           "properties" : {
+             "requestTime" : {
+               "type" : "number",
+               "description" : "Time the network transfer started (the request became unblocked)",
+               "minimum" : 0
+             },
+             "proxyStart" : {
+               "type" : "number",
+               "description" : "Start of proxy processing in milliseconds (-1 indicates no proxy)",
+               "minimum" : -1
+             },
+             "proxyEnd" : {
+               "type" : "number",
+               "description" : "End of proxy processing in milliseconds (-1 indicates no proxy)",
+               "minimum" : -1
+             },
+             "dnsStart" : {
+               "type" : "number",
+               "description" : "Start of DNS resolution in milliseconds (-1 indicates re-used socket)",
+               "minimum" : -1
+              },
+              "dnsEnd" : {
+                "type" : "number",
+                "description" : "End of DNS resolution in milliseconds (-1 indicates re-used socket)",
+                "minimum" : -1
+              },
+              "connectStart" : {
+                "type" : "number",
+                "description" : "Start of TCP connection establishment in milliseconds (includes DNS duration, -1 indicates re-used socket)",
+                "minimum" : -1                   
+              },
+              "connectEnd" : {
+                "type" : "number",
+                "description" : "End of TCP connection establishment in milliseconds (includes DNS duration, -1 indicates re-used socket)",
+                "minimum" : -1                   
+              },                 
+              "sendStart" : {
+                "type" : "number",
+                "description" : "Start sending request to server in milliseconds",
+                "minimum" : 0
+              },
+              "sendEnd" : {
+                "type" : "number",
+                "description" : "End sending request to server in milliseconds",
+                "minimum" : 0
+              },
+              "sslStart" : {
+                "type" : "number",
+                 "description" : "Start of the SSL handshake in milliseconds (-1 indicates no handshake)",
+                 "minimum" : -1
+              },
+              "sslEnd" : {
+                 "type" : "number",
+                 "description" : "End of the SSL handshake in milliseconds (-1 indicates no handshake)",
+                 "minimum" : -1
+              },
+              "receiveHeadersEnd" : {
+                 "type" : "number",
+                 "description" : "Time by which HTTP headers have been received in milliseconds",
+                 "minimum" : 0
+             }
+           }
+         }
+       }
+     },
+     "INSPECTOR_WILL_SEND_REQUEST" : {
+       "description" : "Inspector message indicating a request for a resource is about to go out.",
+       "id" : "INSPECTOR_WILL_SEND_REQUEST",
        "type" : "object",
        "extends" : {"$ref" : "SPEEDTRACER_EVENT"},
        "properties" : {
          "type" : {
            "type" : "integer",
-           "minimum" : 0x7FFFFFFD ,
-           "maximum" : 0x7FFFFFFD ,
-           "description" : "MAX 32 BIT INTEGER - 2 (2147483645)"
+           "minimum" : 0x7FFFFFFA ,
+           "maximum" : 0x7FFFFFFA ,
+           "description" : "MAX 32 BIT INTEGER - 5"
+         },
+         "time" : {"type" : "number", "description" : "Synthesized timingChanged information.", "optional" : true },
+         "data" : {
+           "type" : "object",
+           "properties" : {                          
+             "identifier" : {"type" : "integer", "description" : "Integer ID of the resource"},
+             "request" : {
+               "type" : "object",
+               "description" : "Request information. Basically just headers",
+               "properties" : {
+                 "httpHeaderFields" : {"type" : "object", "description" : "Request Headers", "optional" : true}
+               }
+             },
+             "redirectResponse" : {
+               "extends" : {"$ref" : "RESPONSE_DATA"},
+               "description" : "Response information for a redirect that led to this request.",
+               "isNull" : {"type" : "boolean", "description" : "This is set to true when there is no redirectResponse.", "optional": true}               
+             }
+           }
+         }
+       }
+     },
+     "INSPECTOR_DID_RECEIVE_RESPONSE" : {
+       "description" : "Inspector message indicating that we received a response from the server for a resource.",
+       "id" : "INSPECTOR_DID_RECEIVE_RESPONSE",
+       "type" : "object",
+       "extends" : {"$ref" : "SPEEDTRACER_EVENT"},
+       "properties" : {
+         "type" : {
+           "type" : "integer",
+           "minimum" : 0x7FFFFFF9 ,
+           "maximum" : 0x7FFFFFF9 ,
+           "description" : "MAX 32 BIT INTEGER - 6"
          },
          "time" : {"type" : "number", "description" : "Synthesized timingChanged information.", "optional" : true },
          "data" : {
            "type" : "object",
            "properties" : {
-             // TODO(knorton): id & identifier are both present in some even though they carry the same data.
-             "id" : { "type" : "number", "description" : "Resource Identifier", "optional" : false},
-             "identifier" : {"type" : "integer", "description" : "Integer ID of the resource"},
-
-              // didRequestChange
-             "didRequestChange" : {
-               "type" : "boolean",
-               "description" : "Marks the WebKit UpdateResource Event",
-               "enum" : [true],
-               "optional" : true
-             },
-             "url" : {"type" : "string",
-               "description" : "The URL of the resource",
-               "requires" : "didRequestChange",
-               "optional" : true
-             },
-             "documentURL" : {
-               "type" : "string",
-               "description" : "The URL of the document",
-               "requires" : "didRequestChange",
-               "optional" : true
-             },
-             "host" : {
-               "type" : "string",
-               "description" : "The network host of the resource",
-               "requires" : "didRequestChange",
-               "optional" : true
-             },
-             "path" : {
-               "type" : "string",
-               "descirption" : "URI to the resource from the origin",
-               "requires" : "didRequestChange",
-               "optional" : true
-             },
-             "lastPathComponent" : {
-               "type" : "string",
-               "description" : "Basename of the path",
-               "requires" : "didRequestChange",
-               "optional" : true
-             },
-             "requestHeaders" : {
-               "type" : "object",
-               "description" : "HTTP Headers from the request",
-               "requires" : "didRequestChange",
-               "optional" : true
-             },
-             "mainResource" : {
-               "type" : "boolean",
-               "description" : "Is this the main resource?",
-               "requires" : "didRequestChange",
-               "optional" : true
-             },
-             "requestMethod" : {
-               "type" : "string",
-               "description" : "Method used to retrieve the resource (e.g. GET/POST) Empty if cached",
-               "requires" : "didRequestChange",
-               "optional" : true
-             },
-             "requestFormData" : {
-               "type" : "string",
-               "description" : "The form data sent via POST",
-               "requires" : "didRequestChange",
-               "optional" : true
-             },
-
-             // didResponseChange
-             "didResponseChange" : {
-               "type" : "boolean",
-               "description" : "Marks that headers have been updated",
-               "enum" : [true],
-               "optional" : true
-             },
-             "mimeType" : {
-               "type" : "string",
-               "description" : "The MIME type of the resource",
-               "requires" : "didResponseChange",
-               "optional" : true
-             },
-             "suggestedFilename" : {
-               "type" : "string",
-               "description" : "The named provided via Content-Disposition or the lastPathComponent of the URL",
-               "requires" : "didResponseChange",
-               "optional" : true
-             },  
-
-             "expectedContentLength" : {
-               "type" : "integer",
-               "description" : "The expected content length of the resource in bytes",
-               "requires" : "didResponseChange",
-               "optional" : true
-             },
-             "statusCode" : {
-               "type" : "integer",
-               "description" : "HTTP Status Code",
-               "minimum" : 0,
-               "maximum" : 599,
-               "requires" : "didResponseChange",
-               "optional" : true
-             },
-             "statusText" : {
-               "type" : "string",
-               "description" : "The human readable version of the statusCode",
-               "requires" : "statusCode",
-               "optional" : true
-             },
-             "responseHeaders" : {
-               "type" : "object",
-               "description" : "HTTP Headers from the response",
-               "requires" : "didResponseChange",
-               "optional" : true
-             },
-             "connectionID" : {
-               "type" : "integer",
-               "description" : "ID for the network connection",
-               "requires" : "didResponseChange",
-               "minimum" : 0,
-               "optional" : true
-             },
-             "connectionReused" : {
-               "type" : "boolean",
-               "description" : "Socket reused from a previous connection",
-               "requires" : "didResponseChange",
-               "optional" : true
-             },
-             "cached" : {
-               "type" : "boolean",
-               "description" : "True if the request was received from cache",
-               "requires" : "didResponseChange",
-               "optional" : true
-             },
-             "timing" : {
-               "type" : "object",
-               "description" : "Detailed resource loader network timing info",
-               "requires" : "didResponseChange",
-               "optional" : true,
-               "properties" : {
-                 "requestTime" : {
-                   "type" : "number",
-                   "description" : "Time the network transfer started (the request became unblocked)",
-                   "minimum" : 0
-                 },
-                 "proxyStart" : {
-                   "type" : "number",
-                   "description" : "Start of proxy processing in milliseconds (-1 indicates no proxy)",
-                   "minimum" : -1
-                 },
-                 "proxyEnd" : {
-                   "type" : "number",
-                   "description" : "End of proxy processing in milliseconds (-1 indicates no proxy)",
-                   "minimum" : -1
-                 },
-                 "dnsStart" : {
-                   "type" : "number",
-                   "description" : "Start of DNS resolution in milliseconds (-1 indicates re-used socket)",
-                   "minimum" : -1
-                 },
-                 "dnsEnd" : {
-                   "type" : "number",
-                   "description" : "End of DNS resolution in milliseconds (-1 indicates re-used socket)",
-                   "minimum" : -1
-                 },
-                 "connectStart" : {
-                   "type" : "number",
-                   "description" : "Start of TCP connection establishment in milliseconds (includes DNS duration, -1 indicates re-used socket)",
-                   "minimum" : -1                   
-                 },
-                 "connectEnd" : {
-                   "type" : "number",
-                   "description" : "End of TCP connection establishment in milliseconds (includes DNS duration, -1 indicates re-used socket)",
-                   "minimum" : -1                   
-                 },                 
-                 "sendStart" : {
-                   "type" : "number",
-                   "description" : "Start sending request to server in milliseconds",
-                   "minimum" : 0
-                 },
-                 "sendEnd" : {
-                   "type" : "number",
-                   "description" : "End sending request to server in milliseconds",
-                   "minimum" : 0
-                 },
-                 "sslStart" : {
-                   "type" : "number",
-                   "description" : "Start of the SSL handshake in milliseconds (-1 indicates no handshake)",
-                   "minimum" : -1
-                 },
-                 "sslEnd" : {
-                   "type" : "number",
-                   "description" : "End of the SSL handshake in milliseconds (-1 indicates no handshake)",
-                   "minimum" : -1
-                 },
-                 "receiveHeadersEnd" : {
-                   "type" : "number",
-                   "description" : "Time by which HTTP headers have been received in milliseconds",
-                   "minimum" : 0
-                 }
-               },
-               "additionalProperties" : false
-             },
-
-             // didTypeChange
-             "didTypeChange" : {
-               "type"  : "boolean",
-               "description" : "The type of the resource is present",
-               "enum" : [true],
-               "optional" : true
-             },
-             "type" : {
-               "type" : "integer", 
-               "description" : "Integer corresponding to type enum 0:Doc, 1:StyleSheet, 2:Image, 3:Font, 4:Script, 5:XHR, 6:Media, 7:Other",
-               "requires" : "didTypeChange",
-               "enum" : [0,1,2,3,4,5,6,7],
-               "optional" : true
-             },
-
-             // didLengthChange
-             "didLengthChange" : {
-               "type" : "boolean",
-               "description" : "Marks that the resourceSize has been updated",
-               "enum" : [true],
-               "optional" : true
-             },
-             "resourceSize" : {
-               "type" : "integer",
-               "description" : "The size of the uncompressed resource. Older versions reported contentLength instead",
-               "requires" : "didLengthChange",
-               "optional" : true
-             },
-
-             // didCompletionChange
-             "didCompletionChange" : {
-               "type" : "boolean",
-               "description" : "A resource entered the completed state",
-               "enum" : [true],
-               "optional" : true
-             },
-             "failed" : {
-               "type" : "boolean",
-               "description" : "An error prevented the resource from loading",
-               "optional" : true,
-               "requires" : "didCompletionChange" 
-             },
-             "finished" : {
-               "type" : "boolean",
-               "description" : "The resource successfully loaded",
-               "optional" : true,
-               "requires" : "didCompletionChange" 
-             },
-
-             // didTimingChange
-             "didTimingChange" : {
-               "type" : "boolean",
-               "description" : "New timing information about the resource load",
-               "enum" : [true],
-               "optional" : true
-             },
-             "startTime" : {
-               "type" : "number",
-               "description" : "Start time of the resource load request",
-               "requires" : "didTimingChange",
-               "optional" : true
-             },
-             "responseReceivedTime" : {
-               "type" : "number",
-               "description" : "Time that the server responded",
-               "requires" : "didTimingChange",
-               "optional" : true
-             },
-             "endTime" : {
-               "type" : "number",
-               "description" : "Time the resource finished loading",
-               "requires" : "didTimingChange",
-               "optional" : true
-             },
-             "loadEventTime" : {
-               "type" : "number",
-               "description" : "Time the resource started loading",
-               "requires" : "didTimingChange",
-               "optional" : true
-             },
-             "domContentEventTime" : {
-               "type" : "number",
-               "description" : "Time the main resource DOM Document finished parsing",
-               "requires" : "didTimingChange",
-               "optional" : true
-             },
-            "localizedFailDescription" : {
-              "type" : "string",
-              "description" : "A description of failure if the resource failed (though the property is present either way)",
-              "optional" : true
-            }
-           },
-           "additionalProperties" : false
+             "response" : {
+               "extends" : {"$ref" : "RESPONSE_DATA"},
+             }                       
+           }
          }
-       },
-       "additionalProperties" : false
+       }
+     },
+     "INSPECTOR_DID_RECEIVE_CONTENT_LENGTH" : {
+       "description" : "Inspector message indicating that we received a response from the server for a resource.",
+       "id" : "INSPECTOR_DID_RECEIVE_CONTENT_LENGTH",
+       "type" : "object",
+       "extends" : {"$ref" : "SPEEDTRACER_EVENT"},
+       "properties" : {
+         "type" : {
+           "type" : "integer",
+           "minimum" : 0x7FFFFFF8 ,
+           "maximum" : 0x7FFFFFF8 ,
+           "description" : "MAX 32 BIT INTEGER - 7"
+         },
+         "time" : {"type" : "number", "description" : "Synthesized timingChanged information.", "optional" : true },
+         "data" : {
+           "type" : "object",
+           "properties" : {
+             "lengthReceived" : {"type" : "integer", "description" : "Size of payload in bytes"}
+           }
+         }
+       }
      },
      "PROFILE_DATA" : {
        "description" : "Javascript Profile information from the Browser",

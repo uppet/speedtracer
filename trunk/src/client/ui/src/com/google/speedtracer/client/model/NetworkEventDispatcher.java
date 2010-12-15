@@ -1,12 +1,12 @@
 /*
  * Copyright 2008 Google Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -15,9 +15,11 @@
  */
 package com.google.speedtracer.client.model;
 
+import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.coreext.client.JsIntegerMap;
 import com.google.speedtracer.client.model.DataDispatcher.DataDispatcherDelegate;
 import com.google.speedtracer.client.model.DataDispatcher.EventRecordDispatcher;
+import com.google.speedtracer.client.model.InspectorWillSendRequest.RedirectResponse;
 import com.google.speedtracer.client.model.ResourceUpdateEvent.UpdateResource;
 import com.google.speedtracer.shared.EventRecordType;
 
@@ -34,8 +36,7 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
    * Listener Interface for a NetworkEventDispatcher.
    */
   public interface Listener {
-    void onNetworkResourceRequestStarted(NetworkResource resource,
-        boolean isRedirect);
+    void onNetworkResourceRequestStarted(NetworkResource resource, boolean isRedirect);
 
     void onNetworkResourceResponseFinished(NetworkResource resource);
 
@@ -47,27 +48,24 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
   /**
    * Sets up mapping of NetworkResourceRecord types to their respective
    * handlers.
-   * 
+   *
    * @param proxy the {@link NetworkEventDispatcher}
    * @param typeMap the {@link FastStringMap}
    */
   private static void setNetworkEventCallbacks(
-      final NetworkEventDispatcher proxy,
-      JsIntegerMap<EventRecordDispatcher> typeMap) {
+      final NetworkEventDispatcher proxy, JsIntegerMap<EventRecordDispatcher> typeMap) {
 
-    typeMap.put(EventRecordType.RESOURCE_SEND_REQUEST,
-        new EventRecordDispatcher() {
-          public void onEventRecord(EventRecord data) {
-            proxy.onNetworkResourceStarted(data.<ResourceWillSendEvent> cast());
-          }
-        });
+    typeMap.put(EventRecordType.RESOURCE_SEND_REQUEST, new EventRecordDispatcher() {
+      public void onEventRecord(EventRecord data) {
+        proxy.onNetworkResourceStarted(data.<ResourceWillSendEvent>cast());
+      }
+    });
 
-    typeMap.put(EventRecordType.RESOURCE_RECEIVE_RESPONSE,
-        new EventRecordDispatcher() {
-          public void onEventRecord(EventRecord data) {
-            proxy.onNetworkResourceResponse(data.<ResourceResponseEvent> cast());
-          }
-        });
+    typeMap.put(EventRecordType.RESOURCE_RECEIVE_RESPONSE, new EventRecordDispatcher() {
+      public void onEventRecord(EventRecord data) {
+        proxy.onNetworkResourceResponse(data.<ResourceResponseEvent>cast());
+      }
+    });
 
     typeMap.put(EventRecordType.RESOURCE_FINISH, new EventRecordDispatcher() {
       public void onEventRecord(EventRecord data) {
@@ -78,16 +76,34 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
 
     typeMap.put(EventRecordType.RESOURCE_UPDATED, new EventRecordDispatcher() {
       public void onEventRecord(EventRecord data) {
-        proxy.onNetworkResourceUpdated(data.<ResourceUpdateEvent> cast());
+        proxy.onNetworkResourceUpdated(data.<ResourceUpdateEvent>cast());
       }
     });
-  };
+
+    typeMap.put(EventRecordType.INSPECTOR_DID_RECEIVE_CONTENT_LENGTH, new EventRecordDispatcher() {
+      public void onEventRecord(EventRecord data) {
+        proxy.onInspectorContentLengthChange(data.<InspectorDidReceiveContentLength>cast());
+      }
+    });
+
+    typeMap.put(EventRecordType.INSPECTOR_DID_RECEIVE_RESPONSE, new EventRecordDispatcher() {
+      public void onEventRecord(EventRecord data) {
+        proxy.onInspectorReceiveResponse(data.<InspectorDidReceiveResponse>cast());
+      }
+    });
+
+    typeMap.put(EventRecordType.INSPECTOR_WILL_SEND_REQUEST, new EventRecordDispatcher() {
+      public void onEventRecord(EventRecord data) {
+        proxy.onInspectorWillSendRequest(data.<InspectorWillSendRequest>cast());
+      }
+    });
+  }
 
   private final List<Listener> listeners = new ArrayList<Listener>();
 
   private final List<ResourceRecord> networkEvents = new ArrayList<ResourceRecord>();
 
-  private List<NetworkResource> redirectQueue = new ArrayList<NetworkResource>();
+  private JsIntegerMap<JSOArray<NetworkResource>> redirects = JsIntegerMap.create();
 
   /**
    * Map of NetworkResource POJOs. Information about a network resource is
@@ -106,7 +122,7 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
   }
 
   public void clearData() {
-    redirectQueue.clear();
+    redirects = JsIntegerMap.create();
     networkEvents.clear();
   }
 
@@ -117,7 +133,7 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
   /**
    * Gets a stored resource from our book keeping, or null if it hasnt been
    * stored before.
-   * 
+   *
    * @param id the request id of our {@link NetworkResource}
    * @return returns the {@link NetworkResource}
    */
@@ -132,7 +148,84 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
     }
   }
 
-  public void onNetworkResourceFinished(ResourceFinishEvent resourceFinish) {
+  public void removeListener(Listener listener) {
+    listeners.remove(listener);
+  }
+
+  /**
+   * @param identifier Resource ID
+   * @param url The redirect URL that we are using to match a redirect
+   *        candidate.
+   */
+  private NetworkResource findAndRemoveRedirectCandidate(int identifier, String url) {
+    // Look for it.
+    JSOArray<NetworkResource> redirectCandidates = redirects.get(identifier);
+    if (redirectCandidates == null) {
+      return null;
+    }
+
+    for (int i = 0; i < redirectCandidates.size(); i++) {
+      NetworkResource redirectCandidate = redirectCandidates.get(i);
+      if (redirectCandidate.getUrl().equals(url)) {
+        // Should not be a concurrent modification, since we now bail out of
+        // the loop right after mutating the queue.
+        redirectCandidates.splice(i, 1);
+        return redirectCandidate;
+      }
+    }
+
+    return null;
+  }
+
+  private void insertRedirectCandidate(int identifier, NetworkResource previousResource) {
+    // We have a redirect.
+    JSOArray<NetworkResource> redirectQueue = redirects.get(identifier);
+    if (redirectQueue == null) {
+      redirectQueue = JSOArray.create().cast();
+      redirects.put(identifier, redirectQueue);
+    }
+    redirectQueue.push(previousResource);
+  }
+
+  private void onInspectorContentLengthChange(
+      InspectorDidReceiveContentLength contentLengthChange) {
+    NetworkResource resource = getResource(contentLengthChange.getIdentifier());
+    if (resource != null) {
+      resource.update(contentLengthChange);
+    }
+  }
+
+  private void onInspectorReceiveResponse(InspectorDidReceiveResponse response) {
+    NetworkResource resource = getResource(response.getIdentifier());
+    if (resource != null) {
+      resource.update(response);
+    }
+  }
+
+  private void onInspectorWillSendRequest(InspectorWillSendRequest willSendRequest) {
+    NetworkResource resource = getResource(willSendRequest.getIdentifier());
+    if (resource != null) {
+      resource.update(willSendRequest);
+      // We depend on the fact that any redirects that we encounter will have
+      // a corresponding timeline agent event that will add it to the redirects
+      // map. We look for one here.
+      InspectorWillSendRequest.Data data = willSendRequest.getData().cast();
+      RedirectResponse redirectResponse = data.getRedirectResponse();
+      if (!redirectResponse.isNull()) {
+        // look for a redirect.
+        NetworkResource redirect = findAndRemoveRedirectCandidate(
+            willSendRequest.getIdentifier(), redirectResponse.getUrl());
+        if (redirect != null) {
+          redirect.updateResponse(redirectResponse);
+          redirect.setResponseReceivedTime(willSendRequest.getTime());
+          redirect.setEndTime(willSendRequest.getTime());
+          redirectUpdated(redirect);
+        }
+      }
+    }
+  }
+
+  private void onNetworkResourceFinished(ResourceFinishEvent resourceFinish) {
     networkEvents.add(resourceFinish);
     NetworkResource resource = getResource(resourceFinish.getIdentifier());
     if (resource != null) {
@@ -144,7 +237,7 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
     }
   }
 
-  public void onNetworkResourceResponse(ResourceResponseEvent resourceResponse) {
+  private void onNetworkResourceResponse(ResourceResponseEvent resourceResponse) {
     networkEvents.add(resourceResponse);
     NetworkResource resource = getResource(resourceResponse.getIdentifier());
     if (resource != null) {
@@ -156,14 +249,13 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
     }
   }
 
-  public void onNetworkResourceStarted(ResourceWillSendEvent resourceStart) {
+  private void onNetworkResourceStarted(ResourceWillSendEvent resourceStart) {
     networkEvents.add(resourceStart);
     // Check for dupe IDs. If we find one, assume it is a redirect.
     NetworkResource previousResource = getResource(resourceStart.getIdentifier());
     boolean isRedirect = false;
     if (previousResource != null) {
-      // We have a redirect.
-      redirectQueue.add(previousResource);
+      insertRedirectCandidate(previousResource.getIdentifier(), previousResource);
       isRedirect = true;
     }
 
@@ -175,7 +267,11 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
     }
   }
 
-  public void onNetworkResourceUpdated(ResourceUpdateEvent update) {
+  /**
+   * This should now be dead code in the live tracing case, and is only kept to
+   * support loading old saved dumps.
+   */
+  private void onNetworkResourceUpdated(ResourceUpdateEvent update) {
     NetworkResource resource = getResource(update.getIdentifier());
     if (resource != null) {
       resource.update(update);
@@ -186,42 +282,19 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
     } else {
       // We are dealing potentially with an update for a redirect.
       UpdateResource updateResource = update.getUpdate();
-      // Look for it.
-      for (int i = 0; i < redirectQueue.size(); i++) {
-        NetworkResource redirectCandidate = redirectQueue.get(i);
-        if (redirectCandidate.getUrl().equals(updateResource.getUrl())) {
-          // If we have a main resource, then we need to provision a spot for it
-          // since it would be lost on the previous page transition.
-          if (redirectCandidate.isMainResource()
-              && updateResource.isMainResource()) {
-            updateRedirect(i, redirectCandidate, update);
-            return;
-          }
-          // If the URLs are the same and they have the same start time, then we
-          // have a match.
-          if (redirectCandidate.getOtherStartTime() == updateResource.getStartTime()) {
-            updateRedirect(i, redirectCandidate, update);
-            return;
-          }
-        }
+      NetworkResource redirectCandidate =
+          findAndRemoveRedirectCandidate(update.getIdentifier(), updateResource.getUrl());
+      if (redirectCandidate != null) {
+        redirectCandidate.update(update);
+        redirectUpdated(redirectCandidate);
       }
     }
   }
 
-  public void removeListener(Listener listener) {
-    listeners.remove(listener);
-  }
-
-  private void updateRedirect(int index, NetworkResource redirectCandidate,
-      ResourceUpdateEvent resourceUpdate) {
-    // We have found the redirect.
-    redirectCandidate.update(resourceUpdate);
+  private void redirectUpdated(NetworkResource redirectCandidate) {
     for (int i = 0, n = listeners.size(); i < n; i++) {
       Listener listener = listeners.get(i);
       listener.onNetworkResourceUpdated(redirectCandidate);
     }
-    // Should not be a concurrent modification, since we now bail out of
-    // the loop right after mutating the queue.
-    redirectQueue.remove(index);
   }
 }

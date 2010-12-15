@@ -1,12 +1,12 @@
 /*
  * Copyright 2010 Google Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -33,8 +33,8 @@ import java.util.List;
  * Underlying model implementation that maintains NetworkTimeLineDetailView's
  * state.
  */
-public class NetworkVisualizationModel implements VisualizationModel,
-    NetworkEventDispatcher.Listener, HintletInterface.HintListener {
+public class NetworkVisualizationModel
+    implements VisualizationModel, NetworkEventDispatcher.Listener, HintletInterface.HintListener {
 
   /**
    * Invoked when a resource has a change and may need to be refreshed in the
@@ -52,7 +52,8 @@ public class NetworkVisualizationModel implements VisualizationModel,
 
   private int openRequests = 0;
 
-  private List<ResourceRefreshListener> resourceRefreshListeners = new ArrayList<ResourceRefreshListener>();
+  private List<ResourceRefreshListener> resourceRefreshListeners =
+      new ArrayList<ResourceRefreshListener>();
 
   /**
    * We keep an index sorted by start time.
@@ -63,8 +64,7 @@ public class NetworkVisualizationModel implements VisualizationModel,
 
   public NetworkVisualizationModel(DataDispatcher dataDispatcher) {
     this.dataDispatcher = dataDispatcher;
-    graphModel = GraphModel.createGraphModel(new ModelData(), "", "ms", "",
-        " requests", true);
+    graphModel = GraphModel.createGraphModel(new ModelData(), "", "ms", "", " requests", true);
 
     // Register for source events
     this.sourceDispatcher = dataDispatcher.getNetworkEventDispatcher();
@@ -95,7 +95,7 @@ public class NetworkVisualizationModel implements VisualizationModel,
   /**
    * Gets a stored resource from our book keeping, or null if it hasnt been
    * stored before.
-   * 
+   *
    * @param id the request id of our {@link NetworkResource}
    * @return returns the {@link NetworkResource}
    */
@@ -119,15 +119,14 @@ public class NetworkVisualizationModel implements VisualizationModel,
     highlightModel.addData(rec.getTime(), value);
 
     // Notify any listeners wanting to hear about such changes.
-    ResourceRecord resourceRecord = rec.<ResourceRecord> cast();
+    ResourceRecord resourceRecord = rec.<ResourceRecord>cast();
     NetworkResource res = findResourceForRecord(resourceRecord);
     if (res != null) {
       fireResourceRefreshListeners(res);
     }
   }
 
-  public void onNetworkResourceRequestStarted(NetworkResource resource,
-      boolean isRedirect) {
+  public void onNetworkResourceRequestStarted(NetworkResource resource, boolean isRedirect) {
     assert (resource != null) : "Resource null in start!";
     // We don't get a close for a redirect, so we just need to not increment
     // again.
@@ -170,6 +169,9 @@ public class NetworkVisualizationModel implements VisualizationModel,
         // The rest of the resources in this list started too late.
         return null;
       }
+      // TODO (jaimeyap): There is a bug here. We need to match both identifier
+      // and Url. We need to bubble up the URL along with the hint for this
+      // resource in order to match it.
       if (res.getIdentifier() == rec.getIdentifier()) {
         return res;
       }
