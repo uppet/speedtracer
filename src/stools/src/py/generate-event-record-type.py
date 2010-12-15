@@ -204,8 +204,29 @@ speedTracerEvents = [
     'constant' : 'SERVER_EVENT',
     'desc' : 'An event from a server-side trace.',
     'help_text' : 'This happened on the server.',
-  }
+  },
 # END EXPERIMENTAL TYPES.
+  {
+    'value' : (maxInt - 5),
+    'constant' : 'INSPECTOR_WILL_SEND_REQUEST',
+    'desc' : 'Will Send Request',
+    'help_text' : 'Inspector message indicating a request for a resource '
+                  + 'is about to go out.',
+  },
+  {
+    'value' : (maxInt - 6),
+    'constant' : 'INSPECTOR_DID_RECEIVE_RESPONSE',
+    'desc' : 'Did receive response',
+    'help_text' : 'Inspector message indicating that we received a response '
+                  + 'from the server for a resource.',
+  },
+  {
+    'value' : (maxInt - 7),
+    'constant' : 'INSPECTOR_DID_RECEIVE_CONTENT_LENGTH',
+    'desc' : 'Content Length Changed',
+    'help_text' : 'Inspector message indicating that the resource loader '
+                  + 'adjusted the known size of the resource contents.',
+  }
 ]
 # END SPEEDTRACER RECORDS
 

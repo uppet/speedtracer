@@ -112,4 +112,12 @@ public class JSOArray<T> extends JavaScriptObject {
   public final native int size() /*-{
     return this.length;
   }-*/;
+
+  /**
+   * @param index index to remove from
+   * @param count how many to remove
+   */
+  public final native JSOArray<T> splice(int index, int count) /*-{
+    return this.splice(index, count);
+  }-*/;
 }
