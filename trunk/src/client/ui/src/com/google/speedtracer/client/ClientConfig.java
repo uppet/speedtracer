@@ -22,7 +22,7 @@ import com.google.gwt.core.client.GWT;
  * binding properties.
  */
 public class ClientConfig {
-  public static final String VERSION = "0.18";
+  public static final String VERSION = "0.19";
   
   @SuppressWarnings("unused")
   private static class DebugMode extends ReleaseMode {
