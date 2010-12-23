@@ -422,7 +422,8 @@ public class SpeedtracerSchemas {
            "type" : "object",
            "properties" : {
              "identifier" : {"type" : "integer", "description" : "Integer id of this resource" },
-             "didFail" : {"type" : "boolean", "description" : "whether the resource request failed" }
+             "didFail" : {"type" : "boolean", "description" : "whether the resource request failed" },
+             "networkTime" : {"type" : "number", "description" : "Network level timing for end."}
            },
            "additionalProperties" : false
          },
