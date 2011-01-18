@@ -74,7 +74,6 @@ public class ServerEventControllerTests extends GWTTestCase {
   private static class InvalidXhr extends MockXhr.Delegate {
     @Override
     public void onSend(XMLHttpRequest xhr, String data) {
-      final Resources resources = GWT.create(Resources.class);
       respond(xhr, XMLHttpRequest.DONE, 200, "",
           "Totally Bogus!");
     }

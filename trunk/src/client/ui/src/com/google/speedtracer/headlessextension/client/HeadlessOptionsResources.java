@@ -49,8 +49,7 @@ public class HeadlessOptionsResources {
   }
 
   /**
-   * Initializes resources. This must be called before
-   * {@link DashboardResources#getResources()}.
+   * Initializes resources. This must be called before {@link #getResources()}.
    * 
    * <p>
    * This allows us to avoid an evil static initializer that would pollute all

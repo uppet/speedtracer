@@ -141,7 +141,6 @@ public class MockXhr {
   }
 
   // Called from JSNI.
-  @SuppressWarnings("unused")
   private static void assertConstructorIsNotFake(boolean isFake) {
     assert !isFake : "Someone failed to restore the original XMLHttpRequest constructor with Restorer.restore().";
   }

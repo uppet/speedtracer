@@ -73,7 +73,6 @@ public class HeadlessContentScriptTests extends GWTTestCase {
   }-*/;
 
   // Invoked from JavaScript to call back the currently set postMessageMethod
-  @SuppressWarnings("unused")
   private static void postMessageCallback(JavaScriptObject msg) {
     if (postMessageMethod != null) {
       postMessageMethod.postMessage(msg);

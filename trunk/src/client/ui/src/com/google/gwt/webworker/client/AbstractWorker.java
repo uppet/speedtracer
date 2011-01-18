@@ -31,7 +31,6 @@ public class AbstractWorker extends JavaScriptObject {
    * @param listener the listener object to call back.
    * @param port argument from the callback.
    */
-  @SuppressWarnings("unused")
   private static void onErrorImpl(ErrorHandler errorHandler, ErrorEvent event) {
     UncaughtExceptionHandler ueh = GWT.getUncaughtExceptionHandler();
     if (ueh != null) {

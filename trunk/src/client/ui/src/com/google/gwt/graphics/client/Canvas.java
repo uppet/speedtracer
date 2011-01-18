@@ -26,7 +26,6 @@ import com.google.gwt.dom.client.Element;
  * tutorial</a>).
  */
 public class Canvas {
-  @SuppressWarnings("unused")
   private JavaScriptObject canvasContext = null;
   private int coordHeight = 0;
   private int coordWidth = 0;
@@ -537,7 +536,6 @@ public class Canvas {
   }
 
   // This is called from JSNI function. Ignore warning.
-  @SuppressWarnings("unused")
   private void setCanvasContext(JavaScriptObject ctx) {
     this.canvasContext = ctx;
   }

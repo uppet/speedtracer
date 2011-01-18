@@ -30,7 +30,6 @@ public final class DetailedResponseTiming extends JavaScriptObject {
    * properties to represent special cases. If either of the values is
    * <code>undefined</code>, 0 will be returned.
    */
-  @SuppressWarnings("unused")
   private static native double computeDuration(double start, double end) /*-{
     var duration = (end == -1) ? -1 : end - start;
     return isNaN(duration) ? 0 : duration;

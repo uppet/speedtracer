@@ -36,12 +36,12 @@ public class DevToolsPageEvent extends Event {
     protected PageEvent() {
     }
 
-    public native String getMethod() /*-{
-      return this.event;
-    }-*/;
-
     public native JavaScriptObject getData() /*-{
       return this.data;
+    }-*/;
+
+    public native String getMethod() /*-{
+      return this.event;
     }-*/;
   }
 

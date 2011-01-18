@@ -46,7 +46,6 @@ public class RequestEvent extends Event {
    * @param sendResponse the function object that can be used to send a response
    *          to the sender
    */
-  @SuppressWarnings("unused")
   private static void onRequestImpl(Listener listener,
       JavaScriptObject request, Sender sender, SendResponse sendResponse) {
     UncaughtExceptionHandler ueh = GWT.getUncaughtExceptionHandler();
