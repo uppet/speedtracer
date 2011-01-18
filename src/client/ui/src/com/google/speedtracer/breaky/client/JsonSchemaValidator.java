@@ -48,7 +48,6 @@ public class JsonSchemaValidator {
    * 
    * @return a handle to the jsonschema-b4 JSONSchema object
    */
-  @SuppressWarnings("unused")
   private static native JavaScriptObject get() /*-{
     return (typeof JSONSchemaValidator === 'undefined') ? $wnd.JSONSchemaValidator : JSONSchemaValidator;
   }-*/;

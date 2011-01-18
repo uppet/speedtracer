@@ -55,7 +55,6 @@ public class SourceViewerServer extends DataBag {
 
   private static final int API_VERSION = 1;
 
-  @SuppressWarnings("unused")
   private static final String OPAQUE_PARAM_PREFIX = "_param";
 
   public static void jumpToIde(SourceViewerServer sourceViewerServer,

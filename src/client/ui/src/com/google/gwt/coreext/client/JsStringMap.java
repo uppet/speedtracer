@@ -89,15 +89,11 @@ public final class JsStringMap<T> extends JavaScriptObject {
     object[p] = value;
   }-*/;
 
-  @SuppressWarnings("unused")
-  // Called from JSNI.
   private static String getKeyForProperty(String property) {
     assert property.charAt(0) == ':' : "map contains a property without the proper prefix";
     return property.substring(1);
   }
 
-  @SuppressWarnings("unused")
-  // Called from JSNI.
   private static String getPropertyForKey(String key) {
     assert key != null : "native maps do not allow null key values.";
     return ":" + key;

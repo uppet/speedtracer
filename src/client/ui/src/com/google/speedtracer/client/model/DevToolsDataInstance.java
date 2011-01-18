@@ -1,12 +1,12 @@
 /*
  * Copyright 2010 Google Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -42,7 +42,8 @@ public class DevToolsDataInstance extends DataInstance {
     private class TimeNormalizingVisitor implements LeafFirstTraversalVoid {
       public void visit(UiEvent event) {
         assert getBaseTime() >= 0 : "baseTime should already be set.";
-        event.<UnNormalizedEventRecord>cast().convertToEventRecord(getBaseTime());
+        event.<UnNormalizedEventRecord> cast().convertToEventRecord(
+            getBaseTime());
       }
     }
 
@@ -76,8 +77,8 @@ public class DevToolsDataInstance extends DataInstance {
       this.dispatcher = Dispatcher.create(this);
     }
 
-    public final void dispatchPageEvent(PageEvent event) {      
-      dispatcher.invoke(event.getMethod(), event);     
+    public final void dispatchPageEvent(PageEvent event) {
+      dispatcher.invoke(event.getMethod(), event);
     }
 
     public double getBaseTime() {
@@ -97,7 +98,8 @@ public class DevToolsDataInstance extends DataInstance {
       this.baseTime = baseTime;
     }
 
-    public void setProfilingOptions(boolean enableStackTraces, boolean enableCpuProfiling) {
+    public void setProfilingOptions(boolean enableStackTraces,
+        boolean enableCpuProfiling) {
       DevTools.setProfilingOptions(tabId, enableStackTraces, enableCpuProfiling);
     }
 
@@ -118,18 +120,15 @@ public class DevToolsDataInstance extends DataInstance {
       }
 
       try {
-        this.listenerHandle =
-            DevTools.getTabEvents(tabId).getPageEvent().addListener(new Listener() {
+        this.listenerHandle = DevTools.getTabEvents(tabId).getPageEvent().addListener(
+            new Listener() {
               public void onPageEvent(PageEvent event) {
                 dispatchPageEvent(event);
               }
             });
       } catch (JavaScriptException ex) {
-        Chrome
-            .getExtension()
-            .getBackgroundPage()
-            .getConsole()
-            .log("Error attaching to DevTools page event: " + ex);
+        Chrome.getExtension().getBackgroundPage().getConsole().log(
+            "Error attaching to DevTools page event: " + ex);
         // ignore
       }
     }
@@ -153,7 +152,7 @@ public class DevToolsDataInstance extends DataInstance {
     /**
      * Establishes a base time if it has not been set and dispatches the event
      * to the {@link DataInstance}.
-     *
+     * 
      * @param record the already normalized record to dispatch
      */
     private void forwardToDataInstance(EventRecord record) {
@@ -173,9 +172,9 @@ public class DevToolsDataInstance extends DataInstance {
     /**
      * Establishes a base time if it has not been set and dispatches the event
      * to the {@link DataInstance}.
-     *
+     * 
      * This method will normalizes times for any record passed in.
-     *
+     * 
      * @param record the record to dispatch
      */
     private void normalizeAndDispatchEventRecord(UnNormalizedEventRecord record) {
@@ -186,7 +185,7 @@ public class DevToolsDataInstance extends DataInstance {
       assert (getBaseTime() >= 0) : "Base Time is still not set";
 
       // Run a visitor to normalize the times for this tree.
-      record.<UiEvent>cast().apply(timeNormalizingVisitor);
+      record.<UiEvent> cast().apply(timeNormalizingVisitor);
       forwardToDataInstance(record);
     }
 
@@ -201,15 +200,6 @@ public class DevToolsDataInstance extends DataInstance {
       return millis - getBaseTime();
     }
 
-    private void onInspectorMessage(int messageType, InspectorResourceMessage.Data data) {
-      if (getBaseTime() < 0) {
-        // We only allow proper timeline agent records to set base time.
-        return;
-      }
-      forwardToDataInstance(InspectorResourceMessage.create(
-          messageType, normalizeInspectorTime(data.getTime()), data));
-    }
-
     @SuppressWarnings("unused")
     private void onDidReceiveResponse(InspectorDidReceiveResponse.Data data) {
       // Normalize the detailed timing request time.
@@ -217,19 +207,31 @@ public class DevToolsDataInstance extends DataInstance {
       if (timing != null) {
         timing.setRequestTime(normalizeInspectorTime(timing.getRequestTime()));
       }
-      
-      onInspectorMessage(EventRecordType.INSPECTOR_DID_RECEIVE_RESPONSE, data);    
+
+      onInspectorMessage(EventRecordType.INSPECTOR_DID_RECEIVE_RESPONSE, data);
+    }
+
+    private void onInspectorMessage(int messageType,
+        InspectorResourceMessage.Data data) {
+      if (getBaseTime() < 0) {
+        // We only allow proper timeline agent records to set base time.
+        return;
+      }
+      forwardToDataInstance(InspectorResourceMessage.create(messageType,
+          normalizeInspectorTime(data.getTime()), data));
     }
 
     @SuppressWarnings("unused")
-    private void onReceiveContentLength(InspectorDidReceiveContentLength.Data data) {    
-      onInspectorMessage(EventRecordType.INSPECTOR_DID_RECEIVE_CONTENT_LENGTH, data);    
-    }    
-    
+    private void onReceiveContentLength(
+        InspectorDidReceiveContentLength.Data data) {
+      onInspectorMessage(EventRecordType.INSPECTOR_DID_RECEIVE_CONTENT_LENGTH,
+          data);
+    }
+
     private void onTimelineRecord(UnNormalizedEventRecord record) {
       assert (dataInstance != null) : "Someone called invoke that wasn't our connect call!";
 
-      record.<UiEvent>cast().apply(typeEnsuringVisitor);
+      record.<UiEvent> cast().apply(typeEnsuringVisitor);
       int type = record.getType();
 
       switch (type) {
@@ -245,7 +247,7 @@ public class DevToolsDataInstance extends DataInstance {
             pendingRecords.push(record);
             return;
           }
-          
+
           // Maybe synthesize a page transition.
           ResourceWillSendEvent start = record.cast();
           // Dispatch a Page Transition if this is a main resource and we are
@@ -253,12 +255,13 @@ public class DevToolsDataInstance extends DataInstance {
           if (start.isMainResource()) {
             // For redirects, IDs get recycled. We do not want to double page
             // transition for a single main page redirect.
-            if ((currentPage == null) || (currentPage.getIdentifier() != start.getIdentifier())) {
+            if ((currentPage == null)
+                || (currentPage.getIdentifier() != start.getIdentifier())) {
               // We synthesize the page transition if currentPage is not set, or
               // the IDs dont match.
               currentPage = start;
-              normalizeAndDispatchEventRecord(
-                  TabChangeEvent.createUnNormalized(record.getStartTime(), start.getUrl()));
+              normalizeAndDispatchEventRecord(TabChangeEvent.createUnNormalized(
+                  record.getStartTime(), start.getUrl()));
             }
           }
 
@@ -280,10 +283,11 @@ public class DevToolsDataInstance extends DataInstance {
 
     /**
      * Clears the record buffer and establishes a baseTime.
-     *
+     * 
      * @param triggerRecord the first record that is not a Resource Start.
      */
-    private void sendPendingRecordsAndSetBaseTime(UnNormalizedEventRecord triggerRecord) {
+    private void sendPendingRecordsAndSetBaseTime(
+        UnNormalizedEventRecord triggerRecord) {
       assert (getBaseTime() < 0) : "Emptying record buffer after establishing a base time.";
 
       double baseTimeStamp = triggerRecord.getStartTime();
@@ -342,7 +346,6 @@ public class DevToolsDataInstance extends DataInstance {
       };
     }-*/;
 
-    @SuppressWarnings("unused")
     protected Dispatcher() {
     }
 
@@ -356,7 +359,7 @@ public class DevToolsDataInstance extends DataInstance {
   /**
    * Constructs and returns a {@link DevToolsDataInstance} after wiring it up to
    * receive events over the extensions-devtools API.
-   *
+   * 
    * @param tabId the tab that we want to connect to.
    * @return a newly wired up {@link DevToolsDataInstance}.
    */
@@ -367,9 +370,9 @@ public class DevToolsDataInstance extends DataInstance {
   /**
    * Constructs and returns a {@link DevToolsDataInstance} after wiring it up to
    * receive events over the extensions-devtools API.
-   *
+   * 
    * @param proxy an externally supplied proxy to act as the record
-   *        transformation layer
+   *          transformation layer
    * @return a newly wired up {@link DevToolsDataInstance}.
    */
   public static DevToolsDataInstance create(Proxy proxy) {

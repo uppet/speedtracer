@@ -1,12 +1,12 @@
 /*
  * Copyright 2010 Google Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -138,14 +138,9 @@ public class NetworkResource {
    * resources. If you use it for anything else, zundel will punish you with the
    * electric plunger.
    */
-  protected NetworkResource(double startTime,
-      int identifier,
-      String url,
-      boolean isMainResource,
-      String httpMethod,
-      HeaderMap requestHeaders,
-      int status,
-      HeaderMap responseHeaders) {
+  protected NetworkResource(double startTime, int identifier, String url,
+      boolean isMainResource, String httpMethod, HeaderMap requestHeaders,
+      int status, HeaderMap responseHeaders) {
     this.startTime = startTime;
     this.identifier = identifier;
     this.url = url;
@@ -206,7 +201,7 @@ public class NetworkResource {
   /**
    * Accumulates and returns any hints that were associated with records for
    * this network resource.
-   *
+   * 
    * @return JSOArray of HintRecords.
    */
   public JSOArray<HintRecord> getHintRecords() {
@@ -285,14 +280,15 @@ public class NetworkResource {
   /**
    * Gets the full URL for the server-side trace for this resource. Callers are
    * required to check {@link #hasServerTraceUrl()} before calling this method.
-   *
+   * 
    * @see #hasServerTraceUrl()
-   *
+   * 
    * @return full URL
    */
   public String getServerTraceUrl() {
     assert hasServerTraceUrl() : "hasServerTraceUrl is false for this resource";
-    return new Url(getUrl()).getOrigin() + responseHeaders.get(SERVER_TRACE_HEADER_NAME);
+    return new Url(getUrl()).getOrigin()
+        + responseHeaders.get(SERVER_TRACE_HEADER_NAME);
   }
 
   public double getSslDuration() {
@@ -317,7 +313,7 @@ public class NetworkResource {
 
   /**
    * Indicates whether this network resource has detailed timing information.
-   *
+   * 
    * @return
    */
   public boolean hasDetailedTiming() {
@@ -327,14 +323,14 @@ public class NetworkResource {
   /**
    * Indicates whether this resource has a server-side trace url associated with
    * it.
-   *
+   * 
    * @see #getServerTraceUrl()
-   *
+   * 
    * @return
    */
   public boolean hasServerTraceUrl() {
-    return (responseHeaders == null) ? false : responseHeaders.get(SERVER_TRACE_HEADER_NAME)
-        != null;
+    return (responseHeaders == null) ? false
+        : responseHeaders.get(SERVER_TRACE_HEADER_NAME) != null;
   }
 
   public boolean isCached() {
@@ -359,9 +355,12 @@ public class NetworkResource {
     this.endTime = endTime;
   }
 
+  public void setResponseReceivedTime(double time) {
+    this.responseReceivedTime = time;
+  }
+
   public void update(InspectorDidReceiveContentLength contentLengthChange) {
-    this.contentLength = contentLengthChange
-        .getData().<InspectorDidReceiveContentLength.Data>cast().getLengthReceived();
+    this.contentLength = contentLengthChange.getData().<InspectorDidReceiveContentLength.Data> cast().getLengthReceived();
   }
 
   public void update(InspectorDidReceiveResponse record) {
@@ -371,8 +370,7 @@ public class NetworkResource {
   }
 
   public void update(InspectorWillSendRequest willSendRequest) {
-    this.requestHeaders =
-        willSendRequest.getData().<InspectorWillSendRequest.Data>cast().getRequest().getHeaders();
+    this.requestHeaders = willSendRequest.getData().<InspectorWillSendRequest.Data> cast().getRequest().getHeaders();
   }
 
   public void update(ResourceFinishEvent finishEvent) {
@@ -394,11 +392,11 @@ public class NetworkResource {
   /**
    * NOTE: This should now be dead code in the live tracing case, and is only
    * kept to support loading old saved dumps.
-   *
-   *  Updates information about this record. Note that we use the timeline
+   * 
+   * Updates information about this record. Note that we use the timeline
    * checkpoint records to establish all timing information. We therefore ignore
    * the timing information present in these updates.
-   *
+   * 
    * @param updateEvent
    */
   public void update(ResourceUpdateEvent updateEvent) {
@@ -439,7 +437,8 @@ public class NetworkResource {
         this.endTime = update.getEndTime();
       }
 
-      if ((Double.isNaN(this.responseReceivedTime)) && (update.getResponseReceivedTime() > 0)) {
+      if ((Double.isNaN(this.responseReceivedTime))
+          && (update.getResponseReceivedTime() > 0)) {
         this.responseReceivedTime = update.getResponseReceivedTime();
       }
     }
@@ -479,9 +478,5 @@ public class NetworkResource {
       return "/";
     }
     return url.substring(afterSlash, url.length());
-  }
-
-  public void setResponseReceivedTime(double time) {
-    this.responseReceivedTime = time;
   }
 }

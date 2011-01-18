@@ -81,7 +81,6 @@ public class ImageLoader {
    * 
    * Called from the JSNI onload event handler.
    */
-  @SuppressWarnings("unused")
   private void dispatchIfComplete() {
     if (callBack != null && isAllLoaded()) {
       callBack.onImagesLoaded(images.toArray(new ImageHandle[0]));
@@ -101,7 +100,6 @@ public class ImageLoader {
     this.callBack = cb;
   }
   
-  @SuppressWarnings("unused")
   private void incrementLoadedImages() {
     this.loadedImages++;
   }

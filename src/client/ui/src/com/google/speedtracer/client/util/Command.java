@@ -55,7 +55,6 @@ public class Command {
     }, delay);
   }-*/;
 
-  @SuppressWarnings("unused")
   private static void fire(Method method) {
     UncaughtExceptionHandler handler = GWT.getUncaughtExceptionHandler();
     if (handler != null) {
