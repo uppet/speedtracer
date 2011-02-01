@@ -90,7 +90,6 @@ public class ServerEventControllerTests extends GWTTestCase {
         0, // startTime
         identifier,
         url,
-        false, // isMainResource
         "GET",
         JavaScriptObject.createObject().<NetworkResource.HeaderMap> cast(),
         200, // statusCode
