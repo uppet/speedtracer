@@ -89,8 +89,6 @@ public class NetworkResource {
 
   private final int identifier;
 
-  private final boolean isMainResource;
-
   private String lastPathComponent;
 
   private String mimeType;
@@ -127,7 +125,6 @@ public class NetworkResource {
     this.startTime = startEvent.getTime();
     this.identifier = startEvent.getIdentifier();
     this.url = startEvent.getUrl();
-    this.isMainResource = startEvent.isMainResource();
     this.httpMethod = startEvent.getHttpMethod();
     // Cache the ResourceEvent to later pull hintlets.
     this.startEvent = startEvent;
@@ -139,12 +136,11 @@ public class NetworkResource {
    * electric plunger.
    */
   protected NetworkResource(double startTime, int identifier, String url,
-      boolean isMainResource, String httpMethod, HeaderMap requestHeaders,
-      int status, HeaderMap responseHeaders) {
+      String httpMethod, HeaderMap requestHeaders, int status,
+      HeaderMap responseHeaders) {
     this.startTime = startTime;
     this.identifier = identifier;
     this.url = url;
-    this.isMainResource = isMainResource;
     this.httpMethod = httpMethod;
     this.requestHeaders = requestHeaders;
     this.statusCode = status;
@@ -339,10 +335,6 @@ public class NetworkResource {
 
   public boolean isDidFail() {
     return didFail;
-  }
-
-  public boolean isMainResource() {
-    return isMainResource;
   }
 
   public boolean isRedirect() {

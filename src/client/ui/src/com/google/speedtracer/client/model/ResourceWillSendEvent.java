@@ -33,8 +33,4 @@ public class ResourceWillSendEvent extends ResourceRecord {
   public final String getUrl() {
     return getData().getStringProperty("url");
   }
-
-  public final boolean isMainResource() {
-    return getData().getBooleanProperty("isMainResource");
-  }
 }

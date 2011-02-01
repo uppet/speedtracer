@@ -374,8 +374,7 @@ public class SpeedtracerSchemas {
              "requestMethod" : {
                "type" : "string",
                "description" : "Method used to retrieve the resource. (e.g. GET/POST)"
-             },
-             "isMainResource" : {"type" : "boolean", "description"  : "Is this the main resource?" }
+             }
            },
            "additionalProperties" : false
          },

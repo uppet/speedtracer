@@ -71,6 +71,8 @@ public class DevToolsDataInstance extends DataInstance {
 
     private final TypeEnsuringVisitor typeEnsuringVisitor = new TypeEnsuringVisitor();
 
+    private boolean nextResourceIsMain;
+
     public Proxy(int tabId) {
       this.baseTime = -1;
       this.tabId = tabId;
@@ -211,6 +213,11 @@ public class DevToolsDataInstance extends DataInstance {
       onInspectorMessage(EventRecordType.INSPECTOR_DID_RECEIVE_RESPONSE, data);
     }
 
+    @SuppressWarnings("unused")
+    private void onFrontendReused() {
+      nextResourceIsMain = true;
+    }
+
     private void onInspectorMessage(int messageType,
         InspectorResourceMessage.Data data) {
       if (getBaseTime() < 0) {
@@ -252,7 +259,8 @@ public class DevToolsDataInstance extends DataInstance {
           ResourceWillSendEvent start = record.cast();
           // Dispatch a Page Transition if this is a main resource and we are
           // not part of a redirect.
-          if (start.isMainResource()) {
+          if (nextResourceIsMain) {
+            nextResourceIsMain = false;
             // For redirects, IDs get recycled. We do not want to double page
             // transition for a single main page redirect.
             if ((currentPage == null)
@@ -342,6 +350,10 @@ public class DevToolsDataInstance extends DataInstance {
           delegate.
           @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onReceiveContentLength(Lcom/google/speedtracer/client/model/InspectorDidReceiveContentLength$Data;)
           (event.data);
+        },
+        frontendReused: function(event) {
+          delegate.
+          @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onFrontendReused()();
         }
       };
     }-*/;
