@@ -80,7 +80,7 @@ public class DevToolsDataInstance extends DataInstance {
     }
 
     public final void dispatchPageEvent(PageEvent event) {
-      dispatcher.invoke(event.getMethod(), event);
+      dispatcher.invoke(event.getMethod(), event.getBody());
     }
 
     public double getBaseTime() {
@@ -326,32 +326,33 @@ public class DevToolsDataInstance extends DataInstance {
    * Overlay type for our dispatcher used by {@link Proxy}.
    */
   private static final class Dispatcher extends JavaScriptObject {
+
     /**
      * Simple routing dispatcher used by the DevToolsDataProxy to quickly route.
      */
     static native Dispatcher create(Proxy delegate) /*-{
       return {
-        addRecordToTimeline: function(event) {
+        addRecordToTimeline: function(body) {
           delegate.
           @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onTimelineRecord(Lcom/google/speedtracer/client/model/UnNormalizedEventRecord;)
-          (event.data.record);
+          (body.record);
         },
-        willSendRequest: function(event) {
+        willSendRequest: function(body) {
           delegate.
           @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onWillSendRequest(Lcom/google/speedtracer/client/model/InspectorWillSendRequest$Data;)
-          (event.data);
+          (body);
         },
-        didReceiveResponse: function(event) {
+        didReceiveResponse: function(body) {
           delegate.
           @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onDidReceiveResponse(Lcom/google/speedtracer/client/model/InspectorDidReceiveResponse$Data;)
-          (event.data);
+          (body);
         },
-        didReceiveContentLength: function(event) {
+        didReceiveContentLength: function(body) {
           delegate.
           @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onReceiveContentLength(Lcom/google/speedtracer/client/model/InspectorDidReceiveContentLength$Data;)
-          (event.data);
+          (body);
         },
-        frontendReused: function(event) {
+        frontendReused: function(body) {
           delegate.
           @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onFrontendReused()();
         }

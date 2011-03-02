@@ -36,8 +36,8 @@ public class DevToolsPageEvent extends Event {
     protected PageEvent() {
     }
 
-    public native JavaScriptObject getData() /*-{
-      return this.data;
+    public native JavaScriptObject getBody() /*-{
+      return this.body || this.data;
     }-*/;
 
     public native String getMethod() /*-{
