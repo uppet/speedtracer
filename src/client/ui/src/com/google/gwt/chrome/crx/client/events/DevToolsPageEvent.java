@@ -37,11 +37,11 @@ public class DevToolsPageEvent extends Event {
     }
 
     public native JavaScriptObject getBody() /*-{
-      return this.body || this.data;
+      return this.params;
     }-*/;
 
     public native String getMethod() /*-{
-      return this.event;
+      return this.method;
     }-*/;
   }
 

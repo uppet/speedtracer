@@ -32,24 +32,12 @@ public final class InspectorWillSendRequest extends InspectorResourceMessage {
     protected Data() {
     }
 
-    public RedirectResponse getRedirectResponse() {
-      return getJSObjectProperty("redirectResponse").<RedirectResponse>cast();
+    public Response getRedirectResponse() {
+      return getJSObjectProperty("redirectResponse").<Response>cast();
     }
 
     public Request getRequest() {
       return getJSObjectProperty("request").<Request>cast();
-    }
-  }
-
-  /**
-   *
-   */
-  public static final class RedirectResponse extends Response {
-    protected RedirectResponse() {
-    }
-
-    public boolean isNull() {
-      return getBooleanProperty("isNull");
     }
   }
 

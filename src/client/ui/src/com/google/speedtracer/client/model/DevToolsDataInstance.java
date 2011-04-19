@@ -22,6 +22,7 @@ import com.google.gwt.chrome.crx.client.events.DevToolsPageEvent.PageEvent;
 import com.google.gwt.chrome.crx.client.events.Event.ListenerHandle;
 import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.coreext.client.DataBag;
 import com.google.gwt.coreext.client.JSOArray;
 import com.google.speedtracer.client.model.UiEvent.LeafFirstTraversalVoid;
 import com.google.speedtracer.shared.EventRecordType;
@@ -34,6 +35,50 @@ import com.google.speedtracer.shared.EventRecordType;
  * UI.
  */
 public class DevToolsDataInstance extends DataInstance {
+
+  private final static class TypeTranslationMap extends JavaScriptObject {
+    protected TypeTranslationMap() {
+    }
+
+    static TypeTranslationMap create() {
+      final TypeTranslationMap map = JavaScriptObject.createObject().cast();
+      // The weird end of line comments below keep the auto-formatter from
+      // from reformatting these lines.
+      return map //
+          .add("EventDispatch", EventRecordType.DOM_EVENT) //
+          .add("Layout", EventRecordType.LAYOUT_EVENT) //
+          .add("RecalculateStyles", EventRecordType.RECALC_STYLE_EVENT) //
+          .add("Paint", EventRecordType.PAINT_EVENT) //
+          .add("ParseHTML", EventRecordType.PARSE_HTML_EVENT) //
+          .add("TimerInstall", EventRecordType.TIMER_INSTALLED) //
+          .add("TimerRemove", EventRecordType.TIMER_CLEARED) //
+          .add("TimerFire", EventRecordType.TIMER_FIRED) //
+          .add("XHRReadyStateChange", EventRecordType.XHR_READY_STATE_CHANGE) //
+          .add("XHRLoad", EventRecordType.XHR_LOAD) //
+          .add("EvaluateScript", EventRecordType.EVAL_SCRIPT_EVENT) //
+          .add("MarkTimeline", EventRecordType.LOG_MESSAGE_EVENT) //
+          .add("ScheduleResourceRequest", EventRecordType.SCHEDULE_RESOURCE_REQUEST) //          
+          .add("ResourceSendRequest", EventRecordType.RESOURCE_SEND_REQUEST) //
+          .add("ResourceReceiveResponse", EventRecordType.RESOURCE_RECEIVE_RESPONSE) //
+          .add("ResourceReceivedData", EventRecordType.RESOURCE_DATA_RECEIVED) //
+          .add("ResourceFinish", EventRecordType.RESOURCE_FINISH) //
+          .add("FunctionCall", EventRecordType.JAVASCRIPT_EXECUTION) //
+          .add("GCEvent", EventRecordType.GC_EVENT) //
+          .add("MarkDOMContent", EventRecordType.DOM_CONTENT_LOADED) //
+          .add("MarkLoad", EventRecordType.LOAD_EVENT);
+    }
+
+    native TypeTranslationMap add(String name, int id) /*-{
+      this[name] = id;
+      return this;
+    }-*/;
+
+    native int get(String typeName) /*-{
+      var type = this[typeName];
+      return type === undefined ? @com.google.speedtracer.client.model.EventRecord::INVALID_TYPE : type;
+    }-*/;
+  }
+
   /**
    * Proxy class that normalizes data coming in from the devtools API into a
    * digestable form, and then forwards it on to the DevToolsDataInstance.
@@ -42,14 +87,19 @@ public class DevToolsDataInstance extends DataInstance {
     private class TimeNormalizingVisitor implements LeafFirstTraversalVoid {
       public void visit(UiEvent event) {
         assert getBaseTime() >= 0 : "baseTime should already be set.";
-        event.<UnNormalizedEventRecord> cast().convertToEventRecord(
-            getBaseTime());
+        event.<UnNormalizedEventRecord> cast().convertToEventRecord(getBaseTime());
       }
     }
 
-    private class TypeEnsuringVisitor implements LeafFirstTraversalVoid {
+    private static class TypeTranslationVisitor implements LeafFirstTraversalVoid {
+      private final TypeTranslationMap map = TypeTranslationMap.create();
+
+      private native static void updateType(UiEvent event, int type) /*-{
+        event.type = type;
+      }-*/;
+
       public void visit(UiEvent event) {
-        event.ensureType();
+        updateType(event, map.get(DataBag.getStringProperty(event, "type")));
       }
     }
 
@@ -69,7 +119,7 @@ public class DevToolsDataInstance extends DataInstance {
 
     private final TimeNormalizingVisitor timeNormalizingVisitor = new TimeNormalizingVisitor();
 
-    private final TypeEnsuringVisitor typeEnsuringVisitor = new TypeEnsuringVisitor();
+    private final TypeTranslationVisitor typeTranslationVistior = new TypeTranslationVisitor();
 
     private boolean nextResourceIsMain;
 
@@ -100,8 +150,7 @@ public class DevToolsDataInstance extends DataInstance {
       this.baseTime = baseTime;
     }
 
-    public void setProfilingOptions(boolean enableStackTraces,
-        boolean enableCpuProfiling) {
+    public void setProfilingOptions(boolean enableStackTraces, boolean enableCpuProfiling) {
       DevTools.setProfilingOptions(tabId, enableStackTraces, enableCpuProfiling);
     }
 
@@ -122,8 +171,8 @@ public class DevToolsDataInstance extends DataInstance {
       }
 
       try {
-        this.listenerHandle = DevTools.getTabEvents(tabId).getPageEvent().addListener(
-            new Listener() {
+        this.listenerHandle =
+            DevTools.getTabEvents(tabId).getPageEvent().addListener(new Listener() {
               public void onPageEvent(PageEvent event) {
                 dispatchPageEvent(event);
               }
@@ -218,27 +267,24 @@ public class DevToolsDataInstance extends DataInstance {
       nextResourceIsMain = true;
     }
 
-    private void onInspectorMessage(int messageType,
-        InspectorResourceMessage.Data data) {
+    private void onInspectorMessage(int messageType, InspectorResourceMessage.Data data) {
       if (getBaseTime() < 0) {
         // We only allow proper timeline agent records to set base time.
         return;
       }
       forwardToDataInstance(InspectorResourceMessage.create(messageType,
-          normalizeInspectorTime(data.getTime()), data));
+          normalizeInspectorTime(data.getTimeStamp()), data));
     }
 
     @SuppressWarnings("unused")
-    private void onReceiveContentLength(
-        InspectorDidReceiveContentLength.Data data) {
-      onInspectorMessage(EventRecordType.INSPECTOR_DID_RECEIVE_CONTENT_LENGTH,
-          data);
+    private void onReceiveContentLength(InspectorDidReceiveContentLength.Data data) {
+      onInspectorMessage(EventRecordType.INSPECTOR_DID_RECEIVE_CONTENT_LENGTH, data);
     }
 
     private void onTimelineRecord(UnNormalizedEventRecord record) {
       assert (dataInstance != null) : "Someone called invoke that wasn't our connect call!";
 
-      record.<UiEvent> cast().apply(typeEnsuringVisitor);
+      record.<UiEvent> cast().apply(typeTranslationVistior);
       int type = record.getType();
 
       switch (type) {
@@ -263,13 +309,12 @@ public class DevToolsDataInstance extends DataInstance {
             nextResourceIsMain = false;
             // For redirects, IDs get recycled. We do not want to double page
             // transition for a single main page redirect.
-            if ((currentPage == null)
-                || (currentPage.getIdentifier() != start.getIdentifier())) {
+            if ((currentPage == null) || (currentPage.getIdentifier() != start.getIdentifier())) {
               // We synthesize the page transition if currentPage is not set, or
               // the IDs dont match.
               currentPage = start;
-              normalizeAndDispatchEventRecord(TabChangeEvent.createUnNormalized(
-                  record.getStartTime(), start.getUrl()));
+              normalizeAndDispatchEventRecord(TabChangeEvent.createUnNormalized(record
+                  .getStartTime(), start.getUrl()));
             }
           }
 
@@ -294,8 +339,7 @@ public class DevToolsDataInstance extends DataInstance {
      * 
      * @param triggerRecord the first record that is not a Resource Start.
      */
-    private void sendPendingRecordsAndSetBaseTime(
-        UnNormalizedEventRecord triggerRecord) {
+    private void sendPendingRecordsAndSetBaseTime(UnNormalizedEventRecord triggerRecord) {
       assert (getBaseTime() < 0) : "Emptying record buffer after establishing a base time.";
 
       double baseTimeStamp = triggerRecord.getStartTime();
@@ -331,32 +375,39 @@ public class DevToolsDataInstance extends DataInstance {
      * Simple routing dispatcher used by the DevToolsDataProxy to quickly route.
      */
     static native Dispatcher create(Proxy delegate) /*-{
-      return {
-        addRecordToTimeline: function(body) {
-          delegate.
+      var dispatcher = {};
+
+      // Used to indicate a page transition.
+      dispatcher['Inspector.frontendReused'] = function(body) {
+        delegate.
+          @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onFrontendReused()();        
+      };
+
+      // Events generated by the Timeline profiler.
+      dispatcher['Timeline.eventRecorded'] = function(body) {
+        delegate.
           @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onTimelineRecord(Lcom/google/speedtracer/client/model/UnNormalizedEventRecord;)
           (body.record);
-        },
-        willSendRequest: function(body) {
-          delegate.
+      };
+
+      // Network resource events.
+      dispatcher['Network.requestWillBeSent'] = function(body) {
+        delegate.
           @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onWillSendRequest(Lcom/google/speedtracer/client/model/InspectorWillSendRequest$Data;)
           (body);
-        },
-        didReceiveResponse: function(body) {
-          delegate.
+      };
+      dispatcher['Network.responseReceived'] = function(body) {
+        delegate.
           @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onDidReceiveResponse(Lcom/google/speedtracer/client/model/InspectorDidReceiveResponse$Data;)
           (body);
-        },
-        didReceiveContentLength: function(body) {
-          delegate.
+      };
+      dispatcher['Network.dataReceived'] = function(body) {
+        delegate.
           @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onReceiveContentLength(Lcom/google/speedtracer/client/model/InspectorDidReceiveContentLength$Data;)
           (body);
-        },
-        frontendReused: function(body) {
-          delegate.
-          @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onFrontendReused()();
-        }
       };
+
+      return dispatcher;
     }-*/;
 
     protected Dispatcher() {

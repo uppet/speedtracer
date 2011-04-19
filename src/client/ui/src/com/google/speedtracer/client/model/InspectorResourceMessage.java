@@ -29,8 +29,8 @@ public class InspectorResourceMessage extends ResourceRecord {
     protected Data() {
     }
 
-    public final double getTime() {
-      return getDoubleProperty("time");
+    public final double getTimeStamp() {
+      return getDoubleProperty("timestamp");
     }
   }
 

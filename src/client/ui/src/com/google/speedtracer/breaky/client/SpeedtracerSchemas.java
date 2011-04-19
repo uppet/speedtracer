@@ -392,11 +392,6 @@ public class SpeedtracerSchemas {
            "type" : "object",
            "properties" : {
              "identifier" : {"type" : "integer", "description" : "Integer id of this resource" },
-             "expectedContentLength" : {
-               "type" : "integer",
-               "description" : "Size in bytes the browser expects the resource to be",
-               "minimum" : -1
-               },
              "mimeType" : {"type" : "string", "description" : "The MIME type of the resource" },
              "statusCode" : {
                "type" : "integer",
@@ -421,8 +416,8 @@ public class SpeedtracerSchemas {
            "type" : "object",
            "properties" : {
              "identifier" : {"type" : "integer", "description" : "Integer id of this resource" },
-             "didFail" : {"type" : "boolean", "description" : "whether the resource request failed" },
-             "networkTime" : {"type" : "number", "description" : "Network level timing for end."}
+             "networkTime" : {"type" : "number", "description" : "Network level timing for end.", "optional" : true },
+             "didFail" : {"type" : "boolean", "description" : "whether the resource request failed" }
            },
            "additionalProperties" : false
          },
@@ -643,13 +638,11 @@ public class SpeedtracerSchemas {
              },
              "dnsStart" : {
                "type" : "number",
-               "description" : "Start of DNS resolution in milliseconds (-1 indicates re-used socket)",
-               "minimum" : -1
+               "description" : "Start of DNS resolution in milliseconds (negative value indicates re-used socket)"
               },
               "dnsEnd" : {
                 "type" : "number",
-                "description" : "End of DNS resolution in milliseconds (-1 indicates re-used socket)",
-                "minimum" : -1
+                "description" : "End of DNS resolution in milliseconds (negative value indicates re-used socket)"
               },
               "connectStart" : {
                 "type" : "number",
@@ -673,13 +666,11 @@ public class SpeedtracerSchemas {
               },
               "sslStart" : {
                 "type" : "number",
-                 "description" : "Start of the SSL handshake in milliseconds (-1 indicates no handshake)",
-                 "minimum" : -1
+                 "description" : "Start of the SSL handshake in milliseconds (negative value indicates no handshake)"
               },
               "sslEnd" : {
                  "type" : "number",
-                 "description" : "End of the SSL handshake in milliseconds (-1 indicates no handshake)",
-                 "minimum" : -1
+                 "description" : "End of the SSL handshake in milliseconds (negative value indicates no handshake)"
               },
               "receiveHeadersEnd" : {
                  "type" : "number",
@@ -716,8 +707,7 @@ public class SpeedtracerSchemas {
              },
              "redirectResponse" : {
                "extends" : {"$ref" : "RESPONSE_DATA"},
-               "description" : "Response information for a redirect that led to this request.",
-               "isNull" : {"type" : "boolean", "description" : "This is set to true when there is no redirectResponse.", "optional": true}               
+               "optional" : true
              }
            }
          }
@@ -762,7 +752,7 @@ public class SpeedtracerSchemas {
          "data" : {
            "type" : "object",
            "properties" : {
-             "lengthReceived" : {"type" : "integer", "description" : "Size of payload in bytes"}
+             "dataLength" : {"type" : "integer", "description" : "Size of payload in bytes"}
            }
          }
        }

@@ -19,7 +19,7 @@ import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.coreext.client.JsIntegerMap;
 import com.google.speedtracer.client.model.DataDispatcher.DataDispatcherDelegate;
 import com.google.speedtracer.client.model.DataDispatcher.EventRecordDispatcher;
-import com.google.speedtracer.client.model.InspectorWillSendRequest.RedirectResponse;
+import com.google.speedtracer.client.model.InspectorDidReceiveResponse.Response;
 import com.google.speedtracer.client.model.ResourceUpdateEvent.UpdateResource;
 import com.google.speedtracer.shared.EventRecordType;
 
@@ -210,8 +210,8 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
       // a corresponding timeline agent event that will add it to the redirects
       // map. We look for one here.
       InspectorWillSendRequest.Data data = willSendRequest.getData().cast();
-      RedirectResponse redirectResponse = data.getRedirectResponse();
-      if (!redirectResponse.isNull()) {
+      Response redirectResponse = data.getRedirectResponse();
+      if (redirectResponse != null) {
         // look for a redirect.
         NetworkResource redirect = findAndRemoveRedirectCandidate(
             willSendRequest.getIdentifier(), redirectResponse.getUrl());
