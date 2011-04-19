@@ -27,10 +27,6 @@ public class ResourceResponseEvent extends ResourceRecord {
   protected ResourceResponseEvent() {
   }
 
-  public final int getExpectedContentLength() {
-    return getData().getIntProperty("expectedContentLength");
-  }
-
   public final String getMimeType() {
     return getData().getStringProperty("mimeType");
   }

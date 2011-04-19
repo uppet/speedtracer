@@ -26,12 +26,12 @@ import com.google.gwt.core.client.JavaScriptObject;
 public final class DetailedResponseTiming extends JavaScriptObject {
   /**
    * Does a paranoid computation of duration given a start time and and end
-   * time. If both values are -1, -1 will be returned as that is used by many
+   * time. If both values are < 0, -1 will be returned as that is used by many
    * properties to represent special cases. If either of the values is
    * <code>undefined</code>, 0 will be returned.
    */
   private static native double computeDuration(double start, double end) /*-{
-    var duration = (end == -1) ? -1 : end - start;
+    var duration = (end < 0) ? -1 : end - start;
     return isNaN(duration) ? 0 : duration;
   }-*/;
 

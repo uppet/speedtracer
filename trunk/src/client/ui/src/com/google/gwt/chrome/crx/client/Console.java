@@ -27,7 +27,14 @@ public class Console extends JavaScriptObject {
   /**
    * Write a debug message to the JavaScript console.
    */
-  public final native void log(String logMessage) /*-{
-    this.log(logMessage);
+  public final native void log(String message) /*-{
+    this.log(message);
+  }-*/;
+
+  /**
+   * Write a debug message to the JavaScript console.
+   */
+  public final native void log(JavaScriptObject message) /*-{
+    this.log(message);
   }-*/;
 }

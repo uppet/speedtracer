@@ -77,8 +77,6 @@ public class NetworkResource {
 
   private double endTime = Double.NaN;
 
-  private int expectedContentLength = -1;
-
   // Kept around only because hintlets can be accumulated on it.
   private ResourceFinishEvent finishEvent;
 
@@ -188,10 +186,6 @@ public class NetworkResource {
 
   public double getEndTime() {
     return endTime;
-  }
-
-  public int getExpectedContentLength() {
-    return expectedContentLength;
   }
 
   /**
@@ -374,7 +368,6 @@ public class NetworkResource {
 
   public void update(ResourceResponseEvent responseEvent) {
     this.responseReceivedTime = responseEvent.getTime();
-    this.expectedContentLength = responseEvent.getExpectedContentLength();
     this.mimeType = responseEvent.getMimeType();
     this.statusCode = responseEvent.getStatusCode();
     // Cache the ResourceEvent to later pull hintlets.

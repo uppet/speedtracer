@@ -125,6 +125,7 @@ JSONSchemaValidator = {
 
   function checkProp(value, schema, path,i){
     var l;
+    var origPath = path;
     path += path ? typeof i == 'number' ? '[' + i + ']' : typeof i == 'undefined' ? '' : '.' + i : i;
     function addError(message){
       errors.push({property:path,message:message});
@@ -147,8 +148,10 @@ JSONSchemaValidator = {
     if(_changing && schema.readonly){
       addError("is a readonly field, it can not be changed");
     }
-    if(schema['extends']){ // if it extends another schema, it must pass that schema as well
-      checkProp(value,schema['extends'],path,i);
+    // if it extends another schema, it must pass that schema as well. If there is no value, there
+    // is nothing to check and checks for optional will be done later.
+    if(schema['extends'] && value !== undefined){
+      checkProp(value,schema['extends'],origPath,i);
     }
     // validate a value against a type definition
     function checkType(type,value){
