@@ -86,6 +86,9 @@ public class HeadlessBackgroundPage extends Extension implements
         String dataString = JSON.stringify(event);
         eventRecordData.push(dataString);
       }
+      
+      public void onEventStreamStarted() {
+      }
     }
 
     private final Port port;

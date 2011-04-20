@@ -36,7 +36,10 @@ public class ReportDataCollectorTests extends GWTTestCase {
    */
   private class MockDataDispatcher extends DataDispatcher {
     protected MockDataDispatcher() {
-      super(null);
+      super(null, new DataDispatcher.EventStreamStatusListener() {
+        public void onEventStreamStarted() {
+        }
+      });
       initialize();
     }
 

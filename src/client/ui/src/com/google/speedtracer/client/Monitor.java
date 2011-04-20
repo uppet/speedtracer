@@ -37,11 +37,11 @@ import com.google.speedtracer.client.messages.ResetBaseTimeMessage;
 import com.google.speedtracer.client.model.ApplicationState;
 import com.google.speedtracer.client.model.DataDispatcher;
 import com.google.speedtracer.client.model.DataInstance;
-import com.google.speedtracer.client.model.NoDataNotifier;
 import com.google.speedtracer.client.model.TabChangeDispatcher;
 import com.google.speedtracer.client.model.TabChangeEvent;
 import com.google.speedtracer.client.model.TabDescription;
 import com.google.speedtracer.client.timeline.Constants;
+import com.google.speedtracer.client.util.Command;
 import com.google.speedtracer.client.util.Url;
 import com.google.speedtracer.client.util.dom.LocalStorage;
 import com.google.speedtracer.client.util.dom.WindowExt;
@@ -58,7 +58,7 @@ import java.util.List;
  * EntryPoint class for Speed Tracer's monitor.
  */
 public class Monitor implements EntryPoint, WindowChannel.Listener,
-    TabChangeDispatcher.Listener {
+    TabChangeDispatcher.Listener, DataDispatcher.EventStreamStatusListener {
 
   /**
    * Panel that displays the build info when pressing "V".
@@ -156,6 +156,8 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
 
   static final String CHANNEL_NAME = "launcher";
 
+  private static final int START_EVENT_STREAM_TIMEOUT = 2000;
+
   private static InlineMenu inlineMenu;
 
   private static HoveringPopup popup;
@@ -186,6 +188,10 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
   private DataDispatcher dataDispatcher;
 
   private MonitorVisualizationsPanel monitorVisualizationsPanel;
+  
+  private boolean eventStreamHasStarted;
+
+  private NotificationSlideout notificationSlideout;
 
   /**
    * List of ApplicationStates. One for each page we have monitored.
@@ -253,6 +259,19 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
   public void onChannelConnected(Client channel) {
   }
 
+  public void onEventStreamStarted() {
+    eventStreamHasStarted = true;
+    
+    // This is a special case where we receive notification that the event
+    // stream has started after we start displaying the notification. This does
+    // not seem to happen in practice.
+    if (notificationSlideout != null) {
+      notificationSlideout.hideThenDestroy();
+    }
+    
+    notificationSlideout = null;
+  }
+  
   public void onMessage(Client channel, int type, WindowChannel.Message data) {
     switch (type) {
       case InitializeMonitorMessage.TYPE:
@@ -468,7 +487,7 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     // Create our collection for ApplicationStates.
     pageStates = new ArrayList<ApplicationState>();
     // Create our backing DataDispatcher which provides our event stream.
-    dataDispatcher = DataDispatcher.create(tabDescription, handle);
+    dataDispatcher = DataDispatcher.create(tabDescription, handle, this);
 
     // setup debug logger.
     Logging.getLogger().listenTo(dataDispatcher);
@@ -503,13 +522,9 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
 
     // Attach the notification widget.
     MonitorVisualizationsPanel.Css css = MonitorResources.getResources().monitorVisualizationsPanelCss();
-    NotificationSlideout slideout = NotificationSlideout.create(monitorVisualizationsPanel.getElement());
-    slideout.setTopOffset(css.timelineHeight() + css.borderWidth());
-
-    // Wrap this in an observer that looks for the first bit of data that comes
-    // in.
-    new NoDataNotifier(monitorVisualizationsPanel.getMainTimeLine().getModel(),
-        slideout);
+    notificationSlideout = NotificationSlideout.create(monitorVisualizationsPanel.getElement());
+    notificationSlideout.setTopOffset(css.timelineHeight() + css.borderWidth());
+    showNotificationIfEventStreamDoesNotStart();
   }
 
   private void maybeInitializeSymbolServerController(
@@ -553,5 +568,30 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
 
   private void setApplicationState(ApplicationState state) {
     monitorVisualizationsPanel.setApplicationState(state);
+  }
+
+  private void showNotificationIfEventStreamDoesNotStart() {
+    if (eventStreamHasStarted) {
+      return;
+    }
+
+    Command.defer(new Command.Method() {
+      public void execute() {
+        if (eventStreamHasStarted) {
+          return;
+        }
+
+        String content =
+            "<strong>Pfffttt, Speed Tracer is not working.</strong><br/><br/>"
+                + "Please double check a couple of things:<br/>"
+                + "<ol>"
+                + "<li>You must start Chrome with the flag: --enable-extension-timeline-api</li>"
+                + "<li>You must be running the <a target=\"_blank\" href=\"http://dev.chromium.org/getting-involved/dev-channel#TOC-Subscribing-to-a-channel\">Chrome Dev channel</a>.</li>"
+                + "</ol>" + "For more details, see our <a target='_blank' href='"
+                + Constants.HELP_URL + "'>getting started</a> docs.";
+        notificationSlideout.setContentHtml(content);
+        notificationSlideout.show();
+      }
+    }, START_EVENT_STREAM_TIMEOUT);
   }
 }

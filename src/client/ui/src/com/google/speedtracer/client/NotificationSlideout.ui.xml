@@ -7,23 +7,30 @@
   }
   
   .slideout {
-    font-weight: bold;
+    color: #000;
     margin-left: auto;
     margin-right: auto;
-    width: 300px;
+    width: 500px;
     height: 0;
     border-right: 1px solid #000;
     border-left: 1px solid #000;
     border-bottom: 1px solid #000;    
-    background-color: #fbe78c;
-    text-align: center;
-    \-webkit-box-shadow: 0 5px 5px #888;    
-    \-webkit-border-bottom-left-radius: 5px;
-    \-webkit-border-bottom-right-radius: 5px;
-    \-webkit-transition: height .5s ease-in-out;
+    background-color: rgba(204, 204, 61, 0.9);
+    \-webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.3);    
+    \-webkit-border-bottom-left-radius: 8px;
+    \-webkit-border-bottom-right-radius: 8px;
+    \-webkit-transition: height 200ms ease-in-out;
     overflow: hidden;
   }
   
+  .slideout a {
+    color: #000;
+    text-decoration: underline;
+  }
+
+  .slideout ol {
+    padding: 0 20px;
+  }
   </ui:style>
   <div class='{style.positionRoot}'>
     <div ui:field='borderElem' class='{style.slideout}'>

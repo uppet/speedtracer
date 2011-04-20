@@ -18,13 +18,16 @@ package com.google.speedtracer.client;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.events.client.Event;
+import com.google.gwt.events.client.EventListener;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 
 /**
  * Slide out notification widget to be used for application notifications.
  */
-public class NotificationSlideout {
+public class NotificationSlideout implements EventListener {
   interface MyUiBinder extends UiBinder<DivElement, NotificationSlideout> {
   }
 
@@ -58,10 +61,19 @@ public class NotificationSlideout {
     myElement = uiBinder.createAndBindUi(this);
   }
 
-  public void hide() {
-    borderElem.getStyle().setPropertyPx("height", 0);
+  public void handleEvent(Event event) {
+    myElement.removeFromParent();
   }
 
+  public void hide() {
+    borderElem.getStyle().setHeight(0, Unit.PX);
+  }
+
+  public void hideThenDestroy() {
+    hide();
+    Event.addEventListener("webkitTransitionEnd", borderElem, this);
+  }
+  
   /**
    * Sets the content HTML to be the supplied html string.
    * 
@@ -76,11 +88,12 @@ public class NotificationSlideout {
   }
 
   public void setTopOffset(int offset) {
-    myElement.getStyle().setPropertyPx("top", offset);
+    myElement.getStyle().setTop(offset, Unit.PX);
   }
 
   public void show() {
-    borderElem.getStyle().setPropertyPx("height",
-        contentElem.getOffsetHeight());
+    borderElem.getStyle().setHeight(
+        contentElem.getOffsetHeight(),
+        Unit.PX);
   }
 }
