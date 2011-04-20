@@ -20,9 +20,9 @@ import com.google.gwt.chrome.crx.client.Extension;
 import com.google.gwt.chrome.crx.client.Icon;
 import com.google.gwt.chrome.crx.client.Port;
 import com.google.gwt.chrome.crx.client.Tabs;
-import com.google.gwt.chrome.crx.client.Windows;
 import com.google.gwt.chrome.crx.client.Tabs.OnTabCallback;
 import com.google.gwt.chrome.crx.client.Tabs.Tab;
+import com.google.gwt.chrome.crx.client.Windows;
 import com.google.gwt.chrome.crx.client.Windows.OnWindowCallback;
 import com.google.gwt.chrome.crx.client.Windows.Window;
 import com.google.gwt.chrome.crx.client.events.BrowserActionEvent;
@@ -53,12 +53,13 @@ import com.google.speedtracer.client.messages.ResendProfilingOptions;
 import com.google.speedtracer.client.messages.ResetBaseTimeMessage;
 import com.google.speedtracer.client.model.DataInstance;
 import com.google.speedtracer.client.model.DevToolsDataInstance;
+import com.google.speedtracer.client.model.DevToolsDataInstance.Proxy;
 import com.google.speedtracer.client.model.ExternalExtensionDataInstance;
+import com.google.speedtracer.client.model.ExternalExtensionDataInstance.ConnectRequest;
 import com.google.speedtracer.client.model.LoadFileDataInstance;
 import com.google.speedtracer.client.model.TabDescription;
 import com.google.speedtracer.client.model.VersionedRecordConverter;
-import com.google.speedtracer.client.model.DevToolsDataInstance.Proxy;
-import com.google.speedtracer.client.model.ExternalExtensionDataInstance.ConnectRequest;
+import com.google.speedtracer.client.util.Command;
 import com.google.speedtracer.client.util.dom.WindowExt;
 
 import java.util.HashMap;
@@ -260,8 +261,12 @@ public abstract class BackgroundPage extends Extension {
       // Connect the datainstance to receive data from the data_loader.
       port.getOnMessageEvent().addListener(new MessageEvent.Listener() {
         VersionedRecordConverter converter;
-
+        boolean receivedFirstMessage;
         public void onMessage(MessageEvent.Message message) {
+          if (!receivedFirstMessage) {
+            receivedFirstMessage = true;
+            dataInstance.onTimelineProfilerStarted();
+          }
           EventRecordMessage eventRecordMessage = message.cast();
           if (!getVersion().equals(eventRecordMessage.getVersion())) {
             if (converter == null) {
@@ -286,7 +291,12 @@ public abstract class BackgroundPage extends Extension {
 
       // Connect the DataInstance to receive data from the data_loader
       port.getOnMessageEvent().addListener(new MessageEvent.Listener() {
+        boolean receivedFirstMessage;
         public void onMessage(MessageEvent.Message message) {
+          if (!receivedFirstMessage) {
+            receivedFirstMessage = true;
+            tabModel.dataInstance.onTimelineProfilerStarted();
+          }          
           PageEventMessage pageEventMessage = message.cast();
           // We don't support versioning for RAW data since it would mean
           // maintaining support for multiple Chrome versions. We assume
@@ -303,7 +313,6 @@ public abstract class BackgroundPage extends Extension {
     tabModel.tabDescription = TabDescription.create(tabId,
         port.getTab().getTitle(), port.getTab().getUrl());
     openMonitor(FILE_BROWSER_ID, tabId, tabModel);
-    tabModel.dataInstance.onTimelineProfilerStarted();
   }
 
   /**
