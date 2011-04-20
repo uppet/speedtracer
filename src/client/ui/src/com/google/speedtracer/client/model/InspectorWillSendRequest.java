@@ -49,7 +49,7 @@ public final class InspectorWillSendRequest extends InspectorResourceMessage {
     }
 
     public HeaderMap getHeaders() {
-      return getJSObjectProperty("httpHeaderFields").<HeaderMap>cast();
+      return getJSObjectProperty("headers").<HeaderMap>cast();
     }
   }
 

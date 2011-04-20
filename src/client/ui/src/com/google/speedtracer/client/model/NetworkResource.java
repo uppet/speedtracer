@@ -435,11 +435,6 @@ public class NetworkResource {
     this.connectionID = response.getConnectionID();
     this.connectionReused = response.getConnectionReused();
 
-    if (this.statusCode < 0) {
-      this.statusCode = response.getHttpStatusCode();
-      this.statusText = response.getHttpStatusText();
-    }
-
     DetailedResponseTiming detailedTiming = response.getDetailedTiming();
     if (detailedTiming != null) {
       this.hasDetailedTiming = true;

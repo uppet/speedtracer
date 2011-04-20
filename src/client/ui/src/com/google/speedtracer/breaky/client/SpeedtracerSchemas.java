@@ -597,25 +597,12 @@ public class SpeedtracerSchemas {
            "description" : "Socket reused from a previous connection",           
            "optional" : true
          },
-         "wasCached" : {
+         "fromDiskCache" : {
            "type" : "boolean",
            "description" : "True if the request was received from cache",           
            "optional" : true
          },
-         "httpStatusCode" : {
-           "type" : "integer",
-           "description" : "HTTP Status Code",
-           "minimum" : 0,
-           "maximum" : 599,           
-           "optional" : true
-         },
-         "httpStatusText" : {
-           "type" : "string",
-           "description" : "The human readable version of the statusCode",
-           "requires" : "httpStatusCode",
-           "optional" : true
-         },
-         "httpHeaderFields" : {"type" : "object", "description" : "Request Headers", "optional" : true},
+         "headers" : {"type" : "object", "description" : "Request Headers", "optional" : true},
          "timing" : {
            "type" : "object",
            "description" : "Detailed resource loader network timing info",
