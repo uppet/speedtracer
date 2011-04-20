@@ -55,15 +55,7 @@ public class InspectorDidReceiveResponse extends InspectorResourceMessage {
     }
 
     public final HeaderMap getHeaders() {
-      return getJSObjectProperty("httpHeaderFields").<HeaderMap>cast();
-    }
-
-    public final int getHttpStatusCode() {
-      return getIntProperty("httpStatusCode");
-    }
-
-    public final String getHttpStatusText() {
-      return getStringProperty("httpStatusText");
+      return getJSObjectProperty("headers").<HeaderMap>cast();
     }
 
     public final String getUrl() {
@@ -71,7 +63,7 @@ public class InspectorDidReceiveResponse extends InspectorResourceMessage {
     }
 
     public final boolean wasCached() {
-      return getBooleanProperty("wasCached");
+      return getBooleanProperty("fromDiskCache");
     }
   }
 

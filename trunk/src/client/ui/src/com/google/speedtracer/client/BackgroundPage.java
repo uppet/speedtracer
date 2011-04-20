@@ -59,7 +59,6 @@ import com.google.speedtracer.client.model.ExternalExtensionDataInstance.Connect
 import com.google.speedtracer.client.model.LoadFileDataInstance;
 import com.google.speedtracer.client.model.TabDescription;
 import com.google.speedtracer.client.model.VersionedRecordConverter;
-import com.google.speedtracer.client.util.Command;
 import com.google.speedtracer.client.util.dom.WindowExt;
 
 import java.util.HashMap;
