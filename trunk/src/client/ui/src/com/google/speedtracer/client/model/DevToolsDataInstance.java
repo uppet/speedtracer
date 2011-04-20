@@ -281,6 +281,7 @@ public class DevToolsDataInstance extends DataInstance {
       onInspectorMessage(EventRecordType.INSPECTOR_DID_RECEIVE_CONTENT_LENGTH, data);
     }
 
+    @SuppressWarnings("unused")
     private void onTimelineProfilerStarted() {
       dataInstance.onTimelineProfilerStarted();
     }
