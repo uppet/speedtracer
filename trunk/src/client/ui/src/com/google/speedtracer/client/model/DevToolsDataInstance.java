@@ -281,6 +281,10 @@ public class DevToolsDataInstance extends DataInstance {
       onInspectorMessage(EventRecordType.INSPECTOR_DID_RECEIVE_CONTENT_LENGTH, data);
     }
 
+    private void onTimelineProfilerStarted() {
+      dataInstance.onTimelineProfilerStarted();
+    }
+
     private void onTimelineRecord(UnNormalizedEventRecord record) {
       assert (dataInstance != null) : "Someone called invoke that wasn't our connect call!";
 
@@ -388,6 +392,10 @@ public class DevToolsDataInstance extends DataInstance {
         delegate.
           @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onTimelineRecord(Lcom/google/speedtracer/client/model/UnNormalizedEventRecord;)
           (body.record);
+      };
+      dispatcher['Timeline.started'] = function(body) {
+        delegate.
+          @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onTimelineProfilerStarted()();
       };
 
       // Network resource events.

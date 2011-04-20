@@ -303,6 +303,7 @@ public abstract class BackgroundPage extends Extension {
     tabModel.tabDescription = TabDescription.create(tabId,
         port.getTab().getTitle(), port.getTab().getUrl());
     openMonitor(FILE_BROWSER_ID, tabId, tabModel);
+    tabModel.dataInstance.onTimelineProfilerStarted();
   }
 
   /**

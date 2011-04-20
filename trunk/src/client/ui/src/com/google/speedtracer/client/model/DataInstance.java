@@ -51,6 +51,8 @@ public class DataInstance extends JavaScriptObject {
    */
   public interface DataListener {
     void onEventRecord(EventRecord event);
+    
+    void onEventStreamStarted();
   }
 
   /**
@@ -125,6 +127,10 @@ public class DataInstance extends JavaScriptObject {
       onEventRecordString: function(sequence, recordString) {
         var data = JSON.parse(recordString);
         model.@com.google.speedtracer.client.model.DataInstance$DataListener::onEventRecord(Lcom/google/speedtracer/client/model/EventRecord;)(data);
+      },
+      
+      onEventStreamStarted: function() {
+        model.@com.google.speedtracer.client.model.DataInstance$DataListener::onEventStreamStarted()();
       }
     };
     this.Load(callback);
@@ -138,6 +144,10 @@ public class DataInstance extends JavaScriptObject {
    */
   public final native void onEventRecord(EventRecord record) /*-{
     this._callback.onEventRecord(record);
+  }-*/;
+
+  public final native void onTimelineProfilerStarted() /*-{
+    this._callback.onEventStreamStarted();
   }-*/;
 
   public final native void resumeMonitoring() /*-{

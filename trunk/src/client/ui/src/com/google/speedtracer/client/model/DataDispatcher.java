@@ -48,6 +48,13 @@ public class DataDispatcher implements HintletInterface.HintListener,
   }
 
   /**
+   * Allows clients to confirm that the event stream did actually start.
+   */
+  public interface EventStreamStatusListener {
+    void onEventStreamStarted();
+  }
+
+  /**
    * Creates a {@link DataDispatcher} based on an opaque handle.
    * 
    * @param tabDescription info about the tab represented by this model
@@ -55,8 +62,8 @@ public class DataDispatcher implements HintletInterface.HintListener,
    * @return a model
    */
   public static DataDispatcher create(TabDescription tabDescription,
-      DataInstance dataInstance) {
-    final DataDispatcher dispatcher = new DataDispatcher(dataInstance);
+      DataInstance dataInstance, EventStreamStatusListener eventStreamStatusListener) {
+    final DataDispatcher dispatcher = new DataDispatcher(dataInstance, eventStreamStatusListener);
     dataInstance.load(dispatcher);
     dispatcher.setTabDescription(tabDescription);
     dispatcher.initialize();
@@ -89,12 +96,16 @@ public class DataDispatcher implements HintletInterface.HintListener,
 
   private final UiEventDispatcher uiEventDispatcher;
 
-  protected DataDispatcher(DataInstance dataInstance) {
+  private final EventStreamStatusListener eventStreamStatusListener;
+
+  protected DataDispatcher(DataInstance dataInstance,
+      EventStreamStatusListener eventStreamStatusListener) {
     this.dataInstance = dataInstance;
     this.networkEventDispatcher = new NetworkEventDispatcher();
     this.uiEventDispatcher = new UiEventDispatcher();
     this.tabChangeDispatcher = new TabChangeDispatcher();
     this.profileModel = new JavaScriptProfileModel(this);
+    this.eventStreamStatusListener = eventStreamStatusListener;
   }
 
   /**
@@ -232,6 +243,10 @@ public class DataDispatcher implements HintletInterface.HintListener,
     traceDataCopy.push(JSON.stringify(record));
     eventRecords.add(record);
     fireOnEventRecord(record);
+  }
+
+  public void onEventStreamStarted() {
+    eventStreamStatusListener.onEventStreamStarted();
   }
 
   public void onHint(HintRecord hintlet) {
