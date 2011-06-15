@@ -5,10 +5,7 @@
 This page describes how to build your own copy of Speed Tracer.
 
 ==Prerequisites==
-
-First, grab and install the <a href="http://www.chromium.org/developers/how-tos/install-gclient">Chromium Depot Tools</a>.  These contain 'gclient' and a copy of subversion needed to bootstrap your build environment.
-
-In addition, you'll need 
+You're going to need the following things:
  * An installation of [http://ant.apache.org/ ant].
  * A [http://www.oracle.com/technetwork/java/javase/downloads/index.html Java Runtime Environment (JRE)] (version >= 1.6)
 
@@ -21,36 +18,43 @@ $ mkdir speedtracer
 }}}
 Create a root directory to hold the project source and all dependencies.  Note: Do not create this directory on a path that contains a space.
 
+
 {{{
 $ cd speedtracer
 }}}
 You can probably figure out what this one does.
 
+
 {{{
 $ svn co http://src.chromium.org/svn/trunk/tools/depot_tools
 }}}
+This gets a copy of [http://www.chromium.org/developers/how-tos/depottools Chrome Depot Tools] which is used to automatically fetch dependencies.
+
 
 {{{
 $ depot_tools/gclient config http://speedtracer.googlecode.com/svn/trunk/src
 }}}
-If you are a project member and want to commit changes, edit the above command line or the resulting '.gclient' file and modify the URL to read 'https://'.
+If you are a committer, you should use the url *https*://speedtracer.googlecode.com/svn/trunk/src.
+
 
 {{{
-$ gclient sync
+$ depot_tools/gclient sync
 }}}
-This step pulls in Speed Tracer and its dependencies.  If you run into problems on Windows, you might want to run this from a regular command window instead of  a Cygwin bash shell.
+This step pulls in Speed Tracer source and its dependencies.
+
 
 {{{
 $ cd src/
 $ ant
 }}}
-This will build everything you need.  By default, ant is configured to create a release build and a .crx file will be created in the src/Release directory.
+This will build everything you need.  By default, ant is configured to create a release build and a .crx file will be created in the `src/Release` directory.
 
-To build a Debug build, all you need to do is set the 'config' property in Ant:
+To build a Debug build, all you need to do is set the `config` property in Ant:
 
 {{{
   ant -Dconfig=Debug
 }}}
+
 
 ==Debugging the UI==
 
