@@ -27,7 +27,11 @@ $ cd speedtracer
 You can probably figure out what this one does.
 
 {{{
-$ gclient config http://speedtracer.googlecode.com/svn/trunk/src
+$ svn co http://src.chromium.org/svn/trunk/tools/depot_tools
+}}}
+
+{{{
+$ depot_tools/gclient config http://speedtracer.googlecode.com/svn/trunk/src
 }}}
 If you are a project member and want to commit changes, edit the above command line or the resulting '.gclient' file and modify the URL to read 'https://'.
 
