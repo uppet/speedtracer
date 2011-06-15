@@ -10,7 +10,7 @@ First, grab and install the <a href="http://www.chromium.org/developers/how-tos/
 
 In addition, you'll need 
  * An installation of [http://ant.apache.org/ ant].
- * The [http://java.sun.com Java Runtime Environment (JRE)] (version >= 1.5)
+ * The [http://java.sun.com Java Runtime Environment (JRE)] (version >= 1.6)
 
 Finally, if you are building on Microsoft Windows, make sure you have [http://cygwin.com/ cygwin] installed with the subversion package to perform the steps below as written.
 
