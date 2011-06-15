@@ -10,19 +10,19 @@ First, grab and install the <a href="http://www.chromium.org/developers/how-tos/
 
 In addition, you'll need 
  * An installation of [http://ant.apache.org/ ant].
- * The [http://java.sun.com Java Runtime Environment (JRE)] (version >= 1.6)
+ * A [http://www.oracle.com/technetwork/java/javase/downloads/index.html Java Runtime Environment (JRE)] (version >= 1.6)
 
 Finally, if you are building on Microsoft Windows, make sure you have [http://cygwin.com/ cygwin] installed with the subversion package to perform the steps below as written.
 
 ==Building Speed Tracer for the first time==
 
 {{{
-$ mkdir speedtracer-client
+$ mkdir speedtracer
 }}}
 Create a root directory to hold the project source and all dependencies.  Note: Do not create this directory on a path that contains a space.
 
 {{{
-$ cd speedtracer-client
+$ cd speedtracer
 }}}
 You can probably figure out what this one does.
 
