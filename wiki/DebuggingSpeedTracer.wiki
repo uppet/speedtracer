@@ -1,0 +1,10 @@
+#summary Debugging Speed Tracer
+
+This page describes some strategies for debugging the Speed Tracer UI.
+
+= Debugging the UI in "Mock Mode" =
+
+Add your content here.
+
+
+= Stuff =
