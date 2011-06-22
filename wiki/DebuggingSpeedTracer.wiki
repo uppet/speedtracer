@@ -15,7 +15,7 @@ In this part we'll assume that you have checked out Speed Tracer at `~/src/speed
 1. In Eclipse, select `File > Import...`
 
 2. Select *Existing Projects into Workspace* then press *`Next`*
-[debug-a.png]
+http://speedtracer.googlecode.com/svn/wiki/debug-a.png
 
 3. Select root directory and Browse to `~/src/speedtracer/src`. There are 3 projects and they should all be checked. Hit *Finish*
    # speedtracer-api - Some APIs that we moved to a separate project.
