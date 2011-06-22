@@ -2,6 +2,12 @@
 
 This page describes some strategies for debugging the Speed Tracer UI.
 
+= Setting up Eclipse =
+
+== Prerequisites ==
+ * [Eclipse 3.6 http://wiki.eclipse.org/Older_Versions_Of_Eclipse]
+ * [Google Plugin for Eclipse http://code.google.com/eclipse/docs/getting_started.html]
+
 = Debugging the UI in "Mock Mode" =
 
 Add your content here.
