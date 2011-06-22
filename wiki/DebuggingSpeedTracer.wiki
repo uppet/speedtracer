@@ -7,6 +7,24 @@ This page describes some strategies for debugging the Speed Tracer UI.
 == Prerequisites ==
  * [http://wiki.eclipse.org/Older_Versions_Of_Eclipse Eclipse 3.6]
  * [http://code.google.com/eclipse/docs/getting_started.html Google Plugin for Eclipse]
+ * [BuildingSpeedTracer Get the Speed Tracer code]
+
+== Import the Projects ==
+In this part we'll assume that you have checked out Speed Tracer at `~/src/speedtracer`.
+
+1. In Eclipse, select `File > Import...`
+
+2. Select *Existing Projects into Workspace* then press *`Next`*
+[Image]
+
+3. Select root directory and Browse to `~/src/speedtracer/src`. There are 3 projects and they should all be checked. Hit *Finish*
+   # speedtracer-api - Some APIs that we moved to a separate project.
+   # speedtracer-stools - Some tools needed as part of the build.
+   # speedtracer-ui - The code for the Speed Tracer client.
+[Image]
+
+4. 
+
 
 = Debugging the UI in "Mock Mode" =
 
