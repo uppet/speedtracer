@@ -12,19 +12,24 @@ This page describes some strategies for debugging the Speed Tracer UI.
 == Import the Projects ==
 In this part we'll assume that you have checked out Speed Tracer at `~/src/speedtracer`.
 
-1. In Eclipse, select `File > Import...`
+1. In Eclipse, we first need to setup a GWT SDK for the Speed Tracer project. Go to *Eclipse > Preferences...* (Mac) or *Window > Settings*. Then navigate to *Google > Google Web Toolkit*.
+http://speedtracer.googlecode.com/svn/wiki/images/debug-sdk-a.png
 
-2. Select *Existing Projects into Workspace* then press *`Next`*
-http://speedtracer.googlecode.com/svn/wiki/debug-a.png
+2. Choose *Add*. Browse to `~/src/speedtracer/src/third_party/gwt` for your "Installation Directory" and use `SPEEDTRACER` for your "Display name".
+http://speedtracer.googlecode.com/svn/wiki/images/debug-sdk-b.png
 
-3. Select root directory and Browse to `~/src/speedtracer/src`. There are 3 projects and they should all be checked. Hit *Finish*
+3. We now need to import the projects, select `File > Import...`
+
+4. Select *Existing Projects into Workspace* then press *`Next`*
+http://speedtracer.googlecode.com/svn/wiki/images/debug-import-a.png
+
+5. Select root directory and Browse to `~/src/speedtracer/src`. There are 3 projects and they should all be checked. Hit *Finish*
    # speedtracer-api - Some APIs that we moved to a separate project.
    # speedtracer-stools - Some tools needed as part of the build.
    # speedtracer-ui - The code for the Speed Tracer client.
-[Image]
+http://speedtracer.googlecode.com/svn/wiki/images/debug-import-b.png
 
-4. 
-
+6. You should now have all the Speed Tracer source available to you in Eclipse without any reported errors.
 
 = Debugging the UI in "Mock Mode" =
 
