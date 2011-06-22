@@ -27,9 +27,9 @@ http://speedtracer.googlecode.com/svn/wiki/images/debug-sdk-b.png
 http://speedtracer.googlecode.com/svn/wiki/images/debug-import-a.png
 
 5. Select root directory and Browse to *`~/src/speedtracer/src`*. There are 3 projects and they should all be checked. Hit *Finish*
- _speedtracer-api_ - Some APIs that we moved to a separate project.
- _speedtracer-stools_ - Some tools needed as part of the build.
- _speedtracer-ui_ - The code for the Speed Tracer client.
+ * _speedtracer-api_ - Some APIs that we moved to a separate project.
+ * _speedtracer-stools_ - Some tools needed as part of the build.
+ * _speedtracer-ui_ - The code for the Speed Tracer client.
 
 http://speedtracer.googlecode.com/svn/wiki/images/debug-import-b.png
 
