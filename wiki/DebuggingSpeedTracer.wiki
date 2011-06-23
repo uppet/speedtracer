@@ -35,9 +35,29 @@ http://speedtracer.googlecode.com/svn/wiki/images/debug-import-b.png
 
 6. You should now have all the Speed Tracer source available to you in Eclipse without any reported errors.
 
+
 = Debugging the UI in "Mock Mode" =
 
-Add your content here.
+1. We need to create a new Debug Configuration. Select from the menu *Run > Debug Configurations...*.
+
+2. Click on the *Web Application* item, then click the "New" button. http://speedtracer.googlecode.com/svn/wiki/images/debug-mock-new.png
+
+3. In the *Main* tab, fill in the following values:
+
+http://speedtracer.googlecode.com/svn/wiki/images/debug-mock-a.png
+
+4. Then in the *GWT* tab, remove all the "Available Modules" except for *MonitorDebug*
+
+http://speedtracer.googlecode.com/svn/wiki/images/debug-mock-b.png
+
+5. Click on *Debug* and the debugger will startup and way for your browser to connect. Using either Safari or Chrome (Safari works best on Mac since
+DevMode is faster), navigate to the following URL: [http://127.0.0.1:8888/monitor.html?gwt.codesvr=127.0.0.1:9997&mock=true].
+
+6. The Speed Tracer UI should load with no data. You can use one of several mock data sets for debugging. To select one, just choose one from the "Bug" menu.
+
+http://speedtracer.googlecode.com/svn/wiki/images/debug-mock-bug.png
+
+7. The Java debugger is active, so you can set breakpoints in the Java code.
 
 
-= Stuff =
+= Testing in Chrome =
