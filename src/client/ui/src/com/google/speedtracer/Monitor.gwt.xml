@@ -5,6 +5,4 @@
   <inherits name='com.google.gwt.xhr.XMLHttpRequest' />
   <entry-point class="com.google.speedtracer.client.Monitor" />
   <public path="monitor/public" />
-  <!-- TODO(knorton): Moving away from the iframe linker as it no longer works in chrome extensions. -->
-  <add-linker name="xs"/>
 </module>
