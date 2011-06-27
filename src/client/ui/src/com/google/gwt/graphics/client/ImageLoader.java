@@ -51,7 +51,7 @@ public class ImageLoader {
   public static void loadImages(String[] urls, CallBack cb) {
     ImageLoader il = new ImageLoader();
     for (int i = 0;i < urls.length;i++) {
-      il.addHandle(il.loadImage(urls[0]));
+      il.addHandle(il.loadImage(urls[i]));
     }
     il.finalize(cb);
     ImageLoader.imageLoaders.add(il);
