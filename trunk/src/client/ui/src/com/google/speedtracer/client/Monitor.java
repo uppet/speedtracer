@@ -571,7 +571,7 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
   }
 
   private void showNotificationIfEventStreamDoesNotStart() {
-    if (eventStreamHasStarted) {
+    if (eventStreamHasStarted || ClientConfig.isDebugMode()) {
       return;
     }
 
