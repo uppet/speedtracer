@@ -41,9 +41,6 @@ public class MockModelGenerator {
 
     @Source("resources/server-side-traces")
     TextResource serverSideTraces();
-    
-    @Source("resources/digg2")
-    TextResource digg2();
   }
 
   private static class DataSet {
@@ -109,7 +106,6 @@ public class MockModelGenerator {
       dataSets.add(new DataSet("markTimeline", mockResources.markTimeline()));
       dataSets.add(new DataSet("Server Side Traces",
           mockResources.serverSideTraces()));
-      dataSets.add(new DataSet("digg2", mockResources.digg2()));
     }
   }
 }
