@@ -81,9 +81,9 @@ public class StackFrameRenderer implements Resymbolizeable {
     assert (myElem == null) : "Render called twice for StackFrameRenderer!";
 
     myElem = parentElem.getOwnerDocument().createDivElement();
-    Document document = myElem.getOwnerDocument();
-
-    final Url resource = new Url(stackFrame.getScriptName());
+    Document document = myElem.getOwnerDocument();  
+    
+    final Url resource = new Url(stackFrame.getUrl());
     String resourceName = resource.getLastPathComponent();
     resourceName = ("".equals(resourceName)) ? resource.getPath()
         : resourceName;

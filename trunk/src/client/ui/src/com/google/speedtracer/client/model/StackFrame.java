@@ -22,10 +22,10 @@ import com.google.gwt.core.client.JavaScriptObject;
  * {@link UiEvent}.
  */
 public class StackFrame extends JavaScriptObject {
-  public static native StackFrame create(String scriptName,
+  public static native StackFrame create(String url,
       String functionName, int line, int column) /*-{
     return {
-      scriptName: scriptName,
+      url: url,
       functionName: functionName,
       lineNumber: line,
       column: column
@@ -47,7 +47,7 @@ public class StackFrame extends JavaScriptObject {
     return this.lineNumber || 0;
   }-*/;
 
-  public final native String getScriptName()/*-{
-    return this.scriptName;
+  public final native String getUrl()/*-{
+      return this.url;
   }-*/;
 }
