@@ -70,7 +70,27 @@ public class SpeedtracerSchemas {
          "stackTrace" : {
             "type" : "array",
             "description" : "Array of JavaScript stack frame objects.",
-            "optional" : true
+            "optional" : true,
+            "items" : {
+              "title" : "Stack frame object",
+              "type" : "object",
+                "properties" : {
+                  "url" : {
+                    "type" : "string",
+                  },
+                  "functionName" : {
+                    "type" : "string",
+                  },
+                  "lineNumber" : {
+                    "type" : "integer",
+                  },
+                  "columnNumber" : {
+                    "type" : "integer",
+                    "optional" : true,
+                  }
+              },
+             "minItems" : 1,
+            }            
          },
          "usedHeapSize" : {
            "type" : "integer",
