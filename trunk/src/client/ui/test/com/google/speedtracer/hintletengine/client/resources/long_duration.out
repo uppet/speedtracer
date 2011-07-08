@@ -1,0 +1,2 @@
+{"hintletRule":"Long Duration Events","timestamp":2,"description":"Event lasted: 501ms.  Exceeded threshold: 100ms","refRecord":2,"severity":3}
+{"hintletRule":"Long Duration Events","timestamp":3,"description":"Event lasted: 3000ms.  Exceeded threshold: 2000ms","refRecord":3,"severity":2}
