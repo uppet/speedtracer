@@ -55,4 +55,11 @@ public final class InspectorWillSendRequest extends InspectorResourceMessage {
 
   protected InspectorWillSendRequest() {
   }
+  
+  /** Get the URL that was redirected to this resource, if there was a redirect
+   * @return the original URL, or null if no redirect occurred
+   */
+  public String getRedirectUrl() {
+    return getData().getStringProperty("documentURL");
+  }
 }

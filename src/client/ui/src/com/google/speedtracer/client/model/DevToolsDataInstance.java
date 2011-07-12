@@ -105,8 +105,6 @@ public class DevToolsDataInstance extends DataInstance {
 
     private double baseTime;
 
-    private ResourceWillSendEvent currentPage;
-
     private DevToolsDataInstance dataInstance;
 
     private final Dispatcher dispatcher;
@@ -121,12 +119,15 @@ public class DevToolsDataInstance extends DataInstance {
 
     private final TypeTranslationVisitor typeTranslationVistior = new TypeTranslationVisitor();
 
-    private boolean nextResourceIsMain;
+    private boolean nextNavigationIsMain;
+    
+    private double lastStartTime;
 
     public Proxy(int tabId) {
       this.baseTime = -1;
       this.tabId = tabId;
       this.dispatcher = Dispatcher.create(this);
+      lastStartTime = -1;
     }
 
     public final void dispatchPageEvent(PageEvent event) {
@@ -216,7 +217,6 @@ public class DevToolsDataInstance extends DataInstance {
       if (record.getTime() < 0) {
         return;
       }
-
       dataInstance.onEventRecord(record);
     }
 
@@ -264,7 +264,30 @@ public class DevToolsDataInstance extends DataInstance {
 
     @SuppressWarnings("unused")
     private void onFrontendReused() {
-      nextResourceIsMain = true;
+      // this was previously used to indicate page transition
+    }
+    
+    @SuppressWarnings("unused")
+    private void onProfilerResetProfiles(JavaScriptObject body) {
+    }
+    
+    @SuppressWarnings("unused")
+    private void onInspectorReset(JavaScriptObject body) {
+      nextNavigationIsMain = true;
+    }
+    
+    @SuppressWarnings("unused")
+    private void onPageFrameNavigated(JavaScriptObject body) {
+      // Page.frameNavigated events occur when there is a page transition,
+      // but at other times as well. If we have seen indication for a clicked 
+      // transition, process as a page transition. Since the main resource 
+      // occurred before this event, use the last resource's time as the 
+      // start time.
+      if(nextNavigationIsMain) {
+        nextNavigationIsMain = false;
+        FrameNavigation navigation = body.cast();
+        normalizeAndDispatchEventRecord(TabChangeEvent.createUnNormalized(lastStartTime, navigation.getUrl()));
+      }
     }
 
     private void onInspectorMessage(int messageType, InspectorResourceMessage.Data data) {
@@ -286,50 +309,41 @@ public class DevToolsDataInstance extends DataInstance {
       dataInstance.onTimelineProfilerStarted();
     }
 
+    @SuppressWarnings("unused")
     private void onTimelineRecord(UnNormalizedEventRecord record) {
       assert (dataInstance != null) : "Someone called invoke that wasn't our connect call!";
-
+      
+      // When this visitor is applied, the appropriate speed tracer type
+      // is set. An issue occurs if a record comes through and is pushed
+      // onto pending and then sent back to onTimelineRecord. Therefore,
+      // any saved records should be sent directly to sendRecord()
       record.<UiEvent> cast().apply(typeTranslationVistior);
-      int type = record.getType();
-
-      switch (type) {
-        case ResourceWillSendEvent.TYPE:
-          // We do not want to immediately assume that a resource start is
-          // eligible to establish the base time.
-          // If the start actually happened as a child of some event trace, then
-          // using this to establish base time could lead to negative times for
-          // events since all network resource events are short circuited.
-          // We buffer it for now and wait for an event that is not a Resource
-          // Start to make the decision as to what should be the base time.
-          if (getBaseTime() < 0) {
-            pendingRecords.push(record);
-            return;
-          }
-
-          // Maybe synthesize a page transition.
-          ResourceWillSendEvent start = record.cast();
-          // Dispatch a Page Transition if this is a main resource and we are
-          // not part of a redirect.
-          if (nextResourceIsMain) {
-            nextResourceIsMain = false;
-            // For redirects, IDs get recycled. We do not want to double page
-            // transition for a single main page redirect.
-            if ((currentPage == null) || (currentPage.getIdentifier() != start.getIdentifier())) {
-              // We synthesize the page transition if currentPage is not set, or
-              // the IDs dont match.
-              currentPage = start;
-              normalizeAndDispatchEventRecord(TabChangeEvent.createUnNormalized(record
-                  .getStartTime(), start.getUrl()));
-            }
-          }
-
-          break;
-        case ResourceResponseEvent.TYPE:
-          // For pages with no redirect, we want to ensure that the next page
-          // transition goes off.
-          currentPage = null;
-          break;
+      
+      if(record.getType() == ResourceWillSendEvent.TYPE) {
+        // We do not want to immediately assume that a resource start is
+        // eligible to establish the base time.
+        // If the start actually happened as a child of some event trace, then
+        // using this to establish base time could lead to negative times for
+        // events since all network resource events are short circuited.
+        // We buffer it for now and wait for an event that is not a Resource
+        // Start to make the decision as to what should be the base time.
+        if (getBaseTime() < 0) {
+          pendingRecords.push(record);
+          return;
+        }
       }
+
+      sendRecord(record);
+    }
+    
+    /**
+     * Processes event records. 
+     * Page transition events are processesd
+     * @param record
+     */
+    private void sendRecord(UnNormalizedEventRecord record) {
+      lastStartTime = record.getStartTime();
+      
       // Normalize and send to the dataInstance.
       normalizeAndDispatchEventRecord(record);
     }
@@ -346,7 +360,6 @@ public class DevToolsDataInstance extends DataInstance {
      */
     private void sendPendingRecordsAndSetBaseTime(UnNormalizedEventRecord triggerRecord) {
       assert (getBaseTime() < 0) : "Emptying record buffer after establishing a base time.";
-
       double baseTimeStamp = triggerRecord.getStartTime();
       if (pendingRecords.size() > 0) {
         // Normalize base time using either the event that triggered the check,
@@ -363,12 +376,31 @@ public class DevToolsDataInstance extends DataInstance {
       // Starts since they did come in first, and they in fact still need to
       // go through normalization and through the page transition logic.
       for (int i = 0, n = pendingRecords.size(); i < n; i++) {
-        onTimelineRecord(pendingRecords.get(i));
+        sendRecord(pendingRecords.get(i));
       }
 
       // Nuke the pending records list.
       pendingRecords = JSOArray.create();
     }
+  }
+  
+  /**
+   * Represents a Page.frameNavigation event
+   * #TODO (sarahgsmith) consider sending this event with an isTabChange 
+   * flag instead of using TabChangeEvent
+   */
+  private final static class FrameNavigation extends JavaScriptObject {
+    
+    protected FrameNavigation() {}
+    
+    public native String getUrl() /*-{
+      return this.url;
+    }-*/;
+    
+    public native String getId() /*-{
+      return this.id;
+    }-*/;
+    
   }
 
   /**
@@ -381,13 +413,26 @@ public class DevToolsDataInstance extends DataInstance {
      */
     static native Dispatcher create(Proxy delegate) /*-{
       var dispatcher = {};
-
-      // Used to indicate a page transition.
+      
+      dispatcher['Profiler.resetProfiles'] = function(body) {
+        delegate.
+          @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onProfilerResetProfiles(Lcom/google/gwt/core/client/JavaScriptObject;)
+          (body);              
+      };
+      dispatcher['Inspector.reset'] = function(body) {
+        delegate.
+          @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onInspectorReset(Lcom/google/gwt/core/client/JavaScriptObject;)
+          (body);        
+      };
+      dispatcher['Page.frameNavigated'] = function(body) {
+        delegate.
+          @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onPageFrameNavigated(Lcom/google/gwt/core/client/JavaScriptObject;)
+          (body.frame);
+      };
       dispatcher['Inspector.frontendReused'] = function(body) {
         delegate.
-          @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onFrontendReused()();        
-      };
-
+          @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onFrontendReused()();
+      };      
       // Events generated by the Timeline profiler.
       dispatcher['Timeline.eventRecorded'] = function(body) {
         delegate.
@@ -397,8 +442,7 @@ public class DevToolsDataInstance extends DataInstance {
       dispatcher['Timeline.started'] = function(body) {
         delegate.
           @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onTimelineProfilerStarted()();
-      };
-
+      };      
       // Network resource events.
       dispatcher['Network.requestWillBeSent'] = function(body) {
         delegate.
