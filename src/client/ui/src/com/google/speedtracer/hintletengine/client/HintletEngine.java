@@ -15,17 +15,66 @@
  */
 package com.google.speedtracer.hintletengine.client;
 
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.coreext.client.JSON;
 import com.google.gwt.webworker.client.DedicatedWorkerEntryPoint;
+import com.google.gwt.webworker.client.MessageEvent;
+import com.google.gwt.webworker.client.MessageHandler;
+import com.google.speedtracer.client.model.HintRecord;
+import com.google.speedtracer.hintletengine.client.rules.HintletFrequentLayout;
+import com.google.speedtracer.hintletengine.client.rules.HintletLongDuration;
+import com.google.speedtracer.hintletengine.client.rules.HintletRule;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The entrypoint for the HintletEngine that runs in a worker thread.
  */
-public class HintletEngine extends DedicatedWorkerEntryPoint {
+public class HintletEngine extends DedicatedWorkerEntryPoint implements MessageHandler {
+
+  private class OnHintCallback implements HintletOnHintListener {
+
+    /**
+     * Sends a hint record (as JSON) to the user interface
+     */
+    public void onHint(String hintletRule, double timestamp, String description, int refRecord,
+        int severity) {
+      JavaScriptObject value =
+          HintRecord.create(hintletRule, timestamp, severity, description, refRecord);
+      postMessage(JSON.stringify(createHintMessage(value)));
+    }
+
+    private native JavaScriptObject createHintMessage(JavaScriptObject value) /*-{
+      return {
+          type : 2,
+          payload : value
+      };
+    }-*/;
+  }
+
+  private HintletEventRecordProcessor eventRecordProcessor;
 
   @Override
   public void onWorkerLoad() {
-    // TODO(zundel): rewrite hintlet_main.js and hintlet_api.js with GWT.
-    // For now lets just run hintlet_main.js.
-    getGlobalScope().importScript("hintlet_main.js");
+    setOnMessage(this);
+  }
+
+  private List<HintletRule> getAllRules() {
+    //all rules share the same callback
+    OnHintCallback onHintCallback = new OnHintCallback();
+    
+    List<HintletRule> rules = new ArrayList<HintletRule>();
+    rules.add(new HintletFrequentLayout(onHintCallback));
+    rules.add(new HintletLongDuration(onHintCallback));
+    return rules;
+  }
+
+  public void onMessage(MessageEvent event) {
+    if (eventRecordProcessor == null) {
+      eventRecordProcessor = new HintletEventRecordProcessor(getAllRules());
+    }
+    JavaScriptObject record = JSON.parse(event.getDataAsString());
+    eventRecordProcessor.onEventRecord(record);
   }
 }
