@@ -37,6 +37,9 @@ import com.google.speedtracer.client.messages.ResetBaseTimeMessage;
 import com.google.speedtracer.client.model.ApplicationState;
 import com.google.speedtracer.client.model.DataDispatcher;
 import com.google.speedtracer.client.model.DataInstance;
+import com.google.speedtracer.client.model.EventRecord;
+import com.google.speedtracer.client.model.InspectorWillSendRequest;
+import com.google.speedtracer.client.model.ResourceWillSendEvent;
 import com.google.speedtracer.client.model.TabChangeDispatcher;
 import com.google.speedtracer.client.model.TabChangeEvent;
 import com.google.speedtracer.client.model.TabDescription;
@@ -50,6 +53,7 @@ import com.google.speedtracer.client.view.HotKeyPanel;
 import com.google.speedtracer.client.view.HoveringPopup;
 import com.google.speedtracer.client.view.InlineMenu;
 import com.google.speedtracer.client.visualizations.view.MergeProfilesPanel;
+import com.google.speedtracer.shared.EventRecordType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -393,6 +397,69 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     controller.setSelectedPage(pageIndex);
 
     maybeInitializeSymbolServerController(dataDispatcher.getTabDescription());
+    
+    // copy over associated network resource from before the tab change was processed
+    // copy all back to the main resource
+    DataDispatcher dispatcher = oldState.getDataDispatcher();
+    copyRecordsFromBeforePageTransition(dispatcher, newState, nav.getUrl());
+  }
+  
+  /**
+   * Look backwards for the main associated with the page transition
+   * #TODO (sarahgsmith) do some further investigation to see what happens
+   *    with mouse events, etc.
+   */
+  private void copyRecordsFromBeforePageTransition(DataDispatcher oldDispatcher, ApplicationState newState, String newUrl) {
+    List<EventRecord> eventRecords = oldDispatcher.getEventRecords();
+    
+    assert (eventRecords.size() > 0) : "No EventRecords when onPageTransition was called";
+    
+    int index = eventRecords.size() - 1;
+    int startCopyIndex = -1;
+    // the ResourceWillSendEvent URL we are looking for which will terminate the search
+    String searchUrl = newUrl;
+    
+    // search backwards through the resources until
+    // we find the main ResourceSendRequest
+    while (startCopyIndex == -1 && index >= 0) {
+      EventRecord aRecord = eventRecords.get(index);
+      
+      if (aRecord.getType() == EventRecordType.INSPECTOR_WILL_SEND_REQUEST) {
+        // see if there's a redirect
+        InspectorWillSendRequest request = aRecord.cast();
+        String redirectUrl = request.getRedirectUrl();
+        if(redirectUrl != null) {
+          // if so, keep searching for the original URL request
+          searchUrl = redirectUrl;
+        }
+      }
+      
+      if (aRecord.getType() == EventRecordType.RESOURCE_SEND_REQUEST) {
+        // check if we've found a matching URL
+        ResourceWillSendEvent event = aRecord.cast();
+        String thisUrl = event.getUrl();
+        if(thisUrl.equals(searchUrl)) {
+          startCopyIndex = index;
+        }
+      }
+      
+      index--;
+    }
+    
+    // did not find the matching URL
+    // should this be an assert or are there cases where it will happen?
+    if(startCopyIndex < 0) {
+      return;
+    }
+    
+    for (int k = startCopyIndex; k < eventRecords.size(); k++) {
+      EventRecord copyRecord = eventRecords.get(k);
+      // don't re-dispatch the tab change event
+      if (copyRecord.getType() == EventRecordType.TAB_CHANGED) {
+        continue;
+      }
+      newState.getDataDispatcher().getNetworkEventDispatcher().onEventRecord(copyRecord);
+    }
   }
 
   public void onRefresh(TabChangeEvent change) {

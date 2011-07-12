@@ -258,7 +258,7 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
       insertRedirectCandidate(previousResource.getIdentifier(), previousResource);
       isRedirect = true;
     }
-
+    
     NetworkResource resource = new NetworkResource(resourceStart);
     resourceStore.put(resourceStart.getIdentifier(), resource);
     for (int i = 0, n = listeners.size(); i < n; i++) {
