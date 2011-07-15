@@ -33,8 +33,8 @@ public final class HintletCacheUtils {
    * @return {@code true} iff the resource type is known to be uncacheable.
    */
   public static boolean isNonCacheableResourceType(WebInspectorType type) {
-    // TODO: Figure out some good rules around caching XHRs.
-    // TODO: Figure out if there is any way to cache a redirect.
+    // TODO(zundel): Figure out some good rules around caching XHRs.
+    // TODO(zundel): Figure out if there is any way to cache a redirect.
     return (type == WebInspectorType.DOCUMENT || type == WebInspectorType.OTHER);
   }
 
@@ -143,7 +143,7 @@ public final class HintletCacheUtils {
   /**
    * @param headers An object with a key for each header and a value containing the contents of that
    *          header.
-   * @param timeMs The freshness lifetime to compare with.
+   * @param timeMs The freshness lifetime to compare with (in milliseconds).
    * @return {@code true} iff the headers indicate that this resource has a freshness lifetime
    *         greater than the specified time.
    */
@@ -178,7 +178,11 @@ public final class HintletCacheUtils {
 
     // The max-age overrides Expires in most modern browsers.
     if (maxAgeMatch != null) {
-      freshnessLifetimeMs = 1000 * Double.parseDouble(maxAgeMatch);
+      try {
+        freshnessLifetimeMs = 1000 * Double.parseDouble(maxAgeMatch);
+      } catch (NumberFormatException ex) {
+        freshnessLifetimeMs = Double.NaN;
+      }
     } else {
       String expiresHeader = HintletHeaderUtils.hasHeader(headers, "Expires");
       if (expiresHeader != null) {
@@ -198,7 +202,7 @@ public final class HintletCacheUtils {
   }
 
   /**
-   * @param date e.g. "Jul 8, 2005"
+   * @param date e.g. "Jul 8, 2005", "Thu, 14 Jul 2011 21:07:34 GMT"
    * @return Return parses a date string and returns the number of milliseconds between the date
    *         string and midnight of January 1, 1970
    */
