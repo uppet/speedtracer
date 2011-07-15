@@ -1,0 +1,32 @@
+# Tests for testFreshnessLifetimeGreaterThan
+# 0 - basic necessary info
+{"Date":"Thu, 14 Jul 2011 21:07:34 GMT", "Cache-Control":"public, max-age=1"}
+# 1 - extra info and longer max age
+{"Date":"Thu, 14 Jul 2011 21:07:31 GMT","Content-Encoding":"gzip","X-Who-L":"LB2001","Age":"1936","X-Powered-By":"ASP.NET","X-Who":"2006","Connection":"Keep-Alive","Content-Length":"56254","ETag":"\"pv8724de9a3dfb2a59690c1272e32b2d42\"","Last-Modified":"Thu, 29 Jan 2009 16:27:07 GMT","Server":"Microsoft-IIS/6.0","X-PvInfo":"[S11101.C5517.A65477.RA0.G1011C.UF2437129].[OT/all.OG/includes]","X-Who-O":"AS62","Vary":"Accept-Encoding","Content-Type":"application/x-javascript","Cache-Control":"public, s-maxage=604800, max-age=28800","Set-Cookie":"BBBDC=WDC1;path=/;","Accept-Ranges":"bytes","Expires":"Fri, 15 Jul 2011 04:35:15 GMT"}
+
+# 2 - Cache-Control but no max age, check expiration date (expiration date in the future)
+{"Date":"Thu, 14 Jul 2011 21:07:34 GMT","Expires":"Sat, 1 Jan 2050 1:00:00 GMT", "Cache-Control":"private"}
+# 3 - No Cache-Control, check expiration date (expiration date in the future)
+{"Date":"Thu, 14 Jul 2011 21:07:34 GMT","Expires":"Sat, 1 Jan 2050 1:00:00 GMT"}
+# 4 - No Cache-Control, check expiration date (expiration in the past)
+{"Date":"Fri, 1 Jan 2010 1:00:00 GMT","Expires":"Fri, 1 Jan 2010 1:00:00 GMT"}
+
+# 5 - no Date field, should fail
+{"Vary":"Accept-Encoding","Cache-Control":"private, max-age=1000","Expires":"Fri, 1 Jan 2010 1:00:00 GMT"}
+
+# 6 - no data
+{}
+
+# 7 - Date but no expires or max-age
+{"Date":"Fri, 1 Jan 2010 1:00:00 GMT","Cache-Control":"private"}
+
+# 8 - no-cache
+{"Date":"Thu, 14 Jul 2011 21:07:34 GMT","Connection":"keep-alive","Content-Length":"35","Last-Modified":"Wed, 21 Jan 2004 19:51:30 GMT","Cache-Control":"private, no-cache","Expires":"Wed, 19 Apr 2000 11:43:00 GMT"}
+# 9 - no-store
+{"Date":"Thu, 14 Jul 2011 21:07:34 GMT","Connection":"keep-alive","Content-Length":"35","Last-Modified":"Wed, 21 Jan 2004 19:51:30 GMT","Cache-Control":"private, no-store","Expires":"Wed, 19 Apr 2000 11:43:00 GMT"}
+#10 - must-revalidate
+{"Date":"Thu, 14 Jul 2011 21:07:34 GMT","Connection":"keep-alive","Content-Length":"35","Last-Modified":"Wed, 21 Jan 2004 19:51:30 GMT","Cache-Control":"private, proxy-revalidate","Expires":"Wed, 19 Apr 2000 11:43:00 GMT"}
+#11 - Pragma:no-cache
+{"Date":"Thu, 14 Jul 2011 21:07:34 GMT","Connection":"keep-alive","Content-Length":"35","Pragma":"no-cache","Last-Modified":"Wed, 21 Jan 2004 19:51:30 GMT","Expires":"Wed, 19 Apr 2000 11:43:00 GMT"}
+#12 - max-age is 0 and does not have explicit expiration
+{"Date":"Thu, 14 Jul 2011 21:07:34 GMT", "Cache-Control":"private, max-age=0"}
