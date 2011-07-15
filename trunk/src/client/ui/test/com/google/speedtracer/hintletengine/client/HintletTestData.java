@@ -33,6 +33,9 @@ public class HintletTestData {
    * Pull in the test data from external text files.
    */
   public interface MockResources extends ClientBundle {
+    @Source("resources/cacheUtilsTestData.in")
+    TextResource cacheUtilsTestData();
+    
     @Source("resources/frequent_layout.in")
     TextResource frequentLayoutInput();
     
@@ -104,6 +107,11 @@ public class HintletTestData {
     return jsonStrings;
   }
   
+  public static List<JavaScriptObject> getCacheUtilsTestData() {
+    String text = getMockResources().cacheUtilsTestData().getText();
+    return getJsonObjects(text);
+  }
+  
   public static List<JavaScriptObject> getFrequentLayoutInput() {
     String text = getMockResources().frequentLayoutInput().getText();
     return getJsonObjects(text);
@@ -133,6 +141,4 @@ public class HintletTestData {
     String text = getMockResources().totalBytesOutput().getText();
     return getJsonObjects(text);
   }
-  
-  
 }
