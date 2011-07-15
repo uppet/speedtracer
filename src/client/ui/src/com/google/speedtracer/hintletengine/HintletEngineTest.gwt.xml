@@ -5,6 +5,6 @@
   <inherits name="com.google.gwt.core.Core" />
   <inherits name="com.google.speedtracer.Common" />
   <inherits name='com.google.speedtracer.breaky.BreakyTest' />
-  
+  <inherits name='com.google.gwt.regexp.RegExp' />
   <source path='client' />
 </module>
