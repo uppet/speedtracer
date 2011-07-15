@@ -5,6 +5,7 @@
   <inherits name="com.google.gwt.webworker.WebWorker" />
   <inherits name='com.google.speedtracer.breaky.BreakyTest' />
   <inherits name='com.google.gwt.http.HTTP' />
+  <inherits name='com.google.gwt.regexp.RegExp' />
 
   <!-- Specify the app entry point class.                         -->
   <entry-point class='com.google.speedtracer.hintletengine.client.HintletEngine' />
