@@ -34,4 +34,9 @@ public class InspectorDidReceiveContentLength extends InspectorResourceMessage {
       return getIntProperty("dataLength");
     }
   }
+  
+  public final int getDataLength() { 
+    return getData().<InspectorDidReceiveContentLength.Data> cast().getLengthReceived();
+  }
+  
 }
