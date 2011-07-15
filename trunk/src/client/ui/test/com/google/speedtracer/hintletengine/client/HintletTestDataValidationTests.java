@@ -46,10 +46,16 @@ public class HintletTestDataValidationTests extends GWTTestCase {
   } 
   
   /** 
-   * test that the tests are working
+   * Test that the tests are working.
    */
   public void testSimple() {
     assertTrue(true);
+  }
+  
+  public void testTotalBytes() {
+    for(JavaScriptObject record:HintletTestData.getTotalBytesInput()) {
+      assertTrue("JSON object invalid: " + JSON.stringify(record), validateEntry(record));
+    }
   }
   
   /**

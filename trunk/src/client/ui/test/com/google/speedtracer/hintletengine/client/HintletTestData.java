@@ -44,6 +44,12 @@ public class HintletTestData {
     
     @Source("resources/long_duration.out")
     TextResource longDurationOutput();
+    
+    @Source("resources/total_bytes.in")
+    TextResource totalBytesInput();
+    
+    @Source("resources/total_bytes.out")
+    TextResource totalBytesOutput();
   }
 
   private static MockResources mockResources;
@@ -117,4 +123,16 @@ public class HintletTestData {
     String text = getMockResources().longDurationOutput().getText();
     return getJsonObjects(text);
   }
+  
+  public static List<JavaScriptObject> getTotalBytesInput() {
+    String text = getMockResources().totalBytesInput().getText();
+    return getJsonObjects(text);
+  }
+  
+  public static List<JavaScriptObject> getTotalBytesOutput() {
+    String text = getMockResources().totalBytesOutput().getText();
+    return getJsonObjects(text);
+  }
+  
+  
 }

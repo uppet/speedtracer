@@ -24,6 +24,7 @@ import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.hintletengine.client.rules.HintletFrequentLayout;
 import com.google.speedtracer.hintletengine.client.rules.HintletLongDuration;
 import com.google.speedtracer.hintletengine.client.rules.HintletRule;
+import com.google.speedtracer.hintletengine.client.rules.HintletTotalBytes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -108,6 +109,11 @@ public class HintletEventRecordProcessorTests extends GWTTestCase {
   public void testLongDuration() {
     runTest(new HintletLongDuration(), HintletTestData.getLongDurationInput(),
         HintletTestData.getLongDurationOutput());
+  }
+  
+  public void testTotalBytes() {
+    runTest(new HintletTotalBytes(), HintletTestData.getTotalBytesInput(),
+        HintletTestData.getTotalBytesOutput());
   }
 
   private void runTest(HintletRule rule, List<JavaScriptObject> input,
