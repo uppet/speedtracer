@@ -113,7 +113,7 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
 
   private final JsIntegerMap<EventRecordDispatcher> typeMap = JsIntegerMap.create();
 
-  NetworkEventDispatcher() {
+  public NetworkEventDispatcher() {
     setNetworkEventCallbacks(this, typeMap);
   }
 
