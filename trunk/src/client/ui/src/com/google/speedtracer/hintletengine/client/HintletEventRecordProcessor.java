@@ -22,6 +22,7 @@ import com.google.gwt.coreext.client.JSON;
 import com.google.speedtracer.client.model.EventRecord;
 import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.hintletengine.client.rules.HintletRule;
+import com.google.speedtracer.shared.EventRecordType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,8 +59,13 @@ public final class HintletEventRecordProcessor {
     // Calculate the time spent in each event/sub-event exclusive of children
     computeSelfTime(eventRecord);
 
-    for (HintletRule rule : rules) {
-      rule.onEventRecord(eventRecord);
+    // Potentially keep state for a network resource.
+    if (eventRecord.getType() == EventRecordType.RESOURCE_UPDATED) {
+      HintletNetworkResources.getInstance().onEventRecord(eventRecord);
+    } else {    
+      for (HintletRule rule : rules) {
+        rule.onEventRecord(eventRecord);
+      }
     }
   }
 
@@ -91,5 +97,4 @@ public final class HintletEventRecordProcessor {
       computeSelfTime(uiEvent.getChildren().get(i));
     }
   }
-
 }
