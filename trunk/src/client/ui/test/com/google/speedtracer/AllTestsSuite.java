@@ -41,7 +41,7 @@ import com.google.speedtracer.client.visualizations.model.UiThreadUtilizationTes
 import com.google.speedtracer.client.visualizations.view.EventFilterTests;
 import com.google.speedtracer.extension.client.DataLoaderTests;
 import com.google.speedtracer.headlessextension.client.HeadlessContentScriptTests;
-import com.google.speedtracer.hintletengine.client.HintletEventRecordProcessorTests;
+import com.google.speedtracer.hintletengine.client.HintletSimpleTests;
 
 import junit.framework.Test;
 
@@ -77,7 +77,7 @@ public class AllTestsSuite extends GWTTestSuite {
     suite.addTestSuite(SourceViewerServerTests.class);
     suite.addTestSuite(ReportDataCollectorTests.class);
     suite.addTestSuite(DataLoaderTests.class);
-    suite.addTestSuite(HintletEventRecordProcessorTests.class);
+    suite.addTestSuite(HintletSimpleTests.class);
     return suite;
   }
 }

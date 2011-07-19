@@ -21,31 +21,26 @@ import com.google.gwt.coreext.client.JSON;
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.speedtracer.client.model.EventRecord;
 import com.google.speedtracer.client.model.HintRecord;
-import com.google.speedtracer.hintletengine.client.rules.HintletFrequentLayout;
-import com.google.speedtracer.hintletengine.client.rules.HintletLongDuration;
 import com.google.speedtracer.hintletengine.client.rules.HintletRule;
-import com.google.speedtracer.hintletengine.client.rules.HintletTotalBytes;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Tests {@link HintletEventRecordProcessor}.
  * 
  */
-public class HintletEventRecordProcessorTests extends GWTTestCase {
+public class HintletTestHelper {
 
   private static class OnHintCallback implements HintletOnHintListener {
 
-    private List<JavaScriptObject> expectedHints = new ArrayList<JavaScriptObject>();
+    private List<JavaScriptObject> expectedHints;
 
     // one event may trigger different type of rule.
     // use this to focus on current rule in test
     private String ruleToTest;
-
     private int expectedMatch = 0;
     private boolean mismatch = false;
-
+    
     public OnHintCallback(String ruleToTest, List<JavaScriptObject> expectedHints) {
       this.ruleToTest = ruleToTest;
       this.expectedHints = expectedHints;
@@ -58,7 +53,7 @@ public class HintletEventRecordProcessorTests extends GWTTestCase {
         int severity) {
       // we do not check hint from different rule.
       if (!hintletRule.equals(ruleToTest)) {
-        GWTTestCase.fail("Got hint from different rule");
+        GWTTestCase.fail("Got hint from rule " + hintletRule + ", expecting from rule " + ruleToTest);
       }
 
       if (expectedMatch >= expectedHints.size()) {
@@ -92,31 +87,9 @@ public class HintletEventRecordProcessorTests extends GWTTestCase {
 
       return !mismatch;
     }
-
-  }
-
-  @Override
-  public String getModuleName() {
-    return "com.google.speedtracer.hintletengine.HintletEngineTest";
-  }
-
-
-  public void testFrequentLayout() {
-    runTest(new HintletFrequentLayout(), HintletTestData.getFrequentLayoutInput(),
-        HintletTestData.getFrequentLayoutOutput());
-  }
-
-  public void testLongDuration() {
-    runTest(new HintletLongDuration(), HintletTestData.getLongDurationInput(),
-        HintletTestData.getLongDurationOutput());
   }
   
-  public void testTotalBytes() {
-    runTest(new HintletTotalBytes(), HintletTestData.getTotalBytesInput(),
-        HintletTestData.getTotalBytesOutput());
-  }
-
-  private void runTest(HintletRule rule, List<JavaScriptObject> input,
+  public void runTest(HintletRule rule, List<JavaScriptObject> input,
       List<JavaScriptObject> expectedOutput) {
 
     OnHintCallback hintCallback = new OnHintCallback(rule.getHintletName(), expectedOutput);
@@ -128,8 +101,7 @@ public class HintletEventRecordProcessorTests extends GWTTestCase {
       eventRecord.setSequence(i + 1); // output expects sequence
       evenRecordProcessor.onEventRecord(eventRecord);
     }
-
-    assertTrue("Hintlet rule \"" + rule.getHintletName() + "\" test failed.",
+    GWTTestCase.assertTrue("Hintlet rule \"" + rule.getHintletName() + "\" test failed.", 
         hintCallback.hintsMatched());
   }
 }
