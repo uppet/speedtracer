@@ -19,9 +19,9 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.coreext.client.DataBag;
 
 /**
- * Base class for inspector resource messages.
+ * Base class for network resource messages.
  */
-public class InspectorResourceMessage extends ResourceRecord {
+public class NetworkEvent extends ResourceRecord {
   /**
    *
    */
@@ -34,7 +34,7 @@ public class InspectorResourceMessage extends ResourceRecord {
     }
   }
 
-  public static native <T extends InspectorResourceMessage> T create(int type,
+  public static native <T extends NetworkEvent> T create(int type,
       double normalizedTime, JavaScriptObject data) /*-{
     return {
       type: type,
@@ -43,6 +43,6 @@ public class InspectorResourceMessage extends ResourceRecord {
     };
   }-*/;
 
-  protected InspectorResourceMessage() {
+  protected NetworkEvent() {
   }
 }

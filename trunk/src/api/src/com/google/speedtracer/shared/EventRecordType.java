@@ -57,9 +57,9 @@ public class EventRecordType {
   public static final int RESOURCE_UPDATED = 0x7FFFFFFD;
   public static final int PROFILE_DATA = 0x7FFFFFFC;
   public static final int SERVER_EVENT = 0x7FFFFFFB;
-  public static final int INSPECTOR_WILL_SEND_REQUEST = 0x7FFFFFFA;
-  public static final int INSPECTOR_DID_RECEIVE_RESPONSE = 0x7FFFFFF9;
-  public static final int INSPECTOR_DID_RECEIVE_CONTENT_LENGTH = 0x7FFFFFF8;
+  public static final int NETWORK_REQUEST_WILL_BE_SENT = 0x7FFFFFFA;
+  public static final int NETWORK_RESPONSE_RECEIVED = 0x7FFFFFF9;
+  public static final int NETWORK_DATA_RECEIVED = 0x7FFFFFF8;
 
   private static final String[] webkitTypeStrings = {
     "Dom Event",                        // 0 DOM_EVENT
@@ -91,9 +91,9 @@ public class EventRecordType {
     "Resource Updated",                 // 0x7FFFFFFD RESOURCE_UPDATED
     "JavaScript CPU profile data",      // 0x7FFFFFFC PROFILE_DATA
     "An event from a server-side trace.",   // 0x7FFFFFFB SERVER_EVENT
-    "Will Send Request",                // 0x7FFFFFFA INSPECTOR_WILL_SEND_REQUEST
-    "Did receive response",             // 0x7FFFFFF9 INSPECTOR_DID_RECEIVE_RESPONSE
-    "Content Length Changed",           // 0x7FFFFFF8 INSPECTOR_DID_RECEIVE_CONTENT_LENGTH
+    "Will Send Request",                // 0x7FFFFFFA NETWORK_REQUEST_WILL_BE_SENT
+    "Did receive response",             // 0x7FFFFFF9 NETWORK_RESPONSE_RECEIVED
+    "Content Length Changed",           // 0x7FFFFFF8 NETWORK_DATA_RECEIVED
   };
 
   private static final String[] webkitHelpStrings = {
@@ -152,12 +152,12 @@ public class EventRecordType {
     "Contains raw data from the JavaScript engine profiler.",
     // 0x7FFFFFFB SERVER_EVENT
     "This happened on the server.",
-    // 0x7FFFFFFA INSPECTOR_WILL_SEND_REQUEST
-    "Inspector message indicating a request for a resource is about to go out.",
-    // 0x7FFFFFF9 INSPECTOR_DID_RECEIVE_RESPONSE
-    "Inspector message indicating that we received a response from the server for a resource.",
-    // 0x7FFFFFF8 INSPECTOR_DID_RECEIVE_CONTENT_LENGTH
-    "Inspector message indicating that the resource loader adjusted the known size of the resource contents.",
+    // 0x7FFFFFFA NETWORK_REQUEST_WILL_BE_SENT
+    "Network event indicating a request for a resource is about to go out.",
+    // 0x7FFFFFF9 NETWORK_RESPONSE_RECEIVED
+    "Network event indicating that we received a response from the server for a resource.",
+    // 0x7FFFFFF8 NETWORK_DATA_RECEIVED
+    "Network event indicating that the resource loader adjusted the known size of the resource contents.",
   };
 
   public static String typeToHelpString(int type) {

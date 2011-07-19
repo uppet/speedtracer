@@ -19,14 +19,14 @@ import com.google.gwt.coreext.client.DataBag;
 import com.google.speedtracer.client.model.NetworkResource.HeaderMap;
 
 /**
- * Overlay type for inspector resource messages that are sent when we receive a
+ * Overlay type for network resource messages that are sent when we receive a
  * response for a resource request.
  */
-public class InspectorDidReceiveResponse extends InspectorResourceMessage {
+public class NetworkResponseReceivedEvent extends NetworkEvent {
   /**
    * 
    */
-  public static final class Data extends InspectorResourceMessage.Data {
+  public static final class Data extends NetworkEvent.Data {
     protected Data() {
     }
 
@@ -67,6 +67,6 @@ public class InspectorDidReceiveResponse extends InspectorResourceMessage {
     }
   }
 
-  protected InspectorDidReceiveResponse() {
+  protected NetworkResponseReceivedEvent() {
   }
 }

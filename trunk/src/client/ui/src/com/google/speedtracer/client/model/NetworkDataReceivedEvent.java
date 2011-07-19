@@ -16,17 +16,17 @@
 package com.google.speedtracer.client.model;
 
 /**
- * Overlay type for inspector resource messages that are sent when the resource
+ * Overlay type for network resource messages that are sent when the resource
  * loader adjusts its estimate of the content length for the response payload.
  */
-public class InspectorDidReceiveContentLength extends InspectorResourceMessage {
-  protected InspectorDidReceiveContentLength() {
+public class NetworkDataReceivedEvent extends NetworkEvent {
+  protected NetworkDataReceivedEvent() {
   }
 
   /**
    *
    */
-  public static final class Data extends InspectorResourceMessage.Data {
+  public static final class Data extends NetworkEvent.Data {
     protected Data() {
     }
 
@@ -36,7 +36,7 @@ public class InspectorDidReceiveContentLength extends InspectorResourceMessage {
   }
   
   public final int getDataLength() { 
-    return getData().<InspectorDidReceiveContentLength.Data> cast().getLengthReceived();
+    return getData().<NetworkDataReceivedEvent.Data> cast().getLengthReceived();
   }
   
 }

@@ -17,7 +17,7 @@ package com.google.speedtracer.hintletengine.client.rules;
 
 import com.google.speedtracer.client.model.EventRecord;
 import com.google.speedtracer.client.model.HintRecord;
-import com.google.speedtracer.client.model.InspectorDidReceiveContentLength;
+import com.google.speedtracer.client.model.NetworkDataReceivedEvent;
 import com.google.speedtracer.shared.EventRecordType;
 
 /**
@@ -36,11 +36,11 @@ public class HintletTotalBytes extends HintletRule {
   @Override
   public void onEventRecord(EventRecord dataRecord) {
     
-    if (dataRecord.getType() != EventRecordType.INSPECTOR_DID_RECEIVE_CONTENT_LENGTH) {
+    if (dataRecord.getType() != EventRecordType.NETWORK_DATA_RECEIVED) {
       return;
     }
     
-    InspectorDidReceiveContentLength resource = dataRecord.cast();
+    NetworkDataReceivedEvent resource = dataRecord.cast();
     int recordLength = resource.getDataLength();
     
     if (recordLength > TOTAL_BYTES_WARNING_THRESHOLD) {
