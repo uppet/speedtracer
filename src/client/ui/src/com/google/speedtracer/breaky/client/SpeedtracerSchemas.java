@@ -606,7 +606,7 @@ public class SpeedtracerSchemas {
            "description" : "The URL of the resource",           
            "optional" : true
          },
-         "connectionID" : {
+         "connectionId" : {
            "type" : "integer",
            "description" : "ID for the network connection",           
            "minimum" : 0,

@@ -43,7 +43,7 @@ public class NetworkResponseReceivedEvent extends NetworkEvent {
     }
 
     public final int getConnectionID() {
-      return getIntProperty("connectionID");
+      return getIntProperty("connectionId");
     }
 
     public final boolean getConnectionReused() {
