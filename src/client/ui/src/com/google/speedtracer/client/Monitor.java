@@ -38,7 +38,7 @@ import com.google.speedtracer.client.model.ApplicationState;
 import com.google.speedtracer.client.model.DataDispatcher;
 import com.google.speedtracer.client.model.DataInstance;
 import com.google.speedtracer.client.model.EventRecord;
-import com.google.speedtracer.client.model.InspectorWillSendRequest;
+import com.google.speedtracer.client.model.NetworkRequestWillBeSentEvent;
 import com.google.speedtracer.client.model.ResourceWillSendEvent;
 import com.google.speedtracer.client.model.TabChangeDispatcher;
 import com.google.speedtracer.client.model.TabChangeEvent;
@@ -424,9 +424,9 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     while (startCopyIndex == -1 && index >= 0) {
       EventRecord aRecord = eventRecords.get(index);
       
-      if (aRecord.getType() == EventRecordType.INSPECTOR_WILL_SEND_REQUEST) {
+      if (aRecord.getType() == EventRecordType.NETWORK_REQUEST_WILL_BE_SENT) {
         // see if there's a redirect
-        InspectorWillSendRequest request = aRecord.cast();
+        NetworkRequestWillBeSentEvent request = aRecord.cast();
         String redirectUrl = request.getRedirectUrl();
         if(redirectUrl != null) {
           // if so, keep searching for the original URL request

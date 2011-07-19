@@ -534,7 +534,7 @@ public class RequestDetails extends LazilyCreateableElement {
    * @return returns the content length as a String.
    */
   private String getContentLengthString(NetworkResource info) {
-    int contentLength = info.getContentLength();
+    int contentLength = info.getDataLength();
     return ((contentLength < 0) ? "" : contentLength + " bytes");
   }
 

@@ -208,23 +208,23 @@ speedTracerEvents = [
 # END EXPERIMENTAL TYPES.
   {
     'value' : (maxInt - 5),
-    'constant' : 'INSPECTOR_WILL_SEND_REQUEST',
+    'constant' : 'NETWORK_REQUEST_WILL_BE_SENT',
     'desc' : 'Will Send Request',
-    'help_text' : 'Inspector message indicating a request for a resource '
+    'help_text' : 'Network event indicating a request for a resource '
                   + 'is about to go out.',
   },
   {
     'value' : (maxInt - 6),
-    'constant' : 'INSPECTOR_DID_RECEIVE_RESPONSE',
+    'constant' : 'NETWORK_RESPONSE_RECEIVED',
     'desc' : 'Did receive response',
-    'help_text' : 'Inspector message indicating that we received a response '
+    'help_text' : 'Network event indicating that we received a response '
                   + 'from the server for a resource.',
   },
   {
     'value' : (maxInt - 7),
-    'constant' : 'INSPECTOR_DID_RECEIVE_CONTENT_LENGTH',
+    'constant' : 'NETWORK_DATA_RECEIVED',
     'desc' : 'Content Length Changed',
-    'help_text' : 'Inspector message indicating that the resource loader '
+    'help_text' : 'Network event indicating that the resource loader '
                   + 'adjusted the known size of the resource contents.',
   }
 ]

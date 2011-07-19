@@ -19,7 +19,7 @@ import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.coreext.client.JsIntegerMap;
 import com.google.speedtracer.client.model.DataDispatcher.DataDispatcherDelegate;
 import com.google.speedtracer.client.model.DataDispatcher.EventRecordDispatcher;
-import com.google.speedtracer.client.model.InspectorDidReceiveResponse.Response;
+import com.google.speedtracer.client.model.NetworkResponseReceivedEvent.Response;
 import com.google.speedtracer.client.model.ResourceUpdateEvent.UpdateResource;
 import com.google.speedtracer.shared.EventRecordType;
 
@@ -80,21 +80,21 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
       }
     });
 
-    typeMap.put(EventRecordType.INSPECTOR_DID_RECEIVE_CONTENT_LENGTH, new EventRecordDispatcher() {
+    typeMap.put(EventRecordType.NETWORK_DATA_RECEIVED, new EventRecordDispatcher() {
       public void onEventRecord(EventRecord data) {
-        proxy.onInspectorContentLengthChange(data.<InspectorDidReceiveContentLength>cast());
+        proxy.onNetworkDataReceived(data.<NetworkDataReceivedEvent>cast());
       }
     });
 
-    typeMap.put(EventRecordType.INSPECTOR_DID_RECEIVE_RESPONSE, new EventRecordDispatcher() {
+    typeMap.put(EventRecordType.NETWORK_RESPONSE_RECEIVED, new EventRecordDispatcher() {
       public void onEventRecord(EventRecord data) {
-        proxy.onInspectorReceiveResponse(data.<InspectorDidReceiveResponse>cast());
+        proxy.onNetworkResponseReceived(data.<NetworkResponseReceivedEvent>cast());
       }
     });
 
-    typeMap.put(EventRecordType.INSPECTOR_WILL_SEND_REQUEST, new EventRecordDispatcher() {
+    typeMap.put(EventRecordType.NETWORK_REQUEST_WILL_BE_SENT, new EventRecordDispatcher() {
       public void onEventRecord(EventRecord data) {
-        proxy.onInspectorWillSendRequest(data.<InspectorWillSendRequest>cast());
+        proxy.onNetworkRequestWillBeSent(data.<NetworkRequestWillBeSentEvent>cast());
       }
     });
   }
@@ -187,38 +187,38 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
     redirectQueue.push(previousResource);
   }
 
-  private void onInspectorContentLengthChange(
-      InspectorDidReceiveContentLength contentLengthChange) {
-    NetworkResource resource = getResource(contentLengthChange.getIdentifier());
+  private void onNetworkDataReceived(
+      NetworkDataReceivedEvent dataLengthChange) {
+    NetworkResource resource = getResource(dataLengthChange.getIdentifier());
     if (resource != null) {
-      resource.update(contentLengthChange);
+      resource.update(dataLengthChange);
     }
   }
 
-  private void onInspectorReceiveResponse(InspectorDidReceiveResponse response) {
+  private void onNetworkResponseReceived(NetworkResponseReceivedEvent response) {
     NetworkResource resource = getResource(response.getIdentifier());
     if (resource != null) {
       resource.update(response);
     }
   }
 
-  private void onInspectorWillSendRequest(InspectorWillSendRequest willSendRequest) {
-    NetworkResource resource = getResource(willSendRequest.getIdentifier());
+  private void onNetworkRequestWillBeSent(NetworkRequestWillBeSentEvent requestWillBeSent) {
+    NetworkResource resource = getResource(requestWillBeSent.getIdentifier());
     if (resource != null) {
-      resource.update(willSendRequest);
+      resource.update(requestWillBeSent);
       // We depend on the fact that any redirects that we encounter will have
       // a corresponding timeline agent event that will add it to the redirects
       // map. We look for one here.
-      InspectorWillSendRequest.Data data = willSendRequest.getData().cast();
+      NetworkRequestWillBeSentEvent.Data data = requestWillBeSent.getData().cast();
       Response redirectResponse = data.getRedirectResponse();
       if (redirectResponse != null) {
         // look for a redirect.
         NetworkResource redirect = findAndRemoveRedirectCandidate(
-            willSendRequest.getIdentifier(), redirectResponse.getUrl());
+            requestWillBeSent.getIdentifier(), redirectResponse.getUrl());
         if (redirect != null) {
           redirect.updateResponse(redirectResponse);
-          redirect.setResponseReceivedTime(willSendRequest.getTime());
-          redirect.setEndTime(willSendRequest.getTime());
+          redirect.setResponseReceivedTime(requestWillBeSent.getTime());
+          redirect.setEndTime(requestWillBeSent.getTime());
           redirectUpdated(redirect);
         }
       }

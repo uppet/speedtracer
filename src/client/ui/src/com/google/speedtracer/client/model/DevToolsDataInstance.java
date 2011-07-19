@@ -244,7 +244,7 @@ public class DevToolsDataInstance extends DataInstance {
      * Normalizes the inputed time to be relative to the base time, and converts
      * the units of the inputed time to milliseconds from seconds.
      */
-    private double normalizeInspectorTime(double seconds) {
+    private double normalizeNetworkTime(double seconds) {
       assert getBaseTime() >= 0 : "NormalizeTime called before a base time was established.";
 
       double millis = seconds * 1000;
@@ -252,14 +252,14 @@ public class DevToolsDataInstance extends DataInstance {
     }
 
     @SuppressWarnings("unused")
-    private void onDidReceiveResponse(InspectorDidReceiveResponse.Data data) {
+    private void onNetworkResponseReceived(NetworkResponseReceivedEvent.Data data) {
       // Normalize the detailed timing request time.
       DetailedResponseTiming timing = data.getResponse().getDetailedTiming();
       if (timing != null) {
-        timing.setRequestTime(normalizeInspectorTime(timing.getRequestTime()));
+        timing.setRequestTime(normalizeNetworkTime(timing.getRequestTime()));
       }
 
-      onInspectorMessage(EventRecordType.INSPECTOR_DID_RECEIVE_RESPONSE, data);
+      onNetworkResourceMessage(EventRecordType.NETWORK_RESPONSE_RECEIVED, data);
     }
 
     @SuppressWarnings("unused")
@@ -290,18 +290,18 @@ public class DevToolsDataInstance extends DataInstance {
       }
     }
 
-    private void onInspectorMessage(int messageType, InspectorResourceMessage.Data data) {
+    private void onNetworkResourceMessage(int messageType, NetworkEvent.Data data) {
       if (getBaseTime() < 0) {
         // We only allow proper timeline agent records to set base time.
         return;
       }
-      forwardToDataInstance(InspectorResourceMessage.create(messageType,
-          normalizeInspectorTime(data.getTimeStamp()), data));
+      forwardToDataInstance(NetworkEvent.create(messageType,
+          normalizeNetworkTime(data.getTimeStamp()), data));
     }
 
     @SuppressWarnings("unused")
-    private void onReceiveContentLength(InspectorDidReceiveContentLength.Data data) {
-      onInspectorMessage(EventRecordType.INSPECTOR_DID_RECEIVE_CONTENT_LENGTH, data);
+    private void onNetworkDataReceived(NetworkDataReceivedEvent.Data data) {
+      onNetworkResourceMessage(EventRecordType.NETWORK_DATA_RECEIVED, data);
     }
 
     @SuppressWarnings("unused")
@@ -349,8 +349,8 @@ public class DevToolsDataInstance extends DataInstance {
     }
 
     @SuppressWarnings("unused")
-    private void onWillSendRequest(InspectorWillSendRequest.Data data) {
-      onInspectorMessage(EventRecordType.INSPECTOR_WILL_SEND_REQUEST, data);
+    private void onNetworkRequestWillBeSent(NetworkRequestWillBeSentEvent.Data data) {
+      onNetworkResourceMessage(EventRecordType.NETWORK_REQUEST_WILL_BE_SENT, data);
     }
 
     /**
@@ -446,17 +446,17 @@ public class DevToolsDataInstance extends DataInstance {
       // Network resource events.
       dispatcher['Network.requestWillBeSent'] = function(body) {
         delegate.
-          @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onWillSendRequest(Lcom/google/speedtracer/client/model/InspectorWillSendRequest$Data;)
+          @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onNetworkRequestWillBeSent(Lcom/google/speedtracer/client/model/NetworkRequestWillBeSentEvent$Data;)
           (body);
       };
       dispatcher['Network.responseReceived'] = function(body) {
         delegate.
-          @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onDidReceiveResponse(Lcom/google/speedtracer/client/model/InspectorDidReceiveResponse$Data;)
+          @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onNetworkResponseReceived(Lcom/google/speedtracer/client/model/NetworkResponseReceivedEvent$Data;)
           (body);
       };
       dispatcher['Network.dataReceived'] = function(body) {
         delegate.
-          @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onReceiveContentLength(Lcom/google/speedtracer/client/model/InspectorDidReceiveContentLength$Data;)
+          @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onNetworkDataReceived(Lcom/google/speedtracer/client/model/NetworkDataReceivedEvent$Data;)
           (body);
       };
 

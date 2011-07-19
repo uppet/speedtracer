@@ -16,19 +16,19 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.coreext.client.DataBag;
-import com.google.speedtracer.client.model.InspectorDidReceiveResponse.Response;
+import com.google.speedtracer.client.model.NetworkResponseReceivedEvent.Response;
 import com.google.speedtracer.client.model.NetworkResource.HeaderMap;
 
 /**
- * Overlay type for inspector resource messages that are sent before issuing a
+ * Overlay type for network resource messages that are sent before issuing a
  * request for a resource.
  */
-public final class InspectorWillSendRequest extends InspectorResourceMessage {
+public final class NetworkRequestWillBeSentEvent extends NetworkEvent {
   
   /**
    *
    */
-  public static final class Data extends InspectorResourceMessage.Data {
+  public static final class Data extends NetworkEvent.Data {
     protected Data() {
     }
 
@@ -53,7 +53,7 @@ public final class InspectorWillSendRequest extends InspectorResourceMessage {
     }
   }
 
-  protected InspectorWillSendRequest() {
+  protected NetworkRequestWillBeSentEvent() {
   }
   
   /** Get the URL that was redirected to this resource, if there was a redirect

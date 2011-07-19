@@ -17,7 +17,7 @@ package com.google.speedtracer.client.model;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.coreext.client.JSOArray;
-import com.google.speedtracer.client.model.InspectorDidReceiveResponse.Response;
+import com.google.speedtracer.client.model.NetworkResponseReceivedEvent.Response;
 import com.google.speedtracer.client.model.ResourceUpdateEvent.UpdateResource;
 import com.google.speedtracer.client.util.Url;
 
@@ -69,7 +69,7 @@ public class NetworkResource {
 
   private boolean connectionReused = false;
 
-  private int contentLength = -1;
+  private int dataLength = -1;
 
   private boolean didFail;
 
@@ -176,8 +176,8 @@ public class NetworkResource {
     return connectionReused;
   }
 
-  public int getContentLength() {
-    return contentLength;
+  public int getDataLength() {
+    return dataLength;
   }
 
   public double getDnsDuration() {
@@ -345,18 +345,18 @@ public class NetworkResource {
     this.responseReceivedTime = time;
   }
 
-  public void update(InspectorDidReceiveContentLength contentLengthChange) {
-    this.contentLength = contentLengthChange.getData().<InspectorDidReceiveContentLength.Data> cast().getLengthReceived();
+  public void update(NetworkDataReceivedEvent dataLengthChange) {
+    this.dataLength = dataLengthChange.getData().<NetworkDataReceivedEvent.Data> cast().getLengthReceived();
   }
 
-  public void update(InspectorDidReceiveResponse record) {
-    InspectorDidReceiveResponse.Data data = record.getData().cast();
+  public void update(NetworkResponseReceivedEvent record) {
+    NetworkResponseReceivedEvent.Data data = record.getData().cast();
     Response response = data.getResponse();
     this.updateResponse(response);
   }
 
-  public void update(InspectorWillSendRequest willSendRequest) {
-    this.requestHeaders = willSendRequest.getData().<InspectorWillSendRequest.Data> cast().getRequest().getHeaders();
+  public void update(NetworkRequestWillBeSentEvent requestWillBeSent) {
+    this.requestHeaders = requestWillBeSent.getData().<NetworkRequestWillBeSentEvent.Data> cast().getRequest().getHeaders();
   }
 
   public void update(ResourceFinishEvent finishEvent) {
@@ -414,7 +414,7 @@ public class NetworkResource {
     }
 
     if (update.didLengthChange()) {
-      this.contentLength = update.getContentLength();
+      this.dataLength = update.getContentLength();
     }
 
     if (update.didTimingChange()) {
@@ -429,7 +429,7 @@ public class NetworkResource {
     }
   }
 
-  public void updateResponse(InspectorDidReceiveResponse.Response response) {
+  public void updateResponse(NetworkResponseReceivedEvent.Response response) {
     this.responseHeaders = response.getHeaders();
     this.cached = response.wasCached();
     this.connectionID = response.getConnectionID();

@@ -688,9 +688,9 @@ public class SpeedtracerSchemas {
          }
        }
      },
-     "INSPECTOR_WILL_SEND_REQUEST" : {
-       "description" : "Inspector message indicating a request for a resource is about to go out.",
-       "id" : "INSPECTOR_WILL_SEND_REQUEST",
+     "NETWORK_REQUEST_WILL_BE_SENT" : {
+       "description" : "Network message indicating a request for a resource is about to go out.",
+       "id" : "NETWORK_REQUEST_WILL_BE_SENT",
        "type" : "object",
        "extends" : {"$ref" : "SPEEDTRACER_EVENT"},
        "properties" : {
@@ -720,9 +720,9 @@ public class SpeedtracerSchemas {
          }
        }
      },
-     "INSPECTOR_DID_RECEIVE_RESPONSE" : {
-       "description" : "Inspector message indicating that we received a response from the server for a resource.",
-       "id" : "INSPECTOR_DID_RECEIVE_RESPONSE",
+     "NETWORK_RESPONSE_RECEIVED" : {
+       "description" : "Network message indicating that we received a response from the server for a resource.",
+       "id" : "NETWORK_RESPONSE_RECEIVED",
        "type" : "object",
        "extends" : {"$ref" : "SPEEDTRACER_EVENT"},
        "properties" : {
@@ -743,9 +743,9 @@ public class SpeedtracerSchemas {
          }
        }
      },
-     "INSPECTOR_DID_RECEIVE_CONTENT_LENGTH" : {
-       "description" : "Inspector message indicating that we received a response from the server for a resource.",
-       "id" : "INSPECTOR_DID_RECEIVE_CONTENT_LENGTH",
+     "NETWORK_DATA_RECEIVED" : {
+       "description" : "Network message indicating that we received a response from the server for a resource.",
+       "id" : "NETWORK_DATA_RECEIVED",
        "type" : "object",
        "extends" : {"$ref" : "SPEEDTRACER_EVENT"},
        "properties" : {
