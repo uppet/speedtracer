@@ -42,23 +42,20 @@ public class HintletSimpleTests extends GWTTestCase {
     testAssistant.runTest(
         new HintletFrequentLayout(), 
         HintletTestData.getFrequentLayoutInput(),
-        HintletTestData.getFrequentLayoutOutput()
-      );
+        HintletTestData.getFrequentLayoutOutput());
   }
 
   public void testLongDuration() {    
     testAssistant.runTest(
         new HintletLongDuration(), 
         HintletTestData.getLongDurationInput(),
-        HintletTestData.getLongDurationOutput()
-      );
+        HintletTestData.getLongDurationOutput());
   }
   
   public void testTotalBytes() {
     testAssistant.runTest(
         new HintletTotalBytes(), 
         HintletTestData.getTotalBytesInput(),
-        HintletTestData.getTotalBytesOutput()
-      );
+        HintletTestData.getTotalBytesOutput());
   }
 }
