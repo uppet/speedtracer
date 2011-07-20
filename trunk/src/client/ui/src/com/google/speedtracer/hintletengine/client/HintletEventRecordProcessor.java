@@ -59,13 +59,11 @@ public final class HintletEventRecordProcessor {
     // Calculate the time spent in each event/sub-event exclusive of children
     computeSelfTime(eventRecord);
 
-    // Potentially keep state for a network resource.
-    if (eventRecord.getType() == EventRecordType.RESOURCE_UPDATED) {
-      HintletNetworkResources.getInstance().onEventRecord(eventRecord);
-    } else {    
-      for (HintletRule rule : rules) {
-        rule.onEventRecord(eventRecord);
-      }
+    // Keep state for a network resource. NetworkEventDispatcher
+    // will determine which events to save data from.
+    HintletNetworkResources.getInstance().onEventRecord(eventRecord);
+    for (HintletRule rule : rules) {
+      rule.onEventRecord(eventRecord);
     }
   }
 
