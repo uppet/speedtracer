@@ -98,7 +98,6 @@ public class HintletTestHelper {
 
     for (int i = 0; i < input.size(); i++) {
       EventRecord eventRecord = input.get(i).cast();
-      eventRecord.setSequence(i + 1); // output expects sequence
       evenRecordProcessor.onEventRecord(eventRecord);
     }
     GWTTestCase.assertTrue("Hintlet rule \"" + rule.getHintletName() + "\" test failed.", 
