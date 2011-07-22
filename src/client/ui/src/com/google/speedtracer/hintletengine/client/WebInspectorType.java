@@ -16,6 +16,7 @@ package com.google.speedtracer.hintletengine.client;
 
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
+import com.google.speedtracer.client.model.NetworkResource;
 import com.google.speedtracer.client.model.ResourceUpdateEvent;
 
 import java.util.Arrays;
@@ -46,7 +47,7 @@ public enum WebInspectorType {
    * @return the type of resource, given the url and header map, as one of the RESOURCE_TYPE_XXX
    *         constants.
    */
-  public static WebInspectorType getResourceType(ResourceUpdateEvent updateEvent) {
+  public static WebInspectorType getResourceType(NetworkResource networkResource) {
 
     if (mimeTypeRegexp == null) {
       mimeTypeRegexp = RegExp.compile("^[^/;]+/[^/;]+");
@@ -56,7 +57,7 @@ public enum WebInspectorType {
     // prefix of the Content-Type header and returns the appropriate resource
     // type.
     String contentTypeHeader =
-        HintletHeaderUtils.hasHeader(updateEvent.getUpdate().getResponseHeaders(), "Content-Type");
+        HintletHeaderUtils.hasHeader(networkResource.getResponseHeaders(), "Content-Type");
     if (contentTypeHeader == null) {
       return OTHER;
     }
@@ -86,7 +87,7 @@ public enum WebInspectorType {
     }
 
     // TODO(zundel): this test is less than complete.
-    String url = updateEvent.getUpdate().getUrl();
+    String url = networkResource.getUrl();
     if (mimeType.equals("image/vnd.microsoft.icon")
         || (url != null && url.toLowerCase().endsWith("/favicon.ico"))) {
       return FAVICON;
