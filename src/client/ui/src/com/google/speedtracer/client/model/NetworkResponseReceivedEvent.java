@@ -51,11 +51,11 @@ public class NetworkResponseReceivedEvent extends NetworkEvent {
     }
 
     public final DetailedResponseTiming getDetailedTiming() {
-      return getJSObjectProperty("timing").<DetailedResponseTiming>cast();
+      return getJSObjectProperty("timing").<DetailedResponseTiming> cast();
     }
 
     public final HeaderMap getHeaders() {
-      return getJSObjectProperty("headers").<HeaderMap>cast();
+      return getJSObjectProperty("headers").<HeaderMap> cast();
     }
 
     public final String getUrl() {
@@ -64,6 +64,16 @@ public class NetworkResponseReceivedEvent extends NetworkEvent {
 
     public final boolean wasCached() {
       return getBooleanProperty("fromDiskCache");
+    }
+
+    /**
+     * Because "status" is marked as optional {@link SpeedTracerSchemas}, we do this check.
+     */
+    public final int getStatus() {
+      if (hasOwnProperty("status")) {
+        return getIntProperty("status");
+      }
+      return -1;
     }
   }
 

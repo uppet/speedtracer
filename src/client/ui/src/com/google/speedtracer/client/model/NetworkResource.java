@@ -434,6 +434,7 @@ public class NetworkResource {
     this.cached = response.wasCached();
     this.connectionID = response.getConnectionID();
     this.connectionReused = response.getConnectionReused();
+    this.statusCode = response.getStatus();
 
     DetailedResponseTiming detailedTiming = response.getDetailedTiming();
     if (detailedTiming != null) {
