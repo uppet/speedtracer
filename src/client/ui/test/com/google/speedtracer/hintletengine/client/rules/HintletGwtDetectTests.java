@@ -52,107 +52,107 @@ public class HintletGwtDetectTests extends GWTTestCase {
 }-*/;
 
   private native static EventRecord resourceSendRequest(int identifier, String url, int sequence)/*-{
-		return {
-			"data" : {
-				"identifier" : identifier,
-				"url" : url,
-				"requestMethod" : "GET"
-			},
-			"type" : @com.google.speedtracer.shared.EventRecordType::RESOURCE_SEND_REQUEST,
-			"time" : sequence,
-			"sequence" : sequence
-		};
+    return {
+        "data" : {
+            "identifier" : identifier,
+            "url" : url,
+            "requestMethod" : "GET"
+        },
+        "type" : @com.google.speedtracer.shared.EventRecordType::RESOURCE_SEND_REQUEST,
+        "time" : sequence,
+        "sequence" : sequence
+    };
   }-*/;
 
   private native static EventRecord resourceReceiveResponse(int identifier, int sequence)/*-{
-		return {
-			"data" : {
-				"identifier" : identifier,
-				"statusCode" : 200,
-				"mimeType" : "application/x-javascript"
-			},
-			"children" : [],
-			"type" : @com.google.speedtracer.shared.EventRecordType::RESOURCE_RECEIVE_RESPONSE,
-			"duration" : 0.029052734375,
-			"time" : sequence,
-			"sequence" : sequence
-		};
+    return {
+        "data" : {
+            "identifier" : identifier,
+            "statusCode" : 200,
+            "mimeType" : "application/x-javascript"
+        },
+        "children" : [],
+        "type" : @com.google.speedtracer.shared.EventRecordType::RESOURCE_RECEIVE_RESPONSE,
+        "duration" : 0.029052734375,
+        "time" : sequence,
+        "sequence" : sequence
+    };
   }-*/;
 
   private native static EventRecord resourceDataReceived(int identifier, int sequence)/*-{
-		return {
-			"data" : {
-				"identifier" : identifier
-			},
-			"children" : [],
-			"type" : @com.google.speedtracer.shared.EventRecordType::RESOURCE_DATA_RECEIVED,
-			"duration" : 0.02001953125,
-			"time" : sequence,
-			"sequence" : sequence
-		};
+    return {
+        "data" : {
+          "identifier" : identifier
+        },
+        "children" : [],
+        "type" : @com.google.speedtracer.shared.EventRecordType::RESOURCE_DATA_RECEIVED,
+        "duration" : 0.02001953125,
+        "time" : sequence,
+        "sequence" : sequence
+    };
   }-*/;
 
   private native static EventRecord networkResponseReceived(int identifier, int sequence,
       String date, String expires, String cacheControl)/*-{
-		var event = {
-			"sequence" : sequence,
-			"data" : {
-				"response" : {
-					"statusText" : "OK",
-					"fromDiskCache" : false,
-					"connectionReused" : true,
-					"connectionId" : 751769,
-					"status" : 200,
-					"headers" : {
-						"Content-Length" : "2349",
-						"Accept-Ranges" : "bytes",
+    var event = {
+        "sequence" : sequence,
+        "data" : {
+            "response" : {
+                "statusText" : "OK",
+                "fromDiskCache" : false,
+                "connectionReused" : true,
+                "connectionId" : 751769,
+                "status" : 200,
+                "headers" : {
+                    "Content-Length" : "2349",
+                    "Accept-Ranges" : "bytes",
 
-						"Connection" : "Keep-Alive"
-					}
-				},
-				"identifier" : identifier
-			},
-			"time" : sequence,
-			"type" : @com.google.speedtracer.shared.EventRecordType::NETWORK_RESPONSE_RECEIVED
-		};
+                    "Connection" : "Keep-Alive"
+                }
+            },
+            "identifier" : identifier
+        },
+        "time" : sequence,
+        "type" : @com.google.speedtracer.shared.EventRecordType::NETWORK_RESPONSE_RECEIVED
+    };
 
-		if (date != null) {
-			event.data.response.headers["Date"] = date;
-		}
+    if (date != null) {
+      event.data.response.headers["Date"] = date;
+    }
 
-		if (expires != null) {
-			event.data.response.headers["Expires"] = expires;
-		}
+    if (expires != null) {
+      event.data.response.headers["Expires"] = expires;
+    }
 
-		if (cacheControl != null) {
-			event.data.response.headers["Cache-Control"] = cacheControl;
-		}
+    if (cacheControl != null) {
+      event.data.response.headers["Cache-Control"] = cacheControl;
+    }
 
-		return event;
+    return event;
   }-*/;
 
   private native static EventRecord resourceFinish(int identifier, int sequence)/*-{
-		return {
-			"data" : {
-				"identifier" : identifier,
-				"didFail" : false
-			},
-			"type" : @com.google.speedtracer.shared.EventRecordType::RESOURCE_FINISH,
-			"time" : sequence,
-			"sequence" : sequence
-		};
+    return {
+        "data" : {
+            "identifier" : identifier,
+            "didFail" : false
+        },
+        "type" : @com.google.speedtracer.shared.EventRecordType::RESOURCE_FINISH,
+        "time" : sequence,
+        "sequence" : sequence
+    };
   }-*/;
 
   private native static EventRecord networkDataReceived(int identifier, int sequence, int dataLength)/*-{
-		return {
-			"type" : @com.google.speedtracer.shared.EventRecordType::NETWORK_DATA_RECEIVED,
-			"time" : sequence,
-			"data" : {
-				"identifier" : identifier,
-				"dataLength" : dataLength
-			},
-			"sequence" : sequence
-		};
+    return {
+        "type" : @com.google.speedtracer.shared.EventRecordType::NETWORK_DATA_RECEIVED,
+        "time" : sequence,
+        "data" : {
+            "identifier" : identifier,
+            "dataLength" : dataLength
+        },
+        "sequence" : sequence
+    };
   }-*/;
 
   /**
@@ -235,56 +235,56 @@ public class HintletGwtDetectTests extends GWTTestCase {
   }
 
   private native static HintletTestCase getCaseNonCacheableNoHint()/*-{
-		return {
-			"inputs" : @com.google.speedtracer.hintletengine.client.rules.HintletGwtDetectTests::getInputs(ZII)
-			          (true, 1000, 1000),
-			"expectedHints" : []
-		};
+    return {
+        "inputs" : @com.google.speedtracer.hintletengine.client.rules.HintletGwtDetectTests::getInputs(ZII)
+                   (true, 1000, 1000),
+        "expectedHints" : []
+    };
   }-*/;
 
   private native static HintletTestCase getCaseNonCacheableWithHints()/*-{
-		return {
-			"inputs" : @com.google.speedtracer.hintletengine.client.rules.HintletGwtDetectTests::getInputs(ZII)
-			          (false, 1000, 1000),
-			"expectedHints" : [
-					{
-						"hintletRule" : "GWT Application Detection",
-						"timestamp" : 6,
-						"description" : "GWT selection script '.nocache.js' file should be set as non-cacheable",
-						"refRecord" : 12,
-						"severity" : 1
-					}, ]
-		};
+    return {
+        "inputs" : @com.google.speedtracer.hintletengine.client.rules.HintletGwtDetectTests::getInputs(ZII)
+                   (false, 1000, 1000),
+        "expectedHints" : [
+            {
+                "hintletRule" : "GWT Application Detection",
+                "timestamp" : 6,
+                "description" : "GWT selection script '.nocache.js' file should be set as non-cacheable",
+                "refRecord" : 12,
+                "severity" : 1
+            },
+        ]
+    };
   }-*/;
 
   private native static HintletTestCase getCaseDownloadSizeWithHints()/*-{
-		return {
-			"inputs" : @com.google.speedtracer.hintletengine.client.rules.HintletGwtDetectTests::getInputs(ZII)
-			          (true, 1342730, 1342730),
-			"expectedHints" : [
-					{
-						"description" : "The size of the initial GWT download"
-								+ " (https:/www.efgh.com/gwt.publichome/8E82EC6A261B0BE8394B9AC1BB68A7A9.cache.html)"
-								+ " is 1342730 bytes.  Consider using GWT.runAsync() code splitting and the Compile Report to"
-								+ " reduce the size of the initial download.",
-						"hintletRule" : "GWT Application Detection",
-						"refRecord" : 18,
-						"severity" : 1,
-						"timestamp" : 14
-					},
-					{
-						"description" : "The size of the initial GWT download"
-								+ " (https:/www.efgh.com/gwt.publichome/9E82AC6A261B0BE8394B9AC1BB68A7AE.cache.html)"
-								+ " is 1342730 bytes.  Consider using GWT.runAsync() code splitting and the Compile Report to"
-								+ " reduce the size of the initial download.",
-						"hintletRule" : "GWT Application Detection",
-						"refRecord" : 24,
-						"severity" : 1,
-						"timestamp" : 20
-					}
-
-			]
-		};
+    return {
+        "inputs" : @com.google.speedtracer.hintletengine.client.rules.HintletGwtDetectTests::getInputs(ZII)
+                   (true, 1342730, 1342730),
+        "expectedHints" : [
+            {
+                "description" : "The size of the initial GWT download"
+                                + " (https:/www.efgh.com/gwt.publichome/8E82EC6A261B0BE8394B9AC1BB68A7A9.cache.html)"
+                                + " is 1342730 bytes.  Consider using GWT.runAsync() code splitting and the Compile Report to"
+                                + " reduce the size of the initial download.",
+                "hintletRule" : "GWT Application Detection",
+                "refRecord" : 18,
+                "severity" : 1,
+                "timestamp" : 14
+            },
+            {
+                "description" : "The size of the initial GWT download"
+                                + " (https:/www.efgh.com/gwt.publichome/9E82AC6A261B0BE8394B9AC1BB68A7AE.cache.html)"
+                                + " is 1342730 bytes.  Consider using GWT.runAsync() code splitting and the Compile Report to"
+                                + " reduce the size of the initial download.",
+                "hintletRule" : "GWT Application Detection",
+                "refRecord" : 24,
+                "severity" : 1,
+                "timestamp" : 20
+            }
+        ]
+    };
   }-*/;
 
 }
