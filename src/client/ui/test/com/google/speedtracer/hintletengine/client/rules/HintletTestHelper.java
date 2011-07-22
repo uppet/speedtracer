@@ -97,7 +97,7 @@ public class HintletTestHelper {
 
     for (int i = 0; i < expectedHints.size(); i++) {
       if (!hintsMatch(expectedHints.get(i), hints.get(i))) {
-        GWTTestCase.fail("Expecting " + JSON.stringify(expectedHints.get(i)) + ". But got "
+        GWTTestCase.fail("Expecting \n   " + JSON.stringify(expectedHints.get(i)) + "\nBut got \n   "
             + JSON.stringify(hints.get(i)));
       }
     }
