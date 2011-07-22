@@ -622,6 +622,13 @@ public class SpeedtracerSchemas {
            "description" : "True if the request was received from cache",           
            "optional" : true
          },
+         "status" : {
+           "type" : "integer",
+           "description" : "Integer HTTP response code",
+           "minimum" : 0,
+           "maximum" : 599,
+           "optional" : true
+         },
          "headers" : {"type" : "object", "description" : "Request Headers", "optional" : true},
          "timing" : {
            "type" : "object",
