@@ -72,6 +72,11 @@ public final class HintletCacheUtils {
     return (type == WebInspectorType.SCRIPT || type == WebInspectorType.IMAGE
         || type == WebInspectorType.STYLESHEET || type == WebInspectorType.MEDIA);
   }
+  
+  public static boolean isCompressibleResourceType(WebInspectorType type) {
+    return (type == WebInspectorType.DOCUMENT || type == WebInspectorType.SCRIPT
+        || type == WebInspectorType.STYLESHEET);
+  }
 
   /**
    * @param headers An object with a key for each header and a value containing the contents of that
