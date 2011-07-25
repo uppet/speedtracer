@@ -43,7 +43,7 @@ public enum WebInspectorType {
 
   /**
    * 
-   * @param updateEvent ResourceUpdateEvent
+   * @param networkResource 
    * @return the type of resource, given the url and header map, as one of the RESOURCE_TYPE_XXX
    *         constants.
    */
