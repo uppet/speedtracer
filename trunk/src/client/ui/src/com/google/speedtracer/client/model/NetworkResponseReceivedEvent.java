@@ -66,14 +66,9 @@ public class NetworkResponseReceivedEvent extends NetworkEvent {
       return getBooleanProperty("fromDiskCache");
     }
 
-    /**
-     * Because "status" is marked as optional {@link SpeedTracerSchemas}, we do this check.
-     */
     public final int getStatus() {
-      if (hasOwnProperty("status")) {
-        return getIntProperty("status");
-      }
-      return -1;
+      // Check if exists because "status" is marked as optional {@link SpeedTracerSchemas}
+      return hasOwnProperty("status") ? getIntProperty("status") : 0;
     }
   }
 
