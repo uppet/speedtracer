@@ -15,9 +15,15 @@ package com.google.speedtracer.hintletengine.client;
 
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.speedtracer.client.model.NetworkResource.HeaderMap;
+import static com.google.speedtracer.hintletengine.client.HintletCacheUtils.freshnessLifetimeGreaterThan;
+import static com.google.speedtracer.hintletengine.client.HintletCacheUtils.hasExplicitExpiration;
+import static com.google.speedtracer.hintletengine.client.HintletCacheUtils.isCacheableResourceType;
+import static com.google.speedtracer.hintletengine.client.HintletCacheUtils.isCacheableResponseCode;
+import static com.google.speedtracer.hintletengine.client.HintletCacheUtils.isPubliclyCacheable;
+import static com.google.speedtracer.hintletengine.client.HintletCacheUtils.isExplicitlyNonCacheable;
 
 /**
- * Tests {@link HintletCacheUtils.java}
+ * Tests {@link HintletCacheUtils}
  */
 public class HintletCacheUtilsTests extends GWTTestCase {
 
@@ -31,91 +37,91 @@ public class HintletCacheUtilsTests extends GWTTestCase {
 
   public void testFreshnessLifetimeGreaterThan() {
     assertFalse("no date in header should fail",
-        HintletCacheUtils.freshnessLifetimeGreaterThan(createHeaderNoDate(), 0));
+        freshnessLifetimeGreaterThan(createHeaderNoDate(), 0));
     assertFalse("invalid date should fail",
-        HintletCacheUtils.freshnessLifetimeGreaterThan(createHeaderInvalidDate(), 0));
+        freshnessLifetimeGreaterThan(createHeaderInvalidDate(), 0));
     assertFalse("no cache control header should fail",
-        HintletCacheUtils.freshnessLifetimeGreaterThan(createHeaderDateOnly(), 0));
+        freshnessLifetimeGreaterThan(createHeaderDateOnly(), 0));
     assertFalse("no max age or Expires should fail",
-        HintletCacheUtils.freshnessLifetimeGreaterThan(createHeaderDateNoExpiresNoMaxAge(), 0));
+        freshnessLifetimeGreaterThan(createHeaderDateNoExpiresNoMaxAge(), 0));
 
     // checking max age
     assertTrue("max-age=1 > 0 should pass",
-        HintletCacheUtils.freshnessLifetimeGreaterThan(createHeaderPublicMaxAge1(), 0));
+        freshnessLifetimeGreaterThan(createHeaderPublicMaxAge1(), 0));
     assertFalse("max-age=1 > 1500 should fail",
-        HintletCacheUtils.freshnessLifetimeGreaterThan(createHeaderPublicMaxAge1(), 1500));
+        freshnessLifetimeGreaterThan(createHeaderPublicMaxAge1(), 1500));
 
     // checking Expires
     assertTrue("Expires in the future should pass",
-        HintletCacheUtils.freshnessLifetimeGreaterThan(createHeaderFutureExpiration(), 1000));
+        freshnessLifetimeGreaterThan(createHeaderFutureExpiration(), 1000));
     assertFalse("Expires in the past should fail",
-        HintletCacheUtils.freshnessLifetimeGreaterThan(createHeaderPastExpiration(), 1000));
+        freshnessLifetimeGreaterThan(createHeaderPastExpiration(), 1000));
   }
   
   public void testHasExplicitExpiration() {
     assertFalse("Header without date should fail",
-        HintletCacheUtils.hasExplicitExpiration(createHeaderNoDate()));
+        hasExplicitExpiration(createHeaderNoDate()));
     assertFalse("Empty header should fail", 
-        HintletCacheUtils.hasExplicitExpiration(createEmptyHeader()));
+        hasExplicitExpiration(createEmptyHeader()));
     assertFalse("date but no Expires or max-age should fail",
-        HintletCacheUtils.hasExplicitExpiration(createHeaderDateNoExpiresNoMaxAge()));
+        hasExplicitExpiration(createHeaderDateNoExpiresNoMaxAge()));
     assertTrue("has date and Cache-Control:max-age should pass",
-        HintletCacheUtils.hasExplicitExpiration(createHeaderPublicMaxAge1()));
+        hasExplicitExpiration(createHeaderPublicMaxAge1()));
     assertTrue("has date and Expires should pass",
-        HintletCacheUtils.hasExplicitExpiration(createHeaderNoCacheControlFutureExpiration()));
+        hasExplicitExpiration(createHeaderNoCacheControlFutureExpiration()));
   }
 
   public void testIsCacheableResponseCode() {
     int[] cacheable = {200, 203, 206, 300, 301, 410, 304};
     int[] notCacheable = {0, -1, 100, 201, 1000};
     for (int val : cacheable) {
-      assertTrue(HintletCacheUtils.isCacheableResponseCode(val));
+      assertTrue(isCacheableResponseCode(val));
     }
     for (int val : notCacheable) {
-      assertFalse(HintletCacheUtils.isCacheableResponseCode(val));
+      assertFalse(isCacheableResponseCode(val));
     }
   }
 
   public void testIsExplicitlyNonCacheable() {
     String url = "http://www.google.com";
     assertTrue("Cache-Control no-cache is specified should pass",
-        HintletCacheUtils.isExplicitlyNonCacheable(
+        isExplicitlyNonCacheable(
             createHeaderNoCache(), url, DEFAULT_CACHEABLE_RESPONSE));
     assertTrue("Cache-Control no-store is specified should pass",
-        HintletCacheUtils.isExplicitlyNonCacheable(
+        isExplicitlyNonCacheable(
             createHeaderNoStore(), url, DEFAULT_CACHEABLE_RESPONSE));
     assertTrue("Cache-Control proxy-revalidate is specified should pass",
-        HintletCacheUtils.isExplicitlyNonCacheable(
+        isExplicitlyNonCacheable(
             createHeaderProxyRevalidate(), url, DEFAULT_CACHEABLE_RESPONSE));
     assertTrue("Pragma no-cache is specified should pass",
-        HintletCacheUtils.isExplicitlyNonCacheable(
+        isExplicitlyNonCacheable(
             createHeaderPragmaNoCache(), url, DEFAULT_CACHEABLE_RESPONSE));
     assertTrue("no Expires and Cache-Control max-age:0 should pass",
-        HintletCacheUtils.isExplicitlyNonCacheable(
+        isExplicitlyNonCacheable(
             createHeaderCachePrivateZeroMaxAgeNoExpires(), url, DEFAULT_CACHEABLE_RESPONSE));
     assertTrue("no explicit expiration containing ? should pass",
-        HintletCacheUtils.isExplicitlyNonCacheable(
+        isExplicitlyNonCacheable(
             createHeaderDateNoExpiresNoMaxAge(), url + "/?val=0", DEFAULT_CACHEABLE_RESPONSE));
     assertTrue("no explicit expiration and non-cacheable response code should pass",
-        HintletCacheUtils.isExplicitlyNonCacheable(
+        isExplicitlyNonCacheable(
             createHeaderDateNoExpiresNoMaxAge(), url, DEFAULT_NON_CACHEABLE_RESPONSE));
     assertFalse("no explicit expiration and cacheable response code should fail",
-        HintletCacheUtils.isExplicitlyNonCacheable(
+        isExplicitlyNonCacheable(
             createHeaderDateNoExpiresNoMaxAge(), url, DEFAULT_CACHEABLE_RESPONSE));
-    assertFalse("cacheable resource should fail", HintletCacheUtils.isExplicitlyNonCacheable(
+    assertFalse("cacheable resource should fail", isExplicitlyNonCacheable(
         createHeaderPublicMaxAge1(), url, DEFAULT_CACHEABLE_RESPONSE));
   }
 
   public void testIsPubliclyCacheable() {
     String url = "http://www.google.com";
-    assertFalse("is explicitly non cacheable should fail", HintletCacheUtils.isPubliclyCacheable(
+    assertFalse("is explicitly non cacheable should fail", isPubliclyCacheable(
         createHeaderNoCache(), url, DEFAULT_CACHEABLE_RESPONSE));
-    assertTrue("Cache-Control public should pass", HintletCacheUtils.isPubliclyCacheable(
+    assertTrue("Cache-Control public should pass", isPubliclyCacheable(
         createHeaderPublicMaxAge1(), url, DEFAULT_CACHEABLE_RESPONSE));
     assertTrue("no cache-control (not explicitly private) and no ? in URL should pass",
-        HintletCacheUtils.isPubliclyCacheable(
+        isPubliclyCacheable(
             createHeaderNoCacheControlFutureExpiration(), url, DEFAULT_CACHEABLE_RESPONSE));
-    assertFalse("private cache control should fail", HintletCacheUtils.isPubliclyCacheable(
+    assertFalse("private cache control should fail", isPubliclyCacheable(
         createHeaderCachePrivateZeroMaxAgeNoExpires(), url, DEFAULT_CACHEABLE_RESPONSE));
   }
 
