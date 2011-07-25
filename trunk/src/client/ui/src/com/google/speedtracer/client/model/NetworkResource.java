@@ -69,7 +69,7 @@ public class NetworkResource {
 
   private boolean connectionReused = false;
 
-  private int dataLength = -1;
+  private int dataLength = 0;
 
   private boolean didFail;
 
@@ -346,7 +346,7 @@ public class NetworkResource {
   }
 
   public void update(NetworkDataReceivedEvent dataLengthChange) {
-    this.dataLength = dataLengthChange.getData().<NetworkDataReceivedEvent.Data> cast().getLengthReceived();
+    this.dataLength += dataLengthChange.getData().<NetworkDataReceivedEvent.Data> cast().getLengthReceived();
   }
 
   public void update(NetworkResponseReceivedEvent record) {
