@@ -101,6 +101,22 @@ public final class HintletHeaderUtils {
     return prop == null ? false : compressionIndicatorSet.contains(prop.toLowerCase());
   }
 
+  /**
+   * @param headers
+   * @return the cookie header if either "Set-Cookie" or "Cookie" are found, {@code null} otherwise
+   */
+  public static String hasCookie(HeaderMap headers) {
+    String cookie = HintletHeaderUtils.hasHeader(headers, "Set-Cookie");
+    if (cookie != null && cookie.length() > 0) {
+      return cookie;
+    }
+    cookie = HintletHeaderUtils.hasHeader(headers, "Cookie");
+    if (cookie != null && cookie.length() > 0) {
+      return cookie;
+    }
+    return null;
+  }
+  
   private native static boolean stringMatchIM(String sourceString, String targetString)/*-{
     var re = new RegExp(targetString, 'im');
     return (sourceString.match(re) != null);
