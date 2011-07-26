@@ -126,9 +126,11 @@ public class HintletTestHelper {
   private static void validateEventRecordFormat(EventRecord event) {
     try {
       JsonSchemaResults results = validator.validate(event);
-      GWTTestCase.assertTrue("Could not validate: \n" + JSON.stringify(event) + "\n"
-          + results.getErrors().get(0).getProperty() + " "
-          + results.getErrors().get(0).getMessage(), results.isValid());
+      if(!results.isValid()) {
+        GWTTestCase.fail("Could not validate: \n" + JSON.stringify(event) + "\n"
+              + results.getErrors().get(0).getProperty() + " "
+              + results.getErrors().get(0).getMessage());
+      }
     } catch (JSONParseException e) {
       GWTTestCase.fail("Got an exception trying to JSON parse the record: " + e.getMessage());
     }
