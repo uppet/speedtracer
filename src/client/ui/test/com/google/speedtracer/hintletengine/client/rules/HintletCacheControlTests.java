@@ -135,7 +135,7 @@ public class HintletCacheControlTests extends GWTTestCase {
     };
   }-*/;
 
-  public void testExpirationRuleMissingExpiration() {    
+  public void testExpirationRuleMissingExpiration() {
     responseBuilder.setResponseHeaderCacheControl("private");
     responseBuilder.setResponseHeaderContentEncoding("gzip");
     responseBuilder.setResponseHeaderContentType("text/css;charset=UTF-8");
@@ -148,14 +148,14 @@ public class HintletCacheControlTests extends GWTTestCase {
     runCacheTest("missing cache expiration", responseBuilder.getEvent(), DEFAULT_URL, expectedHint);
   }
 
-  public void testExpirationRuleNoCache() {    
+  public void testExpirationRuleNoCache() {
     responseBuilder.setResponseHeaderCacheControl("no-cache,no-store");
     responseBuilder.setResponseHeaderContentEncoding("gzip");
     responseBuilder.setResponseHeaderContentType("text/css;charset=UTF-8");
     runCacheTestNoHint("Marked explicitly not to cache", responseBuilder.getEvent(), DEFAULT_URL);
   }
 
-  public void testExpirationRuleHasCookie() {    
+  public void testExpirationRuleHasCookie() {
     responseBuilder.setResponseHeaderCacheControl("private");
     responseBuilder.setResponseHeaderContentEncoding("gzip");
     responseBuilder.setResponseHeaderContentType("text/css;charset=UTF-8");
@@ -163,7 +163,7 @@ public class HintletCacheControlTests extends GWTTestCase {
     runCacheTestNoHint("has a cookie", responseBuilder.getEvent(), DEFAULT_URL);
   }
 
-  public void testExpirationRuleNonCacheableResponse() {    
+  public void testExpirationRuleNonCacheableResponse() {
     responseBuilder.setResponseHeaderCacheControl("private");
     responseBuilder.setResponseHeaderContentEncoding("gzip");
     responseBuilder.setResponseHeaderContentType("text/css;charset=UTF-8");
@@ -171,7 +171,7 @@ public class HintletCacheControlTests extends GWTTestCase {
     runCacheTestNoHint("Non cacheable response", responseBuilder.getEvent(), DEFAULT_URL);
   }
 
-  public void testExpirationRuleNonCacheableType() {    
+  public void testExpirationRuleNonCacheableType() {
     responseBuilder.setResponseHeaderCacheControl("private");
     responseBuilder.setResponseHeaderContentEncoding("gzip");
     responseBuilder.setResponseHeaderContentType("text/css;charset=UTF-8");
@@ -179,11 +179,72 @@ public class HintletCacheControlTests extends GWTTestCase {
     runCacheTestNoHint("Non cacheable response", responseBuilder.getEvent(), DEFAULT_URL);
   }
 
-  public void testExpirationRuleHasExpiration() {    
+  public void testExpirationRuleHasExpiration() {
     responseBuilder.setResponseHeaderCacheControl("private");
     responseBuilder.setResponseHeaderContentEncoding("gzip");
     responseBuilder.setResponseHeaderContentType("text/css;charset=UTF-8");
     responseBuilder.setResponseHeaderExpires(FUTURE_DATE);
     runCacheTestNoHint("Has Expiration", responseBuilder.getEvent(), DEFAULT_URL);
   }
+  
+  public void testVaryAcceptable() {
+    responseBuilder.setResponseHeaderVary("Accept-Encoding");
+    responseBuilder.setResponseHeaderCacheControl("public");
+    responseBuilder.setResponseHeaderContentType("image/gif");
+    responseBuilder.setResponseHeaderExpires(FUTURE_DATE);
+    responseBuilder.setResponseHeaderLastModified("Fri, 04 Sep 1998 11:43:00 GMT");
+    runCacheTestNoHint("Vary tag is acceptable to IE", responseBuilder.getEvent(), DEFAULT_URL);
+  }
+  
+  public void testVaryGibberish() {
+    responseBuilder.setResponseHeaderVary("Random Gibbersih");
+    responseBuilder.setResponseHeaderCacheControl("public");
+    responseBuilder.setResponseHeaderContentType("image/gif");
+    responseBuilder.setResponseHeaderExpires(FUTURE_DATE);
+    responseBuilder.setResponseHeaderLastModified("Fri, 04 Sep 1998 11:43:00 GMT");
+    
+    String hintDescription = "The following resources specify a 'Vary' header"
+      + " that disables caching in most versions of Internet Explorer."
+      + " Fix or remove the 'Vary' header for the following resources:"
+      + " http://www.google.com";
+    HintRecord hint = createHintRecord(hintDescription, HintRecord.SEVERITY_CRITICAL);
+    
+    runCacheTest(hintDescription, responseBuilder.getEvent(), DEFAULT_URL, hint);
+  }
+
+  public void testVaryNoCache() {
+    responseBuilder.setResponseHeaderCacheControl("private, no-cache");
+    responseBuilder.setResponseHeaderContentType("image/gif");
+    responseBuilder.setResponseHeaderExpires(FUTURE_DATE);
+    responseBuilder.setResponseHeaderLastModified("Fri, 04 Sep 1998 11:43:00 GMT");
+    runCacheTestNoHint("Junk Vary header and no cache", responseBuilder.getEvent(), DEFAULT_URL);
+  }
+  
+  public void testVaryPastExpires() {
+    responseBuilder.setResponseHeaderVary("Accept-Encoding");
+    responseBuilder.setResponseHeaderCacheControl("public");
+    responseBuilder.setResponseHeaderContentType("image/gif");
+    responseBuilder.setResponseHeaderExpires("Wed, 17 Sep 1975 21:32:10 GMT");
+    responseBuilder.setResponseHeaderLastModified("Fri, 04 Sep 1998 11:43:00 GMT");
+    runCacheTestNoHint(
+        "Acceptable Vary and past expiration", responseBuilder.getEvent(), DEFAULT_URL);
+  }
+  
+  public void testVarySomeAcceptable() {
+    responseBuilder.setResponseHeaderVary("Accept-Encoding, BOGUS");
+    responseBuilder.setResponseHeaderCacheControl("public");
+    responseBuilder.setResponseHeaderContentType("image/gif");
+    responseBuilder.setResponseHeaderExpires(FUTURE_DATE);
+    responseBuilder.setResponseHeaderLastModified("Fri, 04 Sep 1998 11:43:00 GMT");
+
+    String hintDescription = "The following resources specify a 'Vary' header"
+            + " that disables caching in most versions of Internet Explorer."
+            + " Fix or remove the 'Vary' header for the following resources:"
+            + " http://www.google.com";
+    HintRecord expectedHint = createHintRecord(hintDescription, HintRecord.SEVERITY_CRITICAL);
+
+    runCacheTest("Contains a Vary tag that should trigger hint", responseBuilder.getEvent(),
+        DEFAULT_URL, expectedHint);
+  }
+
 }

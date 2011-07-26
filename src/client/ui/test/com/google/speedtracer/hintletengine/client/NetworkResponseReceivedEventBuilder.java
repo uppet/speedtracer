@@ -140,6 +140,11 @@ public class NetworkResponseReceivedEventBuilder {
     setResponseHeader("Cookie", cookie);
     return this;
   }
+  
+  public NetworkResponseReceivedEventBuilder setResponseHeaderLastModified(String lastModified) {
+    setResponseHeader("Last-Modified", lastModified);
+    return this;
+  }
 
   public NetworkResponseReceivedEventBuilder setResponseHeaderSetCookie(String setCookie) {
     setResponseHeader("Set-Cookie", setCookie);
