@@ -16,6 +16,7 @@ package com.google.speedtracer.hintletengine.client.rules;
 import com.google.speedtracer.client.model.EventRecord;
 import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.NetworkResource;
+import com.google.speedtracer.client.model.NetworkResource.HeaderMap;
 import com.google.speedtracer.client.model.ResourceFinishEvent;
 import com.google.speedtracer.hintletengine.client.HintletNetworkResources;
 
@@ -50,7 +51,8 @@ public class HintletCacheControl extends HintletRule {
   public HintletCacheControl() {
     cacheRules = new ArrayList<CacheRule>();
 
-    // Expiration
+    // Cache rule which generates hints when the Expires field 
+    // is needed but not present.
     cacheRules.add(new CacheRule() {
       public void onResourceFinish(NetworkResource resource, double timestamp, int refRecord) {
         if (!isCacheableResourceType(getResourceType(resource))) {
@@ -75,6 +77,52 @@ public class HintletCacheControl extends HintletRule {
             + " browsers. Specify an expiration at least one month in the future"
             + " for resources that should be cached, and an expiration in the past"
             + " for resources that should not be cached: " + resource.getUrl();
+      }
+    });
+   
+    // Cache rule which generates hints for inappropriate Vary tags
+    cacheRules.add(new CacheRule() {
+      public void onResourceFinish(NetworkResource resource, double timestamp, int refRecord) {
+        HeaderMap responseHeaders = resource.getResponseHeaders();
+        String varyHeader = responseHeaders.get("Vary");
+        if (varyHeader == null) {
+          return;
+        }
+        if (!isCacheableResourceType(getResourceType(resource))) {
+          return;
+        }
+        if (!freshnessLifetimeGreaterThan(responseHeaders, 0)) {
+          return;
+        }
+
+        // MS documentation indicates that IE will cache
+        // responses with Vary Accept-Encoding or
+        // User-Agent, but not anything else. So we
+        // strip these strings from the header, as well
+        // as separator characters (comma and space),
+        // and trigger a warning if there is anything
+        // left in the header.
+        varyHeader = removeValidVary(varyHeader);
+        if (varyHeader.length() > 0) {
+          addHint(getHintletName(), timestamp, formatMessage(resource), refRecord,
+              HintRecord.SEVERITY_CRITICAL);
+        }
+      }
+      
+      private native String removeValidVary(String header) /*-{
+        //var newHeader = header;
+        header = header.replace(/User-Agent/gi, '');
+        header = header.replace(/Accept-Encoding/gi, '');
+        var patt = new RegExp('[, ]*', 'g');
+        header = header.replace(patt, '');
+        return header;
+      }-*/;
+ 
+      
+      private String formatMessage(NetworkResource resource) {
+        return "The following resources specify a 'Vary' header that"
+            + " disables caching in most versions of Internet Explorer. Fix or remove"
+            + " the 'Vary' header for the following resources: " + resource.getUrl();
       }
     });
   }
