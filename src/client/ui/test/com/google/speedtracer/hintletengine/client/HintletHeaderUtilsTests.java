@@ -50,6 +50,17 @@ public class HintletHeaderUtilsTests extends GWTTestCase {
     assertFalse(HintletHeaderUtils.headerContains(testData, "bogus", "text/html"));
   }
 
+  public void testHasCookie(){
+    HeaderMap testData = makeHeaderMap("text/html", "gzip");
+    assertNull(HintletHeaderUtils.hasCookie(testData));
+    testData.put("cookie", "test1");
+    assertEquals(HintletHeaderUtils.hasCookie(testData), "test1");
+    //make a new header map. this time we add Set-Cookie
+    testData = makeHeaderMap("text/html", "gzip");
+    testData.put("set-Cookie", "test2");
+    assertEquals(HintletHeaderUtils.hasCookie(testData), "test2");
+  }
+    
   private static native HeaderMap makeHeaderMap(String contentType, String contentEncoding) /*-{
     return {
         "Content-Type" : contentType,
