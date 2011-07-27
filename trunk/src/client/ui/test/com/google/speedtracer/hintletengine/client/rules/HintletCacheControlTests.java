@@ -247,4 +247,63 @@ public class HintletCacheControlTests extends GWTTestCase {
         DEFAULT_URL, expectedHint);
   }
 
+  public void testFreshnessShortFreshnessFromExpires() {
+    responseBuilder.setResponseHeaderCacheControl("public");
+    responseBuilder.setResponseHeaderContentType("image/png; charset=utf-8");
+    responseBuilder.setResponseHeaderExpires("Tue, 08 Sep 1998 17:43:37 GMT");
+
+    String hintDescription = "The following cacheable resources have a short"
+        + " freshness lifetime. Specify an expiration at least one month"
+        + " in the future for the following resources: http://www.google.com";
+    HintRecord expectedHint = createHintRecord(hintDescription, HintRecord.SEVERITY_WARNING);
+
+    runCacheTest("Marked cacheable but short freshness", responseBuilder.getEvent(), DEFAULT_URL,
+        expectedHint);
+  }
+  
+  public void testFreshnessShortFreshnessFromMaxAge() {
+    responseBuilder.setResponseHeaderCacheControl("private, max-age=1");
+    responseBuilder.setResponseHeaderContentType("image/png; charset=utf-8");
+
+    String hintDescription = "The following cacheable resources have a short"
+        + " freshness lifetime. Specify an expiration at least one month"
+        + " in the future for the following resources: http://www.google.com";
+    HintRecord expectedHint = createHintRecord(hintDescription, HintRecord.SEVERITY_WARNING);
+
+    runCacheTest(hintDescription, responseBuilder.getEvent(), DEFAULT_URL, expectedHint);
+  }
+
+  public void testFreshnessMoreThanMonthFreshnessFromMaxAge() {
+    double age = HintletCacheControl.SECONDS_IN_A_MONTH + 1;
+    responseBuilder.setResponseHeaderCacheControl("private, max-age="+age);
+    responseBuilder.setResponseHeaderContentType("image/png; charset=utf-8");
+    
+    String hintDescription = "To further improve cache hit rate, specify an expiration"
+      + " one year in the future for the following cacheable resources: http://www.google.com";
+    HintRecord expectedHint = createHintRecord(hintDescription, HintRecord.SEVERITY_INFO);
+    
+    runCacheTest("max-age more than a month", responseBuilder.getEvent(), DEFAULT_URL, expectedHint);
+  }
+  
+  public void testFreshnessMoreThanMonthFreshnessFromExpires() {
+    responseBuilder.setResponseHeaderCacheControl("private");
+    responseBuilder.setResponseHeaderContentType("image/png; charset=utf-8");
+    responseBuilder.setResponseHeaderDate("Fri, 01 Jan 2010 00:00:00 GMT");
+    responseBuilder.setResponseHeaderExpires("Mon, 01 Mar 2010 00:00:00 GMT");
+
+    String hintDescription = "To further improve cache hit rate, specify an expiration"
+      + " one year in the future for the following cacheable resources: http://www.google.com";
+    HintRecord expectedHint = createHintRecord(hintDescription, HintRecord.SEVERITY_INFO);
+
+    runCacheTest(
+        "Expires a year after date", responseBuilder.getEvent(), DEFAULT_URL, expectedHint);
+  }
+
+  public void testFreshnessYearExpires() {
+    responseBuilder.setResponseHeaderCacheControl("private");
+    responseBuilder.setResponseHeaderContentType("image/png; charset=utf-8");
+    responseBuilder.setResponseHeaderDate("Fri, 01 Jan 2010 00:00:00 GMT");
+    responseBuilder.setResponseHeaderExpires("Sat, 01 Jan 2011 00:00:00 GMT");
+    runCacheTestNoHint("Expires a year after date", responseBuilder.getEvent(), DEFAULT_URL);
+  }
 }
