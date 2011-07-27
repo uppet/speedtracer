@@ -18,6 +18,7 @@ import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.NetworkResource;
 import com.google.speedtracer.client.model.NetworkResource.HeaderMap;
 import com.google.speedtracer.client.model.ResourceFinishEvent;
+import com.google.speedtracer.hintletengine.client.HintletHeaderUtils;
 import com.google.speedtracer.hintletengine.client.HintletNetworkResources;
 
 import static com.google.speedtracer.hintletengine.client.HintletCacheUtils.freshnessLifetimeGreaterThan;
@@ -58,14 +59,14 @@ public class HintletCacheControl extends HintletRule {
         if (!isCacheableResourceType(getResourceType(resource))) {
           return;
         }
-        if (resource.getResponseHeaders().get("Set-Cookie") != null) {
+        HeaderMap responseHeaders = resource.getResponseHeaders();
+        if(HintletHeaderUtils.hasCookie(responseHeaders) != null) {
           return;
         }
-        if (isExplicitlyNonCacheable(
-            resource.getResponseHeaders(), resource.getUrl(), resource.getStatusCode())) {
+        if (isExplicitlyNonCacheable(responseHeaders, resource.getUrl(), resource.getStatusCode())) {
           return;
         }
-        if (!hasExplicitExpiration(resource.getResponseHeaders())) {
+        if (!hasExplicitExpiration(responseHeaders)) {
           addHint(getHintletName(), timestamp, formatMessage(resource), refRecord,
               HintRecord.SEVERITY_CRITICAL);
         }
@@ -118,7 +119,6 @@ public class HintletCacheControl extends HintletRule {
         return header;
       }-*/;
  
-      
       private String formatMessage(NetworkResource resource) {
         return "The following resources specify a 'Vary' header that"
             + " disables caching in most versions of Internet Explorer. Fix or remove"
