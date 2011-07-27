@@ -33,6 +33,7 @@ import java.util.List;
 /**
  * Fires hintlets based on various cache related rules.
  * Ripped off from Page Speed cacheControlLint.js, as much as possible
+ * See http://code.google.com/speed/page-speed/docs/caching.html
  */
 public class HintletCacheControl extends HintletRule {
 
@@ -40,8 +41,8 @@ public class HintletCacheControl extends HintletRule {
   // a full year in the future. Set the minimum to 11 months. Note that this
   // isn't quite right because not all months have 30 days, but we err on the
   // side of being conservative, so it works fine for the rule.
-  private static final double SECONDS_IN_A_MONTH = 60 * 60 * 24 * 30;
-  private static final double MS_IN_A_MONTH = 1000 * SECONDS_IN_A_MONTH;
+  public static final double SECONDS_IN_A_MONTH = 60 * 60 * 24 * 30;
+  public static final double MS_IN_A_MONTH = 1000 * SECONDS_IN_A_MONTH;
   
   private List<CacheRule> cacheRules;
   
@@ -81,7 +82,10 @@ public class HintletCacheControl extends HintletRule {
       }
     });
    
-    // Cache rule which generates hints for inappropriate Vary tags
+    // Internet Explorer does not cache any resources that are served 
+    // with the Vary header and any fields but Accept-Encoding and User-Agent. 
+    // To ensure these resources are cached by IE, make sure to strip out any 
+    // other fields from the Vary header, or remove the Vary header altogether if possible
     cacheRules.add(new CacheRule() {
       public void onResourceFinish(NetworkResource resource, double timestamp, int refRecord) {
         HeaderMap responseHeaders = resource.getResponseHeaders();
@@ -123,6 +127,55 @@ public class HintletCacheControl extends HintletRule {
         return "The following resources specify a 'Vary' header that"
             + " disables caching in most versions of Internet Explorer. Fix or remove"
             + " the 'Vary' header for the following resources: " + resource.getUrl();
+      }
+    });
+    
+    // Freshness
+    // Set Expires to a minimum of one month for cacheable (static) resource,
+    // preferably up to one year.
+    // TODO (sarahgsmith) : Not more than a year as this violates RFC guidelines. 
+    //   (We prefer Expires over Cache-Control: max-age because it is is more widely supported.)
+    cacheRules.add(new CacheRule() {
+      public void onResourceFinish(NetworkResource resource, double timestamp, int refRecord) {
+        // for this hint:
+        // must have cacheable resource type
+        if (!isCacheableResourceType(getResourceType(resource))) {
+          return;
+        }
+        HeaderMap responseHeaders = resource.getResponseHeaders();
+        // must not set cookies
+        if(HintletHeaderUtils.hasCookie(responseHeaders) != null) {
+          return;
+        }
+        // must have a freshness lifetime which is greater than 0
+        if(!freshnessLifetimeGreaterThan(responseHeaders, 0)) {
+          return;
+        }
+
+        // if the freshness is less than a month, fire the hint
+        if (!freshnessLifetimeGreaterThan(responseHeaders, MS_IN_A_MONTH)) {
+          addHint(getHintletName(), timestamp, formatLessThanMonthMessage(resource), refRecord,
+              HintRecord.SEVERITY_WARNING);
+          return;
+        }
+
+        // if the freshness is more than a month but less than a year, fire info hint
+        if (!freshnessLifetimeGreaterThan(responseHeaders, MS_IN_A_MONTH * 11)) {
+          addHint(getHintletName(), timestamp, formatLessThanYearMessage(resource), refRecord,
+              HintRecord.SEVERITY_INFO);
+        }
+      }
+      
+      private String formatLessThanMonthMessage(NetworkResource resource) {
+        return "The following cacheable resources have a short"
+            + " freshness lifetime. Specify an expiration at least one month in the"
+            + " future for the following resources: " + resource.getUrl();
+      }
+      
+      private String formatLessThanYearMessage(NetworkResource resource) {
+        return "To further improve cache hit rate, specify an expiration"
+            + " one year in the future for the following cacheable resources: "
+            + resource.getUrl();
       }
     });
   }
