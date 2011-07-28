@@ -17,25 +17,27 @@ package com.google.speedtracer.hintletengine.client.rules;
 
 import com.google.speedtracer.client.model.EventRecord;
 import com.google.speedtracer.client.model.HintRecord;
-import com.google.speedtracer.client.model.NetworkDataReceivedEvent;
+import com.google.speedtracer.client.model.NetworkResource;
+import com.google.speedtracer.client.model.ResourceFinishEvent;
+import com.google.speedtracer.hintletengine.client.HintletNetworkResources;
 import com.google.speedtracer.hintletengine.client.HintletOnHintListener;
 import com.google.speedtracer.shared.EventRecordType;
 
 /**
- * Hintlet based on large files
+ * Hintlet based on large resource downloads
  */
 public class HintletTotalBytes extends HintletRule {
-  
+
   private static final int TOTAL_BYTES_INFO_THRESHOLD = 500000,
-                           TOTAL_BYTES_WARNING_THRESHOLD = 1000000;
-  
+      TOTAL_BYTES_WARNING_THRESHOLD = 1000000;
+
   public HintletTotalBytes() {
   }
 
   public HintletTotalBytes(HintletOnHintListener onHint) {
     setOnHintCallback(onHint);
   }
-  
+
   @Override
   public String getHintletName() {
     return "Total Bytes Downloaded";
@@ -43,25 +45,27 @@ public class HintletTotalBytes extends HintletRule {
 
   @Override
   public void onEventRecord(EventRecord dataRecord) {
-    
-    if (dataRecord.getType() != EventRecordType.NETWORK_DATA_RECEIVED) {
+
+    if (dataRecord.getType() != EventRecordType.RESOURCE_FINISH) {
       return;
     }
-    
-    NetworkDataReceivedEvent resource = dataRecord.cast();
-    int recordLength = resource.getDataLength();
-    
-    if (recordLength > TOTAL_BYTES_WARNING_THRESHOLD) {
-      addHint(getHintletName(), resource.getTime(),
-          formatMessage(recordLength, TOTAL_BYTES_WARNING_THRESHOLD), 
-          dataRecord.getSequence(), HintRecord.SEVERITY_WARNING);
-    } else if (recordLength > TOTAL_BYTES_INFO_THRESHOLD) {
-      addHint(getHintletName(), resource.getTime(),
-          formatMessage(recordLength, TOTAL_BYTES_INFO_THRESHOLD),
-          dataRecord.getSequence(), HintRecord.SEVERITY_INFO);
-    }    
+
+    ResourceFinishEvent finishEvent = dataRecord.cast();
+    NetworkResource resource =
+        HintletNetworkResources.getInstance().getResourceData(finishEvent.getIdentifier());
+    int resourceSize = resource.getDataLength();
+
+    if (resourceSize > TOTAL_BYTES_WARNING_THRESHOLD) {
+      addHint(getHintletName(), dataRecord.getTime(),
+          formatMessage(resourceSize, TOTAL_BYTES_WARNING_THRESHOLD), dataRecord.getSequence(),
+          HintRecord.SEVERITY_WARNING);
+    } else if (resourceSize > TOTAL_BYTES_INFO_THRESHOLD) {
+      addHint(getHintletName(), dataRecord.getTime(),
+          formatMessage(resourceSize, TOTAL_BYTES_INFO_THRESHOLD), dataRecord.getSequence(),
+          HintRecord.SEVERITY_INFO);
+    }
   }
-  
+
   private String formatMessage(int bytes, int threshold) {
     return bytes + " bytes downloaded, exceeds threshold of " + threshold + " bytes.";
   }
