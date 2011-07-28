@@ -20,6 +20,7 @@ import com.google.speedtracer.client.model.NetworkResource;
 import com.google.speedtracer.client.model.ResourceRecord;
 import com.google.speedtracer.hintletengine.client.HintletCacheUtils;
 import com.google.speedtracer.hintletengine.client.HintletNetworkResources;
+import com.google.speedtracer.hintletengine.client.HintletOnHintListener;
 import com.google.speedtracer.shared.EventRecordType;
 
 /**
@@ -44,6 +45,13 @@ public final class HintletGwtDetect extends HintletRule {
 
   private State state = new State();
 
+  public HintletGwtDetect() {
+  }
+
+  public HintletGwtDetect(HintletOnHintListener onHint) {
+    setOnHintCallback(onHint);
+  }
+  
   @Override
   public String getHintletName() {
     return "GWT Application Detection";
@@ -54,10 +62,6 @@ public final class HintletGwtDetect extends HintletRule {
     if (eventRecord.getType() == EventRecordType.TAB_CHANGED) {
       // Reset state after a page transition
       state = new State();
-      return;
-    }
-
-    if (!ResourceRecord.isResourceRecord(eventRecord)) {
       return;
     }
 

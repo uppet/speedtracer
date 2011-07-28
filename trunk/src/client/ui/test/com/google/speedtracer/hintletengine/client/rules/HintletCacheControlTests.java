@@ -49,7 +49,7 @@ public class HintletCacheControlTests extends GWTTestCase {
   
   @Override
   public String getModuleName() {
-    return "com.google.speedtracer.hintletengine.HintletEngine";
+    return "com.google.speedtracer.hintletengine.HintletEngineTest";
   }
 
   /**

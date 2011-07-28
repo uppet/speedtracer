@@ -61,7 +61,6 @@ public final class HintletFrequentLayout extends HintletRule {
       UiEvent event = events.get(i);
 
       if (event.getType() == EventRecordType.LAYOUT_EVENT) {
-        double selfDuration = event.getSelfTime();
         results.layoutsFound++;
         results.layoutTime += event.getSelfTime();
       }

@@ -1,12 +1,12 @@
 /*
  * Copyright 2009 Google Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -14,20 +14,24 @@
  * the License.
  */
 
-$stats = function(){};
+$stats = function() {
+};
 $self = self;
-$sessionId = null; 
+$sessionId = null;
 
 function __MODULE_FUNC__() {
   // TODO(zundel): Add slot for property providers.
   var strongName;
   var softPermutationId = 0;
   try {
-// __PERMUTATIONS_BEGIN__
+    // __PERMUTATIONS_BEGIN__
     // Permutation logic
-// __PERMUTATIONS_END__
+    // __PERMUTATIONS_END__
   } catch (e) {
-    // intentionally silent on property failure
+    var errorMsg = {
+      "worker bootstrap error" : e.message
+    };
+    self.postMessage(JSON.stringify(errorMsg));
     return;
   }
   var idx = strongName.indexOf(':');
@@ -37,6 +41,6 @@ function __MODULE_FUNC__() {
   }
   importScripts(strongName + ".cache.js");
   gwtOnLoad(undefined, '__MODULE_NAME__', '', softPermutationId);
- }
- 
- __MODULE_FUNC__();
+}
+
+__MODULE_FUNC__();

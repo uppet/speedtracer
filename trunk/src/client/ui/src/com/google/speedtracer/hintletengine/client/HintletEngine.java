@@ -1,16 +1,14 @@
 /*
  * Copyright 2009 Google Inc.
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
 package com.google.speedtracer.hintletengine.client;
@@ -22,8 +20,12 @@ import com.google.gwt.webworker.client.MessageEvent;
 import com.google.gwt.webworker.client.MessageHandler;
 import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.hintletengine.client.rules.HintletFrequentLayout;
+import com.google.speedtracer.hintletengine.client.rules.HintletGwtDetect;
 import com.google.speedtracer.hintletengine.client.rules.HintletLongDuration;
+import com.google.speedtracer.hintletengine.client.rules.HintletNotGz;
 import com.google.speedtracer.hintletengine.client.rules.HintletRule;
+import com.google.speedtracer.hintletengine.client.rules.HintletStaticNoCookie;
+import com.google.speedtracer.hintletengine.client.rules.HintletTotalBytes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,8 +49,8 @@ public class HintletEngine extends DedicatedWorkerEntryPoint implements MessageH
 
     private native JavaScriptObject createHintMessage(JavaScriptObject value) /*-{
       return {
-          type : 2,
-          payload : value
+        type : 2,
+        payload : value
       };
     }-*/;
   }
@@ -61,12 +63,16 @@ public class HintletEngine extends DedicatedWorkerEntryPoint implements MessageH
   }
 
   private List<HintletRule> getAllRules() {
-    //all rules share the same callback
+    // all rules share the same callback
     OnHintCallback onHintCallback = new OnHintCallback();
-    
+
     List<HintletRule> rules = new ArrayList<HintletRule>();
     rules.add(new HintletFrequentLayout(onHintCallback));
     rules.add(new HintletLongDuration(onHintCallback));
+    rules.add(new HintletGwtDetect(onHintCallback));
+    rules.add(new HintletNotGz(onHintCallback));
+    rules.add(new HintletTotalBytes(onHintCallback));
+    rules.add(new HintletStaticNoCookie(onHintCallback));
     return rules;
   }
 
@@ -77,4 +83,5 @@ public class HintletEngine extends DedicatedWorkerEntryPoint implements MessageH
     JavaScriptObject record = JSON.parse(event.getDataAsString());
     eventRecordProcessor.onEventRecord(record);
   }
+  
 }
