@@ -2,9 +2,8 @@
     "http://google-web-toolkit.googlecode.com/svn/releases/2.4/distro-source/core/src/gwt-module.dtd">
 <module>
 	<inherits name="com.google.gwt.user.User" />
-  <inherits name="com.google.gwt.core.Core" />
   <inherits name="com.google.speedtracer.Common" />
-  <inherits name='com.google.speedtracer.breaky.BreakyTest' />
+  <inherits name='com.google.speedtracer.breaky.BreakyTest' />  
   <inherits name='com.google.gwt.regexp.RegExp' />
   <source path='client' />
 </module>

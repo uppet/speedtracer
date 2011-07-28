@@ -19,6 +19,7 @@ import com.google.speedtracer.client.model.NetworkResource;
 import com.google.speedtracer.client.model.ResourceRecord;
 import com.google.speedtracer.hintletengine.client.HintletHeaderUtils;
 import com.google.speedtracer.hintletengine.client.HintletNetworkResources;
+import com.google.speedtracer.hintletengine.client.HintletOnHintListener;
 import com.google.speedtracer.hintletengine.client.WebInspectorType;
 import com.google.speedtracer.shared.EventRecordType;
 
@@ -34,6 +35,13 @@ import com.google.speedtracer.shared.EventRecordType;
  */
 public class HintletStaticNoCookie extends HintletRule {
 
+  public HintletStaticNoCookie() {
+  }
+
+  public HintletStaticNoCookie(HintletOnHintListener onHint) {
+    setOnHintCallback(onHint);
+  }  
+  
   @Override
   public String getHintletName() {
     return "Static Resource served from domains with cookies";

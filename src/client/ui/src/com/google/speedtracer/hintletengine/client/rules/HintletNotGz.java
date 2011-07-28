@@ -21,6 +21,7 @@ import com.google.speedtracer.client.model.ResourceRecord;
 import com.google.speedtracer.hintletengine.client.HintletCacheUtils;
 import com.google.speedtracer.hintletengine.client.HintletHeaderUtils;
 import com.google.speedtracer.hintletengine.client.HintletNetworkResources;
+import com.google.speedtracer.hintletengine.client.HintletOnHintListener;
 import com.google.speedtracer.hintletengine.client.WebInspectorType;
 import com.google.speedtracer.shared.EventRecordType;
 
@@ -36,6 +37,13 @@ public class HintletNotGz extends HintletRule {
   // We consider 150 bytes to be the break-even point for using gzip.
   private static final int SIZE_THRESHOLD = 150;
 
+  public HintletNotGz() {
+  }
+
+  public HintletNotGz(HintletOnHintListener onHint) {
+    setOnHintCallback(onHint);
+  }
+  
   @Override
   public String getHintletName() {
     return "Uncompressed Resource";
@@ -45,10 +53,6 @@ public class HintletNotGz extends HintletRule {
   public void onEventRecord(EventRecord eventRecord) {
 
     if (eventRecord.getType() != EventRecordType.RESOURCE_FINISH) {
-      return;
-    }
-
-    if (!ResourceRecord.isResourceRecord(eventRecord)) {
       return;
     }
 

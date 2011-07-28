@@ -18,6 +18,7 @@ package com.google.speedtracer.hintletengine.client.rules;
 import com.google.speedtracer.client.model.EventRecord;
 import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.NetworkDataReceivedEvent;
+import com.google.speedtracer.hintletengine.client.HintletOnHintListener;
 import com.google.speedtracer.shared.EventRecordType;
 
 /**
@@ -27,6 +28,13 @@ public class HintletTotalBytes extends HintletRule {
   
   private static final int TOTAL_BYTES_INFO_THRESHOLD = 500000,
                            TOTAL_BYTES_WARNING_THRESHOLD = 1000000;
+  
+  public HintletTotalBytes() {
+  }
+
+  public HintletTotalBytes(HintletOnHintListener onHint) {
+    setOnHintCallback(onHint);
+  }
   
   @Override
   public String getHintletName() {
