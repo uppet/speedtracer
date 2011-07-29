@@ -19,6 +19,7 @@ import com.google.gwt.webworker.client.DedicatedWorkerEntryPoint;
 import com.google.gwt.webworker.client.MessageEvent;
 import com.google.gwt.webworker.client.MessageHandler;
 import com.google.speedtracer.client.model.HintRecord;
+import com.google.speedtracer.hintletengine.client.rules.HintletCacheControl;
 import com.google.speedtracer.hintletengine.client.rules.HintletFrequentLayout;
 import com.google.speedtracer.hintletengine.client.rules.HintletGwtDetect;
 import com.google.speedtracer.hintletengine.client.rules.HintletLongDuration;
@@ -73,6 +74,7 @@ public class HintletEngine extends DedicatedWorkerEntryPoint implements MessageH
     rules.add(new HintletNotGz(onHintCallback));
     rules.add(new HintletTotalBytes(onHintCallback));
     rules.add(new HintletStaticNoCookie(onHintCallback));
+    rules.add(new HintletCacheControl(onHintCallback));
     return rules;
   }
 
