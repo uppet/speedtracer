@@ -20,7 +20,7 @@ import com.google.speedtracer.hintletengine.client.rules.HintletLongDuration;
 /**
  * Tests {@link HintletLongDuration}.
  */
-public class HinletLongDurationTests extends GWTTestCase {
+public class HintletLongDurationTests extends GWTTestCase {
 
   @Override
   public String getModuleName() {
