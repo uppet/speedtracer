@@ -41,7 +41,16 @@ import com.google.speedtracer.client.visualizations.model.UiThreadUtilizationTes
 import com.google.speedtracer.client.visualizations.view.EventFilterTests;
 import com.google.speedtracer.extension.client.DataLoaderTests;
 import com.google.speedtracer.headlessextension.client.HeadlessContentScriptTests;
+import com.google.speedtracer.hintletengine.client.HintletCacheUtilsTests;
+import com.google.speedtracer.hintletengine.client.HintletHeaderUtilsTests;
+import com.google.speedtracer.hintletengine.client.WebInspectorTypeTests;
+import com.google.speedtracer.hintletengine.client.rules.HintletLongDurationTests;
 import com.google.speedtracer.hintletengine.client.rules.HintletCacheControlTests;
+import com.google.speedtracer.hintletengine.client.rules.HintletFrequentLayoutTests;
+import com.google.speedtracer.hintletengine.client.rules.HintletGwtDetectTests;
+import com.google.speedtracer.hintletengine.client.rules.HintletLongDuration;
+import com.google.speedtracer.hintletengine.client.rules.HintletNotGzTests;
+import com.google.speedtracer.hintletengine.client.rules.HintletStaticNoCookieTests;
 
 import junit.framework.Test;
 
@@ -77,7 +86,17 @@ public class AllTestsSuite extends GWTTestSuite {
     suite.addTestSuite(SourceViewerServerTests.class);
     suite.addTestSuite(ReportDataCollectorTests.class);
     suite.addTestSuite(DataLoaderTests.class);
+    //Hintlet tests
+    suite.addTestSuite(HintletCacheUtilsTests.class);
+    suite.addTestSuite(HintletHeaderUtilsTests.class);
+    suite.addTestSuite(WebInspectorTypeTests.class);
+    suite.addTestSuite(HintletLongDurationTests.class);
     suite.addTestSuite(HintletCacheControlTests.class);
+    suite.addTestSuite(HintletFrequentLayoutTests.class);
+    suite.addTestSuite(HintletGwtDetectTests.class);
+    suite.addTestSuite(HintletNotGzTests.class);
+    suite.addTestSuite(HintletStaticNoCookieTests.class);
+    
     return suite;
   }
 }
