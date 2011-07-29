@@ -22,7 +22,6 @@ import com.google.gwt.coreext.client.JSON;
 import com.google.speedtracer.client.model.EventRecord;
 import com.google.speedtracer.client.model.UiEvent;
 import com.google.speedtracer.hintletengine.client.rules.HintletRule;
-import com.google.speedtracer.shared.EventRecordType;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -17,7 +17,6 @@ package com.google.speedtracer.hintletengine.client;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.speedtracer.client.model.NetworkResource;
-import com.google.speedtracer.client.model.ResourceUpdateEvent;
 
 import java.util.Arrays;
 import java.util.HashSet;

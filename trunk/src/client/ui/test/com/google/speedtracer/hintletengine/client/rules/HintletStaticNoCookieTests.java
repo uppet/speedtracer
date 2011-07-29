@@ -110,6 +110,7 @@ public class HintletStaticNoCookieTests extends GWTTestCase {
    * @param headers
    * @return a sequence of events
    */
+  @SuppressWarnings("unused")
   private static JSOArray<EventRecord> getInputs(String url, String mimeType,
       JavaScriptObject headers) {
     final int identifier = 1;

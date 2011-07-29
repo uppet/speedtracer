@@ -17,7 +17,6 @@ import com.google.gwt.junit.client.GWTTestCase;
 import com.google.speedtracer.client.model.NetworkResource.HeaderMap;
 import static com.google.speedtracer.hintletengine.client.HintletCacheUtils.freshnessLifetimeGreaterThan;
 import static com.google.speedtracer.hintletengine.client.HintletCacheUtils.hasExplicitExpiration;
-import static com.google.speedtracer.hintletengine.client.HintletCacheUtils.isCacheableResourceType;
 import static com.google.speedtracer.hintletengine.client.HintletCacheUtils.isCacheableResponseCode;
 import static com.google.speedtracer.hintletengine.client.HintletCacheUtils.isPubliclyCacheable;
 import static com.google.speedtracer.hintletengine.client.HintletCacheUtils.isExplicitlyNonCacheable;

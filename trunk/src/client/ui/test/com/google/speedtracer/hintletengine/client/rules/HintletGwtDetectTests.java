@@ -167,6 +167,7 @@ public class HintletGwtDetectTests extends GWTTestCase {
    * @param strongNameDataLength2 the data length of the second string name fetch.
    * @return
    */
+  @SuppressWarnings("unused")
   private static JSOArray<EventRecord> getInputs(boolean selectionScriptNonCacheable,
       int strongNameDataLength1, int strongNameDataLength2) {
     final int hostPageId = 1;
