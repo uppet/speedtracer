@@ -1,2 +1,0 @@
-{"description":"600000 bytes downloaded, exceeds threshold of 500000 bytes.","hintletRule":"Total Bytes Downloaded","refRecord":2,"severity":3,"timestamp":2}
-{"description":"1000001 bytes downloaded, exceeds threshold of 1000000 bytes.","hintletRule":"Total Bytes Downloaded","refRecord":3,"severity":2,"timestamp":3}

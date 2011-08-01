@@ -1,2 +1,0 @@
-{"hintletRule":"Resource Caching","timestamp":1,"description":"Favicons should have an expiration at least one month in the future: http://www.example.com/favicon.ico","refRecord":1,"severity":2}
-{"hintletRule":"Resource Caching","timestamp":4,"description":"Favicons should have an expiration at least one month in the future: http://www.example.com/favicon.ico","refRecord":4,"severity":2}
