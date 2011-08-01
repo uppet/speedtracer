@@ -1,1 +1,0 @@
-{"hintletRule":"Resource Caching","timestamp":1,"description":"Resources with a \"?\" in the URL are not cached by most proxy caching servers. Remove the query string and encode the parameters into the URL for the following resources: http://www.example.com/image.png?param=1","refRecord":1,"severity":2}

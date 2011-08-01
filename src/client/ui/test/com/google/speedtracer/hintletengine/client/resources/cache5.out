@@ -1,1 +1,0 @@
-{"hintletRule":"Resource Caching","timestamp":1,"description":"The following cacheable resources have a short freshness lifetime. Specify an expiration at least one month in the future for the following resources: http://www.example.com/foo.png","refRecord":1,"severity":2}

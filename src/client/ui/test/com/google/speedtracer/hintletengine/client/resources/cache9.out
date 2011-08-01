@@ -1,1 +1,0 @@
-{"hintletRule":"Resource Caching","timestamp":9217.227000001818,"description":"The following publicly cacheable resources contain a Set-Cookie header. This security vulnerability can cause cookies to be shared by multiple users. https//www.example.com/img.gif","refRecord":1,"severity":1}
