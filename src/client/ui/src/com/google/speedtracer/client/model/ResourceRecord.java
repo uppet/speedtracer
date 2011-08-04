@@ -38,7 +38,8 @@ public class ResourceRecord extends EventRecord {
   protected ResourceRecord() {
   }
 
-  public final int getIdentifier() {
-    return getData().getIntProperty("identifier");
-  }
+  public final native String getIdentifier() /*-{
+    var id = this.data.identifier;
+    return (typeof id == "number" ? "" + id : id);
+  }-*/;
 }

@@ -56,7 +56,7 @@ public class HintletNotGzTests extends GWTTestCase {
     HintletTestHelper.runTest(new HintletNotGz(), getCaseBzip2edHtmlFileNoHint());
   }
   
-  private native static EventRecord resourceSendRequest(int identifier, int sequence, String url)/*-{
+  private native static EventRecord resourceSendRequest(String identifier, int sequence, String url)/*-{
     return {
       "data" : {
         "identifier" : identifier,
@@ -69,7 +69,7 @@ public class HintletNotGzTests extends GWTTestCase {
     };
   }-*/;
 
-  private native static EventRecord resourceReceiveResponse(int identifier, int sequence,
+  private native static EventRecord resourceReceiveResponse(String identifier, int sequence,
       String mimeType)/*-{
     return {
       "data" : {
@@ -85,7 +85,7 @@ public class HintletNotGzTests extends GWTTestCase {
     };
   }-*/;
 
-  private native static EventRecord networkResponseReceived(int identifier, int sequence,
+  private native static EventRecord networkResponseReceived(String identifier, int sequence,
       String contentType, String contentEncoding)/*-{
     var event = {
       "sequence" : sequence,
@@ -113,7 +113,7 @@ public class HintletNotGzTests extends GWTTestCase {
     return event;
   }-*/;
 
-  private native static EventRecord networkDataReceived(int identifier, int sequence, int dataLength)/*-{
+  private native static EventRecord networkDataReceived(String identifier, int sequence, int dataLength)/*-{
     return {
       "type" : @com.google.speedtracer.shared.EventRecordType::NETWORK_DATA_RECEIVED,
       "time" : sequence,
@@ -125,7 +125,7 @@ public class HintletNotGzTests extends GWTTestCase {
     };
   }-*/;
 
-  private native static EventRecord resourceFinish(int identifier, int sequence)/*-{
+  private native static EventRecord resourceFinish(String identifier, int sequence)/*-{
     return {
       "data" : {
         "identifier" : identifier,
@@ -149,7 +149,7 @@ public class HintletNotGzTests extends GWTTestCase {
   @SuppressWarnings("unused")
   private static JSOArray<EventRecord> getInputs(String url, String mimeType,
       String contentEncoding, int totalDataLength) {
-    final int identifier = 1;
+    final String identifier = "1";
     int sequence = 1;
 
     JSOArray<EventRecord> inputs = JSOArray.create();

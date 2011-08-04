@@ -85,7 +85,7 @@ public class NetworkResource {
 
   private final String httpMethod;
 
-  private final int identifier;
+  private final String identifier;
 
   private String lastPathComponent;
 
@@ -133,7 +133,7 @@ public class NetworkResource {
    * resources. If you use it for anything else, zundel will punish you with the
    * electric plunger.
    */
-  protected NetworkResource(double startTime, int identifier, String url,
+  protected NetworkResource(double startTime, String identifier, String url,
       String httpMethod, HeaderMap requestHeaders, int status,
       HeaderMap responseHeaders) {
     this.startTime = startTime;
@@ -220,7 +220,7 @@ public class NetworkResource {
     return httpMethod;
   }
 
-  public int getIdentifier() {
+  public String getIdentifier() {
     return identifier;
   }
 

@@ -46,7 +46,7 @@ public final class HintletNetworkResources {
   /**
    * Getter for the accumulated information about a resource.
    */
-  public NetworkResource getResourceData(final int identifier) {
+  public NetworkResource getResourceData(final String identifier) {
     return networkEventDispatcher.getResource(identifier);
   }
 

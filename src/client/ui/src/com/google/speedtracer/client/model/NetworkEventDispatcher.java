@@ -17,6 +17,7 @@ package com.google.speedtracer.client.model;
 
 import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.coreext.client.JsIntegerMap;
+import com.google.gwt.coreext.client.JsStringMap;
 import com.google.speedtracer.client.model.DataDispatcher.DataDispatcherDelegate;
 import com.google.speedtracer.client.model.DataDispatcher.EventRecordDispatcher;
 import com.google.speedtracer.client.model.NetworkResponseReceivedEvent.Response;
@@ -103,13 +104,13 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
 
   private final List<ResourceRecord> networkEvents = new ArrayList<ResourceRecord>();
 
-  private JsIntegerMap<JSOArray<NetworkResource>> redirects = JsIntegerMap.create();
+  private JsStringMap<JSOArray<NetworkResource>> redirects = JsStringMap.create();
 
   /**
    * Map of NetworkResource POJOs. Information about a network resource is
    * filled in progressively as we get chunks of information about it.
    */
-  private final JsIntegerMap<NetworkResource> resourceStore = JsIntegerMap.create();
+  private final JsStringMap<NetworkResource> resourceStore = JsStringMap.create();
 
   private final JsIntegerMap<EventRecordDispatcher> typeMap = JsIntegerMap.create();
 
@@ -122,7 +123,7 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
   }
 
   public void clearData() {
-    redirects = JsIntegerMap.create();
+    redirects = JsStringMap.create();
     networkEvents.clear();
   }
 
@@ -137,7 +138,7 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
    * @param id the request id of our {@link NetworkResource}
    * @return returns the {@link NetworkResource}
    */
-  public NetworkResource getResource(int id) {
+  public NetworkResource getResource(String id) {
     return resourceStore.get(id);
   }
 
@@ -157,7 +158,7 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
    * @param url The redirect URL that we are using to match a redirect
    *        candidate.
    */
-  private NetworkResource findAndRemoveRedirectCandidate(int identifier, String url) {
+  private NetworkResource findAndRemoveRedirectCandidate(String identifier, String url) {
     // Look for it.
     JSOArray<NetworkResource> redirectCandidates = redirects.get(identifier);
     if (redirectCandidates == null) {
@@ -177,7 +178,7 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
     return null;
   }
 
-  private void insertRedirectCandidate(int identifier, NetworkResource previousResource) {
+  private void insertRedirectCandidate(String identifier, NetworkResource previousResource) {
     // We have a redirect.
     JSOArray<NetworkResource> redirectQueue = redirects.get(identifier);
     if (redirectQueue == null) {

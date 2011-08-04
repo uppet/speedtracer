@@ -28,6 +28,14 @@ import com.google.gwt.core.client.JsArrayString;
  * @param <T>
  */
 public final class JsStringMap<T> extends JavaScriptObject {
+  
+  /**
+   * Callback interface for string, parameterized object key value pairs.
+   */
+  public interface IterationCallBack<T> {
+    void onIteration(String key, T val);
+  }
+  
   /**
    * Creates a new map.
    * 
@@ -149,6 +157,19 @@ public final class JsStringMap<T> extends JavaScriptObject {
   public boolean hasKey(String key) {
     return hasKey(this, key);
   }
+  
+  /**
+   * Iterates through the contents and calls back out to a callback.
+   * 
+   * @param cb callback object
+   */
+  public final native void iterate(IterationCallBack<T> cb) /*-{
+    for (var key in this) {
+      if (this.hasOwnProperty(key)) {
+        cb.@com.google.gwt.coreext.client.JsStringMap.IterationCallBack::onIteration(Ljava/lang/String;Ljava/lang/Object;)(key,this[key]);
+      }
+    }
+  }-*/;
 
   /**
    * Store a value for the given key.

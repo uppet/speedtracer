@@ -24,7 +24,7 @@ public class NetworkResponseReceivedEventBuilder {
 
   /**
    * Builds a default skeleton 
-   * identifier: 1 
+   * identifier: "1" 
    * timestamp: 1 
    * sequence: 1
    */
@@ -42,7 +42,7 @@ public class NetworkResponseReceivedEventBuilder {
   /**
    * Creates builder with the given values
    */
-  public NetworkResponseReceivedEventBuilder(int identifier, int time, int sequence) {
+  public NetworkResponseReceivedEventBuilder(String identifier, int time, int sequence) {
     event = createSkeletonEvent();
     this.setIdentifier(identifier);
     this.setTime(time);
@@ -64,7 +64,7 @@ public class NetworkResponseReceivedEventBuilder {
         "type" : @com.google.speedtracer.shared.EventRecordType::NETWORK_RESPONSE_RECEIVED,
         "time" : 1,
         "data" : {
-            "identifier" : 1,
+            "identifier" : "1",
             "response" : {
                 "connectionId" : 0,
                 "headers" : {}
@@ -73,7 +73,7 @@ public class NetworkResponseReceivedEventBuilder {
     };
   }-*/;
 
-  public native NetworkResponseReceivedEventBuilder setIdentifier(int identifier) /*-{
+  public native NetworkResponseReceivedEventBuilder setIdentifier(String identifier) /*-{
     var event = this.@com.google.speedtracer.hintletengine.client.NetworkResponseReceivedEventBuilder::event;
     event.data.identifier = identifier;
     return this;

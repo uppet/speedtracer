@@ -32,6 +32,8 @@ import com.google.speedtracer.client.util.dom.WindowExt;
  */
 public class ServerEventControllerTests extends GWTTestCase {
 
+  private static String DEFAULT_ID = "1";
+  
   /**
    * Bundles tests data.
    */
@@ -84,7 +86,7 @@ public class ServerEventControllerTests extends GWTTestCase {
     return { "X-TraceUrl": traceUrl };
   }-*/;
 
-  private static NetworkResource createMockNetworkResource(int identifier,
+  private static NetworkResource createMockNetworkResource(String identifier,
       String url, String traceUrl) {
     return new NetworkResource(
         0, // startTime
@@ -126,7 +128,7 @@ public class ServerEventControllerTests extends GWTTestCase {
         WindowExt.getLexicalWindow(), new SuccessfulXhr());
     try {
       final boolean[] didSucceed = new boolean[1];
-      controller.requestTraceFor(createMockNetworkResource(1,
+      controller.requestTraceFor(createMockNetworkResource(DEFAULT_ID,
           "http://localhost/", "/foo"),
           new ServerEventController.RequestTraceCallback() {
             public void onFailure() {
@@ -150,7 +152,7 @@ public class ServerEventControllerTests extends GWTTestCase {
         WindowExt.getLexicalWindow(), new InvalidXhr());
     try {
       final boolean[] didFail = new boolean[1];
-      controller.requestTraceFor(createMockNetworkResource(1,
+      controller.requestTraceFor(createMockNetworkResource(DEFAULT_ID,
           "http://localhost/", "/foo"),
           new ServerEventController.RequestTraceCallback() {
             public void onFailure() {
@@ -179,7 +181,7 @@ public class ServerEventControllerTests extends GWTTestCase {
         WindowExt.getLexicalWindow(), new FailedXhr(404));
     try {
       final boolean[] didFail = new boolean[1];
-      controller.requestTraceFor(createMockNetworkResource(1,
+      controller.requestTraceFor(createMockNetworkResource(DEFAULT_ID,
           "http://localhost/", "/foo"),
           new ServerEventController.RequestTraceCallback() {
             public void onFailure() {
@@ -207,7 +209,7 @@ public class ServerEventControllerTests extends GWTTestCase {
         WindowExt.getLexicalWindow(), new SuccessfulXhr());
     try {
       final boolean[] didSucceed = new boolean[1];
-      controller.serverHasValidTrace(createMockNetworkResource(1,
+      controller.serverHasValidTrace(createMockNetworkResource(DEFAULT_ID,
           "http://localhost/", "/foo/a"),
           new ServerEventController.HasTraceCallback() {
             public void onResponse(boolean hasTrace) {
@@ -233,7 +235,7 @@ public class ServerEventControllerTests extends GWTTestCase {
         WindowExt.getLexicalWindow(), new FailedXhr(404));
     try {
       final boolean[] didSucceed = new boolean[1];
-      controller.serverHasValidTrace(createMockNetworkResource(1,
+      controller.serverHasValidTrace(createMockNetworkResource(DEFAULT_ID,
           "http://localhost/", "/foo/b"),
           new ServerEventController.HasTraceCallback() {
             public void onResponse(boolean hasTrace) {
