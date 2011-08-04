@@ -27,7 +27,7 @@ public class HintletEventRecordBuilder {
 
   public static final int DEFAULT_TIME = 1;
   public static final int DEFAULT_SEQUENCE = 1;
-  public static final int DEFAULT_ID = 1;
+  public static final String DEFAULT_ID = "1";
 
   public native static NetworkDataReceivedEvent createNetworkDataRecieved(int dataLength) /*-{
     return {
@@ -48,7 +48,7 @@ public class HintletEventRecordBuilder {
    * Create a start event with the given values
    */
   public static native ResourceWillSendEvent createResourceStart(
-      String url, int time, int sequence, int identifier) /*-{
+      String url, int time, int sequence, String identifier) /*-{
     return {
         "type" : @com.google.speedtracer.shared.EventRecordType::RESOURCE_SEND_REQUEST,
         "time" : time,
@@ -72,7 +72,7 @@ public class HintletEventRecordBuilder {
    * Create a finish event with the given values.
    */
   public static native ResourceFinishEvent createResourceFinish(
-      int time, int sequence, int identifier) /*-{
+      int time, int sequence, String identifier) /*-{
     return {
         "type" : @com.google.speedtracer.shared.EventRecordType::RESOURCE_FINISH,
         "time" : time,

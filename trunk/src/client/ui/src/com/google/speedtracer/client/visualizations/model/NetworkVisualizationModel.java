@@ -99,7 +99,7 @@ public class NetworkVisualizationModel
    * @param id the request id of our {@link NetworkResource}
    * @return returns the {@link NetworkResource}
    */
-  public NetworkResource getResource(int id) {
+  public NetworkResource getResource(String id) {
     return sourceDispatcher.getResource(id);
   }
 

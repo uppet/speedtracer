@@ -17,8 +17,8 @@ package com.google.speedtracer.client.visualizations.model;
 
 import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.coreext.client.JsIntegerDoubleMap;
-import com.google.gwt.coreext.client.JsIntegerMap;
 import com.google.gwt.coreext.client.JsIntegerDoubleMap.IterationCallBack;
+import com.google.gwt.coreext.client.JsStringMap;
 import com.google.speedtracer.client.model.AggregateTimeVisitor;
 import com.google.speedtracer.client.model.DataDispatcher;
 import com.google.speedtracer.client.model.EventRecord;
@@ -205,7 +205,7 @@ public class ReportDataCollector {
     };
 
     Collector networkEventCollector = new Collector() {
-      JsIntegerMap<JSOArray<HintRecord>> resourceHints = JsIntegerMap.create();
+      JsStringMap<JSOArray<HintRecord>> resourceHints = JsStringMap.create();
 
       @Override
       void examineRecord(EventRecord record, JsIntegerDoubleMap out) {
@@ -225,8 +225,8 @@ public class ReportDataCollector {
       void finishCollection(JsIntegerDoubleMap aggregateDurationsOut,
           final List<HintRecord> hintsOut) {
         // Collect resource related hints that we placed inside the map.
-        resourceHints.iterate(new JsIntegerMap.IterationCallBack<JSOArray<HintRecord>>() {
-          public void onIteration(int key, JSOArray<HintRecord> resourceHints) {
+        resourceHints.iterate(new JsStringMap.IterationCallBack<JSOArray<HintRecord>>() {
+          public void onIteration(String key, JSOArray<HintRecord> resourceHints) {
             addHintsFromJSOArray(resourceHints, hintsOut);
           }
         });

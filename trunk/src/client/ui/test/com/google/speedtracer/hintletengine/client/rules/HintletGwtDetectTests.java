@@ -51,7 +51,7 @@ public class HintletGwtDetectTests extends GWTTestCase {
   };
 }-*/;
 
-  private native static EventRecord resourceSendRequest(int identifier, String url, int sequence)/*-{
+  private native static EventRecord resourceSendRequest(String identifier, String url, int sequence)/*-{
     return {
         "data" : {
             "identifier" : identifier,
@@ -64,7 +64,7 @@ public class HintletGwtDetectTests extends GWTTestCase {
     };
   }-*/;
 
-  private native static EventRecord resourceReceiveResponse(int identifier, int sequence)/*-{
+  private native static EventRecord resourceReceiveResponse(String identifier, int sequence)/*-{
     return {
         "data" : {
             "identifier" : identifier,
@@ -79,7 +79,7 @@ public class HintletGwtDetectTests extends GWTTestCase {
     };
   }-*/;
 
-  private native static EventRecord resourceDataReceived(int identifier, int sequence)/*-{
+  private native static EventRecord resourceDataReceived(String identifier, int sequence)/*-{
     return {
         "data" : {
           "identifier" : identifier
@@ -92,7 +92,7 @@ public class HintletGwtDetectTests extends GWTTestCase {
     };
   }-*/;
 
-  private native static EventRecord networkResponseReceived(int identifier, int sequence,
+  private native static EventRecord networkResponseReceived(String identifier, int sequence,
       String date, String expires, String cacheControl)/*-{
     var event = {
         "sequence" : sequence,
@@ -131,7 +131,7 @@ public class HintletGwtDetectTests extends GWTTestCase {
     return event;
   }-*/;
 
-  private native static EventRecord resourceFinish(int identifier, int sequence)/*-{
+  private native static EventRecord resourceFinish(String identifier, int sequence)/*-{
     return {
         "data" : {
             "identifier" : identifier,
@@ -143,7 +143,7 @@ public class HintletGwtDetectTests extends GWTTestCase {
     };
   }-*/;
 
-  private native static EventRecord networkDataReceived(int identifier, int sequence, int dataLength)/*-{
+  private native static EventRecord networkDataReceived(String identifier, int sequence, int dataLength)/*-{
     return {
         "type" : @com.google.speedtracer.shared.EventRecordType::NETWORK_DATA_RECEIVED,
         "time" : sequence,
@@ -170,11 +170,11 @@ public class HintletGwtDetectTests extends GWTTestCase {
   @SuppressWarnings("unused")
   private static JSOArray<EventRecord> getInputs(boolean selectionScriptNonCacheable,
       int strongNameDataLength1, int strongNameDataLength2) {
-    final int hostPageId = 1;
+    final String hostPageId = "1";
     final String hostPageUrl = "https://www.efgh.com/index.html";
-    final int imageId = 2;
+    final String imageId = "2";
     final String imageUrl = "https://www.efgh.com/log.png";
-    final int selectionScriptId = 3;
+    final String selectionScriptId = "3";
     final String selectionScriptUrl =
         "https://www.efgh.com/gwt.publichome/gwt.publichome.nocache.js";
     String selectionScriptDate = null;
@@ -185,10 +185,10 @@ public class HintletGwtDetectTests extends GWTTestCase {
       selectionScriptExpires = "Wed, 20 Jul 2011 14:04:21 GMT";
       selectionScriptCacheControl = "no-cache";
     }
-    final int strongNameID1 = 4;
+    final String strongNameID1 = "4";
     final String strongNameUrl1 =
         "https:/www.efgh.com/gwt.publichome/8E82EC6A261B0BE8394B9AC1BB68A7A9.cache.html";
-    final int strongNameID2 = 5;
+    final String strongNameID2 = "5";
     final String strongNameUrl2 =
         "https:/www.efgh.com/gwt.publichome/9E82AC6A261B0BE8394B9AC1BB68A7AE.cache.html";
     final String strongNameDate = "Wed, 20 Jul 2011 14:04:22 GMT";
