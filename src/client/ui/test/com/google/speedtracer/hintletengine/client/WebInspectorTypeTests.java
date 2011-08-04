@@ -15,6 +15,7 @@
 package com.google.speedtracer.hintletengine.client;
 
 import com.google.gwt.junit.client.GWTTestCase;
+import com.google.speedtracer.client.model.EventRecord;
 import com.google.speedtracer.client.model.NetworkResource;
 import com.google.speedtracer.client.model.NetworkResponseReceivedEvent;
 import com.google.speedtracer.client.model.ResourceWillSendEvent;
@@ -29,43 +30,21 @@ public class WebInspectorTypeTests extends GWTTestCase {
     return "com.google.speedtracer.hintletengine.HintletEngineTest";
   }
 
-  private native static ResourceWillSendEvent getDefaultStartEvent(String url) /*-{
-    return {
-      'data' : {
-        'identifier' : 1,
-        'url' : url,
-        'requestMethod' : 'GET',
-      },
-      'type' : @com.google.speedtracer.shared.EventRecordType::RESOURCE_SEND_REQUEST,
-      'time' : 1
-    };
-  }-*/;
-
   /**
    * Creates a NetworkResponseReceivedEvent with no Content-Type in headers
    */
-  private native static NetworkResponseReceivedEvent getTestData()/*-{
-    //no content type
-    return {
-        'data' : {
-            'identifier' : 1,
-            'response' : {
-                'connectionId' : 1,
-                'headers' : {}
-            }
-        },
-        'type' : @com.google.speedtracer.shared.EventRecordType::NETWORK_RESPONSE_RECEIVED
-    };
-  }-*/;
+  private static NetworkResponseReceivedEvent getTestData(){
+    return new NetworkResponseReceivedEventBuilder().getEvent();
+  }
 
   /**
    * Creates a NetworkResponseReceivedEvent with Content-Type:mimeType in headers
    */
-  private native static NetworkResponseReceivedEvent getTestData(String mimeType)/*-{
-    var event = @com.google.speedtracer.hintletengine.client.WebInspectorTypeTests::getTestData()();
-    event.data.response.headers["Content-Type"] = mimeType + "; charset=UTF-8";
-    return event;
-  }-*/;
+  private static NetworkResponseReceivedEvent getTestData(String mimeType){
+    NetworkResponseReceivedEventBuilder builder = new NetworkResponseReceivedEventBuilder();
+    builder.setResponseHeaderContentType(mimeType + "; charset=UTF-8");
+    return builder.getEvent();
+  }
 
   /**
    * Create a NetworkResource using the default start event and the given response event.
@@ -79,7 +58,7 @@ public class WebInspectorTypeTests extends GWTTestCase {
    * event.
    */
   private NetworkResource getResource(NetworkResponseReceivedEvent responseEvent, String url) {
-    NetworkResource resource = new NetworkResource(getDefaultStartEvent(url));
+    NetworkResource resource = new NetworkResource(HintletEventRecordBuilder.createResourceSendRequest(url));
     resource.update(responseEvent);
     return resource;
   }

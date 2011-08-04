@@ -21,7 +21,7 @@ import com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder;
 
 import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createNetworkDataRecieved;
 import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createResourceFinish;
-import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createResourceStart;
+import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createResourceSendRequest;
 
 /**
  * Tests {@link HintletTotalBytes}
@@ -47,7 +47,7 @@ public class HintletTotatBytesTests extends GWTTestCase {
   public void testOneResourceGood() {
     int size = 100;
     JSOArray<EventRecord> inputs = JSOArray.create();
-    inputs.push(createResourceStart("http://www.google.com"));
+    inputs.push(createResourceSendRequest("http://www.google.com"));
     inputs.push(createNetworkDataRecieved(size));
     inputs.push(createResourceFinish());
     HintletTestCase test =
@@ -58,7 +58,7 @@ public class HintletTotatBytesTests extends GWTTestCase {
   public void testOneLargeResourceInfo() {
     int size = 500001;
     JSOArray<EventRecord> inputs = JSOArray.create();
-    inputs.push(createResourceStart("http://www.google.com"));
+    inputs.push(createResourceSendRequest("http://www.google.com"));
     inputs.push(createNetworkDataRecieved(size));
     inputs.push(createResourceFinish());
     String hintDescription = formatMessage(size, 500000);
@@ -73,7 +73,7 @@ public class HintletTotatBytesTests extends GWTTestCase {
   public void testOneLargeResourceWarning() {
     int size = 1000001;
     JSOArray<EventRecord> inputs = JSOArray.create();
-    inputs.push(createResourceStart("http://www.google.com"));
+    inputs.push(createResourceSendRequest("http://www.google.com"));
     inputs.push(createNetworkDataRecieved(size));
     inputs.push(createResourceFinish());
     String hintDescription = formatMessage(size, 1000000);
@@ -88,7 +88,7 @@ public class HintletTotatBytesTests extends GWTTestCase {
 
   public void testMultipleRecordsGood() {
     JSOArray<EventRecord> inputs = JSOArray.create();
-    inputs.push(createResourceStart("http://www.google.com"));
+    inputs.push(createResourceSendRequest("http://www.google.com"));
     inputs.push(createNetworkDataRecieved(5000));
     inputs.push(createNetworkDataRecieved(100));
     inputs.push(createNetworkDataRecieved(10));
@@ -101,7 +101,7 @@ public class HintletTotatBytesTests extends GWTTestCase {
 
   public void testMultipleResourcesInfo() {
     JSOArray<EventRecord> inputs = JSOArray.create();
-    inputs.push(createResourceStart("http://www.google.com"));
+    inputs.push(createResourceSendRequest("http://www.google.com"));
     inputs.push(createNetworkDataRecieved(100000));
     inputs.push(createNetworkDataRecieved(200000));
     inputs.push(createNetworkDataRecieved(300000));
@@ -117,7 +117,7 @@ public class HintletTotatBytesTests extends GWTTestCase {
 
   public void testMultipleResourceWarning() {
     JSOArray<EventRecord> inputs = JSOArray.create();
-    inputs.push(createResourceStart("http://www.google.com"));
+    inputs.push(createResourceSendRequest("http://www.google.com"));
     inputs.push(createNetworkDataRecieved(100000));
     inputs.push(createNetworkDataRecieved(500000));
     inputs.push(createNetworkDataRecieved(600000));

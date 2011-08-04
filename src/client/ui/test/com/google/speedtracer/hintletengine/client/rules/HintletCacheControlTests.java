@@ -59,7 +59,7 @@ public class HintletCacheControlTests extends GWTTestCase {
   public HintletTestCase createTestCase(String description,
       NetworkResponseReceivedEvent response, String url, HintRecord expectedHint) {
     JSOArray<EventRecord> inputs = JSOArray.create();
-    inputs.push(HintletEventRecordBuilder.createResourceStart(url));
+    inputs.push(HintletEventRecordBuilder.createResourceSendRequest(url));
     inputs.push(response);
     inputs.push(HintletEventRecordBuilder.createResourceFinish());
     if(expectedHint == null) {

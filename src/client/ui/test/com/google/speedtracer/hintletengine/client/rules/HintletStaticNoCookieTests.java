@@ -18,6 +18,10 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.speedtracer.client.model.EventRecord;
+import com.google.speedtracer.hintletengine.client.NetworkResponseReceivedEventBuilder;
+import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createResourceSendRequest;
+import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createResourceFinish;
+import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createResourceReceiveResponse;
 
 /**
  * Tests {@link HintletStaticNoCookie}.
@@ -40,67 +44,17 @@ public class HintletStaticNoCookieTests extends GWTTestCase {
   public void testHtmlWithCookieHeader() {
     HintletTestHelper.runTest(new HintletStaticNoCookie(), getCaseHtmlWithCookieHeader());
   }
-
-  private native static EventRecord resourceSendRequest(String identifier, int sequence, String url)/*-{
-    return {
-      "data" : {
-        "identifier" : identifier,
-        "url" : url,
-        "requestMethod" : "GET"
-      },
-      "type" : @com.google.speedtracer.shared.EventRecordType::RESOURCE_SEND_REQUEST,
-      "time" : sequence,
-      "sequence" : sequence
-    };
-  }-*/;
-
-  private native static EventRecord resourceReceiveResponse(String identifier, int sequence,
-      String mimeType)/*-{
-    return {
-      "data" : {
-        "identifier" : identifier,
-        "statusCode" : 200,
-        "mimeType" : mimeType
-      },
-      "children" : [],
-      "type" : @com.google.speedtracer.shared.EventRecordType::RESOURCE_RECEIVE_RESPONSE,
-      "duration" : 0.029052734375,
-      "time" : sequence,
-      "sequence" : sequence
-    };
-  }-*/;
-
-  private native static EventRecord networkResponseReceived(String identifier, int sequence,
-      JavaScriptObject headers)/*-{
-    return {
-      "sequence" : sequence,
-      "data" : {
-        "response" : {
-          "statusText" : "OK",
-          "fromDiskCache" : false,
-          "connectionReused" : true,
-          "connectionId" : 751769,
-          "status" : 200,
-          "headers" : headers
-        },
-        "identifier" : identifier
-      },
-      "time" : sequence,
-      "type" : @com.google.speedtracer.shared.EventRecordType::NETWORK_RESPONSE_RECEIVED
-    };
-  }-*/;
-
-  private native static EventRecord resourceFinish(String identifier, int sequence)/*-{
-    return {
-      "data" : {
-        "identifier" : identifier,
-        "didFail" : false
-      },
-      "type" : @com.google.speedtracer.shared.EventRecordType::RESOURCE_FINISH,
-      "time" : sequence,
-      "sequence" : sequence
-    };
-  }-*/;
+  
+  private static EventRecord createNetworkResponseReceived(String identifier, int sequence,
+      JavaScriptObject headers) {
+    NetworkResponseReceivedEventBuilder builder =
+        new NetworkResponseReceivedEventBuilder(identifier, sequence, sequence);
+    builder.setResponseFromDiskCache(false)
+      .setResponseStatus(200)
+      .setResponseHeaders(headers);
+    return builder.getEvent();
+  }
+  
 
   /**
    * Get a sequence of events for a single resource.
@@ -117,10 +71,10 @@ public class HintletStaticNoCookieTests extends GWTTestCase {
     int sequence = 1;
 
     JSOArray<EventRecord> inputs = JSOArray.create();
-    inputs.push(resourceSendRequest(identifier, sequence++, url));
-    inputs.push(resourceReceiveResponse(identifier, sequence++, mimeType));
-    inputs.push(networkResponseReceived(identifier, sequence++, headers));
-    inputs.push(resourceFinish(identifier, sequence++));
+    inputs.push(createResourceSendRequest(identifier, url, sequence++));
+    inputs.push(createResourceReceiveResponse(identifier, sequence++, mimeType));
+    inputs.push(createNetworkResponseReceived(identifier, sequence++, headers));
+    inputs.push(createResourceFinish(identifier, sequence++));
     return inputs;
   }
 

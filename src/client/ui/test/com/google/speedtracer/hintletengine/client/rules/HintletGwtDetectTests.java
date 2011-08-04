@@ -17,6 +17,13 @@ package com.google.speedtracer.hintletengine.client.rules;
 import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.speedtracer.client.model.EventRecord;
+import com.google.speedtracer.hintletengine.client.NetworkResponseReceivedEventBuilder;
+import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createResourceDataReceived;
+import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createResourceSendRequest;
+import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createResourceFinish;
+import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createResourceReceiveResponse;
+import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createNetworkDataRecieved;
+import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createTabChanged;
 
 /**
  * Tests {@link HintletGwtDetect}.
@@ -39,121 +46,27 @@ public class HintletGwtDetectTests extends GWTTestCase {
   public void testDownloadSizeWithHints() {
     HintletTestHelper.runTest(new HintletGwtDetect(), getCaseDownloadSizeWithHints());
   }
-
-  private native static EventRecord tabChanged(String url, int sequence)/*-{
-  return {
-      "data" : {
-          "url" : url,
-      },
-      "type" : @com.google.speedtracer.shared.EventRecordType::TAB_CHANGED,
-      "time" : sequence,
-      "sequence" : sequence
-  };
-}-*/;
-
-  private native static EventRecord resourceSendRequest(String identifier, String url, int sequence)/*-{
-    return {
-        "data" : {
-            "identifier" : identifier,
-            "url" : url,
-            "requestMethod" : "GET"
-        },
-        "type" : @com.google.speedtracer.shared.EventRecordType::RESOURCE_SEND_REQUEST,
-        "time" : sequence,
-        "sequence" : sequence
-    };
-  }-*/;
-
-  private native static EventRecord resourceReceiveResponse(String identifier, int sequence)/*-{
-    return {
-        "data" : {
-            "identifier" : identifier,
-            "statusCode" : 200,
-            "mimeType" : "application/x-javascript"
-        },
-        "children" : [],
-        "type" : @com.google.speedtracer.shared.EventRecordType::RESOURCE_RECEIVE_RESPONSE,
-        "duration" : 0.029052734375,
-        "time" : sequence,
-        "sequence" : sequence
-    };
-  }-*/;
-
-  private native static EventRecord resourceDataReceived(String identifier, int sequence)/*-{
-    return {
-        "data" : {
-          "identifier" : identifier
-        },
-        "children" : [],
-        "type" : @com.google.speedtracer.shared.EventRecordType::RESOURCE_DATA_RECEIVED,
-        "duration" : 0.02001953125,
-        "time" : sequence,
-        "sequence" : sequence
-    };
-  }-*/;
-
-  private native static EventRecord networkResponseReceived(String identifier, int sequence,
-      String date, String expires, String cacheControl)/*-{
-    var event = {
-        "sequence" : sequence,
-        "data" : {
-            "response" : {
-                "statusText" : "OK",
-                "fromDiskCache" : false,
-                "connectionReused" : true,
-                "connectionId" : 751769,
-                "status" : 200,
-                "headers" : {
-                    "Content-Length" : "2349",
-                    "Accept-Ranges" : "bytes",
-
-                    "Connection" : "Keep-Alive"
-                }
-            },
-            "identifier" : identifier
-        },
-        "time" : sequence,
-        "type" : @com.google.speedtracer.shared.EventRecordType::NETWORK_RESPONSE_RECEIVED
-    };
+  
+  private static EventRecord createNetworkResponseReceived(String identifier, int sequence, String date,
+      String expires, String cacheControl) {
+    NetworkResponseReceivedEventBuilder builder =
+        new NetworkResponseReceivedEventBuilder(identifier, sequence, sequence);
+    builder.setResponseFromDiskCache(false).setResponseStatus(200);
 
     if (date != null) {
-      event.data.response.headers["Date"] = date;
+      builder.setResponseHeaderDate(date);
     }
 
     if (expires != null) {
-      event.data.response.headers["Expires"] = expires;
+      builder.setResponseHeaderExpires(expires);
     }
 
     if (cacheControl != null) {
-      event.data.response.headers["Cache-Control"] = cacheControl;
+      builder.setResponseHeaderCacheControl(cacheControl);
     }
 
-    return event;
-  }-*/;
-
-  private native static EventRecord resourceFinish(String identifier, int sequence)/*-{
-    return {
-        "data" : {
-            "identifier" : identifier,
-            "didFail" : false
-        },
-        "type" : @com.google.speedtracer.shared.EventRecordType::RESOURCE_FINISH,
-        "time" : sequence,
-        "sequence" : sequence
-    };
-  }-*/;
-
-  private native static EventRecord networkDataReceived(String identifier, int sequence, int dataLength)/*-{
-    return {
-        "type" : @com.google.speedtracer.shared.EventRecordType::NETWORK_DATA_RECEIVED,
-        "time" : sequence,
-        "data" : {
-            "identifier" : identifier,
-            "dataLength" : dataLength
-        },
-        "sequence" : sequence
-    };
-  }-*/;
+    return builder.getEvent();
+  }
 
   /**
    * Get a sequence of events. When {@code selectionScriptNonCacheable} is {@code false},
@@ -195,43 +108,43 @@ public class HintletGwtDetectTests extends GWTTestCase {
     final String strongNameExpires = "Thu, 19 Jul 2012 14:04:22 GMT";
     final String strongNameCacheControl =
         "public,max-age=31536000,post-check=31536000,pre-check=31536000";
-
+    
     int sequence = 1;
     JSOArray<EventRecord> inputs = JSOArray.create();
-    inputs.push(tabChanged("https:/www.efgh.com", sequence++));
+    inputs.push(createTabChanged("https:/www.efgh.com", sequence++));
     // Host page
-    inputs.push(resourceSendRequest(hostPageId, hostPageUrl, sequence++));
-    inputs.push(resourceReceiveResponse(hostPageId, sequence++));
-    inputs.push(resourceFinish(hostPageId, sequence++));
+    inputs.push(createResourceSendRequest(hostPageId, hostPageUrl, sequence++));
+    inputs.push(createResourceReceiveResponse(hostPageId, sequence++, "text/html"));
+    inputs.push(createResourceFinish(hostPageId, sequence++));
     // GWT selection script
-    inputs.push(resourceSendRequest(selectionScriptId, selectionScriptUrl, sequence++));
-    inputs.push(resourceReceiveResponse(selectionScriptId, sequence++));
+    inputs.push(createResourceSendRequest(selectionScriptId, selectionScriptUrl, sequence++));
+    inputs.push(createResourceReceiveResponse(selectionScriptId, sequence++, "application/x-javascript"));
     // GWT selection script. Set explicitly non-cacheable here
-    inputs.push(networkResponseReceived(selectionScriptId, sequence++, selectionScriptDate,
+    inputs.push(createNetworkResponseReceived(selectionScriptId, sequence++, selectionScriptDate,
         selectionScriptExpires, selectionScriptCacheControl));
     // An unrelated interleaved request, just as in real life
-    inputs.push(resourceSendRequest(imageId, imageUrl, sequence++));
-    inputs.push(resourceReceiveResponse(imageId, sequence++));
-    inputs.push(resourceFinish(imageId, sequence++));
+    inputs.push(createResourceSendRequest(imageId, imageUrl, sequence++));
+    inputs.push(createResourceReceiveResponse(imageId, sequence++, "image/png"));
+    inputs.push(createResourceFinish(imageId, sequence++));
     // Back to GWT selection script
-    inputs.push(resourceDataReceived(selectionScriptId, sequence++));
-    inputs.push(resourceFinish(selectionScriptId, sequence++));
+    inputs.push(createResourceDataReceived(selectionScriptId, sequence++));
+    inputs.push(createResourceFinish(selectionScriptId, sequence++));
     // Strong name fetch 1
-    inputs.push(resourceSendRequest(strongNameID1, strongNameUrl1, sequence++));
-    inputs.push(resourceReceiveResponse(strongNameID1, sequence++));
-    inputs.push(networkResponseReceived(strongNameID1, sequence++, strongNameDate,
+    inputs.push(createResourceSendRequest(strongNameID1, strongNameUrl1, sequence++));
+    inputs.push(createResourceReceiveResponse(strongNameID1, sequence++, "text/html"));
+    inputs.push(createNetworkResponseReceived(strongNameID1, sequence++, strongNameDate,
         strongNameExpires, strongNameCacheControl));
-    inputs.push(resourceDataReceived(strongNameID1, sequence++));
-    inputs.push(networkDataReceived(strongNameID1, sequence++, strongNameDataLength1));
-    inputs.push(resourceFinish(strongNameID1, sequence++));
+    inputs.push(createResourceDataReceived(strongNameID1, sequence++));
+    inputs.push(createNetworkDataRecieved(strongNameID1, sequence++, strongNameDataLength1));
+    inputs.push(createResourceFinish(strongNameID1, sequence++));
     // Strong name fetch 2
-    inputs.push(resourceSendRequest(strongNameID2, strongNameUrl2, sequence++));
-    inputs.push(resourceReceiveResponse(strongNameID2, sequence++));
-    inputs.push(networkResponseReceived(strongNameID2, sequence++, strongNameDate,
+    inputs.push(createResourceSendRequest(strongNameID2, strongNameUrl2, sequence++));
+    inputs.push(createResourceReceiveResponse(strongNameID2, sequence++, "text/html"));
+    inputs.push(createNetworkResponseReceived(strongNameID2, sequence++, strongNameDate,
         strongNameExpires, strongNameCacheControl));
-    inputs.push(resourceDataReceived(strongNameID2, sequence++));
-    inputs.push(networkDataReceived(strongNameID2, sequence++, strongNameDataLength2));
-    inputs.push(resourceFinish(strongNameID2, sequence++));
+    inputs.push(createResourceDataReceived(strongNameID2, sequence++));
+    inputs.push(createNetworkDataRecieved(strongNameID2, sequence++, strongNameDataLength2));
+    inputs.push(createResourceFinish(strongNameID2, sequence++));
     return inputs;
   }
 
