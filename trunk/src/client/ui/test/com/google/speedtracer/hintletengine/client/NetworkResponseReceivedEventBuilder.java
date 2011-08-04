@@ -13,6 +13,7 @@
  */
 package com.google.speedtracer.hintletengine.client;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.speedtracer.client.model.NetworkResponseReceivedEvent;
 
 /**
@@ -60,6 +61,8 @@ public class NetworkResponseReceivedEventBuilder {
    * Build the basic JSON object with required fields set to default values
    */
   private static native NetworkResponseReceivedEvent createSkeletonEvent() /*-{
+    //DO NOT add additional fields to this skeleton event unless you check all tests
+    //using this builder
     return {
         "type" : @com.google.speedtracer.shared.EventRecordType::NETWORK_RESPONSE_RECEIVED,
         "time" : 1,
@@ -161,6 +164,10 @@ public class NetworkResponseReceivedEventBuilder {
     return this;
   }
 
+  public native void setResponseHeaders(JavaScriptObject headers) /*-{
+    this.@com.google.speedtracer.hintletengine.client.NetworkResponseReceivedEventBuilder::event.data.response.headers = headers;
+  }-*/;
+  
   private native void setResponseHeader(String header, String value) /*-{
     this.@com.google.speedtracer.hintletengine.client.NetworkResponseReceivedEventBuilder::event.data.response.headers[header] = value;
   }-*/;

@@ -17,6 +17,11 @@ package com.google.speedtracer.hintletengine.client.rules;
 import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.speedtracer.client.model.EventRecord;
+import com.google.speedtracer.hintletengine.client.NetworkResponseReceivedEventBuilder;
+import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createResourceSendRequest;
+import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createResourceFinish;
+import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createResourceReceiveResponse;
+import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createNetworkDataRecieved;
 
 /**
  * Tests {@link HintletNotGz}.
@@ -56,86 +61,18 @@ public class HintletNotGzTests extends GWTTestCase {
     HintletTestHelper.runTest(new HintletNotGz(), getCaseBzip2edHtmlFileNoHint());
   }
   
-  private native static EventRecord resourceSendRequest(String identifier, int sequence, String url)/*-{
-    return {
-      "data" : {
-        "identifier" : identifier,
-        "url" : url,
-        "requestMethod" : "GET"
-      },
-      "type" : @com.google.speedtracer.shared.EventRecordType::RESOURCE_SEND_REQUEST,
-      "time" : sequence,
-      "sequence" : sequence
-    };
-  }-*/;
-
-  private native static EventRecord resourceReceiveResponse(String identifier, int sequence,
-      String mimeType)/*-{
-    return {
-      "data" : {
-        "identifier" : identifier,
-        "statusCode" : 200,
-        "mimeType" : mimeType
-      },
-      "children" : [],
-      "type" : @com.google.speedtracer.shared.EventRecordType::RESOURCE_RECEIVE_RESPONSE,
-      "duration" : 0.029052734375,
-      "time" : sequence,
-      "sequence" : sequence
-    };
-  }-*/;
-
-  private native static EventRecord networkResponseReceived(String identifier, int sequence,
-      String contentType, String contentEncoding)/*-{
-    var event = {
-      "sequence" : sequence,
-      "data" : {
-        "response" : {
-          "statusText" : "OK",
-          "fromDiskCache" : false,
-          "connectionReused" : true,
-          "connectionId" : 751769,
-          "status" : 200,
-          "headers" : {
-            "Content-Type" : contentType
-          }
-        },
-        "identifier" : identifier
-      },
-      "time" : sequence,
-      "type" : @com.google.speedtracer.shared.EventRecordType::NETWORK_RESPONSE_RECEIVED
-    };
-
+  private static EventRecord createNetworkResponseReceived(String identifier, int sequence,
+      String contentType, String contentEncoding) {
+    NetworkResponseReceivedEventBuilder builder =
+        new NetworkResponseReceivedEventBuilder(identifier, sequence, sequence);
+    builder.setResponseFromDiskCache(false)
+      .setResponseStatus(200)
+      .setResponseHeaderContentType(contentType);
     if (contentEncoding != null) {
-      event.data.response.headers["Content-Encoding"] = contentEncoding;
+      builder.setResponseHeaderContentEncoding(contentEncoding);
     }
-
-    return event;
-  }-*/;
-
-  private native static EventRecord networkDataReceived(String identifier, int sequence, int dataLength)/*-{
-    return {
-      "type" : @com.google.speedtracer.shared.EventRecordType::NETWORK_DATA_RECEIVED,
-      "time" : sequence,
-      "data" : {
-        "identifier" : identifier,
-        "dataLength" : dataLength
-      },
-      "sequence" : sequence
-    };
-  }-*/;
-
-  private native static EventRecord resourceFinish(String identifier, int sequence)/*-{
-    return {
-      "data" : {
-        "identifier" : identifier,
-        "didFail" : false
-      },
-      "type" : @com.google.speedtracer.shared.EventRecordType::RESOURCE_FINISH,
-      "time" : sequence,
-      "sequence" : sequence
-    };
-  }-*/;
+    return builder.getEvent();
+  }
   
   /**
    * Get a sequence of events for a single resource.
@@ -153,15 +90,15 @@ public class HintletNotGzTests extends GWTTestCase {
     int sequence = 1;
 
     JSOArray<EventRecord> inputs = JSOArray.create();
-    inputs.push(resourceSendRequest(identifier, sequence++, url));
-    inputs.push(resourceReceiveResponse(identifier, sequence++, mimeType));
-    inputs.push(networkResponseReceived(identifier, sequence++, mimeType, contentEncoding));
+    inputs.push(createResourceSendRequest(identifier, url, sequence++));
+    inputs.push(createResourceReceiveResponse(identifier, sequence++, mimeType));
+    inputs.push(createNetworkResponseReceived(identifier, sequence++, mimeType, contentEncoding));
     // resource may be split and transfered via several events
     // use 2 network-data-received events here.
     // omit RESOURCE_DATA_RECEIVED event
-    inputs.push(networkDataReceived(identifier, sequence++, totalDataLength / 2));
-    inputs.push(networkDataReceived(identifier, sequence++, totalDataLength - totalDataLength / 2));
-    inputs.push(resourceFinish(identifier, sequence++));
+    inputs.push(createNetworkDataRecieved(identifier, sequence++, totalDataLength / 2));
+    inputs.push(createNetworkDataRecieved(identifier, sequence++, totalDataLength - totalDataLength / 2));
+    inputs.push(createResourceFinish(identifier, sequence++));
     return inputs;
   }
   

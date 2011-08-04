@@ -48,9 +48,9 @@ import com.google.speedtracer.hintletengine.client.rules.HintletLongDurationTest
 import com.google.speedtracer.hintletengine.client.rules.HintletCacheControlTests;
 import com.google.speedtracer.hintletengine.client.rules.HintletFrequentLayoutTests;
 import com.google.speedtracer.hintletengine.client.rules.HintletGwtDetectTests;
-import com.google.speedtracer.hintletengine.client.rules.HintletLongDuration;
 import com.google.speedtracer.hintletengine.client.rules.HintletNotGzTests;
 import com.google.speedtracer.hintletengine.client.rules.HintletStaticNoCookieTests;
+import com.google.speedtracer.hintletengine.client.rules.HintletTotatBytesTests;
 
 import junit.framework.Test;
 
@@ -96,6 +96,7 @@ public class AllTestsSuite extends GWTTestSuite {
     suite.addTestSuite(HintletGwtDetectTests.class);
     suite.addTestSuite(HintletNotGzTests.class);
     suite.addTestSuite(HintletStaticNoCookieTests.class);
+    suite.addTestSuite(HintletTotatBytesTests.class);
     
     return suite;
   }
