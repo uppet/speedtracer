@@ -36,6 +36,7 @@ import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuil
 public class HintletFrequentLayoutTests extends GWTTestCase {
 
   private HintletFrequentLayout rule;
+  private HintletTestCase test;
 
   @Override
   public String getModuleName() {
@@ -45,21 +46,22 @@ public class HintletFrequentLayoutTests extends GWTTestCase {
   @Override
   public void gwtSetUp() {
     rule = new HintletFrequentLayout();
+    test = HintletTestCase.getHintletTestCase();
   }
 
   /**
-   * This trace tests data copied from a real trace
+   * Capture from a live browser triggers the rule
    */
   public void testRealDataWithHint() {
-    
     String hintDescription = "Event triggered 12 layouts taking 120ms.";
-    HintRecord expectedHint = HintRecord.create(rule.getHintletName(), 1, HintRecord.SEVERITY_WARNING, hintDescription, 1);
-    
-    HintletTestHelper.runTest(rule, HintletTestCase.createTestCase("Capture from a live browser triggers the rule",
-        getInputsRealTrace(), expectedHint));
+    HintRecord expectedHint = HintRecord.create(
+        rule.getHintletName(), 1, HintRecord.SEVERITY_WARNING, hintDescription, 1);
+    test.setInputs(getInputsRealTrace()).addExpectedHint(expectedHint);
+    HintletTestHelper.runTest(rule, test);
   }
   
   /**
+   * Contains 12 layouts taking 120ms.
    * DomEvent:200 
    *   12 each: 
    *     Layout:10 
@@ -78,24 +80,24 @@ public class HintletFrequentLayoutTests extends GWTTestCase {
             HintRecord.SEVERITY_WARNING, hintDescription,
             HintletEventRecordBuilder.DEFAULT_SEQUENCE);
 
-    HintletTestCase test = HintletTestCase.createTestCase(
-        hintDescription, HintletTestCase.singleInputArray(input), expectedHint);
+    test.addInput(input).addExpectedHint(expectedHint);
     HintletTestHelper.runTest(rule, test);
   }
 
   /**
+   * No Layout event, should not trigger
    * DomEvent:200 
    *   GC: 200
    */
   public void testNoLayoutEventNoHint() {
     DomEvent input = createDomEvent(200);
     input.addChild(createGCEvent(200));
-    HintletTestCase test =
-        HintletTestCase.createTestCase("No Layout event", HintletTestCase.singleInputArray(input));
+    test.addInput(input);
     HintletTestHelper.runTest(rule, test);
   }
 
   /**
+   * Sub-event time should be subtracted, so this one should not trigger.
    * Layout:200 
    *   Parse:50 
    *   Parse:50 
@@ -106,13 +108,13 @@ public class HintletFrequentLayoutTests extends GWTTestCase {
     input.addChild(createParseHtmlEvent(50));
     input.addChild(createParseHtmlEvent(50));
     input.addChild(createParseHtmlEvent(50));
-    HintletTestCase test = HintletTestCase.createTestCase(
-        "sub-event time should be subtracted, so this one should not trigger",
-        HintletTestCase.singleInputArray(input));
+    test.addInput(input);
     HintletTestHelper.runTest(rule, test);
   }
 
   /**
+   * Three sub-event layouts take 50 ms, but each has a child event that eats up 
+   * most of the time.
    * ParseHtml:2000 
    *   Layout:50 
    *     ParseHtml:48 
@@ -133,13 +135,12 @@ public class HintletFrequentLayoutTests extends GWTTestCase {
     
     input.addChild(createLayoutEvent(50));
     
-    HintletTestCase test = HintletTestCase.createTestCase(
-        "Three sub-events of 50 ms with child events of their own that eat up most of the time.", 
-        HintletTestCase.singleInputArray(input));
+    test.addInput(input); 
     HintletTestHelper.runTest(rule, test);
   }
 
   /**
+   * Event contains 3 layouts taking 170ms.
    * DomEvent:200 
    *   Layout:50 
    *     GC:45 
@@ -169,23 +170,22 @@ public class HintletFrequentLayoutTests extends GWTTestCase {
             HintRecord.SEVERITY_WARNING, hintDescription,
             HintletEventRecordBuilder.DEFAULT_SEQUENCE);
 
-    HintletTestCase test = HintletTestCase.createTestCase(
-        hintDescription, HintletTestCase.singleInputArray(input), expectedHint);
+    test.addInput(input).addExpectedHint(expectedHint);
     HintletTestHelper.runTest(rule, test);
   }
 
   /**
+   * A single layout event should not trigger the rule
    * Layout:2000
    */
   public void testSingleLayoutNoHint() {
     LayoutEvent input = createLayoutEvent(2000);
-    HintletTestCase test =
-        HintletTestCase.createTestCase("A single layout event should not trigger the rule",
-            HintletTestCase.singleInputArray(input));
+    test.addInput(input);
     HintletTestHelper.runTest(rule, test);
   }
 
   /**
+   * Event contains 3 childless layouts taking 150ms.
    * Paint:2000 
    *   Layout:50 
    *   Layout:50 
@@ -193,10 +193,9 @@ public class HintletFrequentLayoutTests extends GWTTestCase {
    */
   public void testThreeLayoutsWithHint() {
     PaintEvent input = createPaintEvent(2000);
-    LayoutEvent child = createLayoutEvent(50);
-    input.addChild(child);
-    input.addChild(child);
-    input.addChild(child);
+    input.addChild(createLayoutEvent(50));
+    input.addChild(createLayoutEvent(50));
+    input.addChild(createLayoutEvent(50));
 
     String hintDescription = "Event triggered 3 layouts taking 150ms.";
     HintRecord expectedHint =
@@ -204,12 +203,13 @@ public class HintletFrequentLayoutTests extends GWTTestCase {
             HintRecord.SEVERITY_WARNING, hintDescription,
             HintletEventRecordBuilder.DEFAULT_SEQUENCE);
 
-    HintletTestCase test = HintletTestCase.createTestCase(
-        hintDescription, HintletTestCase.singleInputArray(input), expectedHint);
+    test.addInput(input).addExpectedHint(expectedHint);
     HintletTestHelper.runTest(rule, test);
   }
   
-
+  /**
+   * Data copy/pasted from an actual trace
+   */
   private native static JSOArray<EventRecord> getInputsRealTrace()/*-{
     return [
         {

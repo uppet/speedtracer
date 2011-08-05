@@ -17,6 +17,7 @@ package com.google.speedtracer.hintletengine.client.rules;
 import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.speedtracer.client.model.EventRecord;
+import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.hintletengine.client.NetworkResponseReceivedEventBuilder;
 import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createResourceSendRequest;
 import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createResourceFinish;
@@ -28,37 +29,64 @@ import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuil
  */
 public class HintletNotGzTests extends GWTTestCase {
 
+  private HintletRule rule;
+  private HintletTestCase test;
+  
+  @Override
+  protected void gwtSetUp() {
+    rule = new HintletNotGz();
+    test = HintletTestCase.getHintletTestCase();
+  }
+  
   @Override
   public String getModuleName() {
     return "com.google.speedtracer.hintletengine.HintletEngineTest";
   }
 
   public void testHtmlFileWithHint() {
-    HintletTestHelper.runTest(new HintletNotGz(), getCaseHtmlFileWithHint());
+    test.setInputs(getInputs("http://example.org/foo.html", "text/html", null, 200));
+    
+    String hintDescription = "URL http://example.org/foo.html was not compressed with gzip or bzip2";
+    test.addExpectedHint(HintRecord.create(rule.getHintletName(), 2, HintRecord.SEVERITY_INFO, hintDescription, 6));
+    
+    HintletTestHelper.runTest(rule, test);
   }
 
   public void testCssFileWithHint() {
-    HintletTestHelper.runTest(new HintletNotGz(), getCaseCssFileWithHint());
+    test.setInputs(getInputs("http://example.org/foo.css", "text/css", null, 9875));
+    
+    String hintDescription = "URL http://example.org/foo.css was not compressed with gzip or bzip2";
+    test.addExpectedHint(HintRecord.create(rule.getHintletName(), 2, HintRecord.SEVERITY_INFO, hintDescription, 6));
+    
+    HintletTestHelper.runTest(rule, test);
   }
 
   public void testJavaScriptFileWithHint() {
-    HintletTestHelper.runTest(new HintletNotGz(), getCaseJavaScriptFileWithHint());
+    test.setInputs(getInputs("http://example.org/foo.js", "text/javascript", null, 9875));
+    
+    String hintDescription = "URL http://example.org/foo.js was not compressed with gzip or bzip2";
+    test.addExpectedHint(HintRecord.create(rule.getHintletName(), 2, HintRecord.SEVERITY_INFO, hintDescription, 6));
+    HintletTestHelper.runTest(rule, test);
   }
   
   public void testImageFileNoHint() {
-    HintletTestHelper.runTest(new HintletNotGz(), getCaseImageFileNoHint());
+    test.setInputs(getInputs("http://example.org/foo.png", "image/png", null, 9875));
+    HintletTestHelper.runTest(rule, test);
   }
   
   public void testSmallHtmlFileNoHint() {
-    HintletTestHelper.runTest(new HintletNotGz(), getCaseSmallHtmlFileNoHint());
+    test.setInputs(getInputs("http://example.org/foo.html", "text/html", null, 149));
+    HintletTestHelper.runTest(rule, test);
   }
   
   public void testGzipedHtmlFileNoHint() {
-    HintletTestHelper.runTest(new HintletNotGz(), getCaseGzipedHtmlFileNoHint());
+    test.setInputs(getInputs("http://example.org/foo.html", "text/html", "gzip", 6436));
+    HintletTestHelper.runTest(rule, test);
   }
   
   public void testBzip2edHtmlFileNoHint() {
-    HintletTestHelper.runTest(new HintletNotGz(), getCaseBzip2edHtmlFileNoHint());
+    test.setInputs(getInputs("http://example.org/foo.html", "text/html", "bzip2", 6436));
+    HintletTestHelper.runTest(rule, test);
   }
   
   private static EventRecord createNetworkResponseReceived(String identifier, int sequence,
@@ -101,85 +129,5 @@ public class HintletNotGzTests extends GWTTestCase {
     inputs.push(createResourceFinish(identifier, sequence++));
     return inputs;
   }
-  
-  private native static HintletTestCase getCaseHtmlFileWithHint()/*-{
-    return {
-      "inputs" : @com.google.speedtracer.hintletengine.client.rules.HintletNotGzTests::getInputs(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)
-                  ("http://example.org/foo.html", "text/html", null, 200),
-      "expectedHints" : [
-        {
-          "hintletRule" : "Uncompressed Resource",
-          "timestamp" : 2,
-          "description" : "URL http://example.org/foo.html was not compressed with gzip or bzip2",
-          "refRecord" : 6,
-          "severity" : 3
-        }
-      ]
-    };
-  }-*/; 
-
-  private native static HintletTestCase getCaseCssFileWithHint()/*-{
-    return {
-      "inputs" : @com.google.speedtracer.hintletengine.client.rules.HintletNotGzTests::getInputs(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)
-                  ("http://example.org/foo.css", "text/css", null, 9875),
-      "expectedHints" : [
-        {
-          "hintletRule" : "Uncompressed Resource",
-          "timestamp" : 2,
-          "description" : "URL http://example.org/foo.css was not compressed with gzip or bzip2",
-          "refRecord" : 6,
-          "severity" : 3
-        }
-      ]
-    };
-  }-*/; 
-
-  private native static HintletTestCase getCaseJavaScriptFileWithHint()/*-{
-    return {
-      "inputs" : @com.google.speedtracer.hintletengine.client.rules.HintletNotGzTests::getInputs(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)
-                  ("http://example.org/foo.js", "text/javascript", null, 9875),
-      "expectedHints" : [
-        {
-          "hintletRule" : "Uncompressed Resource",
-          "timestamp" : 2,
-          "description" : "URL http://example.org/foo.js was not compressed with gzip or bzip2",
-          "refRecord" : 6,
-          "severity" : 3
-        }
-      ]
-    };
-  }-*/; 
-
-  private native static HintletTestCase getCaseImageFileNoHint()/*-{
-    return {
-      "inputs" : @com.google.speedtracer.hintletengine.client.rules.HintletNotGzTests::getInputs(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)
-                  ("http://example.org/foo.png", "image/png", null, 9875),
-      "expectedHints" : []
-    };
-  }-*/; 
-
-  private native static HintletTestCase getCaseSmallHtmlFileNoHint()/*-{
-    return {
-      "inputs" : @com.google.speedtracer.hintletengine.client.rules.HintletNotGzTests::getInputs(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)
-                  ("http://example.org/foo.html", "text/html", null, 149),
-      "expectedHints" : []
-    };
-  }-*/; 
-
-  private native static HintletTestCase getCaseGzipedHtmlFileNoHint()/*-{
-    return {
-      "inputs" : @com.google.speedtracer.hintletengine.client.rules.HintletNotGzTests::getInputs(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)
-                  ("http://example.org/foo.html", "text/html", "gzip", 6436),
-      "expectedHints" : []
-    };
-  }-*/; 
-
-  private native static HintletTestCase getCaseBzip2edHtmlFileNoHint()/*-{
-    return {
-      "inputs" : @com.google.speedtracer.hintletengine.client.rules.HintletNotGzTests::getInputs(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)
-                  ("http://example.org/foo.html", "text/html", "bzip2", 6436),
-      "expectedHints" : []
-    };
-  }-*/; 
   
 }
