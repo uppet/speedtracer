@@ -1,11 +1,11 @@
 /*
  * Copyright 2011 Google Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -14,49 +14,204 @@
 
 package com.google.speedtracer.hintletengine.client.rules;
 
+import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.junit.client.GWTTestCase;
+import com.google.speedtracer.client.model.DomEvent;
+import com.google.speedtracer.client.model.EventRecord;
+import com.google.speedtracer.client.model.HintRecord;
+import com.google.speedtracer.client.model.LayoutEvent;
+import com.google.speedtracer.client.model.PaintEvent;
+import com.google.speedtracer.client.model.ParseHtmlEvent;
+import com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder;
+
+import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createDomEvent;
+import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createGCEvent;
+import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createLayoutEvent;
+import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createPaintEvent;
+import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createParseHtmlEvent;
 
 /**
  * Tests {@link HintletFrequentLayout}.
  */
 public class HintletFrequentLayoutTests extends GWTTestCase {
 
+  private HintletFrequentLayout rule;
+
   @Override
   public String getModuleName() {
     return "com.google.speedtracer.hintletengine.HintletEngineTest";
   }
 
+  @Override
+  public void gwtSetUp() {
+    rule = new HintletFrequentLayout();
+  }
+
+  /**
+   * This trace tests data copied from a real trace
+   */
   public void testRealDataWithHint() {
-    HintletTestHelper.runTest(new HintletFrequentLayout(), getTestCaseRealDataWithHint());
+    
+    String hintDescription = "Event triggered 12 layouts taking 120ms.";
+    HintRecord expectedHint = HintRecord.create(rule.getHintletName(), 1, HintRecord.SEVERITY_WARNING, hintDescription, 1);
+    
+    HintletTestHelper.runTest(rule, HintletTestCase.createTestCase("Capture from a live browser triggers the rule",
+        getInputsRealTrace(), expectedHint));
+  }
+  
+  /**
+   * DomEvent:200 
+   *   12 each: 
+   *     Layout:10 
+   *     Paint:10
+   */
+  public void testManyLayoutsWithHint() {
+    DomEvent input = createDomEvent(200);
+    for (int i = 0; i < 12; i++) {
+      input.addChild(createLayoutEvent(10));
+      input.addChild(createPaintEvent(10));
+    }
+
+    String hintDescription = "Event triggered 12 layouts taking 120ms.";
+    HintRecord expectedHint =
+        HintRecord.create(rule.getHintletName(), HintletEventRecordBuilder.DEFAULT_TIME,
+            HintRecord.SEVERITY_WARNING, hintDescription,
+            HintletEventRecordBuilder.DEFAULT_SEQUENCE);
+
+    HintletTestCase test = HintletTestCase.createTestCase(
+        hintDescription, HintletTestCase.singleInputArray(input), expectedHint);
+    HintletTestHelper.runTest(rule, test);
   }
 
+  /**
+   * DomEvent:200 
+   *   GC: 200
+   */
   public void testNoLayoutEventNoHint() {
-    HintletTestHelper.runTest(new HintletFrequentLayout(), getTestCaseNoLayoutEventNoHint());
+    DomEvent input = createDomEvent(200);
+    input.addChild(createGCEvent(200));
+    HintletTestCase test =
+        HintletTestCase.createTestCase("No Layout event", HintletTestCase.singleInputArray(input));
+    HintletTestHelper.runTest(rule, test);
   }
 
+  /**
+   * Layout:200 
+   *   Parse:50 
+   *   Parse:50 
+   *   Parse:50
+   */
   public void testNonLayoutSubEvents1NoHint() {
-    HintletTestHelper.runTest(new HintletFrequentLayout(), getTestCaseNonLayoutSubEvents1NoHint());
+    LayoutEvent input = createLayoutEvent(200);
+    input.addChild(createParseHtmlEvent(50));
+    input.addChild(createParseHtmlEvent(50));
+    input.addChild(createParseHtmlEvent(50));
+    HintletTestCase test = HintletTestCase.createTestCase(
+        "sub-event time should be subtracted, so this one should not trigger",
+        HintletTestCase.singleInputArray(input));
+    HintletTestHelper.runTest(rule, test);
   }
 
+  /**
+   * ParseHtml:2000 
+   *   Layout:50 
+   *     ParseHtml:48 
+   *   Layout:50 
+   *     ParseHtml:48
+   *   Layout:50
+   */
   public void testNonLayoutSubEvents2NoHint() {
-    HintletTestHelper.runTest(new HintletFrequentLayout(), getTestCaseNonLayoutSubEvents2NoHint());
+    ParseHtmlEvent input = createParseHtmlEvent(2000);
+    
+    LayoutEvent child1 = createLayoutEvent(50);
+    child1.addChild(createParseHtmlEvent(48));
+    input.addChild(child1);
+    
+    LayoutEvent child2 = createLayoutEvent(50);
+    child2.addChild(createParseHtmlEvent(48));
+    input.addChild(child2);
+    
+    input.addChild(createLayoutEvent(50));
+    
+    HintletTestCase test = HintletTestCase.createTestCase(
+        "Three sub-events of 50 ms with child events of their own that eat up most of the time.", 
+        HintletTestCase.singleInputArray(input));
+    HintletTestHelper.runTest(rule, test);
   }
 
+  /**
+   * DomEvent:200 
+   *   Layout:50 
+   *     GC:45 
+   *   Layout:100 
+   *     GC:45 
+   *   Layout:155 
+   *     GC:45
+   */
   public void testNonLayoutSubEvents3NoHint() {
-    HintletTestHelper.runTest(new HintletFrequentLayout(), getTestCaseNonLayoutSubEvents3NoHint());
+    DomEvent input = createDomEvent(200);
+
+    LayoutEvent child50 = createLayoutEvent(50);
+    child50.addChild(createGCEvent(45));
+    input.addChild(child50);
+
+    LayoutEvent child100 = createLayoutEvent(100);
+    child100.addChild(createGCEvent(45));
+    input.addChild(child100);
+
+    LayoutEvent child155 = createLayoutEvent(155);
+    child155.addChild(createGCEvent(45));
+    input.addChild(child155);
+
+    String hintDescription = "Event triggered 3 layouts taking 170ms.";
+    HintRecord expectedHint =
+        HintRecord.create(rule.getHintletName(), HintletEventRecordBuilder.DEFAULT_TIME,
+            HintRecord.SEVERITY_WARNING, hintDescription,
+            HintletEventRecordBuilder.DEFAULT_SEQUENCE);
+
+    HintletTestCase test = HintletTestCase.createTestCase(
+        hintDescription, HintletTestCase.singleInputArray(input), expectedHint);
+    HintletTestHelper.runTest(rule, test);
   }
 
+  /**
+   * Layout:2000
+   */
   public void testSingleLayoutNoHint() {
-    HintletTestHelper.runTest(new HintletFrequentLayout(), getTestCaseSingleLayoutNoHint());
+    LayoutEvent input = createLayoutEvent(2000);
+    HintletTestCase test =
+        HintletTestCase.createTestCase("A single layout event should not trigger the rule",
+            HintletTestCase.singleInputArray(input));
+    HintletTestHelper.runTest(rule, test);
   }
 
+  /**
+   * Paint:2000 
+   *   Layout:50 
+   *   Layout:50 
+   *   Layout:50
+   */
   public void testThreeLayoutsWithHint() {
-    HintletTestHelper.runTest(new HintletFrequentLayout(), getTestCaseThreeLayoutsWithHint());
-  }
+    PaintEvent input = createPaintEvent(2000);
+    LayoutEvent child = createLayoutEvent(50);
+    input.addChild(child);
+    input.addChild(child);
+    input.addChild(child);
 
-  private native static HintletTestCase getTestCaseRealDataWithHint()/*-{
-    return {
-      "inputs" : [
+    String hintDescription = "Event triggered 3 layouts taking 150ms.";
+    HintRecord expectedHint =
+        HintRecord.create(rule.getHintletName(), HintletEventRecordBuilder.DEFAULT_TIME,
+            HintRecord.SEVERITY_WARNING, hintDescription,
+            HintletEventRecordBuilder.DEFAULT_SEQUENCE);
+
+    HintletTestCase test = HintletTestCase.createTestCase(
+        hintDescription, HintletTestCase.singleInputArray(input), expectedHint);
+    HintletTestHelper.runTest(rule, test);
+  }
+  
+
+  private native static JSOArray<EventRecord> getInputsRealTrace()/*-{
+    return [
         {
           "data" : {
             "type" : "click"
@@ -64,7 +219,7 @@ public class HintletFrequentLayoutTests extends GWTTestCase {
           "children" : [
             {
               "data" : {
-                "scriptName" : "file:///usr/local/google/users/sarahgsmith/starter_proj/notes/frequent_layout_example.html",
+                "scriptName" : "",
                 "scriptLine" : 176
               },
               "children" : [
@@ -525,305 +680,7 @@ public class HintletFrequentLayoutTests extends GWTTestCase {
           "time" : 1,
           "sequence" : 1
         }
-      ],
-      "expectedHints" : [
-        {
-          "hintletRule" : "Frequent Layout activity",
-          "timestamp" : 1,
-          "description" : "Event triggered 12 layouts taking 120ms.",
-          "refRecord" : 1,
-          "severity" : 2
-        }
-      ],
-      "description" : "This is a capture from a live browser that triggers the rule"
-    };
+      ];
   }-*/;
 
-  private native static HintletTestCase getTestCaseSingleLayoutNoHint()/*-{
-    return {
-      "inputs" : [
-        {
-          "children" : [],
-          "data" : {},
-          "duration" : 2000,
-          "time" : 2,
-          "type" : @com.google.speedtracer.shared.EventRecordType::LAYOUT_EVENT,
-          "sequence" : 2
-        }
-      ],
-      "expectedHints" : [],
-      "description" : "A single layout event should not trigger the rule"
-    };
-  }-*/;
-
-  private native static HintletTestCase getTestCaseThreeLayoutsWithHint()/*-{
-    return {
-      "inputs" : [
-        {
-          "children" : [
-            {
-              "children" : [],
-              "data" : {},
-              "duration" : 50,
-              "time" : 123,
-              "type" : @com.google.speedtracer.shared.EventRecordType::LAYOUT_EVENT
-            },
-            {
-              "children" : [],
-              "data" : {},
-              "duration" : 50,
-              "time" : 123,
-              "type" : @com.google.speedtracer.shared.EventRecordType::LAYOUT_EVENT
-            },
-            {
-              "children" : [],
-              "data" : {},
-              "duration" : 50,
-              "time" : 123,
-              "type" : @com.google.speedtracer.shared.EventRecordType::LAYOUT_EVENT
-            }
-          ],
-          "data" : {
-            "x" : 1,
-            "y" : 2,
-            "width" : 100,
-            "height" : 200
-          },
-          "duration" : 2000,
-          "time" : 3,
-          "type" : @com.google.speedtracer.shared.EventRecordType::PAINT_EVENT,
-          "sequence" : 3
-        }
-      ],
-      "expectedHints" : [
-        {
-          "hintletRule" : "Frequent Layout activity",
-          "timestamp" : 3,
-          "description" : "Event triggered 3 layouts taking 150ms.",
-          "refRecord" : 3,
-          "severity" : 2
-        }
-      ],
-      "description" : "3 sub-events of 50 ms each should trigger it"
-    };
-  }-*/;
-
-  private native static HintletTestCase getTestCaseNonLayoutSubEvents1NoHint()/*-{
-    return {
-      "inputs" : [
-        {
-          "children" : [
-            {
-              "children" : [],
-              "data" : {
-                "length" : 1000,
-                "startLine" : 1,
-                "endLine" : 2
-              },
-              "duration" : 50,
-              "time" : 123,
-              "type" : @com.google.speedtracer.shared.EventRecordType::PARSE_HTML_EVENT
-            },
-            {
-              "children" : [],
-              "data" : {
-                "length" : 1000,
-                "startLine" : 5,
-                "endLine" : 8
-              },
-              "duration" : 50,
-              "time" : 123,
-              "type" : @com.google.speedtracer.shared.EventRecordType::PARSE_HTML_EVENT
-            },
-            {
-              "children" : [],
-              "data" : {
-                "length" : 1000,
-                "startLine" : 11,
-                "endLine" : 20
-              },
-              "duration" : 50,
-              "time" : 123,
-              "type" : @com.google.speedtracer.shared.EventRecordType::PARSE_HTML_EVENT
-            }
-          ],
-          "data" : {},
-          "duration" : 200,
-          "time" : 4,
-          "type" : @com.google.speedtracer.shared.EventRecordType::LAYOUT_EVENT,
-          "sequence" : 4
-        }
-      ],
-      "expectedHints" : [],
-      "description" : "sub-event time should be subtracted, so this one should not trigger"
-    };
-  }-*/;
-
-  private native static HintletTestCase getTestCaseNonLayoutSubEvents2NoHint()/*-{
-    return {
-      "inputs" : [
-        {
-          "children" : [
-            {
-              "children" : [
-                {
-                  "children" : [],
-                  "data" : {
-                    "length" : 1000,
-                    "startLine" : 11,
-                    "endLine" : 20
-                  },
-                  "duration" : 48,
-                  "time" : 123,
-                  "type" : @com.google.speedtracer.shared.EventRecordType::PARSE_HTML_EVENT
-                }
-              ],
-              "data" : {},
-              "duration" : 50,
-              "time" : 123,
-              "type" : @com.google.speedtracer.shared.EventRecordType::LAYOUT_EVENT
-            },
-            {
-              "children" : [
-                {
-                  "children" : [],
-                  "data" : {
-                    "length" : 1000,
-                    "startLine" : 23,
-                    "endLine" : 25
-
-                  },
-                  "duration" : 48,
-                  "time" : 123,
-                  "type" : @com.google.speedtracer.shared.EventRecordType::PARSE_HTML_EVENT
-                }
-              ],
-              "data" : {},
-              "duration" : 50,
-              "time" : 123,
-              "type" : @com.google.speedtracer.shared.EventRecordType::LAYOUT_EVENT
-            },
-            {
-              "children" : [],
-              "data" : {},
-              "duration" : 50,
-              "time" : 123,
-              "type" : @com.google.speedtracer.shared.EventRecordType::LAYOUT_EVENT
-            }
-          ],
-          "data" : {
-            "length" : 1000,
-            "startLine" : 61,
-            "endLine" : 65
-          },
-          "duration" : 2000,
-          "time" : 5,
-          "type" : @com.google.speedtracer.shared.EventRecordType::PARSE_HTML_EVENT,
-          "sequence" : 5
-        }
-      ],
-      "expectedHints" : [],
-      "description" : "Three sub-events of 50 ms with child events of their own that eat up most of the time."
-    };
-  }-*/;
-
-  private native static HintletTestCase getTestCaseNonLayoutSubEvents3NoHint()/*-{
-    return {
-      "inputs" : [
-        {
-          "children" : [
-            {
-              "children" : [
-                {
-                  "children" : [],
-                  "data" : {
-                    "usedHeapSizeDelta" : 600
-                  },
-                  "duration" : 45,
-                  "time" : 6,
-                  "type" : @com.google.speedtracer.shared.EventRecordType::GC_EVENT
-                }
-              ],
-              "data" : {},
-              "duration" : 50,
-              "time" : 5,
-              "type" : @com.google.speedtracer.shared.EventRecordType::LAYOUT_EVENT
-            },
-            {
-              "children" : [
-                {
-                  "children" : [],
-                  "data" : {
-                    "usedHeapSizeDelta" : 600
-                  },
-                  "duration" : 45,
-                  "time" : 106,
-                  "type" : @com.google.speedtracer.shared.EventRecordType::GC_EVENT
-                }
-              ],
-              "data" : {},
-              "duration" : 100,
-              "time" : 5,
-              "type" : @com.google.speedtracer.shared.EventRecordType::LAYOUT_EVENT
-            },
-            {
-              "children" : [
-                {
-                  "children" : [],
-                  "data" : {
-                    "usedHeapSizeDelta" : 600
-                  },
-                  "duration" : 45,
-                  "time" : 156,
-                  "type" : @com.google.speedtracer.shared.EventRecordType::GC_EVENT
-                }
-              ],
-              "data" : {},
-              "duration" : 50,
-              "time" : 155,
-              "type" : @com.google.speedtracer.shared.EventRecordType::LAYOUT_EVENT
-            }
-          ],
-          "data" : {
-            "type" : ""
-          },
-          "duration" : 200,
-          "time" : 6,
-          "type" : @com.google.speedtracer.shared.EventRecordType::DOM_EVENT,
-          "sequence" : 6
-        }
-      ],
-      "expectedHints" : [],
-      "description" : "Three layouts with large aggregate child events"
-    };
-  }-*/;
-
-  private native static HintletTestCase getTestCaseNoLayoutEventNoHint()/*-{
-    return {
-      "inputs" : [
-        {
-          "children" : [
-            {
-              "children" : [],
-              "data" : {
-                "usedHeapSizeDelta" :600
-              },
-              "duration" : 200,
-              "time" : 3,
-              "type" : @com.google.speedtracer.shared.EventRecordType::GC_EVENT
-            }
-          ],
-          "data" : {
-            "type" : "",
-          },
-          "duration" : 200,
-          "time" : 7,
-          "type" : @com.google.speedtracer.shared.EventRecordType::DOM_EVENT,
-          "sequence" : 7
-        }
-      ],
-      "expectedHints" : [],
-      "description" : "No Layout event"
-    };
-  }-*/;
 }

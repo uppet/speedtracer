@@ -15,12 +15,18 @@
  */
 package com.google.speedtracer.hintletengine.client;
 
+import com.google.speedtracer.client.model.DomEvent;
+import com.google.speedtracer.client.model.GarbageCollectionEvent;
+import com.google.speedtracer.client.model.LayoutEvent;
 import com.google.speedtracer.client.model.NetworkDataReceivedEvent;
+import com.google.speedtracer.client.model.PaintEvent;
+import com.google.speedtracer.client.model.ParseHtmlEvent;
 import com.google.speedtracer.client.model.ResourceDataReceivedEvent;
 import com.google.speedtracer.client.model.ResourceFinishEvent;
 import com.google.speedtracer.client.model.ResourceResponseEvent;
 import com.google.speedtracer.client.model.ResourceWillSendEvent;
 import com.google.speedtracer.client.model.TabChangeEvent;
+import com.google.speedtracer.client.model.UiEvent;
 
 /**
  * Utility class for creating various EventRecord objects for
@@ -53,9 +59,65 @@ public class HintletEventRecordBuilder {
     };
   }-*/;
   
+
   public static NetworkDataReceivedEvent createNetworkDataRecieved(int dataLength){
     return createNetworkDataRecieved(DEFAULT_ID, DEFAULT_TIME, DEFAULT_SEQUENCE, dataLength);
   }
+
+  public native static DomEvent createDomEvent(double duration) /*-{
+    var event = @com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder::createUiEvent(ID)
+    (@com.google.speedtracer.shared.EventRecordType::DOM_EVENT,duration);
+    event.data = {"type" : ""};
+    return event;
+  }-*/;
+  
+  public native static GarbageCollectionEvent createGCEvent(double duration) /*-{
+    var event = @com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder::createUiEvent(ID)
+    (@com.google.speedtracer.shared.EventRecordType::GC_EVENT,duration);
+    event.data = {"usedHeapSizeDelta" : 600};
+    return event;
+  }-*/;
+
+  public native static LayoutEvent createLayoutEvent(double duration) /*-{
+    var event = @com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder::createUiEvent(ID)
+    (@com.google.speedtracer.shared.EventRecordType::LAYOUT_EVENT,duration);
+    return event;
+  }-*/;
+  
+  public native static PaintEvent createPaintEvent(double duration) /*-{
+    var event = @com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder::createUiEvent(ID)
+    (@com.google.speedtracer.shared.EventRecordType::PAINT_EVENT,duration);
+    event.data = {
+        "x" : 1,
+        "y" : 1,
+        "width" : 1,
+        "height" : 1
+    };
+    return event;
+  }-*/;
+  
+  public native static ParseHtmlEvent createParseHtmlEvent(double duration) /*-{
+    var event = @com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder::createUiEvent(ID)
+    (@com.google.speedtracer.shared.EventRecordType::PARSE_HTML_EVENT,duration);
+    event.data = {
+      "length" : 1,
+      "startLine" : 1,
+      "endLine" : 1
+    };
+    return event;
+  }-*/;
+  
+  @SuppressWarnings("unused")
+  private native static UiEvent createUiEvent(int type, double duration) /*-{
+    return {
+      "type" : type,
+      "time" : @com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder::DEFAULT_TIME,
+      "data" : {},
+      "duration" : duration,
+      "children" : [],
+      "sequence" : @com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder::DEFAULT_SEQUENCE
+    };
+  }-*/;
 
   public static ResourceWillSendEvent createResourceSendRequest(String url) {
     return createResourceSendRequest(url, DEFAULT_TIME, DEFAULT_SEQUENCE, DEFAULT_ID);
