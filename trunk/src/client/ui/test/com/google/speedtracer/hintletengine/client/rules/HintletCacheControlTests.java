@@ -13,9 +13,7 @@
  */
 package com.google.speedtracer.hintletengine.client.rules;
 
-import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.junit.client.GWTTestCase;
-import com.google.speedtracer.client.model.EventRecord;
 import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.client.model.NetworkResponseReceivedEvent;
 import com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder;
@@ -40,6 +38,9 @@ public class HintletCacheControlTests extends GWTTestCase {
 
   private NetworkResponseReceivedEventBuilder responseBuilder;
 
+  /**
+   * Set default data for these tests
+   */
   @Override
   protected void gwtSetUp() {
     responseBuilder =
@@ -55,104 +56,131 @@ public class HintletCacheControlTests extends GWTTestCase {
   public String getModuleName() {
     return "com.google.speedtracer.hintletengine.HintletEngineTest";
   }
-  
-  public HintletTestCase createTestCase(String description,
-      NetworkResponseReceivedEvent response, String url, HintRecord expectedHint) {
-    JSOArray<EventRecord> inputs = JSOArray.create();
-    inputs.push(HintletEventRecordBuilder.createResourceSendRequest(url));
-    inputs.push(response);
-    inputs.push(HintletEventRecordBuilder.createResourceFinish());
-    if(expectedHint == null) {
-      return HintletTestCase.createTestCase(description, inputs);
-    } else {
-      return HintletTestCase.createTestCase(description, inputs, expectedHint);
-    }
-  }
-
+ 
   /**
    * Run a test with a hint
+   * Using default start and end events
    */
-  private void runCacheTest(String description, NetworkResponseReceivedEvent responseEvent,
-      String url, HintRecord expectedHint) {
-    HintletTestCase test = createTestCase(description, responseEvent, url, expectedHint);
+  private void runCacheTest(
+      NetworkResponseReceivedEvent responseEvent, String url, HintRecord expectedHint) {
+    HintletTestCase test = HintletTestCase.getHintletTestCase();
+    test.addInput(HintletEventRecordBuilder.createResourceSendRequest(url));
+    test.addInput(responseEvent);
+    test.addInput(HintletEventRecordBuilder.createResourceFinish());
+    if (expectedHint != null) {
+      test.addExpectedHint(expectedHint);
+    }
     HintletTestHelper.runTest(new HintletCacheControl(), test);
   }
 
   /**
    * Run a test with no expected hint
    */
-  private void runCacheTestNoHint(
-      String description, NetworkResponseReceivedEvent responseEvent, String url) {
-    HintletTestCase test = createTestCase(description, responseEvent, url, null);
-    HintletTestHelper.runTest(new HintletCacheControl(), test);
+  private void runCacheTestNoHint(NetworkResponseReceivedEvent responseEvent, String url) {
+    runCacheTest(responseEvent, url, null);
   }
 
+  /**
+   * Create a HintRecord with the default information for these tests
+   */
   private static HintRecord createHintRecord(String description, int severity) {
     return HintRecord.create("ResourceCaching", HintletEventRecordBuilder.DEFAULT_TIME, severity,
         description, HintletEventRecordBuilder.DEFAULT_SEQUENCE);
   }
 
+  /**
+   * Expiration rule
+   * missing cache expiration
+   */
   public void testExpirationRuleMissingExpiration() {
     responseBuilder.setResponseHeaderCacheControl("private");
     responseBuilder.setResponseHeaderContentEncoding("gzip");
     responseBuilder.setResponseHeaderContentType("text/css;charset=UTF-8");
-        String hintDescription =
+    String hintDescription =
         "The following resources are missing a cache expiration."
             + " Resources that do not specify an expiration may not be cached by browsers."
             + " Specify an expiration at least one month in the future for resources that"
             + " should be cached, and an expiration in the past for resources that should not be cached:" + " http://www.google.com";
     HintRecord expectedHint = createHintRecord(hintDescription, HintRecord.SEVERITY_CRITICAL);
-    runCacheTest("missing cache expiration", responseBuilder.getEvent(), DEFAULT_URL, expectedHint);
+    runCacheTest(responseBuilder.getEvent(), DEFAULT_URL, expectedHint);
   }
 
+  /**
+   * Expiration rule
+   * Marked explicitly not to cache
+   */
   public void testExpirationRuleNoCache() {
     responseBuilder.setResponseHeaderCacheControl("no-cache,no-store");
     responseBuilder.setResponseHeaderContentEncoding("gzip");
     responseBuilder.setResponseHeaderContentType("text/css;charset=UTF-8");
-    runCacheTestNoHint("Marked explicitly not to cache", responseBuilder.getEvent(), DEFAULT_URL);
+    runCacheTestNoHint(responseBuilder.getEvent(), DEFAULT_URL);
   }
 
+  /**
+   * Expiration rule
+   * has a cookie
+   */
   public void testExpirationRuleHasCookie() {
     responseBuilder.setResponseHeaderCacheControl("private");
     responseBuilder.setResponseHeaderContentEncoding("gzip");
     responseBuilder.setResponseHeaderContentType("text/css;charset=UTF-8");
     responseBuilder.setResponseHeaderSetCookie("TESTCOOKIE");
-    runCacheTestNoHint("has a cookie", responseBuilder.getEvent(), DEFAULT_URL);
+    runCacheTestNoHint(responseBuilder.getEvent(), DEFAULT_URL);
   }
 
+  /**
+   * Expiration rule
+   * Non cacheable response
+   */
   public void testExpirationRuleNonCacheableResponse() {
     responseBuilder.setResponseHeaderCacheControl("private");
     responseBuilder.setResponseHeaderContentEncoding("gzip");
     responseBuilder.setResponseHeaderContentType("text/css;charset=UTF-8");
     responseBuilder.setResponseStatus(NON_CACHEABLE_RESPONSE);
-    runCacheTestNoHint("Non cacheable response", responseBuilder.getEvent(), DEFAULT_URL);
+    runCacheTestNoHint(responseBuilder.getEvent(), DEFAULT_URL);
   }
 
+  /**
+   * Expiration rule
+   * Non cacheable response
+   */
   public void testExpirationRuleNonCacheableType() {
     responseBuilder.setResponseHeaderCacheControl("private");
     responseBuilder.setResponseHeaderContentEncoding("gzip");
     responseBuilder.setResponseHeaderContentType("text/css;charset=UTF-8");
     responseBuilder.setResponseHeaderContentType("text/html; charset=UTF-8");
-    runCacheTestNoHint("Non cacheable response", responseBuilder.getEvent(), DEFAULT_URL);
+    runCacheTestNoHint(responseBuilder.getEvent(), DEFAULT_URL);
   }
 
+  /**
+   * Expiration rule
+   * Has Expiration
+   */
   public void testExpirationRuleHasExpiration() {
     responseBuilder.setResponseHeaderCacheControl("private");
     responseBuilder.setResponseHeaderContentEncoding("gzip");
     responseBuilder.setResponseHeaderContentType("text/css;charset=UTF-8");
     responseBuilder.setResponseHeaderExpires(FUTURE_DATE);
-    runCacheTestNoHint("Has Expiration", responseBuilder.getEvent(), DEFAULT_URL);
+    runCacheTestNoHint(responseBuilder.getEvent(), DEFAULT_URL);
   }
 
+  /**
+   * Vary rule
+   * Vary tag is acceptable to IE
+   */
   public void testVaryRuleAcceptable() {
     responseBuilder.setResponseHeaderVary("Accept-Encoding");
     responseBuilder.setResponseHeaderCacheControl("public");
     responseBuilder.setResponseHeaderContentType("image/gif");
     responseBuilder.setResponseHeaderExpires(FUTURE_DATE);
     responseBuilder.setResponseHeaderLastModified("Fri, 04 Sep 1998 11:43:00 GMT");
-    runCacheTestNoHint("Vary tag is acceptable to IE", responseBuilder.getEvent(), DEFAULT_URL);
+    runCacheTestNoHint(responseBuilder.getEvent(), DEFAULT_URL);
   }
 
+  /**
+   * Vary Rule
+   * Gibberish vary tag, public
+   */
   public void testVaryRuleGibberish() {
     responseBuilder.setResponseHeaderVary("Random Gibbersih");
     responseBuilder.setResponseHeaderCacheControl("public");
@@ -167,27 +195,38 @@ public class HintletCacheControlTests extends GWTTestCase {
             + " http://www.google.com";
     HintRecord hint = createHintRecord(hintDescription, HintRecord.SEVERITY_CRITICAL);
 
-    runCacheTest(hintDescription, responseBuilder.getEvent(), DEFAULT_URL, hint);
+    runCacheTest(responseBuilder.getEvent(), DEFAULT_URL, hint);
   }
 
+  /**
+   * Vary rule
+   * Junk Vary header and no cache
+   */
   public void testVaryRuleNoCache() {
     responseBuilder.setResponseHeaderCacheControl("private, no-cache");
     responseBuilder.setResponseHeaderContentType("image/gif");
     responseBuilder.setResponseHeaderExpires(FUTURE_DATE);
     responseBuilder.setResponseHeaderLastModified("Fri, 04 Sep 1998 11:43:00 GMT");
-    runCacheTestNoHint("Junk Vary header and no cache", responseBuilder.getEvent(), DEFAULT_URL);
+    runCacheTestNoHint(responseBuilder.getEvent(), DEFAULT_URL);
   }
 
+  /**
+   * Vary rule
+   * Acceptable Vary and past expiration
+   */
   public void testVaryRulePastExpires() {
     responseBuilder.setResponseHeaderVary("Accept-Encoding");
     responseBuilder.setResponseHeaderCacheControl("public");
     responseBuilder.setResponseHeaderContentType("image/gif");
     responseBuilder.setResponseHeaderExpires("Wed, 17 Sep 1975 21:32:10 GMT");
     responseBuilder.setResponseHeaderLastModified("Fri, 04 Sep 1998 11:43:00 GMT");
-    runCacheTestNoHint(
-        "Acceptable Vary and past expiration", responseBuilder.getEvent(), DEFAULT_URL);
+    runCacheTestNoHint(responseBuilder.getEvent(), DEFAULT_URL);
   }
 
+  /**
+   * Vary rule
+   * Contains a Vary tag that should trigger hint
+   */
   public void testVaryRuleSomeAcceptable() {
     responseBuilder.setResponseHeaderVary("Accept-Encoding, BOGUS");
     responseBuilder.setResponseHeaderCacheControl("public");
@@ -202,10 +241,13 @@ public class HintletCacheControlTests extends GWTTestCase {
             + " http://www.google.com";
     HintRecord expectedHint = createHintRecord(hintDescription, HintRecord.SEVERITY_CRITICAL);
 
-    runCacheTest("Contains a Vary tag that should trigger hint", responseBuilder.getEvent(),
-        DEFAULT_URL, expectedHint);
+    runCacheTest(responseBuilder.getEvent(), DEFAULT_URL, expectedHint);
   }
 
+  /**
+   * Freshness rule
+   * Marked cacheable but short freshness
+   */
   public void testFreshnessRuleShortFreshnessFromExpires() {
     responseBuilder.setResponseHeaderCacheControl("public");
     responseBuilder.setResponseHeaderContentType("image/png; charset=utf-8");
@@ -216,10 +258,13 @@ public class HintletCacheControlTests extends GWTTestCase {
         + " in the future for the following resources: http://www.google.com";
     HintRecord expectedHint = createHintRecord(hintDescription, HintRecord.SEVERITY_WARNING);
 
-    runCacheTest("Marked cacheable but short freshness", responseBuilder.getEvent(), DEFAULT_URL,
-        expectedHint);
+    runCacheTest(responseBuilder.getEvent(), DEFAULT_URL, expectedHint);
   }
 
+  /**
+   * Freshness rule
+   * Short freshness according to max-age - throws hint
+   */
   public void testFreshnessRuleShortFreshnessFromMaxAge() {
     responseBuilder.setResponseHeaderCacheControl("public, max-age=1");
     responseBuilder.setResponseHeaderContentType("image/png; charset=utf-8");
@@ -229,9 +274,13 @@ public class HintletCacheControlTests extends GWTTestCase {
         + " in the future for the following resources: http://www.google.com";
     HintRecord expectedHint = createHintRecord(hintDescription, HintRecord.SEVERITY_WARNING);
 
-    runCacheTest(hintDescription, responseBuilder.getEvent(), DEFAULT_URL, expectedHint);
+    runCacheTest(responseBuilder.getEvent(), DEFAULT_URL, expectedHint);
   }
 
+  /**
+   * Freshness rule
+   * max-age more than a month
+   */
   public void testFreshnessRuleMoreThanMonthFreshnessFromMaxAge() {
     double age = HintletCacheControl.SECONDS_IN_A_MONTH + 1;
     responseBuilder.setResponseHeaderCacheControl("public, max-age=" + age);
@@ -241,10 +290,13 @@ public class HintletCacheControlTests extends GWTTestCase {
         + " one year in the future for the following cacheable resources: http://www.google.com";
     HintRecord expectedHint = createHintRecord(hintDescription, HintRecord.SEVERITY_INFO);
 
-    runCacheTest(
-        "max-age more than a month", responseBuilder.getEvent(), DEFAULT_URL, expectedHint);
+    runCacheTest(responseBuilder.getEvent(), DEFAULT_URL, expectedHint);
   }
 
+  /**
+   * Freshness rule
+   * Expires a year after date
+   */
   public void testFreshnessRuleMoreThanMonthFreshnessFromExpires() {
     responseBuilder.setResponseHeaderCacheControl("public");
     responseBuilder.setResponseHeaderContentType("image/png; charset=utf-8");
@@ -255,18 +307,25 @@ public class HintletCacheControlTests extends GWTTestCase {
         + " one year in the future for the following cacheable resources: http://www.google.com";
     HintRecord expectedHint = createHintRecord(hintDescription, HintRecord.SEVERITY_INFO);
 
-    runCacheTest(
-        "Expires a year after date", responseBuilder.getEvent(), DEFAULT_URL, expectedHint);
+    runCacheTest(responseBuilder.getEvent(), DEFAULT_URL, expectedHint);
   }
 
+  /**
+   * Freshness rule
+   * Expires a year after date
+   */
   public void testFreshnessRuleYearExpires() {
     responseBuilder.setResponseHeaderCacheControl("public");
     responseBuilder.setResponseHeaderContentType("image/png; charset=utf-8");
     responseBuilder.setResponseHeaderDate("Fri, 01 Jan 2010 00:00:00 GMT");
     responseBuilder.setResponseHeaderExpires("Sat, 01 Jan 2011 00:00:00 GMT");
-    runCacheTestNoHint("Expires a year after date", responseBuilder.getEvent(), DEFAULT_URL);
+    runCacheTestNoHint(responseBuilder.getEvent(), DEFAULT_URL);
   }
 
+  /**
+   * Favicon rule
+   * Favicon without header and caching on
+   */
   public void testFaviconRuleCachingNoExpires() {
     responseBuilder.setResponseHeaderCacheControl("private");
     responseBuilder.setResponseHeaderContentType(FAVICON_TYPE);
@@ -275,25 +334,35 @@ public class HintletCacheControlTests extends GWTTestCase {
         + " in the future: http://www.google.com";
     HintRecord expectedHint = createHintRecord(hintDescription, HintRecord.SEVERITY_WARNING);
 
-    runCacheTest("Favicon without header and caching on", responseBuilder.getEvent(), DEFAULT_URL,
-        expectedHint);
+    runCacheTest(responseBuilder.getEvent(), DEFAULT_URL, expectedHint);
   }
 
+  /**
+   * Favicon rule
+   * Favicon with expiration in the future
+   */
   public void testFaviconRuleCachingFutureExpires() {
     responseBuilder.setResponseHeaderExpires(FUTURE_DATE);
     responseBuilder.setResponseHeaderCacheControl("private");
     responseBuilder.setResponseHeaderContentType(FAVICON_TYPE);
-    runCacheTestNoHint(
-        "Favicon with expiration in the future", responseBuilder.getEvent(), DEFAULT_URL);
+    runCacheTestNoHint(responseBuilder.getEvent(), DEFAULT_URL);
   }
 
+  /**
+   * Favicon rule
+   * Favicon with cookie set
+   */
   public void testFaviconRuleCookieSet() {
     responseBuilder.setResponseHeaderSetCookie("TESTCOOKIE");
     responseBuilder.setResponseHeaderCacheControl("private");
     responseBuilder.setResponseHeaderContentType(FAVICON_TYPE);
-    runCacheTestNoHint("Favicon with cookie set", responseBuilder.getEvent(), DEFAULT_URL);
+    runCacheTestNoHint(responseBuilder.getEvent(), DEFAULT_URL);
   }
 
+  /**
+   * Favicon rule
+   * Favicon with short expiration
+   */
   public void testFaviconRuleShortExpiration() {
     responseBuilder.setResponseHeaderCacheControl("private");
     responseBuilder.setResponseHeaderContentType(FAVICON_TYPE);
@@ -304,10 +373,13 @@ public class HintletCacheControlTests extends GWTTestCase {
         + " in the future: http://www.google.com";
     HintRecord expectedHint = createHintRecord(hintDescription, HintRecord.SEVERITY_WARNING);
 
-    runCacheTest(
-        "Favicon with short expiration", responseBuilder.getEvent(), DEFAULT_URL, expectedHint);
+    runCacheTest(responseBuilder.getEvent(), DEFAULT_URL, expectedHint);
   }
 
+  /**
+   * Query rule
+   * Cacheable resource has a ? in URL
+   */
   public void testQueryRuleCacheableWithQuery() {
     responseBuilder.setResponseHeaderCacheControl("public");
     responseBuilder.setResponseHeaderContentType("image/png");
@@ -318,19 +390,27 @@ public class HintletCacheControlTests extends GWTTestCase {
         + " proxy caching servers. Remove the query string and encode the"
         + " parameters into the URL for the following resources: " + url;
     HintRecord expectedHint = createHintRecord(hintDescription, HintRecord.SEVERITY_WARNING);
-    runCacheTest(
-        "Cacheable resource has a ? in URL", responseBuilder.getEvent(), url, expectedHint);
+    runCacheTest(responseBuilder.getEvent(), url, expectedHint);
   }
 
+  /**
+   * Query rule
+   * Has query but private caching
+   */
   public void testQueryRulePrivateCacheWithQuery() {
     responseBuilder.setResponseHeaderCacheControl("private");
     responseBuilder.setResponseHeaderContentType("image/png");
     responseBuilder.setResponseHeaderContentEncoding("gzip"); // added so Public Rule won't fire
     responseBuilder.setResponseHeaderExpires(FUTURE_DATE);
     String url = "http://www.google.com/image.png?param=1";
-    runCacheTestNoHint("Has query but private caching", responseBuilder.getEvent(), url);
+    runCacheTestNoHint(responseBuilder.getEvent(), url);
   }
 
+  /**
+   * Query rule
+   * Publicly cacheable with query and cookie.
+   * Does not fire query rule, but will fire cookie rule
+   */
   public void testQueryRulePublicCacheWithQueryAndCookie() {
     responseBuilder.setResponseHeaderCacheControl("public");
     responseBuilder.setResponseHeaderSetCookie("TESTCOOKIE");
@@ -345,11 +425,13 @@ public class HintletCacheControlTests extends GWTTestCase {
         + " to be shared by multiple users: " + url;
     HintRecord expectedHint = createHintRecord(hintDescription, HintRecord.SEVERITY_CRITICAL);
 
-    runCacheTest("Publicly cacheable with query and cookie."
-        + " Does not fire query rule, but will fire cookie rule", responseBuilder.getEvent(), url,
-        expectedHint);
+    runCacheTest(responseBuilder.getEvent(), url, expectedHint);
   }
 
+  /**
+   * Proxy Bug rule
+   * cache-control private, could be public
+   */
   public void testProxyBugRulePrivate() {
     responseBuilder.setResponseHeaderCacheControl("private");
     responseBuilder.setResponseHeaderContentType("image/png");
@@ -359,33 +441,49 @@ public class HintletCacheControlTests extends GWTTestCase {
         + " following resource: http://www.google.com";
     HintRecord expectedHint = createHintRecord(hintDescription, HintRecord.SEVERITY_INFO);
 
-    runCacheTest("cache-control private, could be public", responseBuilder.getEvent(), DEFAULT_URL,
+    runCacheTest(responseBuilder.getEvent(), DEFAULT_URL,
         expectedHint);
   }
 
+  /**
+   * Proxy Bug Rule
+   * publicly cacheable
+   */
   public void testProxyBugRulePublic() {
     responseBuilder.setResponseHeaderCacheControl("public");
     responseBuilder.setResponseHeaderContentType("image/png");
     responseBuilder.setResponseHeaderExpires(FUTURE_DATE);
-    runCacheTestNoHint("publicly cacheable", responseBuilder.getEvent(), DEFAULT_URL);
+    runCacheTestNoHint(responseBuilder.getEvent(), DEFAULT_URL);
   }
 
+  /**
+   * Proxy Bug Rule
+   * private but contains a cookie
+   */
   public void testProxyBugRuleContainsCooke() {
     responseBuilder.setResponseHeaderCacheControl("private");
     responseBuilder.setResponseHeaderContentType("image/png");
     responseBuilder.setResponseHeaderExpires(FUTURE_DATE);
     responseBuilder.setResponseHeaderSetCookie("TESTCOOKIE");
-    runCacheTestNoHint("private but contains a cookie", responseBuilder.getEvent(), DEFAULT_URL);
+    runCacheTestNoHint(responseBuilder.getEvent(), DEFAULT_URL);
   }
 
+  /**
+   * Proxy Bug Rule
+   * private but compressed resource
+   */
   public void testProxyBugRuleCompressedResource() {
     responseBuilder.setResponseHeaderCacheControl("private");
     responseBuilder.setResponseHeaderContentType("image/css");
     responseBuilder.setResponseHeaderContentEncoding("gzip");
     responseBuilder.setResponseHeaderExpires(FUTURE_DATE);
-    runCacheTestNoHint("private but compressed resource", responseBuilder.getEvent(), DEFAULT_URL);
+    runCacheTestNoHint(responseBuilder.getEvent(), DEFAULT_URL);
   }
 
+  /**
+   * Proxy Bug Rule
+   * publicly cacheable with compressed data
+   */
   public void testProxyBugRulePublicGzip() {
     responseBuilder.setResponseHeaderCacheControl("public");
     responseBuilder.setResponseHeaderContentEncoding("gzip");
@@ -399,29 +497,38 @@ public class HintletCacheControlTests extends GWTTestCase {
       + " or 'Vary: Accept-Encoding' for the following resource: http://www.google.com";
     HintRecord expectedHint = createHintRecord(hintDescription, HintRecord.SEVERITY_WARNING);
 
-    runCacheTest("publicly cacheable with compressed data", responseBuilder.getEvent(), DEFAULT_URL,
-        expectedHint);
+    runCacheTest(responseBuilder.getEvent(), DEFAULT_URL, expectedHint);
   }
 
+  /**
+   * Proxy Bug rule
+   * privately cacheable with compressed data
+   */
   public void testProxyBugRulePrivateGzip() {
     responseBuilder.setResponseHeaderCacheControl("private");
     responseBuilder.setResponseHeaderContentEncoding("gzip");
     responseBuilder.setResponseHeaderContentType("text/javascript; charset=utf-8");
     responseBuilder.setResponseHeaderExpires(FUTURE_DATE);
-    runCacheTestNoHint(
-        "privately cacheable with compressed data", responseBuilder.getEvent(), DEFAULT_URL);
+    runCacheTestNoHint(responseBuilder.getEvent(), DEFAULT_URL);
   }
 
+  /**
+   * Proxy Bug Rule
+   * publicy cacheable with vary header
+   */
   public void testProxyBugRulePublicVary() {
     responseBuilder.setResponseHeaderCacheControl("public");
     responseBuilder.setResponseHeaderContentEncoding("gzip");
     responseBuilder.setResponseHeaderVary("Accept-Encoding");
     responseBuilder.setResponseHeaderContentType("text/javascript; charset=utf-8");
     responseBuilder.setResponseHeaderExpires(FUTURE_DATE);
-    runCacheTestNoHint(
-        "publicy cacheable with vary header", responseBuilder.getEvent(), DEFAULT_URL);
+    runCacheTestNoHint(responseBuilder.getEvent(), DEFAULT_URL);
   }
 
+  /**
+   * Proxy Bug rule
+   * publicly cacheable with cookie
+   */
   public void testProxyBugRulePublicCookie() {
     responseBuilder.setResponseHeaderCacheControl("public");
     responseBuilder.setResponseHeaderContentEncoding("gzip");
@@ -435,10 +542,13 @@ public class HintletCacheControlTests extends GWTTestCase {
         + " to be shared by multiple users: http://www.google.com";
     HintRecord expectedHint = createHintRecord(hintDescription, HintRecord.SEVERITY_CRITICAL);
 
-    runCacheTest(
-        "publicly cacheable with cookie", responseBuilder.getEvent(), DEFAULT_URL, expectedHint);
+    runCacheTest(responseBuilder.getEvent(), DEFAULT_URL, expectedHint);
   }
 
+  /**
+   * Cookie rule
+   * Contains a Set-Cookie along with Cache-Control: public header
+   */
   public void testCookieRulePublicWithCookie() {
     responseBuilder.setResponseHeaderCacheControl("public");
     responseBuilder.setResponseHeaderContentType("image/gif");
@@ -452,20 +562,26 @@ public class HintletCacheControlTests extends GWTTestCase {
         + " to be shared by multiple users: http://www.google.com";
     HintRecord expectedHint = createHintRecord(hintDescription, HintRecord.SEVERITY_CRITICAL);
 
-    runCacheTest("Contains a Set-Cookie along with Cache-Control: public header",
-        responseBuilder.getEvent(), DEFAULT_URL, expectedHint);
+    runCacheTest(responseBuilder.getEvent(), DEFAULT_URL, expectedHint);
   }
 
+  /**
+   * Cookie rule
+   * public cache control but no cookie
+   */
   public void testCookieRulePublicNoCookie() {
     responseBuilder.setResponseHeaderCacheControl("public");
     responseBuilder.setResponseHeaderContentType("image/gif");
     responseBuilder.setResponseHeaderDate("Mon, 07 Sep 1998 17:43:37 GMT");
     responseBuilder.setResponseHeaderExpires("Tue, 08 Jun 2020 17:43:37 GMT");
     responseBuilder.setResponseHeaderLastModified("Fri, 04 Sep 1998 00:00:00 GMT");
-    runCacheTestNoHint(
-        "public cache control but no cookie", responseBuilder.getEvent(), DEFAULT_URL);
+    runCacheTestNoHint(responseBuilder.getEvent(), DEFAULT_URL);
   }
 
+  /**
+   * Cookie rule
+   * No caching and cookie set
+   */
   public void testCookieRulePrivateCacheWithCooke() {
     responseBuilder.setResponseHeaderCacheControl("private");
     responseBuilder.setResponseHeaderContentType("image/gif");
@@ -473,7 +589,7 @@ public class HintletCacheControlTests extends GWTTestCase {
     responseBuilder.setResponseHeaderExpires("Tue, 08 Jun 2020 17:43:37 GMT");
     responseBuilder.setResponseHeaderLastModified("Fri, 04 Sep 1998 00:00:00 GMT");
     responseBuilder.setResponseHeaderSetCookie("TESTCOOKIE");
-    runCacheTestNoHint("No caching and cookie set", responseBuilder.getEvent(), DEFAULT_URL);
+    runCacheTestNoHint(responseBuilder.getEvent(), DEFAULT_URL);
   }
 
 }

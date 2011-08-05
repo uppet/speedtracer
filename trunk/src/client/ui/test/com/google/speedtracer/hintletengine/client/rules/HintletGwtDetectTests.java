@@ -17,7 +17,9 @@ package com.google.speedtracer.hintletengine.client.rules;
 import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.speedtracer.client.model.EventRecord;
+import com.google.speedtracer.client.model.HintRecord;
 import com.google.speedtracer.hintletengine.client.NetworkResponseReceivedEventBuilder;
+
 import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createResourceDataReceived;
 import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createResourceSendRequest;
 import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuilder.createResourceFinish;
@@ -30,21 +32,54 @@ import static com.google.speedtracer.hintletengine.client.HintletEventRecordBuil
  */
 public class HintletGwtDetectTests extends GWTTestCase {
 
+  private HintletRule rule;
+  private HintletTestCase test;
+  
+  @Override
+  protected void gwtSetUp() {
+    rule = new HintletGwtDetect();
+    test = HintletTestCase.getHintletTestCase();
+  }
+  
   @Override
   public String getModuleName() {
     return "com.google.speedtracer.hintletengine.HintletEngineTest";
   }
 
   public void testNonCacheableNoHint() {
-    HintletTestHelper.runTest(new HintletGwtDetect(), getCaseNonCacheableNoHint());
+    test.setInputs(getInputs(true, 1000, 1000));
+    HintletTestHelper.runTest(rule, test);
   }
 
   public void testNonCacheableWithHints() {
-    HintletTestHelper.runTest(new HintletGwtDetect(), getCaseNonCacheableWithHints());
+    test.setInputs(getInputs(false, 1000, 1000));
+    
+    String hintDescription =
+        "GWT selection script '.nocache.js' file should be set as non-cacheable";
+    test.addExpectedHint(HintRecord.create(
+        rule.getHintletName(), 6, HintRecord.SEVERITY_CRITICAL, hintDescription, 12));
+    
+    HintletTestHelper.runTest(rule, test);
   }
 
   public void testDownloadSizeWithHints() {
-    HintletTestHelper.runTest(new HintletGwtDetect(), getCaseDownloadSizeWithHints());
+    test.setInputs(getInputs(true, 1342730, 1342730));
+    
+    String hint1Description = "The size of the initial GWT download"
+      + " (https:/www.efgh.com/gwt.publichome/8E82EC6A261B0BE8394B9AC1BB68A7A9.cache.html)"
+      + " is 1342730 bytes.  Consider using GWT.runAsync() code splitting and the Compile Report to"
+      + " reduce the size of the initial download.";
+    test.addExpectedHint(HintRecord.create(
+        rule.getHintletName(), 14, HintRecord.SEVERITY_CRITICAL, hint1Description, 18));
+
+    String hint2Description = "The size of the initial GWT download"
+      + " (https:/www.efgh.com/gwt.publichome/9E82AC6A261B0BE8394B9AC1BB68A7AE.cache.html)"
+      + " is 1342730 bytes.  Consider using GWT.runAsync() code splitting and the Compile Report to" 
+      + " reduce the size of the initial download.";
+    test.addExpectedHint(HintRecord.create(
+        rule.getHintletName(), 20, HintRecord.SEVERITY_CRITICAL, hint2Description, 24));
+    
+    HintletTestHelper.runTest(rule, test);
   }
   
   private static EventRecord createNetworkResponseReceived(String identifier, int sequence, String date,
@@ -147,58 +182,5 @@ public class HintletGwtDetectTests extends GWTTestCase {
     inputs.push(createResourceFinish(strongNameID2, sequence++));
     return inputs;
   }
-
-  private native static HintletTestCase getCaseNonCacheableNoHint()/*-{
-    return {
-        "inputs" : @com.google.speedtracer.hintletengine.client.rules.HintletGwtDetectTests::getInputs(ZII)
-                   (true, 1000, 1000),
-        "expectedHints" : []
-    };
-  }-*/;
-
-  private native static HintletTestCase getCaseNonCacheableWithHints()/*-{
-    return {
-        "inputs" : @com.google.speedtracer.hintletengine.client.rules.HintletGwtDetectTests::getInputs(ZII)
-                   (false, 1000, 1000),
-        "expectedHints" : [
-            {
-                "hintletRule" : "GWT Application Detection",
-                "timestamp" : 6,
-                "description" : "GWT selection script '.nocache.js' file should be set as non-cacheable",
-                "refRecord" : 12,
-                "severity" : 1
-            },
-        ]
-    };
-  }-*/;
-
-  private native static HintletTestCase getCaseDownloadSizeWithHints()/*-{
-    return {
-        "inputs" : @com.google.speedtracer.hintletengine.client.rules.HintletGwtDetectTests::getInputs(ZII)
-                   (true, 1342730, 1342730),
-        "expectedHints" : [
-            {
-                "description" : "The size of the initial GWT download"
-                                + " (https:/www.efgh.com/gwt.publichome/8E82EC6A261B0BE8394B9AC1BB68A7A9.cache.html)"
-                                + " is 1342730 bytes.  Consider using GWT.runAsync() code splitting and the Compile Report to"
-                                + " reduce the size of the initial download.",
-                "hintletRule" : "GWT Application Detection",
-                "refRecord" : 18,
-                "severity" : 1,
-                "timestamp" : 14
-            },
-            {
-                "description" : "The size of the initial GWT download"
-                                + " (https:/www.efgh.com/gwt.publichome/9E82AC6A261B0BE8394B9AC1BB68A7AE.cache.html)"
-                                + " is 1342730 bytes.  Consider using GWT.runAsync() code splitting and the Compile Report to"
-                                + " reduce the size of the initial download.",
-                "hintletRule" : "GWT Application Detection",
-                "refRecord" : 24,
-                "severity" : 1,
-                "timestamp" : 20
-            }
-        ]
-    };
-  }-*/;
 
 }

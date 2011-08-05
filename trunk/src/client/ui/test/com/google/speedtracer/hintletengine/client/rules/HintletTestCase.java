@@ -31,61 +31,44 @@ public final class HintletTestCase extends JavaScriptObject {
     return this.description || "";
   }-*/;
 
+  public native HintletTestCase setDescription(String description) /*-{
+    this.description = description;
+    return this;
+  }-*/;
+
   public native JSOArray<EventRecord> getInputs()/*-{
     return this.inputs;
+  }-*/;
+
+  public native HintletTestCase setInputs(JSOArray<EventRecord> inputs) /*-{
+    this.inputs = inputs;
+    return this;
+  }-*/;
+
+  public native HintletTestCase addInput(EventRecord input) /*-{
+    this.inputs.push(input);
+    return this;
   }-*/;
 
   public native JSOArray<HintRecord> getExpectedHints()/*-{
     return this.expectedHints;
   }-*/;
-  
-  /**
-   * Convennience method for converting a single input
-   * into an array for the createTestCase methods
-   * @param record
-   * @return
-   */
-  public static JSOArray<EventRecord> singleInputArray(EventRecord record) {
-    JSOArray<EventRecord> array = JSOArray.create();
-    array.push(record);
-    return array;
-  }
 
-  /**
-   * Create a HintletTestCase with no expected hints
-   */
-  public static native HintletTestCase createTestCase(
-      String description, JSOArray<EventRecord> inputs)/*-{
-    return {
-        "description" : description,
-        "inputs" : inputs,
-        "expectedHints" : []
-    }
+  public native HintletTestCase setExpectedHints(JSOArray<HintRecord> expectedHints) /*-{
+    this.expectedHints = expectedHints;
+    return this;
   }-*/;
 
-  /**
-   * Create a HintletTestCase with one expected hint
-   */
-  public static native HintletTestCase createTestCase(
-      String description, JSOArray<EventRecord> inputs, HintRecord expectedHint)/*-{
-    return {
-        "description" : description,
-        "inputs" : inputs,
-        "expectedHints" : [
-          expectedHint
-        ]
-    }
+  public native HintletTestCase addExpectedHint(HintRecord expectedHint) /*-{
+    this.expectedHints.push(expectedHint);
+    return this;
   }-*/;
 
-  /**
-   * Create a test case with an array of expected hints
-   */
-  public static native HintletTestCase createTestCase(
-      String description, JSOArray<EventRecord> inputs, JSOArray<HintRecord> expectedHints)/*-{
+  public static native HintletTestCase getHintletTestCase() /*-{
     return {
-        "description" : description,
-        "inputs" : inputs,
-        "expectedHints" : expectedHints
+      "description" : "",
+      "inputs" : [],
+      "expectedHints" : []
     }
   }-*/;
 
