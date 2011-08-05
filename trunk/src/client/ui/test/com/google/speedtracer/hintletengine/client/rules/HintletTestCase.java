@@ -38,6 +38,18 @@ public final class HintletTestCase extends JavaScriptObject {
   public native JSOArray<HintRecord> getExpectedHints()/*-{
     return this.expectedHints;
   }-*/;
+  
+  /**
+   * Convennience method for converting a single input
+   * into an array for the createTestCase methods
+   * @param record
+   * @return
+   */
+  public static JSOArray<EventRecord> singleInputArray(EventRecord record) {
+    JSOArray<EventRecord> array = JSOArray.create();
+    array.push(record);
+    return array;
+  }
 
   /**
    * Create a HintletTestCase with no expected hints
