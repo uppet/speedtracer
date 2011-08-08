@@ -88,6 +88,8 @@ public class ReportDialog {
 
   private final Div reportPane;
 
+  private final Div closeButton;
+
   private DivElement summaryTitle;
 
   private final TimeLineModel timelineModel;
@@ -99,16 +101,26 @@ public class ReportDialog {
     // Initialize locals.
     this.glassPane = new Div(Root.getContainer());
     this.reportPane = new Div(Root.getContainer());
+    closeButton = new Div(Root.getContainer());
     this.timelineModel = timelineModel;
     this.dataCollector = new ReportDataCollector(dataDispatcher);
 
     // Set style names for the base elements.
-    glassPane.setStyleName(resources.hintletReportDialogCss().glassPane());
-    reportPane.setStyleName(resources.hintletReportDialogCss().reportPane());
+    final Css css = resources.hintletReportDialogCss();
+    glassPane.setStyleName(css.glassPane());
+    reportPane.setStyleName(css.reportPane());
+    closeButton.setStyleName(css.reportClose());
 
     // Make sure the dialog is created hidden.
     glassPane.setVisible(false);
     reportPane.setVisible(false);
+    closeButton.setVisible(false);
+
+    closeButton.addClickListener(new ClickListener() {
+      public void onClick(ClickEvent event) {
+        setVisible(false);
+      }
+    });
 
     // Build the UI for the report dialog.
     constructReportUi(resources);
@@ -118,13 +130,11 @@ public class ReportDialog {
    * Display the report dialog, first refreshing with the latest info.
    */
   public void setVisible(boolean visible) {
+    glassPane.setVisible(visible);
+    reportPane.setVisible(visible);
+    closeButton.setVisible(visible);
     if (visible) {
-      glassPane.setVisible(true);
-      reportPane.setVisible(true);
       gatherDataWithinWindow();
-    } else {
-      glassPane.setVisible(false);
-      reportPane.setVisible(false);
     }
   }
 
@@ -204,15 +214,6 @@ public class ReportDialog {
     // Create the hint report.
     this.report = new HintletReport(hintReportContainer,
         new HintletReportModel(), resources, HintletReport.REPORT_TYPE_SEVERITY);
-
-    // Close button for hiding the report glass panel.
-    Div closeButton = new Div(reportPaneContainer);
-    closeButton.setStyleName(css.reportClose());
-    closeButton.addClickListener(new ClickListener() {
-      public void onClick(ClickEvent event) {
-        setVisible(false);
-      }
-    });
   }
 
   private void gatherDataWithinWindow() {
