@@ -71,7 +71,7 @@ public final class HintletGwtDetect extends HintletRule {
 
     ResourceRecord resourceFinishEvent = eventRecord.cast();
     NetworkResource savedNeworkResource =
-        HintletNetworkResources.getInstance().getResourceData(resourceFinishEvent.getIdentifier());
+        HintletNetworkResources.getInstance().getResourceData(resourceFinishEvent.getRequestId());
     if (savedNeworkResource == null) {
       return;
     }

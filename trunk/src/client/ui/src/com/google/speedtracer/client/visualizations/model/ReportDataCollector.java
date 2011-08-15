@@ -213,9 +213,9 @@ public class ReportDataCollector {
         if (ResourceRecord.isResourceRecord(record)) {
           ResourceRecord resourceRecord = record.cast();
           NetworkResource resource = dataDispatcher.getNetworkEventDispatcher().getResource(
-              resourceRecord.getIdentifier());
+              resourceRecord.getRequestId());
           if (resource != null) {
-            resourceHints.put(resourceRecord.getIdentifier(),
+            resourceHints.put(resourceRecord.getRequestId(),
                 resource.getHintRecords());
           }
         }

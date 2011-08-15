@@ -121,7 +121,7 @@ public class NetworkResource {
 
   public NetworkResource(ResourceWillSendEvent startEvent) {
     this.startTime = startEvent.getTime();
-    this.identifier = startEvent.getIdentifier();
+    this.identifier = startEvent.getRequestId();
     this.url = startEvent.getUrl();
     this.httpMethod = startEvent.getHttpMethod();
     // Cache the ResourceEvent to later pull hintlets.

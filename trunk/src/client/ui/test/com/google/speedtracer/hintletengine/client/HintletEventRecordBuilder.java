@@ -31,6 +31,10 @@ import com.google.speedtracer.client.model.UiEvent;
 /**
  * Utility class for creating various EventRecord objects for
  * use with test Hintlets.
+ * 
+ * TODO(knorton): Most of the create methods in this class should be
+ * moved into static methods in the type they create in order to
+ * propertly encapsulate the data structure.
  */
 public class HintletEventRecordBuilder {
 
@@ -39,20 +43,20 @@ public class HintletEventRecordBuilder {
   public static final String DEFAULT_ID = "1";
 
   /**
-   * This method sets time equal to sequence
+   * This method sets time equal to sequence.
    */  
-  public static NetworkDataReceivedEvent createNetworkDataRecieved(String identifier,
+  public static NetworkDataReceivedEvent createNetworkDataRecieved(String requestId,
       int sequence, int dataLength){
-    return createNetworkDataRecieved(identifier, sequence, sequence, dataLength);
+    return createNetworkDataRecieved(requestId, sequence, sequence, dataLength);
   }
   
-  public native static NetworkDataReceivedEvent createNetworkDataRecieved(String identifier,
+  public native static NetworkDataReceivedEvent createNetworkDataRecieved(String requestId,
       int time, int sequence, int dataLength)/*-{
     return {
       "type" : @com.google.speedtracer.shared.EventRecordType::NETWORK_DATA_RECEIVED,
       "time" : time,
       "data" : {
-        "identifier" : identifier,
+        "requestId" : requestId,
         "dataLength" : dataLength
       },
       "sequence" : sequence
@@ -107,7 +111,6 @@ public class HintletEventRecordBuilder {
     return event;
   }-*/;
   
-  @SuppressWarnings("unused")
   private native static UiEvent createUiEvent(int type, double duration) /*-{
     return {
       "type" : type,
@@ -126,21 +129,21 @@ public class HintletEventRecordBuilder {
   /**
    * This method sets time equal to sequence
    */
-  public static ResourceWillSendEvent createResourceSendRequest(String identifier, String url, int sequence){
-    return createResourceSendRequest(url, sequence, sequence, identifier);
+  public static ResourceWillSendEvent createResourceSendRequest(String requestId, String url, int sequence){
+    return createResourceSendRequest(url, sequence, sequence, requestId);
   }
   
   /**
    * Create a start event with the given values
    */
   public static native ResourceWillSendEvent createResourceSendRequest(
-      String url, int time, int sequence, String identifier) /*-{
+      String url, int time, int sequence, String requestId) /*-{
     return {
         "type" : @com.google.speedtracer.shared.EventRecordType::RESOURCE_SEND_REQUEST,
         "time" : time,
         "sequence" : sequence,
         "data" : {
-            "identifier" : identifier,
+            "requestId" : requestId,
             "url" : url,
             "requestMethod" : "GET"
         }
@@ -157,21 +160,21 @@ public class HintletEventRecordBuilder {
   /**
    * This method sets time equal to sequence
    */
-  public static ResourceFinishEvent createResourceFinish(String identifier, int sequence) {
-    return createResourceFinish(sequence, sequence, identifier);
+  public static ResourceFinishEvent createResourceFinish(String requestId, int sequence) {
+    return createResourceFinish(sequence, sequence, requestId);
   }
   
   /**
    * Create a finish event with the given values.
    */
   public static native ResourceFinishEvent createResourceFinish(
-      int time, int sequence, String identifier) /*-{
+      int time, int sequence, String requestId) /*-{
     return {
         "type" : @com.google.speedtracer.shared.EventRecordType::RESOURCE_FINISH,
         "time" : time,
         "sequence" : sequence,
         "data" : {
-            "identifier" : identifier,
+            "requestId" : requestId,
             "didFail" : false
         }
     }
@@ -180,11 +183,11 @@ public class HintletEventRecordBuilder {
   /**
    * This method sets time equal to sequence
    */  
-  public native static ResourceResponseEvent createResourceReceiveResponse(String identifier,
+  public native static ResourceResponseEvent createResourceReceiveResponse(String requestId,
       int sequence, String mimeType)/*-{
     return {
       "data" : {
-        "identifier" : identifier,
+        "requestId" : requestId,
         "statusCode" : 200,
         "mimeType" : mimeType
       },
@@ -199,11 +202,11 @@ public class HintletEventRecordBuilder {
   /**
    * This method sets time equal to sequence
    */
-  public native static ResourceDataReceivedEvent createResourceDataReceived(String identifier,
+  public native static ResourceDataReceivedEvent createResourceDataReceived(String requestId,
       int sequence)/*-{
     return {
       "data" : {
-        "identifier" : identifier
+        "requestId" : requestId
       },
       "children" : [],
       "type" : @com.google.speedtracer.shared.EventRecordType::RESOURCE_DATA_RECEIVED,

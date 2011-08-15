@@ -15,10 +15,8 @@
 package com.google.speedtracer.hintletengine.client;
 
 import com.google.gwt.junit.client.GWTTestCase;
-import com.google.speedtracer.client.model.EventRecord;
 import com.google.speedtracer.client.model.NetworkResource;
 import com.google.speedtracer.client.model.NetworkResponseReceivedEvent;
-import com.google.speedtracer.client.model.ResourceWillSendEvent;
 
 /**
  * Tests {@link WebInspectorType}.

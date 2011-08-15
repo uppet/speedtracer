@@ -52,7 +52,7 @@ public class HintletTotalBytes extends HintletRule {
 
     ResourceFinishEvent finishEvent = dataRecord.cast();
     NetworkResource resource =
-        HintletNetworkResources.getInstance().getResourceData(finishEvent.getIdentifier());
+        HintletNetworkResources.getInstance().getResourceData(finishEvent.getRequestId());
     int resourceSize = resource.getDataLength();
 
     if (resourceSize > TOTAL_BYTES_WARNING_THRESHOLD) {
