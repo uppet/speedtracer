@@ -28,7 +28,6 @@ import com.google.speedtracer.hintletengine.client.rules.HintletCacheControl;
  */
 public class HintletCacheControlTests extends GWTTestCase {
 
-  @SuppressWarnings("unused")
   private static int CACHEABLE_RESPONSE = 200;
   private static int NON_CACHEABLE_RESPONSE = 404;
   private static String PAST_DATE = "Mon, 07 Sep 1998 17:43:35 GMT";

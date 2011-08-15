@@ -358,7 +358,7 @@ public class HintletCacheControl extends HintletRule {
 
     ResourceFinishEvent finish = dataRecord.cast();
     NetworkResource resource =
-        HintletNetworkResources.getInstance().getResourceData(finish.getIdentifier());
+        HintletNetworkResources.getInstance().getResourceData(finish.getRequestId());
 
     if (resource.getResponseHeaders() == null) {
       return;

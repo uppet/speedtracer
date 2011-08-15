@@ -703,7 +703,7 @@ public class EventWaterfallRowDetails extends RowDetails implements
         ResourceDataReceivedEvent dataRecEvent = e.cast();
         DataDispatcher dataDispatcher = eventWaterfall.getVisualization().getModel().getDataDispatcher();
         NetworkEventDispatcher networkDispatcher = dataDispatcher.getNetworkEventDispatcher();
-        NetworkResource resource = networkDispatcher.getResource(dataRecEvent.getIdentifier());
+        NetworkResource resource = networkDispatcher.getResource(dataRecEvent.getRequestId());
         if (resource != null) {
           String resourceUrlStr = resource.getLastPathComponent();
           resourceUrlStr = "".equals(resourceUrlStr) ? resource.getUrl()

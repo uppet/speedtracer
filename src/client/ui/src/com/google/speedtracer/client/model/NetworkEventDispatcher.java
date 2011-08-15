@@ -190,21 +190,21 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
 
   private void onNetworkDataReceived(
       NetworkDataReceivedEvent dataLengthChange) {
-    NetworkResource resource = getResource(dataLengthChange.getIdentifier());
+    NetworkResource resource = getResource(dataLengthChange.getRequestId());
     if (resource != null) {
       resource.update(dataLengthChange);
     }
   }
 
   private void onNetworkResponseReceived(NetworkResponseReceivedEvent response) {
-    NetworkResource resource = getResource(response.getIdentifier());
+    NetworkResource resource = getResource(response.getRequestId());
     if (resource != null) {
       resource.update(response);
     }
   }
 
   private void onNetworkRequestWillBeSent(NetworkRequestWillBeSentEvent requestWillBeSent) {
-    NetworkResource resource = getResource(requestWillBeSent.getIdentifier());
+    NetworkResource resource = getResource(requestWillBeSent.getRequestId());
     if (resource != null) {
       resource.update(requestWillBeSent);
       // We depend on the fact that any redirects that we encounter will have
@@ -215,7 +215,7 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
       if (redirectResponse != null) {
         // look for a redirect.
         NetworkResource redirect = findAndRemoveRedirectCandidate(
-            requestWillBeSent.getIdentifier(), redirectResponse.getUrl());
+            requestWillBeSent.getRequestId(), redirectResponse.getUrl());
         if (redirect != null) {
           redirect.updateResponse(redirectResponse);
           redirect.setResponseReceivedTime(requestWillBeSent.getTime());
@@ -228,7 +228,7 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
 
   private void onNetworkResourceFinished(ResourceFinishEvent resourceFinish) {
     networkEvents.add(resourceFinish);
-    NetworkResource resource = getResource(resourceFinish.getIdentifier());
+    NetworkResource resource = getResource(resourceFinish.getRequestId());
     if (resource != null) {
       resource.update(resourceFinish);
       for (int i = 0, n = listeners.size(); i < n; i++) {
@@ -240,7 +240,7 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
 
   private void onNetworkResourceResponse(ResourceResponseEvent resourceResponse) {
     networkEvents.add(resourceResponse);
-    NetworkResource resource = getResource(resourceResponse.getIdentifier());
+    NetworkResource resource = getResource(resourceResponse.getRequestId());
     if (resource != null) {
       resource.update(resourceResponse);
       for (int i = 0, n = listeners.size(); i < n; i++) {
@@ -253,7 +253,7 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
   private void onNetworkResourceStarted(ResourceWillSendEvent resourceStart) {
     networkEvents.add(resourceStart);
     // Check for dupe IDs. If we find one, assume it is a redirect.
-    NetworkResource previousResource = getResource(resourceStart.getIdentifier());
+    NetworkResource previousResource = getResource(resourceStart.getRequestId());
     boolean isRedirect = false;
     if (previousResource != null) {
       insertRedirectCandidate(previousResource.getIdentifier(), previousResource);
@@ -261,7 +261,7 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
     }
     
     NetworkResource resource = new NetworkResource(resourceStart);
-    resourceStore.put(resourceStart.getIdentifier(), resource);
+    resourceStore.put(resourceStart.getRequestId(), resource);
     for (int i = 0, n = listeners.size(); i < n; i++) {
       Listener listener = listeners.get(i);
       listener.onNetworkResourceRequestStarted(resource, isRedirect);
@@ -273,7 +273,7 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
    * support loading old saved dumps.
    */
   private void onNetworkResourceUpdated(ResourceUpdateEvent update) {
-    NetworkResource resource = getResource(update.getIdentifier());
+    NetworkResource resource = getResource(update.getRequestId());
     if (resource != null) {
       resource.update(update);
       for (int i = 0, n = listeners.size(); i < n; i++) {
@@ -284,7 +284,7 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
       // We are dealing potentially with an update for a redirect.
       UpdateResource updateResource = update.getUpdate();
       NetworkResource redirectCandidate =
-          findAndRemoveRedirectCandidate(update.getIdentifier(), updateResource.getUrl());
+          findAndRemoveRedirectCandidate(update.getRequestId(), updateResource.getUrl());
       if (redirectCandidate != null) {
         redirectCandidate.update(update);
         redirectUpdated(redirectCandidate);

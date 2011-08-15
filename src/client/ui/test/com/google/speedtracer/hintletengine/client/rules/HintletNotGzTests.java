@@ -111,7 +111,6 @@ public class HintletNotGzTests extends GWTTestCase {
    * @param totalDataLength resource size
    * @return a sequence of events
    */
-  @SuppressWarnings("unused")
   private static JSOArray<EventRecord> getInputs(String url, String mimeType,
       String contentEncoding, int totalDataLength) {
     final String identifier = "1";

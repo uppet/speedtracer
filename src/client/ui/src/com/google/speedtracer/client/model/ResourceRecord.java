@@ -38,8 +38,10 @@ public class ResourceRecord extends EventRecord {
   protected ResourceRecord() {
   }
 
-  public final native String getIdentifier() /*-{
-    var id = this.data.identifier;
+  public final native String getRequestId() /*-{
+    // TODO(knorton): identifier is deprecated so this runtime check
+    // can be removed in due time.
+    var id = this.data.identifier || this.data.requestId;
     return (typeof id == "number" ? "" + id : id);
   }-*/;
 }

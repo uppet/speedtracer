@@ -172,7 +172,7 @@ public class NetworkVisualizationModel
       // TODO (jaimeyap): There is a bug here. We need to match both identifier
       // and Url. We need to bubble up the URL along with the hint for this
       // resource in order to match it.
-      if (res.getIdentifier() == rec.getIdentifier()) {
+      if (res.getIdentifier() == rec.getRequestId()) {
         return res;
       }
     }

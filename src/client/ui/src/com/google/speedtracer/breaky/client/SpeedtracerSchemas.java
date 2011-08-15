@@ -389,7 +389,7 @@ public class SpeedtracerSchemas {
          "data" : {
            "type" : "object",
            "properties" : {
-             "identifier" : {"type" : "string", "description" : "Integer id of this resource" },
+             "requestId" : {"type" : "string", "description" : "String id of this resource" },
              "url" : {"type" : "string", "description" : "URL Requested"},
              "requestMethod" : {
                "type" : "string",
@@ -411,7 +411,7 @@ public class SpeedtracerSchemas {
          "data" : {
            "type" : "object",
            "properties" : {
-             "identifier" : {"type" : "string", "description" : "Integer id of this resource" },
+             "requestId" : {"type" : "string", "description" : "String id of this resource" },
              "mimeType" : {"type" : "string", "description" : "The MIME type of the resource" },
              "statusCode" : {
                "type" : "integer",
@@ -435,7 +435,7 @@ public class SpeedtracerSchemas {
          "data" : {
            "type" : "object",
            "properties" : {
-             "identifier" : {"type" : "string", "description" : "Integer id of this resource" },
+             "requestId" : {"type" : "string", "description" : "String id of this resource" },
              "networkTime" : {"type" : "number", "description" : "Network level timing for end.", "optional" : true },
              "didFail" : {"type" : "boolean", "description" : "whether the resource request failed" }
            },
@@ -476,7 +476,7 @@ public class SpeedtracerSchemas {
          "data" : {
            "type" : "object",
            "properties" : {
-             "identifier" : {"type" : "string", "description" : "Integer id of this resource" },
+             "requestId" : {"type" : "string", "description" : "Integer id of this resource" },
            },
            "additionalProperties" : false
          },
@@ -711,7 +711,7 @@ public class SpeedtracerSchemas {
          "data" : {
            "type" : "object",
            "properties" : {                          
-             "identifier" : {"type" : "string", "description" : "Integer ID of the resource"},
+             "requestId" : {"type" : "string", "description" : "String ID of the resource"},
              "request" : {
                "type" : "object",
                "description" : "Request information. Basically just headers",

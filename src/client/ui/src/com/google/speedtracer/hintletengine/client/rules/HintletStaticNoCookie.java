@@ -57,7 +57,7 @@ public class HintletStaticNoCookie extends HintletRule {
     ResourceRecord resourceFinishEvent = eventRecord.cast();
 
     NetworkResource savedNetworkResource =
-        HintletNetworkResources.getInstance().getResourceData(resourceFinishEvent.getIdentifier());
+        HintletNetworkResources.getInstance().getResourceData(resourceFinishEvent.getRequestId());
     if (savedNetworkResource == null) {
       return;
     }
