@@ -56,7 +56,10 @@ public class DevToolsDataInstance extends DataInstance {
           .add("XHRReadyStateChange", EventRecordType.XHR_READY_STATE_CHANGE) //
           .add("XHRLoad", EventRecordType.XHR_LOAD) //
           .add("EvaluateScript", EventRecordType.EVAL_SCRIPT_EVENT) //
+          // MarkTimeline has been deprecated for TimeStamp, this can be
+          // removed soon.
           .add("MarkTimeline", EventRecordType.LOG_MESSAGE_EVENT) //
+          .add("TimeStamp", EventRecordType.LOG_MESSAGE_EVENT) //
           .add("ScheduleResourceRequest", EventRecordType.SCHEDULE_RESOURCE_REQUEST) //          
           .add("ResourceSendRequest", EventRecordType.RESOURCE_SEND_REQUEST) //
           .add("ResourceReceiveResponse", EventRecordType.RESOURCE_RECEIVE_RESPONSE) //
