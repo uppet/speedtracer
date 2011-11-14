@@ -64,7 +64,7 @@ public class WorkQueueTests extends GWTTestCase {
   }
 
   public void testWorkQueue1() {
-    delayTestFinish(2000);
+    delayTestFinish(10000);
     workQueue = new WorkQueue();
     workQueue.append(new InitialWorkNode());
 
