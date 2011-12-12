@@ -1,0 +1,29 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <style type="text/css">
+      .odd, .even { padding: 20px; border-bottom: 1px solid #666; }
+      .odd { }
+      .even { }
+    </style>
+  </head>
+  <body>
+  <script>
+    var count = 0;
+    function log(message) {
+      var entry = document.createElement('div');
+      entry.innerText = message;
+      if ((count & 1) == 0)
+        entry.className = 'even';
+      else
+        entry.className = 'odd';
+      count++;
+      document.body.appendChild(entry);
+    }
+
+    chrome.extension.getBackgroundPage().register(window);
+  </script>
+  </body>
+</html>

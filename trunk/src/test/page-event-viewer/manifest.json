@@ -1,0 +1,7 @@
+{
+  "permissions" : ["tabs","http://*/*","https://*/*", "experimental" ],
+  "background_page" : "background.html",
+  "name" : "Speed Tracer PageEvent Viewer",
+  "description" : "Speed Tracer PageEvent Viewer",
+  "version":"0.1"
+}
