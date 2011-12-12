@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <style type="text/css">
+    </style>
+  </head>
+  <body>
+  <script>
+    var URL = "http://google.com/";
+    var USE_DEBUGGER_API = false;
+
+    function register(view) {
+      chrome.tabs.create({url:"about:blank"}, function(tab) {
+        if (USE_DEBUGGER_API) {
+          // Attach to the debugger channel.
+          chrome.experimental.debugger.attach(tab.id, function() {
+            view.log('Attached');
+          });
+          // Turn on Network events.
+          chrome.experimental.debugger.sendRequest(tab.id, "Network.enable", {}, function(result) {
+            view.log('Requested Network Resources: ' + JSON.stringify(result));
+          });
+          // Turn on Timeline events.
+          chrome.experimental.debugger.sendRequest(tab.id, "Timeline.start", {}, function(result) {
+            view.log('Requested Timeline Profiler: ' + JSON.stringify(result));
+          });
+          // Listen for events.
+          chrome.experimental.debugger.onEvent.addListener(function(id, method, event) {
+            view.log("tab: " + id + ", method: " + method + ", event: " + JSON.stringify(event));
+          });
+        } else {
+          var events = chrome.devtools.getTabEvents(tab.id);
+          events.onPageEvent.addListener(function(data) {
+            view.log(JSON.stringify(data));
+          });
+        }
+
+        setTimeout(function() {
+          chrome.tabs.update(tab.id, {url: URL});
+        }, 1000);
+      });
+    }
+
+    chrome.tabs.create({url:"chrome://extensions"});
+    chrome.tabs.create({url:"view.html"});
+  </script>
+  </body>
+</html>

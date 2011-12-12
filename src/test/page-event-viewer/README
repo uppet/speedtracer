@@ -1,0 +1,3 @@
+This is an extension that allows viewing of the raw json as it
+is sent from the DevTools api. This is used by the team to
+investigate breakages to the chrome APIs.
