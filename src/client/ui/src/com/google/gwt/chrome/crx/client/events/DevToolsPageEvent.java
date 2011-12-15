@@ -43,6 +43,19 @@ public class DevToolsPageEvent extends Event {
     public native String getMethod() /*-{
       return this.method;
     }-*/;
+
+    /**
+     * HACK(knorton): The event Timeline.started was removed from the debugger
+     * protocol. The proper way to tell if Timeline.start succeeded is to look
+     * for the response to the request that turned it on. Unfortunately, it
+     * is currently turned on from native code in Chrome so we have to use
+     * details of that request (the fact that it is id 2) to find the response
+     * in the stream. Also note that this is a temporary measure until we properly
+     * move to the new API.
+     */
+    public native boolean isTimelineStartedEvent() /*-{
+      return !this.method && this.result && this.id == 2;
+    }-*/;
   }
 
   protected DevToolsPageEvent() {
