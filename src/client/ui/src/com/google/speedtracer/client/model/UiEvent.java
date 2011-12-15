@@ -280,7 +280,7 @@ public class UiEvent extends EventRecord {
   }-*/;
 
   /**
-   * Whether or not the user used the markTimeline API to log something.
+   * Whether or not the user used the timeStamp API to log something.
    * 
    * @return Whether or not the user used the markTimeline API to log something
    */

@@ -36,8 +36,8 @@ public class MockModelGenerator {
     @Source("resources/digg.com")
     TextResource diggDotCom();
 
-    @Source("resources/marktimeline")
-    TextResource markTimeline();
+    @Source("resources/timestamp")
+    TextResource timeStamp();
 
     @Source("resources/server-side-traces")
     TextResource serverSideTraces();
@@ -103,7 +103,7 @@ public class MockModelGenerator {
     if (mockResources == null) {
       mockResources = GWT.create(MockResources.class);
       dataSets.add(new DataSet("digg.com", mockResources.diggDotCom()));
-      dataSets.add(new DataSet("markTimeline", mockResources.markTimeline()));
+      dataSets.add(new DataSet("timeStamp", mockResources.timeStamp()));
       dataSets.add(new DataSet("Server Side Traces",
           mockResources.serverSideTraces()));
     }

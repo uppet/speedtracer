@@ -361,7 +361,7 @@ public class SpeedtracerSchemas {
        }
      },
      "LOG_MESSAGE" : {
-       "description" : "A call to console.markTimeline() from within javascript on the monitored page",
+       "description" : "A call to console.timeStamp() from within javascript on the monitored page",
        "id" : "LOG_MESSAGE",
        "type" : "object",
        "extends" : {"$ref" : "TIMELINE_EVENT_MARK"},

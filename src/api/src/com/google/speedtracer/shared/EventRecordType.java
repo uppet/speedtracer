@@ -16,12 +16,6 @@
 
 package com.google.speedtracer.shared;
 
-/*
- * DO NOT EDIT - Automatically generated file.  Make modifications
- *   to speedtracer/stools/src/py/generate-event-record-type.py and regenerate
- *   by running speedtracer/stools/generate-event-record-type.
- */
-
 /**
  * Primitive integer values for the Types of EventRecords to let us 
  * switch on an int field which faster than an if ladder or string hash.
@@ -120,7 +114,7 @@ public class EventRecordType {
     // 10 EVAL_SCRIPT_EVENT
     "A block of JavaScript was parsed/compiled and executed. This only includes script encountered via an HTML <script> tag.",
     // 11 LOG_MESSAGE_EVENT
-    "A log message written using console.markTimeline.",
+    "A log message written using console.timeStamp.",
     // 12 RESOURCE_SEND_REQUEST
     "A network request was queued up to send.",
     // 13 RESOURCE_RECEIVE_RESPONSE
