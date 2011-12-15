@@ -5,11 +5,11 @@
   <div id="status"></div>
   <script>
   var statusDiv = document.getElementById("status");
-  if (console && console.markTimeline) {
-     console.markTimeline("test1");
+  if (console && console.timeStamp) {
+     console.timeStamp("test1");
      statusDiv.innerHTML = "marked timeline";
   } else {
-     statusDiv.innerHTML = "no console.markTimeline present.";
+     statusDiv.innerHTML = "no console.timeStamp present.";
   }
   </script>
  </body>

@@ -64,13 +64,13 @@ var toLog = [];
 // Hook into GWT's lightweight metrics.
 if (!window.__gwtStatsEvent) {
   window.__gwtStatsEvent = function(event) {
-   console.markTimeline("__gwtStatsEvent: " + JSON.stringify(event)); 
+   console.timeStamp("__gwtStatsEvent: " + JSON.stringify(event)); 
   }
 } else {
   var origStatsFunc = window.__gwtStatsEvent;
   window.__gwtStatsEvent = function(event) {
    origStatsFunc(event);
-   console.markTimeline("__gwtStatsEvent: " + JSON.stringify(event)); 
+   console.timeStamp("__gwtStatsEvent: " + JSON.stringify(event)); 
   }
 }
 
