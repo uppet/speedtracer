@@ -19,24 +19,49 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 public final class DebuggerEvent extends Event {
 
-  public interface Listener {
-    void onEvent(int tabId, String method, JavaScriptObject params);
-  }
-  
-  protected DebuggerEvent() {
+  /**
+   * Notifications sent by the Chrome Debugger API contain payloads that adhere to this basic
+   * format.
+   */
+  public static final class RawDebuggerEventRecord extends JavaScriptObject {
+    protected RawDebuggerEventRecord() {      
+    }
+
+    public native String getMethod() /*-{
+      return this.method;
+    }-*/;
   }
 
-  public ListenerHandle addListener(Listener listener) {
+  /**
+   * The tab being debugged.
+   */
+  public static class Debuggee extends JavaScriptObject {
+    protected Debuggee() {      
+    }
+
+    public final native int getTabId() /*-{
+      return this.tabId;
+    }-*/;
+  }
+
+  public interface Listener {
+    void onEvent(Debuggee source, String method, RawDebuggerEventRecord body);
+  }
+
+  public final ListenerHandle addListener(Listener listener) {
     return new ListenerHandle(this, addListenerImpl(listener));
   }
   
   private native JavaScriptObject addListenerImpl(Listener listener) /*-{
-    var handle = function(id, method, params) {
+    var handle = function(source, method, body) {
       listener.
-        @com.google.gwt.chrome.crx.client.events.DebuggerEvent.Listener::onEvent(ILjava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)
-        (id, method, params);
+        @com.google.gwt.chrome.crx.client.events.DebuggerEvent.Listener::onEvent(Lcom/google/gwt/chrome/crx/client/events/DebuggerEvent$Debuggee;Ljava/lang/String;Lcom/google/gwt/chrome/crx/client/events/DebuggerEvent$RawDebuggerEventRecord;)
+        (source, method, body);
     };
     this.addListener(handle);
     return handle;
   }-*/;
+  
+  protected DebuggerEvent() {
+  }
 }

@@ -52,8 +52,8 @@ import com.google.speedtracer.client.messages.RequestInitializationMessage;
 import com.google.speedtracer.client.messages.ResendProfilingOptions;
 import com.google.speedtracer.client.messages.ResetBaseTimeMessage;
 import com.google.speedtracer.client.model.DataInstance;
-import com.google.speedtracer.client.model.DevToolsDataInstance;
-import com.google.speedtracer.client.model.DevToolsDataInstance.Proxy;
+import com.google.speedtracer.client.model.ChromeDebuggerDataInstance;
+import com.google.speedtracer.client.model.ChromeDebuggerDataInstance.Proxy;
 import com.google.speedtracer.client.model.ExternalExtensionDataInstance;
 import com.google.speedtracer.client.model.ExternalExtensionDataInstance.ConnectRequest;
 import com.google.speedtracer.client.model.LoadFileDataInstance;
@@ -67,7 +67,7 @@ import java.util.HashMap;
  * The Chrome extension background page script.
  */
 @Extension.ManifestInfo(name = "Speed Tracer (by Google)", description = "Get insight into the performance of your web applications.", version = ClientConfig.VERSION, permissions = {
-    "tabs", "http://*/*", "https://*/*"}, icons = {
+    "tabs", "http://*/*", "https://*/*", "debugger"}, icons = {
     "resources/icon16.png", "resources/icon32.png", "resources/icon48.png",
     "resources/icon128.png"}, publicKey = "")
 public abstract class BackgroundPage extends Extension {
@@ -153,7 +153,7 @@ public abstract class BackgroundPage extends Extension {
       // We want to either open the monitor or resume monitoring.
       if (tabModel.currentIcon == browserAction.mtIcon()) {
         if (tabModel.dataInstance == null) {
-          tabModel.dataInstance = DevToolsDataInstance.create(tabId);
+          tabModel.dataInstance = ChromeDebuggerDataInstance.create(tabId);
         }
 
         if (tabModel.monitorClosed) {
@@ -301,11 +301,11 @@ public abstract class BackgroundPage extends Extension {
           // maintaining support for multiple Chrome versions. We assume
           // that RAW data should always be the same format as the current
           // Chrome build.
-          proxy.dispatchPageEvent(pageEventMessage.getPageEvent());
+          proxy.dispatchDebuggerEventRecord(pageEventMessage.getDebuggerRecord());
         }
       });
 
-      tabModel.dataInstance = DevToolsDataInstance.create(proxy);
+      tabModel.dataInstance = ChromeDebuggerDataInstance.create(proxy);
       browserConn.tabMap.put(tabId, tabModel);
     }
 

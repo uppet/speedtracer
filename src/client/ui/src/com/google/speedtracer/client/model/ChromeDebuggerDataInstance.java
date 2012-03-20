@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Google Inc.
+ * Copyright 2011 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,26 +16,35 @@
 package com.google.speedtracer.client.model;
 
 import com.google.gwt.chrome.crx.client.Chrome;
-import com.google.gwt.chrome.crx.client.DevTools;
-import com.google.gwt.chrome.crx.client.events.DevToolsPageEvent.Listener;
-import com.google.gwt.chrome.crx.client.events.DevToolsPageEvent.PageEvent;
-import com.google.gwt.chrome.crx.client.events.Event.ListenerHandle;
+import com.google.gwt.chrome.crx.client.Debugger;
+import com.google.gwt.chrome.crx.client.Debugger.AttachCallback;
+import com.google.gwt.chrome.crx.client.events.DebuggerEvent;
+import com.google.gwt.chrome.crx.client.events.DebuggerEvent.Debuggee;
+import com.google.gwt.chrome.crx.client.events.DebuggerEvent.RawDebuggerEventRecord;
 import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.coreext.client.DataBag;
 import com.google.gwt.coreext.client.JSOArray;
+import com.google.gwt.coreext.client.JsIntegerMap;
 import com.google.speedtracer.client.model.UiEvent.LeafFirstTraversalVoid;
 import com.google.speedtracer.shared.EventRecordType;
 
 /**
- * This class is used in Chrome when we are getting data from the devtools API.
- * Its job is to receive data from the devtools API, ensure that the data in
- * properly transformed into a consumable form, and to invoke callbacks passed
- * in from the UI. We use this overlay type as the object we pass to the Monitor
- * UI.
+ * This class is used in Chrome when we are getting data from the chrome
+ * debugger API. Its job is to receive data from the devtools API, ensure that
+ * the data in properly transformed into a consumable form, and to invoke
+ * callbacks passed in from the UI. We use this overlay type as the object we
+ * pass to the Monitor UI.
+ * 
+ * See documentaion at: <a href=
+ * "http://code.google.com/chrome/extensions/trunk/debugger.html"
+ * >chrome.experimental.debugger</a>
  */
-public class DevToolsDataInstance extends DataInstance {
-
+public class ChromeDebuggerDataInstance extends DataInstance {;
+  
+  /**
+   * Maps the Chrome specific types to Speedtracer event types.
+   */
   private final static class TypeTranslationMap extends JavaScriptObject {
     protected TypeTranslationMap() {
     }
@@ -83,10 +92,11 @@ public class DevToolsDataInstance extends DataInstance {
   }
 
   /**
-   * Proxy class that normalizes data coming in from the devtools API into a
-   * digestable form, and then forwards it on to the DevToolsDataInstance.
+   * Proxy class that normalizes data coming in from the debugger API into a
+   * digestable form, and then forwards it on to the ChromeDebuggerDataInstance.
    */
   public static class Proxy implements DataProxy {
+    
     private class TimeNormalizingVisitor implements LeafFirstTraversalVoid {
       public void visit(UiEvent event) {
         assert getBaseTime() >= 0 : "baseTime should already be set.";
@@ -107,22 +117,14 @@ public class DevToolsDataInstance extends DataInstance {
     }
 
     private double baseTime;
-
-    private DevToolsDataInstance dataInstance;
-
+    private ChromeDebuggerDataInstance dataInstance;
     private final Dispatcher dispatcher;
-
-    private ListenerHandle listenerHandle;
-
     private JSOArray<UnNormalizedEventRecord> pendingRecords = JSOArray.create();
-
     private final int tabId;
-
     private final TimeNormalizingVisitor timeNormalizingVisitor = new TimeNormalizingVisitor();
-
     private final TypeTranslationVisitor typeTranslationVistior = new TypeTranslationVisitor();
-
     private double lastStartTime;
+    boolean profilingStarted = false;
 
     public Proxy(int tabId) {
       this.baseTime = -1;
@@ -131,13 +133,16 @@ public class DevToolsDataInstance extends DataInstance {
       lastStartTime = -1;
     }
 
-    public final void dispatchPageEvent(PageEvent event) {
-      if (event.isTimelineStartedEvent()) {
-        this.onTimelineProfilerStarted();
-        return;
-      }
+    // This is used only for loading from a saved file. We exploit the fact that the debugger
+    // records include the method inside themselves redundantly to learn the method at dispatch
+    // time. Normally, when records come out of the Debugger API, they already give us the method so
+    // we need not pull it out of the record.
+    public final void dispatchDebuggerEventRecord(RawDebuggerEventRecord body) {      
+      dispatchDebuggerEventRecord(body.getMethod(), body);
+    }
 
-      dispatcher.invoke(event.getMethod(), event.getBody());
+    private final void dispatchDebuggerEventRecord(String method, RawDebuggerEventRecord body) {      
+      dispatcher.invoke(method, body);
     }
 
     public double getBaseTime() {
@@ -158,53 +163,39 @@ public class DevToolsDataInstance extends DataInstance {
     }
 
     public void setProfilingOptions(boolean enableStackTraces, boolean enableCpuProfiling) {
-      DevTools.setProfilingOptions(tabId, enableStackTraces, enableCpuProfiling);
+      // No op. Stack traces are already on.
+      // TODO(jaimeyap): One day... turn on CPU profiling!
     }
 
     public void stopMonitoring() {
-      disconnect();
+      profilingStarted = false;
+      stopTimeline(tabId);
+      stopNetwork(tabId);
+      stopPage(tabId);
+      Debugger.detach(tabId);
     }
 
     public void unload() {
       // reset the base time.
       this.baseTime = -1;
-      disconnect();
+      stopMonitoring();
     }
 
     protected void connectToDataSource() {
-      if (this.listenerHandle != null) {
-        // DevTools doesn't like the event being connected to more than once.
-        return;
-      }
-
       try {
-        this.listenerHandle =
-            DevTools.getTabEvents(tabId).getPageEvent().addListener(new Listener() {
-              public void onPageEvent(PageEvent event) {
-                dispatchPageEvent(event);
-              }
-            });
+        final Proxy me = this;
+        Debugger.attach(tabId, new AttachCallback() {
+          public void onAttach() {
+            startTimeline(tabId, me);
+            startNetwork(tabId, me);
+            startPage(tabId, me);
+          }
+        });
       } catch (JavaScriptException ex) {
         Chrome.getExtension().getBackgroundPage().getConsole().log(
-            "Error attaching to DevTools page event: " + ex);
+            "Error attaching to Debugger: " + ex);
         // ignore
       }
-    }
-
-    void connectToDevTools(final DevToolsDataInstance dataInstance) {
-      // Connect to the devtools API as the data source.
-      if (this.dataInstance == null) {
-        this.dataInstance = dataInstance;
-      }
-      connectToDataSource();
-    }
-
-    private void disconnect() {
-      if (listenerHandle != null) {
-        listenerHandle.removeListener();
-      }
-
-      listenerHandle = null;
     }
 
     /**
@@ -271,7 +262,9 @@ public class DevToolsDataInstance extends DataInstance {
     @SuppressWarnings("unused")
     private void onPageFrameNavigated(JavaScriptObject body) {
       FrameNavigation navigation = body.cast();
-      normalizeAndDispatchEventRecord(TabChangeEvent.createUnNormalized(lastStartTime, navigation.getUrl()));
+      if (!navigation.isSubFrame()) {
+        normalizeAndDispatchEventRecord(TabChangeEvent.createUnNormalized(lastStartTime, navigation.getUrl()));
+      }
     }
 
     private void onNetworkResourceMessage(int messageType, NetworkEvent.Data data) {
@@ -289,6 +282,10 @@ public class DevToolsDataInstance extends DataInstance {
     }
 
     private void onTimelineProfilerStarted() {
+      if (profilingStarted) {
+        return;
+      }
+      profilingStarted = true;
       dataInstance.onTimelineProfilerStarted();
     }
 
@@ -383,7 +380,15 @@ public class DevToolsDataInstance extends DataInstance {
     public native String getId() /*-{
       return this.id;
     }-*/;
-    
+
+    /**
+     * HACK (jaimeyap)!
+     * Top level frame navigations have no name field set. Let's exploit that to
+     * avoid iframe cheese.
+     */
+    public native boolean isSubFrame() /*-{
+      return this.hasOwnProperty("name");
+    }-*/;
   }
 
   /**
@@ -398,29 +403,29 @@ public class DevToolsDataInstance extends DataInstance {
       var dispatcher = {};
       dispatcher['Page.frameNavigated'] = function(body) {
         delegate.
-          @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onPageFrameNavigated(Lcom/google/gwt/core/client/JavaScriptObject;)
+          @com.google.speedtracer.client.model.ChromeDebuggerDataInstance.Proxy::onPageFrameNavigated(Lcom/google/gwt/core/client/JavaScriptObject;)
           (body.frame);
       };
       // Events generated by the Timeline profiler.
       dispatcher['Timeline.eventRecorded'] = function(body) {
         delegate.
-          @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onTimelineRecord(Lcom/google/speedtracer/client/model/UnNormalizedEventRecord;)
+          @com.google.speedtracer.client.model.ChromeDebuggerDataInstance.Proxy::onTimelineRecord(Lcom/google/speedtracer/client/model/UnNormalizedEventRecord;)
           (body.record);
       };
       // Network resource events.
       dispatcher['Network.requestWillBeSent'] = function(body) {
         delegate.
-          @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onNetworkRequestWillBeSent(Lcom/google/speedtracer/client/model/NetworkRequestWillBeSentEvent$Data;)
+          @com.google.speedtracer.client.model.ChromeDebuggerDataInstance.Proxy::onNetworkRequestWillBeSent(Lcom/google/speedtracer/client/model/NetworkRequestWillBeSentEvent$Data;)
           (body);
       };
       dispatcher['Network.responseReceived'] = function(body) {
         delegate.
-          @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onNetworkResponseReceived(Lcom/google/speedtracer/client/model/NetworkResponseReceivedEvent$Data;)
+          @com.google.speedtracer.client.model.ChromeDebuggerDataInstance.Proxy::onNetworkResponseReceived(Lcom/google/speedtracer/client/model/NetworkResponseReceivedEvent$Data;)
           (body);
       };
       dispatcher['Network.dataReceived'] = function(body) {
         delegate.
-          @com.google.speedtracer.client.model.DevToolsDataInstance.Proxy::onNetworkDataReceived(Lcom/google/speedtracer/client/model/NetworkDataReceivedEvent$Data;)
+          @com.google.speedtracer.client.model.ChromeDebuggerDataInstance.Proxy::onNetworkDataReceived(Lcom/google/speedtracer/client/model/NetworkDataReceivedEvent$Data;)
           (body);
       };
       return dispatcher;
@@ -435,30 +440,138 @@ public class DevToolsDataInstance extends DataInstance {
       }
     }-*/;
   }
-
+  
   /**
-   * Constructs and returns a {@link DevToolsDataInstance} after wiring it up to
-   * receive events over the extensions-devtools API.
+   * Constructs and returns a {@link ChromeDebuggerDataInstance} which is used to receive Timeline and
+   * Network events from the debugger API.
    * 
    * @param tabId the tab that we want to connect to.
-   * @return a newly wired up {@link DevToolsDataInstance}.
+   * @return a newly wired up {@link ChromeDebuggerDataInstance}.
    */
-  public static DevToolsDataInstance create(int tabId) {
-    return DataInstance.create(new Proxy(tabId)).cast();
+  public static ChromeDebuggerDataInstance create(int tabId) {
+    Proxy proxy = new Proxy(tabId);
+    ensureRecordRouter();
+    recordRouter.put(tabId, proxy);
+    return DataInstance.create(proxy).cast();
   }
 
   /**
-   * Constructs and returns a {@link DevToolsDataInstance} after wiring it up to
+   * Constructs and returns a {@link ChromeDebuggerDataInstance} which is used to
    * receive events over the extensions-devtools API.
    * 
    * @param proxy an externally supplied proxy to act as the record
    *          transformation layer
-   * @return a newly wired up {@link DevToolsDataInstance}.
+   * @return a newly wired up {@link ChromeDebuggerDataInstance}.
    */
-  public static DevToolsDataInstance create(Proxy proxy) {
+  public static ChromeDebuggerDataInstance create(Proxy proxy) {
+    ensureRecordRouter();
+    recordRouter.put(proxy.tabId, proxy);
     return DataInstance.create(proxy).cast();
   }
 
-  protected DevToolsDataInstance() {
+  protected ChromeDebuggerDataInstance() {
   }
+
+  /**
+   * Chrome debugger API has a single output for all records. We assume that there is only one
+   * Proxy mapped to a given tab ID. We use this to route messages to the appropriate Proxy.
+   */
+  private static JsIntegerMap<Proxy> recordRouter;
+
+  private static void ensureRecordRouter() {
+    if (recordRouter == null) {
+      recordRouter = JsIntegerMap.create();
+      Debugger.getEvent().addListener(new DebuggerEvent.Listener() {
+        public void onEvent(Debuggee source, String method, RawDebuggerEventRecord params) {
+          Proxy proxy = recordRouter.get(source.getTabId());          
+          if (proxy == null) {
+
+            // Some other extension must be debugging this.
+            return;
+          }
+
+          // Dispatch the event to this guy.
+          proxy.dispatchDebuggerEventRecord(method, params);
+        }        
+      });
+    }
+  }
+
+  private static void startTimeline(final int tabId, final Proxy proxy) {
+    Debugger.sendRequest(tabId, "Timeline.start", createStartTimelineParams(tabId),
+        new Debugger.SendRequestCallback() {
+          public void onResponse(JavaScriptObject result) {
+            if (result == null) {
+              // Starting failed.
+              Chrome.getExtension().getBackgroundPage().getConsole().log(
+                "Error starting timeline for tab: " + tabId);
+            }
+            proxy.onTimelineProfilerStarted();
+          }
+        });
+  }
+
+  private static void stopTimeline(int tabId) {
+    Debugger.sendCommand(tabId, "Timeline.stop");
+  }
+
+  private static native JavaScriptObject createStartTimelineParams(int tabId) /*-{
+    return {
+      "id": tabId + (new Date().getTime()),
+      "method": "Timeline.start",
+      "params": {
+        "maxCallStackDepth": 5 
+      }
+    }
+  }-*/;
+  
+  private static void startNetwork(final int tabId, final Proxy proxy) {
+    Debugger.sendRequest(tabId, "Network.enable", createStartNetworkParams(tabId),
+        new Debugger.SendRequestCallback() {
+          public void onResponse(JavaScriptObject result) {
+            if (result == null) {
+              // Starting failed.
+              Chrome.getExtension().getBackgroundPage().getConsole().log(
+                "Error starting network tracing for tab: " + tabId);
+            }
+            proxy.onTimelineProfilerStarted();
+          }
+        });
+  }
+
+  private static void stopNetwork(int tabId) {
+    Debugger.sendCommand(tabId, "Network.disable");
+  }
+
+  private static native JavaScriptObject createStartNetworkParams(int tabId) /*-{
+    return {
+      "id": tabId + (new Date().getTime()),
+      "method": "Network.enable"
+    }
+  }-*/;
+ 
+  private static void startPage(final int tabId, final Proxy proxy) {
+    Debugger.sendRequest(tabId, "Page.enable", createStartPageParams(tabId),
+        new Debugger.SendRequestCallback() {
+          public void onResponse(JavaScriptObject result) {
+            if (result == null) {
+              // Starting failed.
+              Chrome.getExtension().getBackgroundPage().getConsole().log(
+                "Error starting page events for tab: " + tabId);
+            }
+            proxy.onTimelineProfilerStarted();
+          }
+        });
+  }
+
+  private static void stopPage(int tabId) {
+    Debugger.sendCommand(tabId, "Page.disable");
+  }
+
+  private static native JavaScriptObject createStartPageParams(int tabId) /*-{
+    return {
+      "id": tabId + (new Date().getTime()),
+      "method": "Network.enable"
+    }
+  }-*/;
 }

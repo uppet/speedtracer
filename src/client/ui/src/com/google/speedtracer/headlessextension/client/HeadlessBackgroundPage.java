@@ -15,6 +15,8 @@
  */
 package com.google.speedtracer.headlessextension.client;
 
+import java.util.HashMap;
+
 import com.google.gwt.chrome.crx.client.Chrome;
 import com.google.gwt.chrome.crx.client.Console;
 import com.google.gwt.chrome.crx.client.Extension;
@@ -40,12 +42,10 @@ import com.google.speedtracer.client.messages.HeadlessMonitoringOnAckMessage;
 import com.google.speedtracer.client.messages.HeadlessMonitoringOnMessage;
 import com.google.speedtracer.client.messages.HeadlessSendDataAckMessage;
 import com.google.speedtracer.client.messages.HeadlessSendDataMessage;
+import com.google.speedtracer.client.model.ChromeDebuggerDataInstance;
 import com.google.speedtracer.client.model.DataInstance;
-import com.google.speedtracer.client.model.DevToolsDataInstance;
 import com.google.speedtracer.client.model.EventRecord;
 import com.google.speedtracer.client.util.Xhr;
-
-import java.util.HashMap;
 
 /**
  * A Chrome extension background page script for running a headless version of
@@ -67,7 +67,7 @@ import java.util.HashMap;
  * from the query string. See {@link HeadlessOptionsPage}
  */
 @Extension.ManifestInfo(name = "Speed Tracer - headless (by Google)", description = "Get insight into the performance of your web applications.", version = ClientConfig.VERSION, permissions = {
-    "tabs", "http://*/*", "https://*/*"}, icons = {
+    "tabs", "http://*/*", "https://*/*", "debugger"}, icons = {
     "resources/icon16.png", "resources/icon32.png", "resources/icon48.png",
     "resources/icon128.png"}, publicKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDLwpQwF5uAQ8ufE3XErrzZBim2rDzUpKFOD+/jStzSBczBXkZIdUhOpdrfhSbDjDUsPeWkHg1bdsjSGg/4hfGeJCFCOwwPqOJHFKVRPan1hMWu7nIDKWbP6d/eCBw8MWq1o+FObwbB0AIgNFsvoQgN1iwrRZB6rxkQmEdYQqiIOQIDAQAB")
 public class HeadlessBackgroundPage extends Extension implements
@@ -200,7 +200,7 @@ public class HeadlessBackgroundPage extends Extension implements
       int id = port.getTab().getId();
       DataInstance dataInstance = dataInstances.get(id);
       if (dataInstance == null) {
-        dataInstance = DevToolsDataInstance.create(id);
+        dataInstance = ChromeDebuggerDataInstance.create(id);
         dataInstances.put(id, dataInstance);
         HeadlessDataModel dataModel = new HeadlessDataModel();
         dataInstance.load(dataModel);

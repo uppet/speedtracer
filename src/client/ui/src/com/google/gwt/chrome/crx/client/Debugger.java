@@ -22,13 +22,14 @@ import com.google.gwt.core.client.JavaScriptObject;
 /**
  * An experimental API for interacting with the Chrome debugging server.
  * 
- * API for chrome.experimental.debugger
+ * API for chrome.debugger
  * 
  * See documentaion at: <a href=
- * "http://code.google.com/chrome/extensions/trunk/experimental.debugger.html"
+ * "http://code.google.com/chrome/extensions/trunk/debugger.html"
  * >chrome.experimental.debugger</a>
  */
 public class Debugger {
+
   public interface AttachCallback {
     void onAttach();
   }
@@ -42,44 +43,44 @@ public class Debugger {
   }
 
   public static native void attach(int tabId) /*-{
-    chrome.experimental['debugger'].attach(tabId);
+    chrome["debugger"].attach({"tabId" : tabId});
   }-*/;
 
   public static native void attach(int tabId, AttachCallback callback) /*-{
-    chrome.experimental['debugger'].attach(tabId, function() {
+    chrome["debugger"].attach({"tabId" : tabId}, "1.0", function() {
       callback.@com.google.gwt.chrome.crx.client.Debugger.AttachCallback::onAttach()();
     });
   }-*/;
 
   public static native void detach(int tabId) /*-{
-    chrome.experimental['debugger'].detach(tabId);
+    chrome["debugger"].detach({"tabId" : tabId});
   }-*/;
 
   public static native void detach(int tabId, DetachCallback callback) /*-{
-    chrome.experimental['debugger'].detach(tabId, function() {
+    chrome["debugger"].detach({"tabId" : tabId}, function() {
       callback.@com.google.gwt.chrome.crx.client.Debugger.DetachCallback::onDetach()();
     });
   }-*/;
 
   public native static DebuggerDetachEvent getDetachEvent() /*-{
-    return chrome.experimental['debugger'].onDetach;
+    return chrome["debugger"].onDetach;
   }-*/;
 
   public native static DebuggerEvent getEvent() /*-{
-    return chrome.experimental['debugger'].onEvent;
+    return chrome["debugger"].onEvent;
   }-*/;
 
-  public native static void sendRequest(int tabId, String method) /*-{
-    chrome.experimental['debugger'].sendRequest(tabId, method);
+  public native static void sendCommand(int tabId, String method) /*-{
+    chrome["debugger"].sendCommand({"tabId" : tabId}, method);
   }-*/;
 
-  public native static void sendRequest(int tabId, String method, JavaScriptObject params) /*-{
-    chrome.experimental['debugger'].sendRequest(tabId, method, params);
+  public native static void sendCommand(int tabId, String method, JavaScriptObject params) /*-{
+    chrome["debugger"].sendCommand({"tabId" : tabId}, method, params);
   }-*/;
 
   public native static void sendRequest(int tabId, String method, JavaScriptObject params,
       SendRequestCallback callback) /*-{
-    chrome.experimental['debugger'].sendRequest(tabId, method, params, function(result) {
+    chrome["debugger"].sendCommand({"tabId" : tabId}, method, params, function(result) {
       callback.@com.google.gwt.chrome.crx.client.Debugger.SendRequestCallback::onResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(result);
     });
   }-*/;

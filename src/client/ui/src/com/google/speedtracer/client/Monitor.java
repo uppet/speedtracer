@@ -652,8 +652,8 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
             "<strong>Pfffttt, Speed Tracer is not working.</strong><br/><br/>"
                 + "Please double check a couple of things:<br/>"
                 + "<ol>"
-                + "<li>You must start Chrome with the flag: --enable-extension-timeline-api</li>"
-                + "<li>You must be running the <a target=\"_blank\" href=\"http://dev.chromium.org/getting-involved/dev-channel#TOC-Subscribing-to-a-channel\">Chrome Dev channel</a>.</li>"
+                + "<li>You must be running Chrome 18 or later. No flags required :).</li>"
+                + "<li>You can switch between the stable, beta and dev channel via: <a target=\"_blank\" href=\"http://dev.chromium.org/getting-involved/dev-channel#TOC-Subscribing-to-a-channel\">Chrome Release channels</a>.</li>"
                 + "</ol>" + "For more details, see our <a target='_blank' href='"
                 + Constants.HELP_URL + "'>getting started</a> docs.";
         notificationSlideout.setContentHtml(content);
