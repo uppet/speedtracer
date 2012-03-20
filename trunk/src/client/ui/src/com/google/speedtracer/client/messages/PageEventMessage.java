@@ -16,7 +16,7 @@
 package com.google.speedtracer.client.messages;
 
 import com.google.gwt.chrome.crx.client.Port.Message;
-import com.google.gwt.chrome.crx.client.events.DevToolsPageEvent.PageEvent;
+import com.google.gwt.chrome.crx.client.events.DebuggerEvent.RawDebuggerEventRecord;
 import com.google.gwt.coreext.client.JSON;
 
 /**
@@ -39,7 +39,7 @@ public class PageEventMessage extends Message {
   protected PageEventMessage() {
   }
 
-  public final PageEvent getPageEvent() {
+  public final RawDebuggerEventRecord getDebuggerRecord() {
     return JSON.parse(getRecordString()).cast();
   }
 
