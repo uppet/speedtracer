@@ -10,4 +10,6 @@
   </generate-with>
   <define-linker name="crx"
     class="com.google.gwt.chrome.crx.linker.ExtensionLinker" />
+  <define-linker name="single"
+    class="com.google.gwt.chrome.crx.linker.SingleScriptLinker" />
 </module>
