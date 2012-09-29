@@ -275,7 +275,7 @@ public class Monitor implements EntryPoint, WindowChannel.Listener,
     
     notificationSlideout = null;
   }
-  
+
   public void onMessage(Client channel, int type, WindowChannel.Message data) {
     switch (type) {
       case InitializeMonitorMessage.TYPE:

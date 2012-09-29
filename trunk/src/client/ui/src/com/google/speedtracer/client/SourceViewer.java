@@ -15,7 +15,7 @@
  */
 package com.google.speedtracer.client;
 
-import com.google.gwt.core.client.GWT;
+import com.google.gwt.chrome.crx.client.Chrome;
 import com.google.gwt.dom.client.AnchorElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -137,9 +137,6 @@ public class SourceViewer {
 
   private static final String LINE_CONTENT = "webkit-line-content";
 
-  private static final String SOURCE_FETCHER_URL = GWT.getModuleBaseURL()
-      + "SourceFetcher.html";
-
   /**
    * Creates an instance of the SourceViewer and invokes the passed in callback
    * when the iFrame is loaded with the target source.
@@ -180,7 +177,8 @@ public class SourceViewer {
         initializedCallback.onSourceViewerInitialized(sourceViewer);
       }
     });
-    sourceFrame.setSrc(SOURCE_FETCHER_URL);
+
+    sourceFrame.setSrc(Chrome.getExtension().getUrl("monitor/SourceFetcher.html"));
   }
 
   /**
