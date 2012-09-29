@@ -44,6 +44,7 @@ public class EventRecordType {
   public static final int DOM_CONTENT_LOADED = 18;
   public static final int LOAD_EVENT = 19;
   public static final int SCHEDULE_RESOURCE_REQUEST = 20;
+  public static final int PROGRAM_EVENT = 21;
 
   // Speed Tracer Types
   public static final int AGGREGATED_EVENTS = 0x7FFFFFFF;
@@ -54,6 +55,7 @@ public class EventRecordType {
   public static final int NETWORK_REQUEST_WILL_BE_SENT = 0x7FFFFFFA;
   public static final int NETWORK_RESPONSE_RECEIVED = 0x7FFFFFF9;
   public static final int NETWORK_DATA_RECEIVED = 0x7FFFFFF8;
+  public static final int NETWORK_LOADING_FINISHED = 0x7FFFFFF7;  
 
   private static final String[] webkitTypeStrings = {
     "Dom Event",                        // 0 DOM_EVENT
@@ -77,6 +79,7 @@ public class EventRecordType {
     "Document Parsing Complete",        // 18 DOM_CONTENT_LOADED
     "Window Load Event",                // 19 LOAD_EVENT
     "Schedule Resource Request",        // 20 SCHEDULE_RESOURCE_REQUEST
+    "Program",                          // 21 PROGRAM_EVENT
   };
 
   private static final String[] speedTracerTypeStrings = {
@@ -88,6 +91,7 @@ public class EventRecordType {
     "Will Send Request",                // 0x7FFFFFFA NETWORK_REQUEST_WILL_BE_SENT
     "Did receive response",             // 0x7FFFFFF9 NETWORK_RESPONSE_RECEIVED
     "Content Length Changed",           // 0x7FFFFFF8 NETWORK_DATA_RECEIVED
+    "Finished Request",                 // 0x7FFFFFF7 NETWORK_LOADING_FINISHED  
   };
 
   private static final String[] webkitHelpStrings = {
@@ -133,6 +137,8 @@ public class EventRecordType {
     "All static resources (like images and CSS) have loaded.",
     // 20 SCHEDULE_RESOURCE_REQUEST
     "A resource request was scheduled to be added to the network queue.",
+    // 21 PROGRAM_EVENT
+    "Your web application's UI thread is running.",
   };
 
   private static final String[] speedTracerHelpStrings = {
@@ -152,7 +158,9 @@ public class EventRecordType {
     "Network event indicating that we received a response from the server for a resource.",
     // 0x7FFFFFF8 NETWORK_DATA_RECEIVED
     "Network event indicating that the resource loader adjusted the known size of the resource contents.",
-  };
+    // 0x7FFFFFF7 NETWORK_LOADING_FINISHED
+    "Network event indicating that the resource finished loading.",  
+  };  
 
   public static String typeToHelpString(int type) {
     if (type < 0 || type >= webkitHelpStrings.length) {

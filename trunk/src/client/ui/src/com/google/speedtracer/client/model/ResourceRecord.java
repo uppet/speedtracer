@@ -30,6 +30,7 @@ public class ResourceRecord extends EventRecord {
       case EventRecordType.NETWORK_REQUEST_WILL_BE_SENT:
       case EventRecordType.NETWORK_DATA_RECEIVED:
       case EventRecordType.NETWORK_RESPONSE_RECEIVED:
+      case EventRecordType.NETWORK_LOADING_FINISHED:
         return true;
     }
     return false;

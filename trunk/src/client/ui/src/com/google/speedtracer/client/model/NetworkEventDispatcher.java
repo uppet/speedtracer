@@ -74,6 +74,13 @@ public class NetworkEventDispatcher implements DataDispatcherDelegate {
         proxy.onNetworkResourceFinished(finish);
       }
     });
+    
+    typeMap.put(EventRecordType.NETWORK_LOADING_FINISHED, new EventRecordDispatcher() {
+      public void onEventRecord(EventRecord data) {
+        ResourceFinishEvent finish = data.cast();
+        proxy.onNetworkResourceFinished(finish);
+      }
+    });
 
     typeMap.put(EventRecordType.RESOURCE_UPDATED, new EventRecordDispatcher() {
       public void onEventRecord(EventRecord data) {
