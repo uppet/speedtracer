@@ -4,4 +4,5 @@
   <inherits name='com.google.gwt.xhr.XMLHttpRequest' />
   <entry-point class="com.google.speedtracer.client.Monitor" />
   <public path="monitor/public" />
+  <add-linker name="single" />
 </module>

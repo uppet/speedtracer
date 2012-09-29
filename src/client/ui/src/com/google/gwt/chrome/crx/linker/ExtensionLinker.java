@@ -73,6 +73,14 @@ public class ExtensionLinker extends AbstractLinker {
     }
   }
 
+  private static JsonValue createBgScriptsObject(String bgScriptName) {
+    final JsonObject obj = JsonObject.create();
+    final JsonArray scriptsArray = JsonArray.create();
+    scriptsArray.add(bgScriptName);    
+    obj.put("scripts", scriptsArray);
+    return obj;
+  }
+
   private static JsonValue createContentScriptsArray(
       SortedSet<ContentScriptArtifact> contentScripts) {
     final JsonArray array = JsonArray.create();
@@ -150,7 +158,7 @@ public class ExtensionLinker extends AbstractLinker {
     return extensions.first();
   }
 
-  private static String generateHtmlContents(TreeLogger logger,
+  private static String generateJsContents(TreeLogger logger,
       CompilationResult js) throws UnableToCompleteException {
     // Thou shalt not reference $doc or $wnd !!!
     String compiledJs = js.getJavaScript()[0];
@@ -160,19 +168,13 @@ public class ExtensionLinker extends AbstractLinker {
     checkForDisallowedJs(compiledJs, "\\$wnd", 2, logger);
     checkForDisallowedJs(compiledJs, "\\$doc", 0, logger);
 
-    final StringBuffer buffer = new StringBuffer();
-    buffer.append("<html>");
-    buffer.append("<head></head>");
-    buffer.append("<body>");
-    buffer.append("<script>var $stats;\n" + compiledJs
-        + "gwtOnLoad();\n</script>");
-    buffer.append("</body>");
-    buffer.append("</html>");
+    final StringBuffer buffer = new StringBuffer();    
+    buffer.append("var $stats;\n").append(compiledJs).append("gwtOnLoad();\n");
     return buffer.toString();
   }
 
-  private static String getHtmlFilename(LinkerContext context) {
-    return context.getModuleName() + ".html";
+  private static String getJsFilename(LinkerContext context) {
+    return context.getModuleName() + ".js";
   }
 
   private static void logPermutations(TreeLogger logger,
@@ -225,8 +227,8 @@ public class ExtensionLinker extends AbstractLinker {
     // Retrieve the compilation.
     final CompilationResult compilation = findCompilation(logger, artifacts);
 
-    String backgroundPageFileName = getHtmlFilename(context);
-    return addArtifacts(artifacts, emitString(logger, generateHtmlContents(
+    String backgroundPageFileName = getJsFilename(context);
+    return addArtifacts(artifacts, emitString(logger, generateJsContents(
         logger, compilation), backgroundPageFileName), emitString(logger,
         generateManifestContents(logger, backgroundPageFileName, extension,
             pageActions, browserActions, contentScripts, plugins),
@@ -275,7 +277,7 @@ public class ExtensionLinker extends AbstractLinker {
       config.put("description", extension.getDescription());
     }
     if (backgroundPageFileName.length() > 0) {
-      config.put("background_page", backgroundPageFileName);
+      config.put("background", createBgScriptsObject(backgroundPageFileName));
     }
     if (contentScripts.size() > 0) {
       config.put("content_scripts", createContentScriptsArray(contentScripts));
@@ -314,7 +316,8 @@ public class ExtensionLinker extends AbstractLinker {
     if (extension.getPublicKey().length() > 0) {
       config.put("key", extension.getPublicKey());
     }
-
+    config.put("manifest_version", 2);
+    config.put("content_security_policy", "script-src 'self' 'unsafe-eval' chrome-extension-resource:; object-src 'self'  chrome-extension-resource:");
     final StringWriter writer = new StringWriter();
     try {
       config.write(writer);
