@@ -316,8 +316,7 @@ public class ExtensionLinker extends AbstractLinker {
     if (extension.getPublicKey().length() > 0) {
       config.put("key", extension.getPublicKey());
     }
-    config.put("manifest_version", 2);
-    config.put("content_security_policy", "script-src 'self' 'unsafe-eval' chrome-extension-resource:; object-src 'self'  chrome-extension-resource:");
+    config.put("manifest_version", 2);    
     final StringWriter writer = new StringWriter();
     try {
       config.write(writer);

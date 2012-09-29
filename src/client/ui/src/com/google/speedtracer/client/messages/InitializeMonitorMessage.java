@@ -39,7 +39,7 @@ public class InitializeMonitorMessage extends WindowChannel.Message {
    */
   public static native InitializeMonitorMessage create(
       TabDescription tabDescription, DataInstance handle, String version) /*-{
-    return { tabDescription: tabDescription, handle: handle, version: version };
+    return { tabDescription: tabDescription, handle: handle, version: version};
   }-*/;
 
   protected InitializeMonitorMessage() {

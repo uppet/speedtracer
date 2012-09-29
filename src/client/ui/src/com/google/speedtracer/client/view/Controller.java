@@ -15,8 +15,8 @@
  */
 package com.google.speedtracer.client.view;
 
+import com.google.gwt.chrome.crx.client.Chrome;
 import com.google.gwt.chrome.crx.client.Tabs;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.coreext.client.JSOArray;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
@@ -537,7 +537,7 @@ public class Controller extends Panel implements DomainObserver,
 
     // Create a new tab at the save data template page. Give it the same query
     // string as our own.
-    Tabs.create(GWT.getModuleBaseURL() + "SpeedTracerData.html"
+    Tabs.create(Chrome.getExtension().getUrl("monitor/SpeedTracerData.html")
         + Window.Location.getQueryString());
   }
 
