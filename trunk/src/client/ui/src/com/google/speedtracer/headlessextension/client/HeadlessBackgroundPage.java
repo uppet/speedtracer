@@ -197,7 +197,7 @@ public class HeadlessBackgroundPage extends Extension implements
      * create a new one.
      */
     private DataInstance getDataInstance() {
-      int id = port.getTab().getId();
+      int id = port.getSender().getTab().getId();
       DataInstance dataInstance = dataInstances.get(id);
       if (dataInstance == null) {
         dataInstance = ChromeDebuggerDataInstance.create(id);
