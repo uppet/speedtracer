@@ -17,6 +17,7 @@ package com.google.gwt.chrome.crx.client;
 
 import com.google.gwt.chrome.crx.client.Tabs.Tab;
 import com.google.gwt.chrome.crx.client.events.MessageEvent;
+import com.google.gwt.chrome.crx.client.events.Sender;
 import com.google.gwt.core.client.JavaScriptObject;
 
 /**
@@ -79,8 +80,8 @@ public class Port extends JavaScriptObject {
     return this.onMessage;
   }-*/;
 
-  public final native Tab getTab() /*-{
-    return this.tab;
+  public final native Sender getSender() /*-{
+    return this.sender;
   }-*/;
 
   public final native void postMessage(JavaScriptObject msg) /*-{

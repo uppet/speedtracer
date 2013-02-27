@@ -250,7 +250,7 @@ public abstract class BackgroundPage extends Extension {
     // In situation where we open a file in a tab that was previously
     // used to open a file... we dont care. Overwrite it.
     final TabModel tabModel = new TabModel(browserAction.mtIcon());
-    int tabId = port.getTab().getId();
+    int tabId = port.getSender().getTab().getId();
 
     if (port.getName().equals(DataLoader.DATA_LOAD)) {
       final LoadFileDataInstance dataInstance = LoadFileDataInstance.create(port);
@@ -310,7 +310,7 @@ public abstract class BackgroundPage extends Extension {
     }
 
     tabModel.tabDescription = TabDescription.create(tabId,
-        port.getTab().getTitle(), port.getTab().getUrl());
+        port.getSender().getTab().getTitle(), port.getSender().getTab().getUrl());
     openMonitor(FILE_BROWSER_ID, tabId, tabModel);
   }
 
